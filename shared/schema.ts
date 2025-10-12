@@ -96,6 +96,7 @@ export const activities = pgTable("activities", {
   steps: integer("steps").notNull().default(0),
   workoutType: varchar("workout_type", { length: 100 }),
   source: varchar("source", { length: 50 }).default("manual"), // 'manual', 'apple_health', 'garmin'
+  attachmentUrl: text("attachment_url"), // URL/path to uploaded evidence attachment
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -149,11 +150,36 @@ export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 
 export type Activity = typeof activities.$inferSelect;
-export const insertActivitySchema = createInsertSchema(activities).omit({
-  id: true,
-  createdAt: true,
-  userId: true,
-});
+export const insertActivitySchema = createInsertSchema(activities)
+  .omit({
+    id: true,
+    createdAt: true,
+    userId: true,
+  })
+  .extend({
+    // Server-side validation for attachment data URLs
+    attachmentUrl: z.string().optional().refine(
+      (val) => {
+        if (!val) return true; // Optional field
+        
+        // Check if it's a valid data URL
+        if (!val.startsWith('data:image/')) {
+          return false;
+        }
+        
+        // Check size (max 5MB when Base64 encoded, ~6.7MB as Base64)
+        const base64Data = val.split(',')[1];
+        if (base64Data && base64Data.length > 6700000) {
+          return false;
+        }
+        
+        return true;
+      },
+      {
+        message: "Invalid attachment: must be an image data URL under 5MB"
+      }
+    ),
+  });
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 export type DeviceConnection = typeof deviceConnections.$inferSelect;

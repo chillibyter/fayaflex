@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Minus } from "lucide-react";
+import { CalendarIcon, Plus, Minus, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -23,15 +23,18 @@ export default function DataEntryForm() {
   const [calories, setCalories] = useState(0);
   const [steps, setSteps] = useState(0);
   const [workoutType, setWorkoutType] = useState("");
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
   const createActivityMutation = useMutation({
-    mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string }) => {
+    mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string; attachmentUrl?: string }) => {
       const res = await apiRequest("POST", "/api/activities", {
         date: data.date,
         calories: data.calories,
         steps: data.steps,
         workoutType: data.workoutType || null,
+        attachmentUrl: data.attachmentUrl || null,
         source: "manual",
       });
       return await res.json();
@@ -41,6 +44,8 @@ export default function DataEntryForm() {
       setCalories(0);
       setSteps(0);
       setWorkoutType("");
+      setAttachmentFile(null);
+      setAttachmentPreview(null);
       toast({
         title: "Activity logged!",
         description: "Your activity has been successfully recorded.",
@@ -69,7 +74,46 @@ export default function DataEntryForm() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPG, PNG, etc.)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAttachmentFile(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAttachmentPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAttachment = () => {
+    setAttachmentFile(null);
+    setAttachmentPreview(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate that at least some activity data is provided
@@ -82,11 +126,18 @@ export default function DataEntryForm() {
       return;
     }
     
+    // Convert attachment to Base64 if present
+    let attachmentUrl: string | undefined;
+    if (attachmentFile) {
+      attachmentUrl = attachmentPreview || undefined;
+    }
+
     createActivityMutation.mutate({
       date: format(date, "yyyy-MM-dd"),
       calories,
       steps,
       workoutType: workoutType || undefined,
+      attachmentUrl,
     });
   };
 
@@ -229,6 +280,52 @@ export default function DataEntryForm() {
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="attachment">Evidence (Optional)</Label>
+            <div className="space-y-3">
+              {!attachmentPreview ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="attachment"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    data-testid="input-attachment"
+                  />
+                  <Label
+                    htmlFor="attachment"
+                    className="flex-1 flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background hover-elevate cursor-pointer"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span>Upload Photo</span>
+                  </Label>
+                </div>
+              ) : (
+                <div className="relative rounded-md overflow-hidden border">
+                  <img
+                    src={attachmentPreview}
+                    alt="Activity evidence"
+                    className="w-full h-48 object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={removeAttachment}
+                    data-testid="button-remove-attachment"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Upload a photo of your workout or activity (Max 5MB)
+              </p>
+            </div>
           </div>
 
           <Button 
