@@ -1,18 +1,104 @@
 import TeamCard from "@/components/TeamCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Search } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { PlusCircle, Search, Users, UserPlus } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import type { Team } from "@shared/schema";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+
+// Extended type with member count from API
+type EnrichedTeam = Team & { memberCount: number };
 
 export default function Teams() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<EnrichedTeam | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const teams = [
-    { name: "Team Alpha", memberCount: 12, totalCalories: 385000, rank: 1, isOwner: true },
-    { name: "Team Beta", memberCount: 15, totalCalories: 362000, rank: 2, isOwner: false },
-    { name: "Team Gamma", memberCount: 10, totalCalories: 341000, rank: 3, isOwner: false },
-  ];
+  const { data: teams = [], isLoading } = useQuery<EnrichedTeam[]>({
+    queryKey: ["/api/teams"],
+  });
+
+  const joinTeamMutation = useMutation({
+    mutationFn: async (code: string) => {
+      const res = await apiRequest("POST", "/api/teams/join", { inviteCode: code });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      setJoinDialogOpen(false);
+      setInviteCode("");
+      toast({
+        title: "Joined team!",
+        description: "You've successfully joined the team.",
+      });
+    },
+    onError: (error: any) => {
+      // Extract error message from API response
+      let errorMessage = "Failed to join team";
+      
+      if (error?.message) {
+        // Try to parse JSON error from API response
+        // Format is typically: "400: {\"message\":\"...\"}"
+        try {
+          const jsonMatch = error.message.match(/\d+:\s*({.+})/);
+          if (jsonMatch) {
+            const errorData = JSON.parse(jsonMatch[1]);
+            errorMessage = errorData.message || errorMessage;
+          } else {
+            errorMessage = error.message;
+          }
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleJoinTeam = () => {
+    if (inviteCode.trim()) {
+      joinTeamMutation.mutate(inviteCode.trim());
+    }
+  };
+
+  const handleInviteClick = (team: Team) => {
+    setSelectedTeam(team);
+    setShareDialogOpen(true);
+  };
+
+  const copyInviteCode = () => {
+    if (selectedTeam?.inviteCode) {
+      navigator.clipboard.writeText(selectedTeam.inviteCode);
+      toast({
+        title: "Copied!",
+        description: "Invite code copied to clipboard.",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -23,12 +109,58 @@ export default function Teams() {
             Manage your teams and track group progress.
           </p>
         </div>
-        <Button asChild data-testid="button-create-team">
-          <Link href="/create-team">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create Team
-          </Link>
-        </Button>
+        <div className="flex gap-3">
+          <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" data-testid="button-join-team">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Join Team
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Join a Team</DialogTitle>
+                <DialogDescription>
+                  Enter the invite code shared by your team owner to join.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invite-code">Invite Code</Label>
+                  <Input
+                    id="invite-code"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value)}
+                    placeholder="Enter invite code"
+                    data-testid="input-invite-code"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setJoinDialogOpen(false)}
+                  disabled={joinTeamMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleJoinTeam}
+                  disabled={!inviteCode.trim() || joinTeamMutation.isPending}
+                  data-testid="button-join-team-submit"
+                >
+                  {joinTeamMutation.isPending ? "Joining..." : "Join Team"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Button asChild data-testid="button-create-team">
+            <Link href="/create-team">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Create Team
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="relative">
@@ -42,15 +174,83 @@ export default function Teams() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teams.map((team) => (
-          <TeamCard
-            key={team.name}
-            {...team}
-            onInvite={() => console.log(`Invite to ${team.name}`)}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-4 text-muted-foreground">Loading teams...</p>
+          </div>
+        </div>
+      ) : teams.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No teams yet</h3>
+            <p className="text-muted-foreground mb-6">
+              Create your first team or join an existing one to get started!
+            </p>
+            <Button asChild>
+              <Link href="/create-team">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Team
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {teams
+            .filter((team) =>
+              team.name.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((team) => (
+              <TeamCard
+                key={team.id}
+                name={team.name}
+                memberCount={team.memberCount}
+                totalCalories={0}
+                rank={0}
+                isOwner={team.ownerId === user?.id}
+                onInvite={() => handleInviteClick(team)}
+              />
+            ))}
+        </div>
+      )}
+
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invite Members to {selectedTeam?.name}</DialogTitle>
+            <DialogDescription>
+              Share this invite code with others to let them join your team.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Invite Code</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={selectedTeam?.inviteCode || ""}
+                  readOnly
+                  className="font-mono"
+                  data-testid="text-invite-code"
+                />
+                <Button onClick={copyInviteCode} data-testid="button-copy-code">
+                  Copy
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Anyone with this code can join your team.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShareDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

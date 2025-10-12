@@ -5,16 +5,44 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateTeam() {
   const [, setLocation] = useLocation();
   const [teamName, setTeamName] = useState("");
   const [description, setDescription] = useState("");
+  const { toast } = useToast();
+
+  const createTeamMutation = useMutation({
+    mutationFn: async (data: { name: string; description?: string }) => {
+      const res = await apiRequest("POST", "/api/teams", data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      toast({
+        title: "Team created!",
+        description: "Your team has been created successfully.",
+      });
+      setLocation("/teams");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create team",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating team:", { teamName, description });
-    setLocation("/teams");
+    createTeamMutation.mutate({
+      name: teamName,
+      description: description || undefined,
+    });
   };
 
   return (
@@ -57,13 +85,19 @@ export default function CreateTeam() {
             </div>
 
             <div className="flex gap-3">
-              <Button type="submit" className="flex-1" data-testid="button-create-team-submit">
-                Create Team
+              <Button 
+                type="submit" 
+                className="flex-1" 
+                disabled={createTeamMutation.isPending}
+                data-testid="button-create-team-submit"
+              >
+                {createTeamMutation.isPending ? "Creating..." : "Create Team"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setLocation("/teams")}
+                disabled={createTeamMutation.isPending}
                 data-testid="button-cancel"
               >
                 Cancel

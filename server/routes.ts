@@ -3,14 +3,20 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertActivitySchema, insertTeamSchema } from "@shared/schema";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
   // Auth routes
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/user", async (req: any, res) => {
     try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.json(null);
+      }
+
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
@@ -45,7 +51,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const teams = await storage.getUserTeams(userId);
-      res.json(teams);
+      
+      // Enrich teams with member counts
+      const enrichedTeams = await Promise.all(
+        teams.map(async (team) => {
+          const members = await storage.getTeamMembers(team.id);
+          return {
+            ...team,
+            memberCount: members.length,
+          };
+        })
+      );
+      
+      res.json(enrichedTeams);
     } catch (error) {
       console.error("Error fetching teams:", error);
       res.status(500).json({ message: "Failed to fetch teams" });
@@ -68,7 +86,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/teams/join", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { inviteCode } = req.body;
+      
+      // Validate request body
+      const joinSchema = z.object({
+        inviteCode: z.string().min(1, "Invite code is required"),
+      });
+      const validation = joinSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: validation.error.errors[0]?.message || "Invalid request" 
+        });
+      }
+      
+      const { inviteCode } = validation.data;
 
       const team = await storage.getTeamByInviteCode(inviteCode);
       if (!team) {
@@ -80,6 +111,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Already a member of this team" });
       }
 
+      // Check team member count limit (max 20 members)
+      const currentMembers = await storage.getTeamMembers(team.id);
+      if (currentMembers.length >= 20) {
+        return res.status(400).json({ message: "Team is full (maximum 20 members)" });
+      }
+
       await storage.addTeamMember({
         teamId: team.id,
         userId: userId,
@@ -88,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(team);
     } catch (error: any) {
       console.error("Error joining team:", error);
-      res.status(400).json({ message: error.message || "Failed to join team" });
+      res.status(500).json({ message: "Failed to join team" });
     }
   });
 

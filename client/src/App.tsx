@@ -19,26 +19,29 @@ import { useAuth } from "@/hooks/useAuth";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  if (isLoading || !isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <>
-          <Route path="/" component={Dashboard} />
-          <Route path="/track" component={TrackActivity} />
-          <Route path="/leaderboard" component={Leaderboard} />
-          <Route path="/teams" component={Teams} />
-          <Route path="/create-team" component={CreateTeam} />
-          <Route path="/profile" component={Profile} />
-        </>
-      )}
+      <Route path="/" component={Dashboard} />
+      <Route path="/track" component={TrackActivity} />
+      <Route path="/leaderboard" component={Leaderboard} />
+      <Route path="/teams" component={Teams} />
+      <Route path="/create-team" component={CreateTeam} />
+      <Route path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
+function AuthenticatedApp() {
   const { isAuthenticated, isLoading } = useAuth();
   const sidebarStyle = {
     "--sidebar-width": "16rem",
@@ -58,30 +61,36 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <>
+        <Router />
+        <Toaster />
+      </>
     );
   }
 
   return (
+    <>
+      <SidebarProvider style={sidebarStyle}>
+        <div className="flex h-screen w-full">
+          <AppSidebar />
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <AppHeader />
+            <main className="flex-1 overflow-y-auto p-6">
+              <Router />
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+      <Toaster />
+    </>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SidebarProvider style={sidebarStyle}>
-          <div className="flex h-screen w-full">
-            <AppSidebar />
-            <div className="flex flex-col flex-1 overflow-hidden">
-              <AppHeader />
-              <main className="flex-1 overflow-y-auto p-6">
-                <Router />
-              </main>
-            </div>
-          </div>
-        </SidebarProvider>
-        <Toaster />
+        <AuthenticatedApp />
       </TooltipProvider>
     </QueryClientProvider>
   );
