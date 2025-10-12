@@ -362,9 +362,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const user = await storage.getUser(member.userId);
           
           if (user) {
+            // Extract name from email if firstName and lastName are not available
+            let displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            
+            if (!displayName && user.email) {
+              // Use email username as name if no name is available
+              const emailUsername = user.email.split('@')[0];
+              displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+            }
+            
             userStats.push({
               userId: user.id,
-              name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown User',
+              name: displayName || 'Unknown User',
               teamName: team.name,
               calories: totalCalories,
             });
