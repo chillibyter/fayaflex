@@ -65,7 +65,7 @@ export default function Dashboard() {
 
   const toggleDeviceMutation = useMutation({
     mutationFn: async (data: { provider: string; isConnected: boolean }) => {
-      return await apiRequest('/api/devices/toggle', 'POST', data);
+      return await apiRequest('POST', '/api/devices/toggle', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
