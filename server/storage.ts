@@ -1,38 +1,228 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import {
+  users,
+  teams,
+  teamMembers,
+  activities,
+  deviceConnections,
+  type User,
+  type UpsertUser,
+  type Team,
+  type InsertTeam,
+  type TeamMember,
+  type InsertTeamMember,
+  type Activity,
+  type InsertActivity,
+  type DeviceConnection,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and, sql, desc } from "drizzle-orm";
+import { randomBytes } from "crypto";
 
 export interface IStorage {
+  // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
+
+  // Team operations
+  createTeam(team: InsertTeam): Promise<Team>;
+  getTeam(id: string): Promise<Team | undefined>;
+  getTeamByInviteCode(code: string): Promise<Team | undefined>;
+  getUserTeams(userId: string): Promise<Team[]>;
+  getAllTeams(): Promise<Team[]>;
+
+  // Team member operations
+  addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
+  getTeamMembers(teamId: string): Promise<TeamMember[]>;
+  isUserInTeam(userId: string, teamId: string): Promise<boolean>;
+  removeTeamMember(userId: string, teamId: string): Promise<void>;
+
+  // Activity operations
+  createActivity(activity: InsertActivity, userId: string): Promise<Activity>;
+  getUserActivities(userId: string, month?: number, year?: number): Promise<Activity[]>;
+  getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]>;
+
+  // Device connection operations
+  getDeviceConnection(userId: string, provider: string): Promise<DeviceConnection | undefined>;
+  upsertDeviceConnection(connection: Partial<DeviceConnection> & { userId: string; provider: string }): Promise<DeviceConnection>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
+  // User operations
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  // Team operations
+  async createTeam(teamData: InsertTeam): Promise<Team> {
+    const inviteCode = randomBytes(6).toString("hex");
+    const [team] = await db
+      .insert(teams)
+      .values({ ...teamData, inviteCode })
+      .returning();
+    return team;
+  }
+
+  async getTeam(id: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team;
+  }
+
+  async getTeamByInviteCode(code: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.inviteCode, code));
+    return team;
+  }
+
+  async getUserTeams(userId: string): Promise<Team[]> {
+    const userTeams = await db
+      .select({
+        id: teams.id,
+        name: teams.name,
+        description: teams.description,
+        ownerId: teams.ownerId,
+        inviteCode: teams.inviteCode,
+        createdAt: teams.createdAt,
+      })
+      .from(teamMembers)
+      .innerJoin(teams, eq(teamMembers.teamId, teams.id))
+      .where(eq(teamMembers.userId, userId));
+    
+    return userTeams;
+  }
+
+  async getAllTeams(): Promise<Team[]> {
+    return await db.select().from(teams);
+  }
+
+  // Team member operations
+  async addTeamMember(member: InsertTeamMember): Promise<TeamMember> {
+    const [teamMember] = await db
+      .insert(teamMembers)
+      .values(member)
+      .returning();
+    return teamMember;
+  }
+
+  async getTeamMembers(teamId: string): Promise<TeamMember[]> {
+    return await db
+      .select()
+      .from(teamMembers)
+      .where(eq(teamMembers.teamId, teamId));
+  }
+
+  async isUserInTeam(userId: string, teamId: string): Promise<boolean> {
+    const [member] = await db
+      .select()
+      .from(teamMembers)
+      .where(and(eq(teamMembers.userId, userId), eq(teamMembers.teamId, teamId)));
+    return !!member;
+  }
+
+  async removeTeamMember(userId: string, teamId: string): Promise<void> {
+    await db
+      .delete(teamMembers)
+      .where(and(eq(teamMembers.userId, userId), eq(teamMembers.teamId, teamId)));
+  }
+
+  // Activity operations
+  async createActivity(activityData: InsertActivity, userId: string): Promise<Activity> {
+    const [activity] = await db
+      .insert(activities)
+      .values({ ...activityData, userId })
+      .returning();
+    return activity;
+  }
+
+  async getUserActivities(userId: string, month?: number, year?: number): Promise<Activity[]> {
+    if (month !== undefined && year !== undefined) {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);
+      return await db
+        .select()
+        .from(activities)
+        .where(
+          and(
+            eq(activities.userId, userId),
+            sql`${activities.date} >= ${startDate.toISOString().split('T')[0]}`,
+            sql`${activities.date} <= ${endDate.toISOString().split('T')[0]}`
+          )
+        )
+        .orderBy(desc(activities.date));
+    }
+
+    return await db
+      .select()
+      .from(activities)
+      .where(eq(activities.userId, userId))
+      .orderBy(desc(activities.date));
+  }
+
+  async getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]> {
+    const members = await this.getTeamMembers(teamId);
+    const memberIds = members.map(m => m.userId);
+
+    if (memberIds.length === 0) return [];
+
+    if (month !== undefined && year !== undefined) {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);
+      return await db
+        .select()
+        .from(activities)
+        .where(
+          and(
+            sql`${activities.userId} = ANY(${memberIds})`,
+            sql`${activities.date} >= ${startDate.toISOString().split('T')[0]}`,
+            sql`${activities.date} <= ${endDate.toISOString().split('T')[0]}`
+          )
+        )
+        .orderBy(desc(activities.date));
+    }
+
+    return await db
+      .select()
+      .from(activities)
+      .where(sql`${activities.userId} = ANY(${memberIds})`)
+      .orderBy(desc(activities.date));
+  }
+
+  // Device connection operations
+  async getDeviceConnection(userId: string, provider: string): Promise<DeviceConnection | undefined> {
+    const [connection] = await db
+      .select()
+      .from(deviceConnections)
+      .where(and(eq(deviceConnections.userId, userId), eq(deviceConnections.provider, provider)));
+    return connection;
+  }
+
+  async upsertDeviceConnection(connectionData: Partial<DeviceConnection> & { userId: string; provider: string }): Promise<DeviceConnection> {
+    const [connection] = await db
+      .insert(deviceConnections)
+      .values(connectionData)
+      .onConflictDoUpdate({
+        target: [deviceConnections.userId, deviceConnections.provider],
+        set: {
+          ...connectionData,
+        },
+      })
+      .returning();
+    return connection;
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

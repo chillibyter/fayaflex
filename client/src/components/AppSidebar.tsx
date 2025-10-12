@@ -10,9 +10,12 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Home, Users, PlusCircle, Trophy, User, Activity } from "lucide-react";
+import { Home, Users, PlusCircle, Trophy, User as UserIcon, Activity, LogOut } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import type { User } from "@shared/schema";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -20,11 +23,21 @@ const menuItems = [
   { title: "Leaderboard", url: "/leaderboard", icon: Trophy },
   { title: "My Teams", url: "/teams", icon: Users },
   { title: "Create Team", url: "/create-team", icon: PlusCircle },
-  { title: "Profile", url: "/profile", icon: User },
+  { title: "Profile", url: "/profile", icon: UserIcon },
 ];
 
 export default function AppSidebar() {
   const [location] = useLocation();
+  const { user } = useAuth();
+  const typedUser = user as User | undefined;
+
+  const userName = typedUser?.firstName && typedUser?.lastName 
+    ? `${typedUser.firstName} ${typedUser.lastName}`
+    : typedUser?.email || 'User';
+  
+  const initials = typedUser?.firstName && typedUser?.lastName
+    ? `${typedUser.firstName[0]}${typedUser.lastName[0]}`
+    : typedUser?.email?.[0]?.toUpperCase() || 'U';
 
   return (
     <Sidebar>
@@ -62,16 +75,29 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t">
+      <SidebarFooter className="p-4 border-t space-y-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
-            <AvatarFallback>JD</AvatarFallback>
+            {typedUser?.profileImageUrl && (
+              <AvatarImage src={typedUser.profileImageUrl} alt={userName} />
+            )}
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">John Doe</p>
-            <p className="text-xs text-muted-foreground truncate">Team Alpha</p>
+            <p className="text-sm font-medium truncate">{userName}</p>
+            <p className="text-xs text-muted-foreground truncate">{typedUser?.email}</p>
           </div>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => window.location.href = '/api/logout'}
+          data-testid="button-logout"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Log Out
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );
