@@ -14,16 +14,80 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Plus, Minus } from "lucide-react";
 import { format } from "date-fns";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DataEntryForm() {
   const [date, setDate] = useState<Date>(new Date());
   const [calories, setCalories] = useState(0);
   const [steps, setSteps] = useState(0);
   const [workoutType, setWorkoutType] = useState("");
+  const { toast } = useToast();
+
+  const createActivityMutation = useMutation({
+    mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string }) => {
+      const res = await apiRequest("POST", "/api/activities", {
+        date: data.date,
+        calories: data.calories,
+        steps: data.steps,
+        workoutType: data.workoutType || null,
+        source: "manual",
+      });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      setCalories(0);
+      setSteps(0);
+      setWorkoutType("");
+      toast({
+        title: "Activity logged!",
+        description: "Your activity has been successfully recorded.",
+      });
+    },
+    onError: (error: any) => {
+      let errorMessage = "Failed to log activity";
+      if (error?.message) {
+        try {
+          const jsonMatch = error.message.match(/\d+:\s*({.+})/);
+          if (jsonMatch) {
+            const errorData = JSON.parse(jsonMatch[1]);
+            errorMessage = errorData.message || errorMessage;
+          } else {
+            errorMessage = error.message;
+          }
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitted:", { date, calories, steps, workoutType });
+    
+    // Validate that at least some activity data is provided
+    if (calories <= 0 && steps <= 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter at least calories or steps to log an activity.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    createActivityMutation.mutate({
+      date: format(date, "yyyy-MM-dd"),
+      calories,
+      steps,
+      workoutType: workoutType || undefined,
+    });
   };
 
   const adjustCalories = (amount: number) => {
@@ -167,8 +231,13 @@ export default function DataEntryForm() {
             </Select>
           </div>
 
-          <Button type="submit" className="w-full" data-testid="button-submit-entry">
-            Submit Entry
+          <Button 
+            type="submit" 
+            className="w-full" 
+            data-testid="button-submit-entry"
+            disabled={createActivityMutation.isPending}
+          >
+            {createActivityMutation.isPending ? "Submitting..." : "Submit Entry"}
           </Button>
         </form>
       </CardContent>
