@@ -85,7 +85,7 @@ export default function Teams() {
     }
   };
 
-  const handleInviteClick = (team: Team) => {
+  const handleInviteClick = (team: EnrichedTeam) => {
     setSelectedTeam(team);
     setShareDialogOpen(true);
   };
@@ -206,11 +206,12 @@ export default function Teams() {
             .map((team) => (
               <TeamCard
                 key={team.id}
+                teamId={team.id}
                 name={team.name}
                 memberCount={team.memberCount}
                 totalCalories={0}
                 rank={0}
-                isOwner={team.ownerId === user?.id}
+                isOwner={Boolean(user && typeof user === 'object' && 'id' in user && team.ownerId === (user as any).id)}
                 onInvite={() => handleInviteClick(team)}
               />
             ))}

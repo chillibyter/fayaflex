@@ -22,6 +22,13 @@ Preferred communication style: Simple, everyday language.
 - Global individual leaderboard hidden from UI
 - User ranking remains global based on last 30 days calories
 
+**Team Leaderboard Navigation** (October 12, 2025)
+- Team cards on Teams page are now clickable - navigate to team-specific leaderboards
+- Team entries in main leaderboard are clickable
+- Team-specific leaderboard page shows individual member rankings
+- Back navigation from team leaderboard to teams page
+- All team leaderboard cards have hover effects for better UX
+
 ## System Architecture
 
 ### Frontend Architecture

@@ -2,13 +2,16 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal } from "lucide-react";
+import { Link } from "wouter";
 
 interface LeaderboardCardProps {
   rank: number;
   name: string;
-  teamName: string;
+  teamName?: string;
   calories: number;
   goalPercentage: number;
+  userId?: string;
+  teamId?: string;
 }
 
 export default function LeaderboardCard({
@@ -17,6 +20,8 @@ export default function LeaderboardCard({
   teamName,
   calories,
   goalPercentage,
+  userId,
+  teamId,
 }: LeaderboardCardProps) {
   const getMedalIcon = () => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -37,31 +42,47 @@ export default function LeaderboardCard({
     .toUpperCase()
     .slice(0, 2);
 
-  return (
-    <Card className="p-4 hover-elevate" data-testid={`leaderboard-card-${rank}`}>
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Badge variant={getRankBadgeVariant()} className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
-            {rank}
-          </Badge>
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold truncate" data-testid={`text-name-${rank}`}>{name}</h4>
-              {getMedalIcon()}
-            </div>
-            <p className="text-sm text-muted-foreground truncate">{teamName}</p>
+  const href = userId ? `/user/${userId}` : teamId ? `/teams/${teamId}` : undefined;
+
+  const content = (
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <Badge variant={getRankBadgeVariant()} className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
+          {rank}
+        </Badge>
+        <Avatar className="h-10 w-10 flex-shrink-0">
+          <AvatarFallback>{initials}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="font-semibold truncate" data-testid={`text-name-${rank}`}>{name}</h4>
+            {getMedalIcon()}
           </div>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <p className="text-2xl font-bold" data-testid={`text-calories-${rank}`}>
-            {calories.toLocaleString()}
-          </p>
-          <p className="text-sm text-muted-foreground">{goalPercentage}% of goal</p>
+          {teamName && <p className="text-sm text-muted-foreground truncate">{teamName}</p>}
         </div>
       </div>
+      <div className="text-right flex-shrink-0">
+        <p className="text-2xl font-bold" data-testid={`text-calories-${rank}`}>
+          {calories.toLocaleString()}
+        </p>
+        <p className="text-sm text-muted-foreground">{goalPercentage}% of goal</p>
+      </div>
+    </div>
+  );
+
+  if (href) {
+    return (
+      <Link href={href}>
+        <Card className="p-4 hover-elevate cursor-pointer transition-all" data-testid={`card-leaderboard-${rank}`}>
+          {content}
+        </Card>
+      </Link>
+    );
+  }
+
+  return (
+    <Card className="p-4" data-testid={`card-leaderboard-${rank}`}>
+      {content}
     </Card>
   );
 }
