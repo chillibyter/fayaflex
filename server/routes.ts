@@ -132,6 +132,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Teammate profile routes (require shared team membership)
+  app.get("/api/users/:userId/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const targetUserId = req.params.userId;
+      
+      // Check if users share a team
+      const shareTeam = await storage.doUsersShareTeam(currentUserId, targetUserId);
+      if (!shareTeam && currentUserId !== targetUserId) {
+        return res.status(403).json({ message: "You can only view profiles of teammates" });
+      }
+      
+      const user = await storage.getUser(targetUserId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  app.get("/api/users/:userId/activities", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const targetUserId = req.params.userId;
+      
+      // Check if users share a team
+      const shareTeam = await storage.doUsersShareTeam(currentUserId, targetUserId);
+      if (!shareTeam && currentUserId !== targetUserId) {
+        return res.status(403).json({ message: "You can only view activities of teammates" });
+      }
+      
+      const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+      
+      const activities = await storage.getUserActivities(targetUserId, month, year);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching user activities:", error);
+      res.status(500).json({ message: "Failed to fetch user activities" });
+    }
+  });
+
   // Profile routes
   app.get("/api/profile/stats", isAuthenticated, async (req: any, res) => {
     try {
@@ -345,18 +391,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Leaderboard routes
+  // Personal leaderboard - only shows members from user's teams (deduplicated)
   app.get("/api/leaderboard/personal", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.claims.sub;
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
       
-      const teams = await storage.getAllTeams();
-      const userStats: any[] = [];
+      // Get user's teams
+      const userTeams = await storage.getUserTeams(currentUserId);
+      const userStatsMap = new Map<string, any>(); // Use Map to deduplicate by userId
       
-      for (const team of teams) {
+      // Only show members from user's teams
+      for (const team of userTeams) {
         const members = await storage.getTeamMembers(team.id);
         
         for (const member of members) {
+          // Skip if already processed this user
+          if (userStatsMap.has(member.userId)) {
+            continue;
+          }
+          
           const activities = await storage.getUserActivities(member.userId, month, year);
           const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
           const user = await storage.getUser(member.userId);
@@ -371,7 +426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
             }
             
-            userStats.push({
+            userStatsMap.set(user.id, {
               userId: user.id,
               name: displayName || 'Unknown User',
               teamName: team.name,
@@ -381,13 +436,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Sort by calories and add rank
-      const sorted = userStats
+      // Convert map to array, sort by calories and add rank
+      const sorted = Array.from(userStatsMap.values())
         .sort((a, b) => b.calories - a.calories)
         .map((stat, index) => ({
           ...stat,
           rank: index + 1,
-          goalPercentage: Math.round((stat.calories / 30000) * 100), // Assuming 30000 cal goal
+          goalPercentage: Math.round((stat.calories / 30000) * 100),
         }));
       
       res.json(sorted);
@@ -397,6 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Team leaderboard - ranked by average daily calories per user
   app.get("/api/leaderboard/teams", isAuthenticated, async (req: any, res) => {
     try {
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
@@ -405,27 +461,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const teams = await storage.getAllTeams();
       const teamStats = [];
       
+      // Calculate days in month
+      const daysInMonth = new Date(year, month, 0).getDate();
+      
       for (const team of teams) {
         const activities = await storage.getTeamActivities(team.id, month, year);
         const members = await storage.getTeamMembers(team.id);
         const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
         
+        // Calculate average daily calories per user
+        const avgDailyCaloriesPerUser = members.length > 0 
+          ? totalCalories / (members.length * daysInMonth)
+          : 0;
+        
         teamStats.push({
           teamId: team.id,
           name: team.name,
           teamName: `${members.length} members`,
-          calories: totalCalories,
+          calories: Math.round(avgDailyCaloriesPerUser), // Display as avg daily per user
           memberCount: members.length,
+          totalCalories: totalCalories,
         });
       }
       
-      // Sort by calories and add rank
+      // Sort by average daily calories per user
       const sorted = teamStats
         .sort((a, b) => b.calories - a.calories)
         .map((stat, index) => ({
           ...stat,
           rank: index + 1,
-          goalPercentage: Math.round((stat.calories / (stat.memberCount * 30000)) * 100),
+          goalPercentage: Math.round((stat.calories / 1000) * 100), // Assuming 1000 cal/day goal per person
         }));
       
       res.json(sorted);
@@ -435,7 +500,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard stats route
+  // Team-specific leaderboard
+  app.get("/api/leaderboard/team/:teamId", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const teamId = req.params.teamId;
+      const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
+      const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+      
+      // Check if user is member of this team
+      const isMember = await storage.isUserInTeam(currentUserId, teamId);
+      if (!isMember) {
+        return res.status(403).json({ message: "You can only view leaderboards for your teams" });
+      }
+      
+      const members = await storage.getTeamMembers(teamId);
+      const memberStats: any[] = [];
+      
+      for (const member of members) {
+        const activities = await storage.getUserActivities(member.userId, month, year);
+        const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
+        const user = await storage.getUser(member.userId);
+        
+        if (user) {
+          let displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+          if (!displayName && user.email) {
+            const emailUsername = user.email.split('@')[0];
+            displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+          }
+          
+          memberStats.push({
+            userId: user.id,
+            name: displayName || 'Unknown User',
+            calories: totalCalories,
+          });
+        }
+      }
+      
+      const sorted = memberStats
+        .sort((a, b) => b.calories - a.calories)
+        .map((stat, index) => ({
+          ...stat,
+          rank: index + 1,
+          goalPercentage: Math.round((stat.calories / 30000) * 100),
+        }));
+      
+      res.json(sorted);
+    } catch (error) {
+      console.error("Error fetching team leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch team leaderboard" });
+    }
+  });
+
+  // Dashboard stats route - uses global ranking based on last 30 days
   app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -447,15 +564,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalSteps = activities.reduce((sum, act) => sum + act.steps, 0);
       const workoutCount = activities.length;
       
-      // Calculate rank
-      const leaderboard = await storage.getAllTeams();
+      // Calculate global rank based on last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const allTeams = await storage.getAllTeams();
       const allUsers: any[] = [];
       
-      for (const team of leaderboard) {
+      for (const team of allTeams) {
         const members = await storage.getTeamMembers(team.id);
         for (const member of members) {
-          const memberActivities = await storage.getUserActivities(member.userId, month, year);
-          const memberCalories = memberActivities.reduce((sum, act) => sum + act.calories, 0);
+          // Get all activities for last 30 days
+          const allActivities = await storage.getUserActivities(member.userId);
+          const last30DaysActivities = allActivities.filter(act => {
+            const actDate = new Date(act.date);
+            return actDate >= thirtyDaysAgo;
+          });
+          const memberCalories = last30DaysActivities.reduce((sum, act) => sum + act.calories, 0);
           allUsers.push({ userId: member.userId, calories: memberCalories });
         }
       }

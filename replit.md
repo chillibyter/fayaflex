@@ -8,6 +8,20 @@ Ultimate Fitness Challenge is a team-based fitness tracking and competition plat
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (October 2025)
+
+**Team Member Profile Viewing**
+- Users can now view teammates' profiles and activities
+- Evidence attachments visible to team members
+- Access restricted to members who share at least one team
+
+**Updated Leaderboard System**
+- Personal leaderboard now shows only members from user's teams (team-scoped)
+- Team leaderboard ranks by average daily calories per user (not total)
+- Team-specific leaderboards available when clicking a team
+- Global individual leaderboard hidden from UI
+- User ranking remains global based on last 30 days calories
+
 ## System Architecture
 
 ### Frontend Architecture

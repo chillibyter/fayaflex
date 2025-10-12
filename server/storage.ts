@@ -36,6 +36,7 @@ export interface IStorage {
   getTeamMembers(teamId: string): Promise<TeamMember[]>;
   isUserInTeam(userId: string, teamId: string): Promise<boolean>;
   removeTeamMember(userId: string, teamId: string): Promise<void>;
+  doUsersShareTeam(userId1: string, userId2: string): Promise<boolean>;
 
   // Activity operations
   createActivity(activity: InsertActivity, userId: string): Promise<Activity>;
@@ -205,6 +206,15 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(teamMembers)
       .where(and(eq(teamMembers.userId, userId), eq(teamMembers.teamId, teamId)));
+  }
+
+  async doUsersShareTeam(userId1: string, userId2: string): Promise<boolean> {
+    // Get teams for both users and check if they share any
+    const user1Teams = await this.getUserTeams(userId1);
+    const user2Teams = await this.getUserTeams(userId2);
+    
+    const user1TeamIds = new Set(user1Teams.map(t => t.id));
+    return user2Teams.some(t => user1TeamIds.has(t.id));
   }
 
   // Activity operations

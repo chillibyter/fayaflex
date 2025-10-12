@@ -12,6 +12,7 @@ import Leaderboard from "@/pages/Leaderboard";
 import Teams from "@/pages/Teams";
 import CreateTeam from "@/pages/CreateTeam";
 import Profile from "@/pages/Profile";
+import UserProfile from "@/pages/UserProfile";
 import Landing from "@/pages/Landing";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/teams" component={Teams} />
       <Route path="/create-team" component={CreateTeam} />
       <Route path="/profile" component={Profile} />
+      <Route path="/user/:userId" component={UserProfile} />
       <Route component={NotFound} />
     </Switch>
   );
