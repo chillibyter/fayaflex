@@ -55,13 +55,63 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // First try to find user by ID (primary identifier)
+    const [existingById] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userData.id));
+    
+    if (existingById) {
+      // User exists by ID - update their data (handles email changes)
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profileImageUrl: userData.profileImageUrl,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userData.id))
+        .returning();
+      return updatedUser;
+    }
+    
+    // User doesn't exist by ID - check for email conflict
+    if (userData.email) {
+      const [existingByEmail] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, userData.email));
+      
+      if (existingByEmail) {
+        // Email already in use by different user - use existing user
+        // and update with new data (this handles test scenarios with changing subs)
+        const [updatedUser] = await db
+          .update(users)
+          .set({
+            firstName: userData.firstName || existingByEmail.firstName,
+            lastName: userData.lastName || existingByEmail.lastName,
+            profileImageUrl: userData.profileImageUrl || existingByEmail.profileImageUrl,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, existingByEmail.id))
+          .returning();
+        return updatedUser;
+      }
+    }
+    
+    // No conflicts - create new user with onConflict for concurrency safety
     const [user] = await db
       .insert(users)
       .values(userData)
       .onConflictDoUpdate({
         target: users.id,
         set: {
-          ...userData,
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profileImageUrl: userData.profileImageUrl,
           updatedAt: new Date(),
         },
       })

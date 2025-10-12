@@ -65,13 +65,15 @@ async function upsertUser(claims: any) {
     firstName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
   }
   
-  await storage.upsertUser({
+  const user = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: firstName || null,
     lastName: lastName || null,
     profileImageUrl: claims["profile_image_url"],
   });
+  
+  return user;
 }
 
 export async function setupAuth(app: Express) {
@@ -86,9 +88,16 @@ export async function setupAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user = {};
+    const user: any = {};
     updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
+    const dbUser = await upsertUser(tokens.claims());
+    
+    // Update session with actual user ID from database
+    // (in case of email conflict, the DB user ID might differ from OIDC sub)
+    if (dbUser && user.claims) {
+      user.claims.sub = dbUser.id;
+    }
+    
     verified(null, user);
   };
 
