@@ -3,8 +3,9 @@ import { useParams, Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, Lock, Users } from "lucide-react";
 import LeaderboardCard from "@/components/LeaderboardCard";
+import { Card, CardContent } from "@/components/ui/card";
 
 type LeaderboardEntry = {
   rank: number;
@@ -22,12 +23,17 @@ export default function TeamLeaderboard() {
     data: leaderboard = [], 
     isLoading,
     isError,
+    error,
     refetch 
   } = useQuery<LeaderboardEntry[]>({
     queryKey: ['/api/leaderboard/team', teamId],
     queryFn: async () => {
       const res = await fetch(`/api/leaderboard/team/${teamId}`);
-      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      if (!res.ok) {
+        const errorText = await res.text();
+        const errorData = { status: res.status, message: errorText };
+        throw errorData;
+      }
       return res.json();
     },
   });
@@ -64,13 +70,44 @@ export default function TeamLeaderboard() {
 
       <div className="space-y-4">
         {isError ? (
-          <div className="text-center py-12 space-y-4">
-            <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
-            <p className="text-muted-foreground">Failed to load team leaderboard</p>
-            <Button onClick={() => refetch()} variant="outline" data-testid="button-retry">
-              Try Again
-            </Button>
-          </div>
+          <>
+            {(error as any)?.status === 403 ? (
+              <Card className="border-yellow-500/20 bg-yellow-500/5">
+                <CardContent className="py-12">
+                  <div className="text-center space-y-4">
+                    <Lock className="h-16 w-16 mx-auto text-yellow-600" />
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold">Team Members Only</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        This leaderboard is only available to team members. Join this team to view their rankings and compete together!
+                      </p>
+                    </div>
+                    <div className="flex gap-3 justify-center flex-wrap">
+                      <Button variant="outline" asChild data-testid="button-back-to-teams">
+                        <Link href="/teams">
+                          <Users className="h-4 w-4 mr-2" />
+                          View My Teams
+                        </Link>
+                      </Button>
+                      <Button asChild data-testid="button-go-to-leaderboard">
+                        <Link href="/leaderboard">
+                          View Leaderboard
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="text-center py-12 space-y-4">
+                <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+                <p className="text-muted-foreground">Failed to load team leaderboard</p>
+                <Button onClick={() => refetch()} variant="outline" data-testid="button-retry">
+                  Try Again
+                </Button>
+              </div>
+            )}
+          </>
         ) : isLoading ? (
           <>
             <Skeleton className="h-24 w-full" />
