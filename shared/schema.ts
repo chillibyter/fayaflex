@@ -9,6 +9,7 @@ import {
   date,
   text,
   boolean,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -111,13 +112,15 @@ export const deviceConnections = pgTable("device_connections", {
   userId: varchar("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  provider: varchar("provider", { length: 50 }).notNull(), // 'apple_health', 'garmin'
+  provider: varchar("provider", { length: 50 }).notNull(), // 'apple_health', 'garmin', 'android_health'
   isConnected: boolean("is_connected").default(false),
   lastSyncAt: timestamp("last_sync_at"),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userProviderUnique: uniqueIndex("device_connections_user_provider_unique").on(table.userId, table.provider),
+}));
 
 export const deviceConnectionsRelations = relations(deviceConnections, ({ one }) => ({
   user: one(users, {
