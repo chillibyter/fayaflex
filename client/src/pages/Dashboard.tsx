@@ -3,17 +3,56 @@ import ProgressChart from "@/components/ProgressChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Apple, Activity } from "lucide-react";
+import { ArrowRight, Apple, Activity, AlertCircle } from "lucide-react";
 import { SiGarmin } from "react-icons/si";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { Activity as ActivityType } from "@shared/schema";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format, formatDistanceToNow } from "date-fns";
+
+type DashboardStats = {
+  calories: number;
+  steps: number;
+  workouts: number;
+  rank: number;
+};
+
+type ChartData = {
+  date: string;
+  calories: number;
+};
 
 export default function Dashboard() {
-  const chartData = [
-    { date: "Week 1", calories: 7200 },
-    { date: "Week 2", calories: 8500 },
-    { date: "Week 3", calories: 7800 },
-    { date: "Week 4", calories: 9200 },
-  ];
+  const { 
+    data: stats, 
+    isLoading: isLoadingStats,
+    isError: isErrorStats,
+    refetch: refetchStats 
+  } = useQuery<DashboardStats>({
+    queryKey: ['/api/dashboard/stats'],
+  });
+
+  const { 
+    data: chartData = [], 
+    isLoading: isLoadingChart,
+    isError: isErrorChart,
+    refetch: refetchChart 
+  } = useQuery<ChartData[]>({
+    queryKey: ['/api/progress/chart'],
+  });
+
+  const { 
+    data: recentActivities = [], 
+    isLoading: isLoadingActivities,
+    isError: isErrorActivities,
+    refetch: refetchActivities 
+  } = useQuery<ActivityType[]>({
+    queryKey: ['/api/activities'],
+  });
+
+  // Get top 3 most recent activities
+  const topActivities = recentActivities.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -24,11 +63,51 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <DashboardStats calories={28500} steps={145000} workouts={18} rank={3} />
+      {isErrorStats ? (
+        <Card className="p-12">
+          <div className="text-center space-y-4">
+            <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+            <p className="text-muted-foreground">Failed to load dashboard stats</p>
+            <Button onClick={() => refetchStats()} variant="outline" data-testid="button-retry-stats">
+              Try Again
+            </Button>
+          </div>
+        </Card>
+      ) : isLoadingStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      ) : stats ? (
+        <DashboardStats {...stats} />
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <ProgressChart data={chartData} />
+          {isErrorChart ? (
+            <Card className="p-12">
+              <div className="text-center space-y-4">
+                <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+                <p className="text-muted-foreground">Failed to load progress chart</p>
+                <Button onClick={() => refetchChart()} variant="outline" data-testid="button-retry-chart">
+                  Try Again
+                </Button>
+              </div>
+            </Card>
+          ) : isLoadingChart ? (
+            <Skeleton className="h-96 w-full" />
+          ) : chartData.length > 0 ? (
+            <ProgressChart data={chartData} />
+          ) : (
+            <Card className="h-96 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground">No activity data yet</p>
+                <p className="text-sm text-muted-foreground">Start logging activities to see your progress chart</p>
+              </div>
+            </Card>
+          )}
         </div>
 
         <Card>
@@ -79,25 +158,44 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              { date: "Today", activity: "Running", calories: 450, time: "30 min" },
-              { date: "Yesterday", activity: "Cycling", calories: 380, time: "45 min" },
-              { date: "2 days ago", activity: "Weightlifting", calories: 320, time: "60 min" },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-3 rounded-md hover-elevate"
-              >
-                <div>
-                  <p className="font-medium">{item.activity}</p>
-                  <p className="text-sm text-muted-foreground">{item.date}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">{item.calories} cal</p>
-                  <p className="text-sm text-muted-foreground">{item.time}</p>
-                </div>
+            {isErrorActivities ? (
+              <div className="text-center py-8 space-y-4">
+                <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+                <p className="text-muted-foreground">Failed to load recent activities</p>
+                <Button onClick={() => refetchActivities()} variant="outline" data-testid="button-retry-activities">
+                  Try Again
+                </Button>
               </div>
-            ))}
+            ) : isLoadingActivities ? (
+              <>
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </>
+            ) : topActivities.length > 0 ? (
+              topActivities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-center justify-between p-3 rounded-md hover-elevate"
+                  data-testid={`activity-${activity.id}`}
+                >
+                  <div>
+                    <p className="font-medium">{activity.workoutType || 'General Activity'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">{activity.calories} cal</p>
+                    <p className="text-sm text-muted-foreground">{activity.steps} steps</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No recent activities. Start tracking to see your progress!
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
