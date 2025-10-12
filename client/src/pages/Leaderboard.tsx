@@ -1,21 +1,52 @@
 import LeaderboardCard from "@/components/LeaderboardCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
+
+type LeaderboardEntry = {
+  rank: number;
+  name: string;
+  teamName: string;
+  calories: number;
+  goalPercentage: number;
+};
 
 export default function Leaderboard() {
-  const personalLeaderboard = [
-    { rank: 1, name: "Sarah Johnson", teamName: "Team Alpha", calories: 32500, goalPercentage: 108 },
-    { rank: 2, name: "Mike Chen", teamName: "Team Beta", calories: 31200, goalPercentage: 104 },
-    { rank: 3, name: "Emma Davis", teamName: "Team Gamma", calories: 29800, goalPercentage: 99 },
-    { rank: 4, name: "John Doe", teamName: "Team Alpha", calories: 28500, goalPercentage: 95 },
-    { rank: 5, name: "Lisa Wang", teamName: "Team Delta", calories: 27800, goalPercentage: 93 },
-  ];
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+  const monthName = format(new Date(currentYear, currentMonth - 1), "MMMM yyyy");
 
-  const teamLeaderboard = [
-    { rank: 1, name: "Team Alpha", teamName: "12 members", calories: 385000, goalPercentage: 102 },
-    { rank: 2, name: "Team Beta", teamName: "15 members", calories: 362000, goalPercentage: 98 },
-    { rank: 3, name: "Team Gamma", teamName: "10 members", calories: 341000, goalPercentage: 95 },
-  ];
+  const { 
+    data: personalLeaderboard = [], 
+    isLoading: isLoadingPersonal,
+    isError: isErrorPersonal,
+    refetch: refetchPersonal 
+  } = useQuery<LeaderboardEntry[]>({
+    queryKey: ['/api/leaderboard/personal', { month: currentMonth, year: currentYear }],
+    queryFn: async () => {
+      const res = await fetch(`/api/leaderboard/personal?month=${currentMonth}&year=${currentYear}`);
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      return res.json();
+    },
+  });
+
+  const { 
+    data: teamLeaderboard = [], 
+    isLoading: isLoadingTeams,
+    isError: isErrorTeams,
+    refetch: refetchTeams 
+  } = useQuery<LeaderboardEntry[]>({
+    queryKey: ['/api/leaderboard/teams', { month: currentMonth, year: currentYear }],
+    queryFn: async () => {
+      const res = await fetch(`/api/leaderboard/teams?month=${currentMonth}&year=${currentYear}`);
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      return res.json();
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -26,8 +57,8 @@ export default function Leaderboard() {
             See how you and your team rank this month.
           </p>
         </div>
-        <Badge variant="outline" className="text-base px-4 py-2">
-          December 2025
+        <Badge variant="outline" className="text-base px-4 py-2" data-testid="badge-current-month">
+          {monthName}
         </Badge>
       </div>
 
@@ -38,15 +69,55 @@ export default function Leaderboard() {
         </TabsList>
 
         <TabsContent value="personal" className="space-y-4">
-          {personalLeaderboard.map((entry) => (
-            <LeaderboardCard key={entry.rank} {...entry} />
-          ))}
+          {isErrorPersonal ? (
+            <div className="text-center py-12 space-y-4">
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+              <p className="text-muted-foreground">Failed to load personal leaderboard</p>
+              <Button onClick={() => refetchPersonal()} variant="outline" data-testid="button-retry-personal">
+                Try Again
+              </Button>
+            </div>
+          ) : isLoadingPersonal ? (
+            <>
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </>
+          ) : personalLeaderboard.length > 0 ? (
+            personalLeaderboard.map((entry) => (
+              <LeaderboardCard key={entry.rank} {...entry} />
+            ))
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              No personal rankings yet. Start logging activities to appear on the leaderboard!
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="teams" className="space-y-4">
-          {teamLeaderboard.map((entry) => (
-            <LeaderboardCard key={entry.rank} {...entry} />
-          ))}
+          {isErrorTeams ? (
+            <div className="text-center py-12 space-y-4">
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+              <p className="text-muted-foreground">Failed to load team leaderboard</p>
+              <Button onClick={() => refetchTeams()} variant="outline" data-testid="button-retry-teams">
+                Try Again
+              </Button>
+            </div>
+          ) : isLoadingTeams ? (
+            <>
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </>
+          ) : teamLeaderboard.length > 0 ? (
+            teamLeaderboard.map((entry) => (
+              <LeaderboardCard key={entry.rank} {...entry} />
+            ))
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              No team rankings yet. Teams need to log activities to appear on the leaderboard!
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
