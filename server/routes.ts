@@ -100,6 +100,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/devices/sync", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const syncSchema = z.object({
+        provider: z.enum(['apple_health', 'garmin', 'android_health']),
+      });
+      
+      const validatedData = syncSchema.parse(req.body);
+      
+      // Check if device is connected
+      const existingConnection = await storage.getDeviceConnection(userId, validatedData.provider);
+      if (!existingConnection || !existingConnection.isConnected) {
+        return res.status(400).json({ message: "Device is not connected" });
+      }
+      
+      // MVP: Simulate syncing by updating lastSyncAt timestamp
+      // In production, this would fetch real data from the health app API
+      const connection = await storage.upsertDeviceConnection({
+        userId,
+        provider: validatedData.provider,
+        isConnected: true,
+        lastSyncAt: new Date(),
+      });
+      
+      res.json(connection);
+    } catch (error: any) {
+      console.error("Error syncing device:", error);
+      res.status(400).json({ message: error.message || "Failed to sync device" });
+    }
+  });
+
   // Profile routes
   app.get("/api/profile/stats", isAuthenticated, async (req: any, res) => {
     try {

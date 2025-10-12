@@ -3,7 +3,7 @@ import ProgressChart from "@/components/ProgressChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Apple, Activity, AlertCircle, Smartphone } from "lucide-react";
+import { ArrowRight, Apple, Activity, AlertCircle, Smartphone, RefreshCw } from "lucide-react";
 import { SiGarmin } from "react-icons/si";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -83,8 +83,32 @@ export default function Dashboard() {
     },
   });
 
+  const syncDeviceMutation = useMutation({
+    mutationFn: async (data: { provider: string }) => {
+      return await apiRequest('POST', '/api/devices/sync', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
+      toast({
+        title: "Sync successful",
+        description: "Your health data has been synced successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sync failed",
+        description: error.message || "Failed to sync device",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleToggleDevice = (provider: string, currentStatus: boolean) => {
     toggleDeviceMutation.mutate({ provider, isConnected: !currentStatus });
+  };
+
+  const handleSyncDevice = (provider: string) => {
+    syncDeviceMutation.mutate({ provider });
   };
 
   // Get top 3 most recent activities
@@ -181,27 +205,40 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  {appleHealth?.isConnected ? (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      data-testid="button-disconnect-apple"
-                      onClick={() => handleToggleDevice('apple_health', true)}
-                      disabled={toggleDeviceMutation.isPending}
-                    >
-                      Disconnect
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="default" 
-                      size="sm" 
-                      data-testid="button-connect-apple"
-                      onClick={() => handleToggleDevice('apple_health', false)}
-                      disabled={toggleDeviceMutation.isPending}
-                    >
-                      Connect
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {appleHealth?.isConnected && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        data-testid="button-sync-apple"
+                        onClick={() => handleSyncDevice('apple_health')}
+                        disabled={syncDeviceMutation.isPending}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${syncDeviceMutation.isPending ? 'animate-spin' : ''}`} />
+                      </Button>
+                    )}
+                    {appleHealth?.isConnected ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        data-testid="button-disconnect-apple"
+                        onClick={() => handleToggleDevice('apple_health', true)}
+                        disabled={toggleDeviceMutation.isPending}
+                      >
+                        Disconnect
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        data-testid="button-connect-apple"
+                        onClick={() => handleToggleDevice('apple_health', false)}
+                        disabled={toggleDeviceMutation.isPending}
+                      >
+                        Connect
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
@@ -222,27 +259,40 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  {androidHealth?.isConnected ? (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      data-testid="button-disconnect-android"
-                      onClick={() => handleToggleDevice('android_health', true)}
-                      disabled={toggleDeviceMutation.isPending}
-                    >
-                      Disconnect
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="default" 
-                      size="sm" 
-                      data-testid="button-connect-android"
-                      onClick={() => handleToggleDevice('android_health', false)}
-                      disabled={toggleDeviceMutation.isPending}
-                    >
-                      Connect
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {androidHealth?.isConnected && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        data-testid="button-sync-android"
+                        onClick={() => handleSyncDevice('android_health')}
+                        disabled={syncDeviceMutation.isPending}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${syncDeviceMutation.isPending ? 'animate-spin' : ''}`} />
+                      </Button>
+                    )}
+                    {androidHealth?.isConnected ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        data-testid="button-disconnect-android"
+                        onClick={() => handleToggleDevice('android_health', true)}
+                        disabled={toggleDeviceMutation.isPending}
+                      >
+                        Disconnect
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        data-testid="button-connect-android"
+                        onClick={() => handleToggleDevice('android_health', false)}
+                        disabled={toggleDeviceMutation.isPending}
+                      >
+                        Connect
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
@@ -263,27 +313,40 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  {garmin?.isConnected ? (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      data-testid="button-disconnect-garmin"
-                      onClick={() => handleToggleDevice('garmin', true)}
-                      disabled={toggleDeviceMutation.isPending}
-                    >
-                      Disconnect
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="default" 
-                      size="sm" 
-                      data-testid="button-connect-garmin"
-                      onClick={() => handleToggleDevice('garmin', false)}
-                      disabled={toggleDeviceMutation.isPending}
-                    >
-                      Connect
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {garmin?.isConnected && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        data-testid="button-sync-garmin"
+                        onClick={() => handleSyncDevice('garmin')}
+                        disabled={syncDeviceMutation.isPending}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${syncDeviceMutation.isPending ? 'animate-spin' : ''}`} />
+                      </Button>
+                    )}
+                    {garmin?.isConnected ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        data-testid="button-disconnect-garmin"
+                        onClick={() => handleToggleDevice('garmin', true)}
+                        disabled={toggleDeviceMutation.isPending}
+                      >
+                        Disconnect
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        data-testid="button-connect-garmin"
+                        onClick={() => handleToggleDevice('garmin', false)}
+                        disabled={toggleDeviceMutation.isPending}
+                      >
+                        Connect
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </>
             )}
