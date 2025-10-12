@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 type LeaderboardEntry = {
   rank: number;
@@ -48,6 +49,32 @@ export default function Leaderboard() {
           {monthName}
         </Badge>
       </div>
+
+      {/* Formula explanation */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="py-4">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+            <div className="space-y-2 flex-1">
+              <h3 className="font-semibold text-sm">Team Ranking Formula</h3>
+              <div className="text-sm text-muted-foreground">
+                <p className="mb-2">Teams are ranked by average daily calories burned per user:</p>
+                <div className="font-mono text-xs bg-background/50 p-3 rounded-md border">
+                  <div className="text-center">
+                    <div className="font-semibold mb-1">Average Daily Calories per User =</div>
+                    <div className="border-t border-border my-2"></div>
+                    <div>
+                      <span className="text-primary font-semibold">Total Team Calories</span>
+                      <div className="my-1">÷</div>
+                      <span className="text-primary font-semibold">(Number of Team Members × Days in Month)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Team leaderboard only - Personal leaderboard hidden as per requirements */}
       <div className="space-y-4">
