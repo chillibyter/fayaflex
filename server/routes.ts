@@ -26,6 +26,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/auth/user", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Validate request body - allow firstName and lastName updates
+      const updateUserSchema = z.object({
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+      });
+      
+      const validatedData = updateUserSchema.parse(req.body);
+      const updatedUser = await storage.updateUser(userId, validatedData);
+      
+      res.json(updatedUser);
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+      if (error.message === "User not found") {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(400).json({ message: error.message || "Failed to update user" });
+    }
+  });
+
+  // Profile routes
+  app.get("/api/profile/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get all user activities
+      const activities = await storage.getUserActivities(userId);
+      
+      // Helper function to parse date string as local date without timezone drift
+      const parseLocalDate = (dateStr: string): number => {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const d = new Date(year, month - 1, day);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+      };
+      
+      // Calculate total workouts (unique days with activities)
+      const uniqueDates = new Set(
+        activities.map(a => parseLocalDate(a.date))
+      );
+      const totalWorkouts = uniqueDates.size;
+      
+      // Calculate current streak
+      let currentStreak = 0;
+      if (activities.length > 0) {
+        const sortedActivities = [...activities].sort((a, b) => 
+          parseLocalDate(b.date) - parseLocalDate(a.date)
+        );
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        // Check if there's an activity today or yesterday
+        const latestActivityDate = parseLocalDate(sortedActivities[0].date);
+        
+        if (latestActivityDate >= yesterday.getTime()) {
+          // Start counting streak
+          let streakDate = new Date(latestActivityDate);
+          const activityDates = new Set(
+            activities.map(a => parseLocalDate(a.date))
+          );
+          
+          while (activityDates.has(streakDate.getTime())) {
+            currentStreak++;
+            streakDate.setDate(streakDate.getDate() - 1);
+          }
+        }
+      }
+      
+      res.json({ totalWorkouts, currentStreak });
+    } catch (error) {
+      console.error("Error fetching profile stats:", error);
+      res.status(500).json({ message: "Failed to fetch profile stats" });
+    }
+  });
+
   // Team routes
   app.post("/api/teams", isAuthenticated, async (req: any, res) => {
     try {
