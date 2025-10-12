@@ -3,7 +3,7 @@ import ProgressChart from "@/components/ProgressChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Apple, Activity, AlertCircle } from "lucide-react";
+import { ArrowRight, Apple, Activity, AlertCircle, Smartphone } from "lucide-react";
 import { SiGarmin } from "react-icons/si";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -92,6 +92,7 @@ export default function Dashboard() {
 
   const appleHealth = deviceConnections.find(d => d.provider === 'apple_health');
   const garmin = deviceConnections.find(d => d.provider === 'garmin');
+  const androidHealth = deviceConnections.find(d => d.provider === 'android_health');
 
   return (
     <div className="space-y-6">
@@ -158,6 +159,7 @@ export default function Dashboard() {
               <>
                 <Skeleton className="h-16 w-full" />
                 <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
               </>
             ) : (
               <>
@@ -195,6 +197,47 @@ export default function Dashboard() {
                       size="sm" 
                       data-testid="button-connect-apple"
                       onClick={() => handleToggleDevice('apple_health', false)}
+                      disabled={toggleDeviceMutation.isPending}
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <Smartphone className="h-5 w-5" />
+                    <div>
+                      <p className="font-medium">Google Fit / Android Health</p>
+                      <p className="text-sm text-muted-foreground">
+                        {androidHealth?.isConnected ? (
+                          androidHealth.lastSyncAt ? (
+                            `Last synced ${formatDistanceToNow(new Date(androidHealth.lastSyncAt), { addSuffix: true })}`
+                          ) : (
+                            'Connected'
+                          )
+                        ) : (
+                          'Not connected'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {androidHealth?.isConnected ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      data-testid="button-disconnect-android"
+                      onClick={() => handleToggleDevice('android_health', true)}
+                      disabled={toggleDeviceMutation.isPending}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      data-testid="button-connect-android"
+                      onClick={() => handleToggleDevice('android_health', false)}
                       disabled={toggleDeviceMutation.isPending}
                     >
                       Connect

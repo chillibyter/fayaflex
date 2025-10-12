@@ -76,10 +76,11 @@ Preferred communication style: Simple, everyday language.
 - Neon Database: Serverless PostgreSQL hosting
 - Google Fonts: Inter font family for typography
 
-**Planned Device Integrations** (Infrastructure present, not yet implemented)
-- Apple Health for automatic activity syncing
-- Garmin Connect for fitness device integration
-- Device connection storage prepared in schema with provider-specific tokens
+**Device Integrations** (MVP placeholder UI implemented)
+- Apple Health for iOS users - automatic activity syncing (placeholder)
+- Google Fit / Android Health for Android users - automatic activity syncing (placeholder)
+- Garmin Connect for fitness device integration (placeholder)
+- Device connection storage with provider-specific tokens and sync status tracking
 
 **Development Tools**
 - Replit-specific Vite plugins for error overlay, cartographer, and dev banner

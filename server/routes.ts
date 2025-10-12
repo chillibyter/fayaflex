@@ -55,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       
       // Get device connections for supported providers
-      const providers = ['apple_health', 'garmin'];
+      const providers = ['apple_health', 'garmin', 'android_health'];
       const connections = await Promise.all(
         providers.map(async (provider) => {
           const connection = await storage.getDeviceConnection(userId, provider);
@@ -80,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       
       const toggleSchema = z.object({
-        provider: z.enum(['apple_health', 'garmin']),
+        provider: z.enum(['apple_health', 'garmin', 'android_health']),
         isConnected: z.boolean(),
       });
       
