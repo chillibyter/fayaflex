@@ -55,11 +55,21 @@ function updateUserSession(
 }
 
 async function upsertUser(claims: any) {
+  // Extract name from email if first_name and last_name are not provided
+  let firstName = claims["first_name"];
+  let lastName = claims["last_name"];
+  
+  if (!firstName && !lastName && claims["email"]) {
+    // Use email username as first name if no name is provided
+    const emailUsername = claims["email"].split('@')[0];
+    firstName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+  }
+  
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
+    firstName: firstName || null,
+    lastName: lastName || null,
     profileImageUrl: claims["profile_image_url"],
   });
 }

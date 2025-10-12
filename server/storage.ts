@@ -15,7 +15,7 @@ import {
   type DeviceConnection,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { randomBytes } from "crypto";
 
 export interface IStorage {
@@ -204,7 +204,7 @@ export class DatabaseStorage implements IStorage {
         .from(activities)
         .where(
           and(
-            sql`${activities.userId} = ANY(${memberIds})`,
+            inArray(activities.userId, memberIds),
             sql`${activities.date} >= ${startDate.toISOString().split('T')[0]}`,
             sql`${activities.date} <= ${endDate.toISOString().split('T')[0]}`
           )
@@ -215,7 +215,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(activities)
-      .where(sql`${activities.userId} = ANY(${memberIds})`)
+      .where(inArray(activities.userId, memberIds))
       .orderBy(desc(activities.date));
   }
 
