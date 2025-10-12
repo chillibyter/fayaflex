@@ -49,6 +49,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Device connection routes
+  app.get("/api/devices", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get device connections for supported providers
+      const providers = ['apple_health', 'garmin'];
+      const connections = await Promise.all(
+        providers.map(async (provider) => {
+          const connection = await storage.getDeviceConnection(userId, provider);
+          return connection || {
+            userId,
+            provider,
+            isConnected: false,
+            lastSyncAt: null,
+          };
+        })
+      );
+      
+      res.json(connections);
+    } catch (error) {
+      console.error("Error fetching device connections:", error);
+      res.status(500).json({ message: "Failed to fetch device connections" });
+    }
+  });
+
+  app.post("/api/devices/toggle", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const toggleSchema = z.object({
+        provider: z.enum(['apple_health', 'garmin']),
+        isConnected: z.boolean(),
+      });
+      
+      const validatedData = toggleSchema.parse(req.body);
+      
+      const connection = await storage.upsertDeviceConnection({
+        userId,
+        provider: validatedData.provider,
+        isConnected: validatedData.isConnected,
+        lastSyncAt: validatedData.isConnected ? new Date() : null,
+      });
+      
+      res.json(connection);
+    } catch (error: any) {
+      console.error("Error toggling device connection:", error);
+      res.status(400).json({ message: error.message || "Failed to toggle device connection" });
+    }
+  });
+
   // Profile routes
   app.get("/api/profile/stats", isAuthenticated, async (req: any, res) => {
     try {

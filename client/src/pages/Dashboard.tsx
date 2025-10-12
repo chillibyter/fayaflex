@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Apple, Activity, AlertCircle } from "lucide-react";
 import { SiGarmin } from "react-icons/si";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import type { Activity as ActivityType } from "@shared/schema";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Activity as ActivityType, DeviceConnection } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, formatDistanceToNow } from "date-fns";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 type DashboardStats = {
   calories: number;
@@ -24,6 +26,9 @@ type ChartData = {
 };
 
 export default function Dashboard() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { 
     data: stats, 
     isLoading: isLoadingStats,
@@ -51,8 +56,42 @@ export default function Dashboard() {
     queryKey: ['/api/activities'],
   });
 
+  const {
+    data: deviceConnections = [],
+    isLoading: isLoadingDevices
+  } = useQuery<DeviceConnection[]>({
+    queryKey: ['/api/devices'],
+  });
+
+  const toggleDeviceMutation = useMutation({
+    mutationFn: async (data: { provider: string; isConnected: boolean }) => {
+      return await apiRequest('/api/devices/toggle', 'POST', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
+      toast({
+        title: "Device connection updated",
+        description: "Your device connection has been updated successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update device connection",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleToggleDevice = (provider: string, currentStatus: boolean) => {
+    toggleDeviceMutation.mutate({ provider, isConnected: !currentStatus });
+  };
+
   // Get top 3 most recent activities
   const topActivities = recentActivities.slice(0, 3);
+
+  const appleHealth = deviceConnections.find(d => d.provider === 'apple_health');
+  const garmin = deviceConnections.find(d => d.provider === 'garmin');
 
   return (
     <div className="space-y-6">
@@ -115,29 +154,96 @@ export default function Dashboard() {
             <CardTitle>Connected Devices</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
-              <div className="flex items-center gap-3">
-                <Apple className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Apple Health</p>
-                  <p className="text-sm text-muted-foreground">Connected</p>
+            {isLoadingDevices ? (
+              <>
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <Apple className="h-5 w-5" />
+                    <div>
+                      <p className="font-medium">Apple Health</p>
+                      <p className="text-sm text-muted-foreground">
+                        {appleHealth?.isConnected ? (
+                          appleHealth.lastSyncAt ? (
+                            `Last synced ${formatDistanceToNow(new Date(appleHealth.lastSyncAt), { addSuffix: true })}`
+                          ) : (
+                            'Connected'
+                          )
+                        ) : (
+                          'Not connected'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {appleHealth?.isConnected ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      data-testid="button-disconnect-apple"
+                      onClick={() => handleToggleDevice('apple_health', true)}
+                      disabled={toggleDeviceMutation.isPending}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      data-testid="button-connect-apple"
+                      onClick={() => handleToggleDevice('apple_health', false)}
+                      disabled={toggleDeviceMutation.isPending}
+                    >
+                      Connect
+                    </Button>
+                  )}
                 </div>
-              </div>
-              <Badge variant="default" className="bg-green-500">Active</Badge>
-            </div>
 
-            <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
-              <div className="flex items-center gap-3">
-                <SiGarmin className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Garmin Connect</p>
-                  <p className="text-sm text-muted-foreground">Not connected</p>
+                <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <SiGarmin className="h-5 w-5" />
+                    <div>
+                      <p className="font-medium">Garmin Connect</p>
+                      <p className="text-sm text-muted-foreground">
+                        {garmin?.isConnected ? (
+                          garmin.lastSyncAt ? (
+                            `Last synced ${formatDistanceToNow(new Date(garmin.lastSyncAt), { addSuffix: true })}`
+                          ) : (
+                            'Connected'
+                          )
+                        ) : (
+                          'Not connected'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {garmin?.isConnected ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      data-testid="button-disconnect-garmin"
+                      onClick={() => handleToggleDevice('garmin', true)}
+                      disabled={toggleDeviceMutation.isPending}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      data-testid="button-connect-garmin"
+                      onClick={() => handleToggleDevice('garmin', false)}
+                      disabled={toggleDeviceMutation.isPending}
+                    >
+                      Connect
+                    </Button>
+                  )}
                 </div>
-              </div>
-              <Button variant="outline" size="sm" data-testid="button-connect-garmin">
-                Connect
-              </Button>
-            </div>
+              </>
+            )}
 
             <div className="pt-2">
               <Button asChild variant="ghost" className="w-full" data-testid="button-manual-entry">
