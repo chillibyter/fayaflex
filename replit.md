@@ -74,6 +74,12 @@ Preferred communication style: Simple, everyday language.
 - No horizontal scrolling on mobile viewports
 - Tested and verified with mobile E2E tests
 
+**Authentication Domain Fix** (October 13, 2025)
+- Fixed "Unknown authentication strategy" error when logging in
+- Added robust domain matching in Replit Auth configuration
+- Authentication now falls back to primary domain if exact hostname match fails
+- Supports both development and published domains seamlessly
+
 ## System Architecture
 
 ### Frontend Architecture

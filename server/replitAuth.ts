@@ -101,7 +101,10 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env.REPLIT_DOMAINS!.split(",")) {
+  const domains = process.env.REPLIT_DOMAINS!.split(",");
+  const domainMap = new Map<string, string>();
+
+  for (const domain of domains) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -112,20 +115,33 @@ export async function setupAuth(app: Express) {
       verify
     );
     passport.use(strategy);
+    domainMap.set(domain, domain);
   }
+
+  // Helper function to find the correct domain
+  const findDomain = (hostname: string): string => {
+    // First try exact match
+    if (domainMap.has(hostname)) {
+      return hostname;
+    }
+    // Use first domain as fallback (primary domain)
+    return domains[0];
+  };
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const domain = findDomain(req.hostname);
+    passport.authenticate(`replitauth:${domain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const domain = findDomain(req.hostname);
+    passport.authenticate(`replitauth:${domain}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
     })(req, res, next);
