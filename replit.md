@@ -50,6 +50,16 @@ Preferred communication style: Simple, everyday language.
 - Avatars persist across sessions and page refreshes
 - All icons use Lucide React components (no emojis)
 
+**Mobile Health Integration Backend** (October 13, 2025)
+- Enhanced `/api/devices/sync` endpoint to accept bulk health data from mobile apps
+- Supports Apple Health, Google Fit, and Garmin data sources
+- Bulk sync up to 100 activities per request with duplicate detection
+- Automatic merge/update logic: same date + same source = update existing
+- Returns detailed sync results (created, updated, skipped counts)
+- React Native + Expo setup guide created (see REACT_NATIVE_SETUP_GUIDE.md)
+- Backend ready for mobile companion app development
+- Note: Full mobile authentication requires token-based auth addition (future enhancement)
+
 ## System Architecture
 
 ### Frontend Architecture

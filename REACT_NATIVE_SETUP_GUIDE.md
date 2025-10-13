@@ -271,12 +271,35 @@ class AuthService {
 export const authService = new AuthService();
 ```
 
-**Important Notes about Authentication:**
+**⚠️ Important Authentication Limitation:**
 
-1. **Replit Auth uses OpenID Connect:** The backend uses Replit's authentication system, which requires users to log in through a web browser
-2. **Session Cookies:** Authentication is managed via HTTP-only session cookies that are automatically handled by the browser
-3. **Mobile Flow:** The mobile app opens a web browser for login, then the backend sets session cookies that persist across requests
-4. **Credentials:** Use `credentials: 'include'` in all fetch requests to send cookies with each API call
+The current backend uses **HTTP-only session cookies** for authentication, which creates a challenge for React Native apps:
+
+**The Problem:** React Native's `fetch` API does not share cookies with `WebBrowser` sessions, so after logging in via the browser, your API calls won't be authenticated.
+
+**Solutions:**
+
+### **Option 1: Use for Web App Only (Recommended for Now)**
+Continue using the web app for now. The React Native guide is provided for future reference when you're ready to implement full mobile authentication.
+
+### **Option 2: Add Mobile Token Authentication (Future Enhancement)**
+To support mobile apps, you'll need to add a token-based auth endpoint to your backend:
+
+```typescript
+// Add to server/routes.ts
+app.post("/api/auth/mobile-token", isAuthenticated, async (req: any, res) => {
+  const userId = req.user.claims.sub;
+  const token = jwt.sign({ userId }, process.env.SESSION_SECRET!, { expiresIn: '30d' });
+  res.json({ token, userId });
+});
+```
+
+Then update mobile API calls to use Bearer tokens instead of cookies.
+
+### **Option 3: Use Expo WebView with Cookie Sync**
+Install `expo-web-browser` and `expo-cookie-manager` to share cookies between the browser and fetch requests. This requires additional setup not covered in this guide.
+
+**For Now:** The backend is ready to receive health data sync requests. You can test the API endpoints using Postman or your web browser, and implement full mobile authentication later when needed.
 
 ---
 
