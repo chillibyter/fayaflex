@@ -636,11 +636,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const today = new Date().toISOString().split('T')[0];
       
-      // Check if notification already exists for today
-      const existing = await storage.getUserNotifications(userId, today);
-      if (existing.length > 0) {
-        return res.json(existing);
-      }
+      // Always regenerate notifications to ensure we have the complete set
+      // The database unique constraint on (userId, date, type) handles duplicates via upsert
+      console.log(`[Notifications] Generating notifications for ${userId}`);
       
       // Get user info
       const user = await storage.getUser(userId);
@@ -684,23 +682,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       notifications.push({ message: dailyMessage, type: 'daily_goal' });
       
       // Check if ahead of team members
+      console.log(`[Notifications] Checking team leadership for user ${userId}, teams:`, userTeams.length);
       for (const team of userTeams) {
         const members = await storage.getTeamMembers(team.id);
+        console.log(`[Notifications] Team ${team.name} has ${members.length} members`);
         const memberStats = await Promise.all(
           members.map(async (member) => {
             const memberActivities = await storage.getUserActivities(member.userId, currentMonth, currentYear);
+            const calories = memberActivities.reduce((sum, a) => sum + a.calories, 0);
+            console.log(`[Notifications] Member ${member.userId} has ${calories} calories`);
             return {
               userId: member.userId,
-              calories: memberActivities.reduce((sum, a) => sum + a.calories, 0),
+              calories,
             };
           })
         );
         
         const userStat = memberStats.find(s => s.userId === userId);
         const othersCalories = memberStats.filter(s => s.userId !== userId).map(s => s.calories);
+        console.log(`[Notifications] User calories: ${userStat?.calories}, Others: ${JSON.stringify(othersCalories)}`);
         
         if (userStat && othersCalories.length > 0) {
           const maxOther = Math.max(...othersCalories);
+          console.log(`[Notifications] Comparing ${userStat.calories} > ${maxOther}`);
           if (userStat.calories > maxOther && userStat.calories > 0) {
             const teamLeaderMessage = `Great work ${displayName}! You're leading ${team.name} this month. Your dedication is inspiring your teammates. Keep setting the pace!`;
             await storage.createNotification({
@@ -710,6 +714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               date: today,
             });
             notifications.push({ message: teamLeaderMessage, type: 'team_leader' });
+            console.log(`[Notifications] Created team_leader notification for ${userId}`);
             break; // Only show once
           }
         }
@@ -718,16 +723,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user has burned most calories globally
       const allTeams = await storage.getAllTeams();
       const allUsersCalories = [];
+      const userSet = new Set(); // Deduplicate users across teams
+      console.log(`[Notifications] Checking global leadership across ${allTeams.length} teams`);
       for (const team of allTeams) {
         const members = await storage.getTeamMembers(team.id);
         for (const member of members) {
-          const memberActivities = await storage.getUserActivities(member.userId, currentMonth, currentYear);
-          const totalCalories = memberActivities.reduce((sum, a) => sum + a.calories, 0);
-          allUsersCalories.push({ userId: member.userId, calories: totalCalories });
+          if (!userSet.has(member.userId)) {
+            userSet.add(member.userId);
+            const memberActivities = await storage.getUserActivities(member.userId, currentMonth, currentYear);
+            const totalCalories = memberActivities.reduce((sum, a) => sum + a.calories, 0);
+            allUsersCalories.push({ userId: member.userId, calories: totalCalories });
+          }
         }
       }
       
       const sortedUsers = allUsersCalories.sort((a, b) => b.calories - a.calories);
+      console.log(`[Notifications] Global rankings:`, sortedUsers.slice(0, 3));
       if (sortedUsers.length > 0 && sortedUsers[0].userId === userId && sortedUsers[0].calories > 0) {
         const globalMessage = `UNSTOPPABLE ${displayName}! You've burned the most calories across ALL teams this month! You're a true fitness champion!`;
         await storage.createNotification({
@@ -737,6 +748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           date: today,
         });
         notifications.push({ message: globalMessage, type: 'global_leader' });
+        console.log(`[Notifications] Created global_leader notification for ${userId}`);
       }
       
       res.json(notifications);

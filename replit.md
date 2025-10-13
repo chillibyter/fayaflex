@@ -29,6 +29,18 @@ Preferred communication style: Simple, everyday language.
 - Back navigation from team leaderboard to teams page
 - All team leaderboard cards have hover effects for better UX
 
+**Daily Motivational Notifications** (October 13, 2025)
+- Personalized motivational messages displayed in notification center (bell icon in header)
+- Three notification types generated daily:
+  1. Daily Goal Progress - Always shown, personalized based on calorie progress
+  2. Team Leader - Shown when user is leading their team in monthly calories
+  3. Global Leader - Shown when user has burned most calories across all teams
+- Notifications auto-generate on first app visit each day
+- All messages personalized with user's first name
+- Auto-refresh at midnight to clear old notifications
+- Professional messaging without emojis
+- Badge displays notification count in header
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -64,6 +76,7 @@ Preferred communication style: Simple, everyday language.
 - `/api/teams` - Team CRUD operations and member management
 - `/api/activities` - Activity logging and retrieval with filtering
 - `/api/leaderboard` - Ranking calculations for individuals and teams
+- `/api/notifications` - Daily motivational message generation and retrieval
 - Middleware for authentication and request logging
 
 **Authentication & Authorization**
