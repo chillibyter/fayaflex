@@ -45,6 +45,11 @@ export interface IStorage {
   createActivity(activity: InsertActivity, userId: string): Promise<Activity>;
   getUserActivities(userId: string, month?: number, year?: number): Promise<Activity[]>;
   getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]>;
+  syncHealthActivities(
+    userId: string,
+    provider: string,
+    activities: Array<{ date: string; calories: number; steps: number; workoutType?: string }>
+  ): Promise<{ created: number; updated: number; skipped: number }>;
 
   // Device connection operations
   getDeviceConnection(userId: string, provider: string): Promise<DeviceConnection | undefined>;
@@ -285,6 +290,66 @@ export class DatabaseStorage implements IStorage {
       .from(activities)
       .where(inArray(activities.userId, memberIds))
       .orderBy(desc(activities.date));
+  }
+
+  async syncHealthActivities(
+    userId: string,
+    provider: string,
+    incomingActivities: Array<{ date: string; calories: number; steps: number; workoutType?: string }>
+  ): Promise<{ created: number; updated: number; skipped: number }> {
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+
+    for (const incoming of incomingActivities) {
+      // Check if activity already exists for this date and source
+      const [existing] = await db
+        .select()
+        .from(activities)
+        .where(
+          and(
+            eq(activities.userId, userId),
+            eq(activities.date, incoming.date),
+            eq(activities.source, provider)
+          )
+        );
+
+      if (existing) {
+        // Check if values have changed
+        if (
+          existing.calories !== incoming.calories ||
+          existing.steps !== incoming.steps ||
+          existing.workoutType !== (incoming.workoutType || null)
+        ) {
+          // Update existing activity
+          await db
+            .update(activities)
+            .set({
+              calories: incoming.calories,
+              steps: incoming.steps,
+              workoutType: incoming.workoutType || null,
+            })
+            .where(eq(activities.id, existing.id));
+          updated++;
+        } else {
+          // No changes, skip
+          skipped++;
+        }
+      } else {
+        // Create new activity
+        await db.insert(activities).values({
+          userId,
+          date: incoming.date,
+          calories: incoming.calories,
+          steps: incoming.steps,
+          workoutType: incoming.workoutType || null,
+          source: provider,
+        });
+        created++;
+      }
+    }
+
+    return { created, updated, skipped };
   }
 
   // Device connection operations
