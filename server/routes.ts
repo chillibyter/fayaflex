@@ -30,10 +30,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Validate request body - allow firstName and lastName updates
+      // Validate request body - allow firstName, lastName, and avatarId updates
       const updateUserSchema = z.object({
         firstName: z.string().optional(),
         lastName: z.string().optional(),
+        avatarId: z.string().optional(),
       });
       
       const validatedData = updateUserSchema.parse(req.body);
