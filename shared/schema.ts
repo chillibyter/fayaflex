@@ -160,9 +160,9 @@ export const insertActivitySchema = createInsertSchema(activities)
   })
   .extend({
     // Server-side validation for attachment data URLs
-    attachmentUrl: z.string().optional().refine(
+    attachmentUrl: z.string().nullable().optional().refine(
       (val) => {
-        if (!val) return true; // Optional field
+        if (!val) return true; // Optional field, accepts null and undefined
         
         // Check if it's a valid data URL
         if (!val.startsWith('data:image/')) {
