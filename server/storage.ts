@@ -4,6 +4,7 @@ import {
   teamMembers,
   activities,
   deviceConnections,
+  notifications,
   type User,
   type UpsertUser,
   type Team,
@@ -13,6 +14,8 @@ import {
   type Activity,
   type InsertActivity,
   type DeviceConnection,
+  type Notification,
+  type InsertNotification,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
@@ -46,6 +49,11 @@ export interface IStorage {
   // Device connection operations
   getDeviceConnection(userId: string, provider: string): Promise<DeviceConnection | undefined>;
   upsertDeviceConnection(connection: Partial<DeviceConnection> & { userId: string; provider: string }): Promise<DeviceConnection>;
+
+  // Notification operations
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getUserNotifications(userId: string, date: string): Promise<Notification[]>;
+  deleteUserNotifications(userId: string, date: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -300,6 +308,34 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return connection;
+  }
+
+  // Notification operations
+  async createNotification(notificationData: InsertNotification): Promise<Notification> {
+    const [notification] = await db
+      .insert(notifications)
+      .values(notificationData)
+      .onConflictDoUpdate({
+        target: [notifications.userId, notifications.date, notifications.type],
+        set: {
+          message: notificationData.message,
+        },
+      })
+      .returning();
+    return notification;
+  }
+
+  async getUserNotifications(userId: string, date: string): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.date, date)));
+  }
+
+  async deleteUserNotifications(userId: string, date: string): Promise<void> {
+    await db
+      .delete(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.date, date)));
   }
 }
 

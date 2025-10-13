@@ -196,7 +196,7 @@ export const notifications = pgTable("notifications", {
   date: date("date").notNull(), // The day this notification is for
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
-  userDateUnique: uniqueIndex("notifications_user_date_unique").on(table.userId, table.date),
+  userDateTypeUnique: uniqueIndex("notifications_user_date_type_unique").on(table.userId, table.date, table.type),
 }));
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({

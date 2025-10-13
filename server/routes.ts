@@ -630,6 +630,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notification routes
+  app.post("/api/notifications/generate", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if notification already exists for today
+      const existing = await storage.getUserNotifications(userId, today);
+      if (existing.length > 0) {
+        return res.json(existing);
+      }
+      
+      // Get user info
+      const user = await storage.getUser(userId);
+      const displayName = user?.firstName || 'there';
+      
+      // Get today's activities
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const activities = await storage.getUserActivities(userId, currentMonth, currentYear);
+      const todayActivities = activities.filter(a => a.date === today);
+      const todayCalories = todayActivities.reduce((sum, a) => sum + a.calories, 0);
+      const monthlyCalories = activities.reduce((sum, a) => sum + a.calories, 0);
+      
+      // Get user's teams
+      const userTeams = await storage.getUserTeams(userId);
+      
+      // Analyze performance for personalized messages
+      const notifications: any[] = [];
+      
+      // Daily goal motivation (always show)
+      const dailyGoal = 1000; // calories per day goal
+      const dailyProgress = Math.round((todayCalories / dailyGoal) * 100);
+      
+      let dailyMessage = '';
+      if (dailyProgress === 0) {
+        dailyMessage = `Good morning ${displayName}! A new day, a fresh start! Every step counts toward your fitness goals. Let's make today amazing!`;
+      } else if (dailyProgress < 50) {
+        dailyMessage = `Hey ${displayName}! You're ${dailyProgress}% to your daily goal. You've got this! Small steps lead to big achievements.`;
+      } else if (dailyProgress < 100) {
+        dailyMessage = `Awesome work ${displayName}! You're ${dailyProgress}% there. Keep that momentum going - you're so close!`;
+      } else {
+        dailyMessage = `Incredible ${displayName}! You've smashed your daily goal! You're an inspiration to your team. Keep it up!`;
+      }
+      
+      await storage.createNotification({
+        userId,
+        message: dailyMessage,
+        type: 'daily_goal',
+        date: today,
+      });
+      notifications.push({ message: dailyMessage, type: 'daily_goal' });
+      
+      // Check if ahead of team members
+      for (const team of userTeams) {
+        const members = await storage.getTeamMembers(team.id);
+        const memberStats = await Promise.all(
+          members.map(async (member) => {
+            const memberActivities = await storage.getUserActivities(member.userId, currentMonth, currentYear);
+            return {
+              userId: member.userId,
+              calories: memberActivities.reduce((sum, a) => sum + a.calories, 0),
+            };
+          })
+        );
+        
+        const userStat = memberStats.find(s => s.userId === userId);
+        const othersCalories = memberStats.filter(s => s.userId !== userId).map(s => s.calories);
+        
+        if (userStat && othersCalories.length > 0) {
+          const maxOther = Math.max(...othersCalories);
+          if (userStat.calories > maxOther && userStat.calories > 0) {
+            const teamLeaderMessage = `Great work ${displayName}! You're leading ${team.name} this month. Your dedication is inspiring your teammates. Keep setting the pace!`;
+            await storage.createNotification({
+              userId,
+              message: teamLeaderMessage,
+              type: 'team_leader',
+              date: today,
+            });
+            notifications.push({ message: teamLeaderMessage, type: 'team_leader' });
+            break; // Only show once
+          }
+        }
+      }
+      
+      // Check if user has burned most calories globally
+      const allTeams = await storage.getAllTeams();
+      const allUsersCalories = [];
+      for (const team of allTeams) {
+        const members = await storage.getTeamMembers(team.id);
+        for (const member of members) {
+          const memberActivities = await storage.getUserActivities(member.userId, currentMonth, currentYear);
+          const totalCalories = memberActivities.reduce((sum, a) => sum + a.calories, 0);
+          allUsersCalories.push({ userId: member.userId, calories: totalCalories });
+        }
+      }
+      
+      const sortedUsers = allUsersCalories.sort((a, b) => b.calories - a.calories);
+      if (sortedUsers.length > 0 && sortedUsers[0].userId === userId && sortedUsers[0].calories > 0) {
+        const globalMessage = `UNSTOPPABLE ${displayName}! You've burned the most calories across ALL teams this month! You're a true fitness champion!`;
+        await storage.createNotification({
+          userId,
+          message: globalMessage,
+          type: 'global_leader',
+          date: today,
+        });
+        notifications.push({ message: globalMessage, type: 'global_leader' });
+      }
+      
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error generating notifications:", error);
+      res.status(500).json({ message: "Failed to generate notifications" });
+    }
+  });
+
+  app.get("/api/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const today = new Date().toISOString().split('T')[0];
+      
+      const notifications = await storage.getUserNotifications(userId, today);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
