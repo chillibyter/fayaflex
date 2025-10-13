@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#0ea5e9" rx="64"/>
+  
+  <!-- Dumbbell Icon -->
+  <g transform="translate(256, 256)" fill="white">
+    <!-- Left weight -->
+    <rect x="-180" y="-60" width="40" height="120" rx="8"/>
+    <!-- Right weight -->
+    <rect x="140" y="-60" width="40" height="120" rx="8"/>
+    <!-- Bar -->
+    <rect x="-140" y="-15" width="280" height="30" rx="8"/>
+    <!-- Left grip circles -->
+    <circle cx="-160" cy="-60" r="20"/>
+    <circle cx="-160" cy="60" r="20"/>
+    <!-- Right grip circles -->
+    <circle cx="160" cy="-60" r="20"/>
+    <circle cx="160" cy="60" r="20"/>
+  </g>
+  
+  <!-- Trophy accent -->
+  <path d="M 256 100 L 280 130 L 256 160 L 232 130 Z" fill="#fbbf24" opacity="0.9"/>
+</svg>
