@@ -60,6 +60,20 @@ Preferred communication style: Simple, everyday language.
 - Backend ready for mobile companion app development
 - Note: Full mobile authentication requires token-based auth addition (future enhancement)
 
+**Progressive Web App (PWA) - Mobile-Friendly Web Experience** (October 13, 2025)
+- Complete PWA implementation with offline support and "Add to Home Screen" capability
+- Web manifest with app metadata, theme colors, and shortcuts
+- Service worker with network-first API strategy and cache-first asset loading
+- Mobile-optimized responsive design across all pages
+- Touch-friendly UI elements (minimum 44px touch targets)
+- Mobile viewport configuration with proper scaling
+- iOS and Android specific PWA meta tags
+- SVG app icon with fitness-themed dumbbell design
+- Activity submission now supports optional evidence attachments (fixed null handling)
+- Mobile padding adjustments (16px on mobile, 24px on desktop)
+- No horizontal scrolling on mobile viewports
+- Tested and verified with mobile E2E tests
+
 ## System Architecture
 
 ### Frontend Architecture
