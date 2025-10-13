@@ -40,6 +40,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   activities: many(activities),
   teamMemberships: many(teamMembers),
   ownedTeams: many(teams),
+  notifications: many(notifications),
 }));
 
 // Teams table
@@ -183,3 +184,31 @@ export const insertActivitySchema = createInsertSchema(activities)
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 export type DeviceConnection = typeof deviceConnections.$inferSelect;
+
+// Daily notifications table
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // 'daily_goal', 'team_leader', 'global_leader'
+  date: date("date").notNull(), // The day this notification is for
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userDateUnique: uniqueIndex("notifications_user_date_unique").on(table.userId, table.date),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
+export type Notification = typeof notifications.$inferSelect;
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
