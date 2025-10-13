@@ -132,8 +132,12 @@ Create `app/services/auth.ts`:
 
 ```typescript
 import * as SecureStore from 'expo-secure-store';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 
-const API_URL = 'https://your-replit-app.replit.app'; // Replace with your backend URL
+WebBrowser.maybeCompleteAuthSession();
+
+const API_URL = 'https://your-replit-app.replit.app'; // Replace with your Replit deployment URL
 
 export interface User {
   id: string;
@@ -143,69 +147,136 @@ export interface User {
 }
 
 class AuthService {
-  private token: string | null = null;
+  private sessionCookie: string | null = null;
+  private redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
 
   async initialize() {
-    this.token = await SecureStore.getItemAsync('auth_token');
+    this.sessionCookie = await SecureStore.getItemAsync('session_cookie');
   }
 
-  async login(email: string, password: string): Promise<User> {
-    // For Replit Auth, you'll need to implement OAuth flow
-    // This is a simplified version
-    const response = await fetch(`${API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      credentials: 'include',
-    });
+  /**
+   * Authenticate with Replit Auth via OAuth 2.0 / OpenID Connect
+   * This opens a web browser for the user to log in with their Replit account
+   */
+  async loginWithReplit(): Promise<User> {
+    try {
+      // Construct the Replit Auth URL
+      const authUrl = `${API_URL}/login?redirect_uri=${encodeURIComponent(this.redirectUri)}`;
 
-    if (!response.ok) {
-      throw new Error('Login failed');
+      // Open browser for authentication
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, this.redirectUri);
+
+      if (result.type !== 'success') {
+        throw new Error('Authentication cancelled or failed');
+      }
+
+      // After successful auth, the backend sets a session cookie
+      // We need to extract it from the redirect URL or make a request to get the session
+      
+      // Make a request to get the current user (which will validate the session)
+      const userResponse = await fetch(`${API_URL}/api/auth/user`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to get user session after authentication');
+      }
+
+      const user = await userResponse.json();
+      
+      if (!user) {
+        throw new Error('No user returned after authentication');
+      }
+
+      // Store session indicator (the actual session is managed by cookies)
+      await SecureStore.setItemAsync('authenticated', 'true');
+      await SecureStore.setItemAsync('user_id', user.id);
+
+      return user;
+    } catch (error: any) {
+      console.error('Replit Auth error:', error);
+      throw error;
     }
-
-    const user = await response.json();
-    
-    // Store session cookie or token
-    const cookie = response.headers.get('set-cookie');
-    if (cookie) {
-      await SecureStore.setItemAsync('auth_token', cookie);
-      this.token = cookie;
-    }
-
-    return user;
   }
 
+  /**
+   * Get the current authenticated user
+   */
   async getCurrentUser(): Promise<User | null> {
-    if (!this.token) {
-      await this.initialize();
-    }
+    try {
+      const response = await fetch(`${API_URL}/api/auth/user`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
 
-    const response = await fetch(`${API_URL}/api/auth/user`, {
-      headers: {
-        'Cookie': this.token || '',
-      },
-      credentials: 'include',
-    });
+      if (!response.ok) {
+        return null;
+      }
 
-    if (!response.ok) {
+      const user = await response.json();
+      return user || null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
       return null;
     }
-
-    return response.json();
   }
 
+  /**
+   * Check if user is authenticated
+   */
+  async isAuthenticated(): Promise<boolean> {
+    const authenticated = await SecureStore.getItemAsync('authenticated');
+    if (authenticated !== 'true') {
+      return false;
+    }
+
+    // Verify with backend
+    const user = await this.getCurrentUser();
+    return !!user;
+  }
+
+  /**
+   * Logout the user
+   */
   async logout() {
-    await SecureStore.deleteItemAsync('auth_token');
-    this.token = null;
+    try {
+      // Call logout endpoint
+      await fetch(`${API_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local storage
+      await SecureStore.deleteItemAsync('authenticated');
+      await SecureStore.deleteItemAsync('user_id');
+      this.sessionCookie = null;
+    }
   }
 
-  getToken(): string | null {
-    return this.token;
+  /**
+   * Get user ID from secure storage (for offline access)
+   */
+  async getUserId(): Promise<string | null> {
+    return await SecureStore.getItemAsync('user_id');
   }
 }
 
 export const authService = new AuthService();
 ```
+
+**Important Notes about Authentication:**
+
+1. **Replit Auth uses OpenID Connect:** The backend uses Replit's authentication system, which requires users to log in through a web browser
+2. **Session Cookies:** Authentication is managed via HTTP-only session cookies that are automatically handled by the browser
+3. **Mobile Flow:** The mobile app opens a web browser for login, then the backend sets session cookies that persist across requests
+4. **Credentials:** Use `credentials: 'include'` in all fetch requests to send cookies with each API call
 
 ---
 
@@ -344,9 +415,7 @@ export const healthService = new HealthService();
 Create `app/services/api.ts`:
 
 ```typescript
-import { authService } from './auth';
-
-const API_URL = 'https://your-replit-app.replit.app'; // Replace with your backend URL
+const API_URL = 'https://your-replit-app.replit.app'; // Replace with your Replit deployment URL
 
 export interface SyncResponse {
   success: boolean;
@@ -357,16 +426,18 @@ export interface SyncResponse {
 }
 
 class ApiService {
+  /**
+   * Sync health data to backend
+   * Session authentication is handled automatically via cookies
+   */
   async syncHealthData(provider: string, activities: any[]): Promise<SyncResponse> {
-    const token = authService.getToken();
-    
     const response = await fetch(`${API_URL}/api/devices/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': token || '',
+        'Accept': 'application/json',
       },
-      credentials: 'include',
+      credentials: 'include', // Critical: sends session cookies
       body: JSON.stringify({
         provider,
         activities,
@@ -374,23 +445,24 @@ class ApiService {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({ message: 'Sync failed' }));
       throw new Error(error.message || 'Sync failed');
     }
 
     return response.json();
   }
 
+  /**
+   * Connect a health device
+   */
   async connectDevice(provider: string): Promise<void> {
-    const token = authService.getToken();
-    
     const response = await fetch(`${API_URL}/api/devices/toggle`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': token || '',
+        'Accept': 'application/json',
       },
-      credentials: 'include',
+      credentials: 'include', // Critical: sends session cookies
       body: JSON.stringify({
         provider,
         isConnected: true,
@@ -398,13 +470,34 @@ class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to connect device');
+      const error = await response.json().catch(() => ({ message: 'Failed to connect device' }));
+      throw new Error(error.message || 'Failed to connect device');
     }
+  }
+
+  /**
+   * Get device connections
+   */
+  async getDeviceConnections(): Promise<any[]> {
+    const response = await fetch(`${API_URL}/api/devices`, {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch device connections');
+    }
+
+    return response.json();
   }
 }
 
 export const apiService = new ApiService();
 ```
+
+**Important:** All API requests must include `credentials: 'include'` to send session cookies with each request. This is how authentication is maintained between the mobile app and backend.
 
 ---
 
@@ -578,6 +671,13 @@ Update `App.tsx`:
 
 ```typescript
 import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -586,6 +686,44 @@ import { authService } from './app/services/auth';
 
 const Stack = createStackNavigator();
 
+// Login Screen Component
+function LoginScreen({ navigation }: any) {
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      await authService.loginWithReplit();
+      // Navigation will happen automatically when auth state changes
+    } catch (error: any) {
+      alert(error.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.loginContainer}>
+      <Text style={styles.loginTitle}>Ultimate Fitness Challenge</Text>
+      <Text style={styles.loginSubtitle}>
+        Track your fitness journey and compete with your team
+      </Text>
+      
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.loginButtonText}>Login with Replit</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -593,38 +731,109 @@ export default function App() {
   useEffect(() => {
     async function initialize() {
       await authService.initialize();
-      const user = await authService.getCurrentUser();
-      setIsAuthenticated(!!user);
+      const authenticated = await authService.isAuthenticated();
+      setIsAuthenticated(authenticated);
       setIsReady(true);
     }
     initialize();
   }, []);
 
+  // Refresh auth state periodically
+  useEffect(() => {
+    if (!isReady) return;
+
+    const interval = setInterval(async () => {
+      const authenticated = await authService.isAuthenticated();
+      setIsAuthenticated(authenticated);
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [isReady]);
+
   if (!isReady) {
-    return null; // Or a loading screen
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0ea5e9" />
+      </View>
+    );
   }
 
   return (
     <NavigationContainer>
       <StatusBar style="auto" />
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: true }}>
         {isAuthenticated ? (
           <Stack.Screen 
             name="Sync" 
             component={SyncScreen}
-            options={{ title: 'UFC - Sync Health Data' }}
+            options={{ 
+              title: 'UFC - Sync Health Data',
+              headerRight: () => (
+                <TouchableOpacity
+                  onPress={async () => {
+                    await authService.logout();
+                    setIsAuthenticated(false);
+                  }}
+                  style={{ marginRight: 15 }}
+                >
+                  <Text style={{ color: '#0ea5e9' }}>Logout</Text>
+                </TouchableOpacity>
+              ),
+            }}
           />
         ) : (
           <Stack.Screen 
             name="Login" 
-            component={() => <></>} // Add your login screen
-            options={{ title: 'Login' }}
+            component={LoginScreen}
+            options={{ headerShown: false }}
           />
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loginContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  loginTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  loginSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 40,
+    paddingHorizontal: 20,
+  },
+  loginButton: {
+    backgroundColor: '#0ea5e9',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 8,
+    minWidth: 200,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
 ```
 
 ---
