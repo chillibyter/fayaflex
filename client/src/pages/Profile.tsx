@@ -21,6 +21,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
+import { FITNESS_AVATARS, getAvatarById } from "@/lib/avatars";
+import { Check } from "lucide-react";
 
 type ChartData = {
   date: string;
@@ -38,6 +40,7 @@ export default function Profile() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState("");
 
   const {
     data: user,
@@ -63,8 +66,8 @@ export default function Profile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string }) => {
-      return await apiRequest('/api/auth/user', 'PATCH', data);
+    mutationFn: async (data: { firstName: string; lastName: string; avatarId?: string }) => {
+      return await apiRequest('PATCH', '/api/auth/user', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
@@ -87,12 +90,13 @@ export default function Profile() {
     if (user) {
       setFirstName(user.firstName || "");
       setLastName(user.lastName || "");
+      setSelectedAvatar(user.avatarId || "runner");
     }
     setIsEditOpen(true);
   };
 
   const handleSaveProfile = () => {
-    updateProfileMutation.mutate({ firstName, lastName });
+    updateProfileMutation.mutate({ firstName, lastName, avatarId: selectedAvatar });
   };
 
   const getUserInitials = () => {
@@ -165,10 +169,18 @@ export default function Profile() {
           ) : (
             <div className="flex items-center gap-6 flex-wrap">
               <Avatar className="h-24 w-24">
-                {user?.profileImageUrl && (
+                {user?.avatarId ? (
+                  <AvatarFallback className={`bg-gradient-to-br ${getAvatarById(user.avatarId).gradient}`}>
+                    {(() => {
+                      const IconComponent = getAvatarById(user.avatarId).icon;
+                      return <IconComponent className="h-12 w-12 text-white" />;
+                    })()}
+                  </AvatarFallback>
+                ) : user?.profileImageUrl ? (
                   <AvatarImage src={user.profileImageUrl} alt={getUserFullName()} />
+                ) : (
+                  <AvatarFallback className="text-2xl">{getUserInitials()}</AvatarFallback>
                 )}
-                <AvatarFallback className="text-2xl">{getUserInitials()}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-1" data-testid="text-user-name">
@@ -290,8 +302,33 @@ export default function Profile() {
                 placeholder="Enter your last name"
               />
             </div>
+            <div className="space-y-2">
+              <Label>Choose Your Avatar</Label>
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                {FITNESS_AVATARS.map((avatar) => {
+                  const IconComponent = avatar.icon;
+                  return (
+                    <button
+                      key={avatar.id}
+                      type="button"
+                      onClick={() => setSelectedAvatar(avatar.id)}
+                      className={`relative h-16 w-16 rounded-md bg-gradient-to-br ${avatar.gradient} flex items-center justify-center hover-elevate active-elevate-2 transition-all`}
+                      data-testid={`button-avatar-${avatar.id}`}
+                    >
+                      <IconComponent className="h-8 w-8 text-white" />
+                      {selectedAvatar === avatar.id && (
+                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-3 w-3 text-primary-foreground" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="flex gap-3 justify-end">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => setIsEditOpen(false)}
                 data-testid="button-cancel-edit"
@@ -299,6 +336,7 @@ export default function Profile() {
                 Cancel
               </Button>
               <Button
+                type="button"
                 onClick={handleSaveProfile}
                 disabled={updateProfileMutation.isPending}
                 data-testid="button-save-profile"
