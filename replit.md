@@ -41,6 +41,15 @@ Preferred communication style: Simple, everyday language.
 - Professional messaging without emojis
 - Badge displays notification count in header
 
+**Profile Avatar Selection** (October 13, 2025)
+- 12 unique fitness-themed avatar icons for profile customization
+- Icons include: Runner (Footprints), Cyclist (Bike), Swimmer (Wind), Weightlifter (Dumbbell), Energetic (Zap), Cardio (Heart), Climber (Mountain), Active (Activity), Champion (Trophy), Burner (Flame), Focused (Target), Endurance (Timer)
+- Each avatar has distinct gradient background for visual distinction
+- Avatar selector in profile edit dialog with grid layout
+- Selected avatar displays on profile page with large icon
+- Avatars persist across sessions and page refreshes
+- All icons use Lucide React components (no emojis)
+
 ## System Architecture
 
 ### Frontend Architecture
