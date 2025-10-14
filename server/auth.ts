@@ -177,10 +177,14 @@ export function setupAuth(app: Express) {
 
       // Log in the user and return sanitized user object
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Error during req.login after registration:", err);
+          return next(err);
+        }
         res.status(201).json(sanitizeUser(user));
       });
     } catch (error) {
+      console.error("Error during registration:", error);
       next(error);
     }
   });
@@ -196,12 +200,18 @@ export function setupAuth(app: Express) {
     }
 
     passport.authenticate("local", (err: any, user: User | false, info: any) => {
-      if (err) return next(err);
+      if (err) {
+        console.error("Error during passport authentication:", err);
+        return next(err);
+      }
       if (!user) {
         return res.status(401).json({ message: info?.message || "Invalid credentials" });
       }
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Error during req.login after login:", err);
+          return next(err);
+        }
         res.status(200).json(sanitizeUser(user));
       });
     })(req, res, next);
