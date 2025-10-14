@@ -254,7 +254,7 @@ export default function AuthPage() {
                       required
                     />
                     <p className="text-xs text-muted-foreground">
-                      This must match your old account's first name
+                      Must match your old account exactly (case-insensitive)
                     </p>
                   </div>
 
@@ -287,15 +287,18 @@ export default function AuthPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="migrate-lastname">Last Name (optional)</Label>
+                    <Label htmlFor="migrate-lastname">Last Name (recommended)</Label>
                     <Input
                       id="migrate-lastname"
                       data-testid="input-migrate-lastname"
                       type="text"
-                      placeholder="Last name"
+                      placeholder="Enter your last name for verification"
                       value={migrateLastName}
                       onChange={(e) => setMigrateLastName(e.target.value)}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Required if multiple accounts share your first name
+                    </p>
                   </div>
 
                   <Button

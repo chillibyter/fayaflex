@@ -223,12 +223,36 @@ export function setupAuth(app: Express) {
 
       const { firstName, username, password, lastName } = validationResult.data;
 
-      // Find legacy user by first name (case-insensitive, username/password must be null)
-      const legacyUser = await storage.getLegacyUserByFirstName(firstName);
-      if (!legacyUser) {
-        return res.status(404).json({ 
-          message: "No legacy account found with this first name. Please check the name or create a new account." 
-        });
+      // Find legacy user - try full name first if lastName provided, then firstName only
+      let legacyUser: User | undefined;
+      
+      if (lastName) {
+        // If lastName is provided, require exact match on both first and last name
+        legacyUser = await storage.getLegacyUserByFullName(firstName, lastName);
+        if (!legacyUser) {
+          return res.status(404).json({ 
+            message: "No legacy account found with this first and last name. Please check the name or create a new account." 
+          });
+        }
+      } else {
+        // If no lastName, find by firstName but check for duplicates
+        try {
+          legacyUser = await storage.getLegacyUserByFirstName(firstName);
+        } catch (error: any) {
+          // Handle "multiple accounts" error
+          if (error.message?.includes("Multiple accounts")) {
+            return res.status(400).json({ 
+              message: "Multiple accounts found with this first name. Please provide your last name to identify your account." 
+            });
+          }
+          throw error;
+        }
+        
+        if (!legacyUser) {
+          return res.status(404).json({ 
+            message: "No legacy account found with this first name. Please check the name or create a new account." 
+          });
+        }
       }
 
       // Check if username is already taken by another user

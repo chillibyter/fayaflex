@@ -26,6 +26,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getLegacyUserByFirstName(firstName: string): Promise<User | undefined>;
+  getLegacyUserByFullName(firstName: string, lastName: string): Promise<User | undefined>;
   createUser(user: Partial<UpsertUser> & { username: string; password: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
@@ -161,12 +162,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLegacyUserByFirstName(firstName: string): Promise<User | undefined> {
+    const matches = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          sql`LOWER(${users.firstName}) = LOWER(${firstName})`,
+          sql`${users.username} IS NULL`,
+          sql`${users.password} IS NULL`
+        )
+      );
+    
+    if (matches.length === 0) {
+      return undefined;
+    }
+    
+    if (matches.length > 1) {
+      throw new Error("Multiple accounts found with this first name. Please provide your last name to identify your account.");
+    }
+    
+    return matches[0];
+  }
+
+  async getLegacyUserByFullName(firstName: string, lastName: string): Promise<User | undefined> {
     const [user] = await db
       .select()
       .from(users)
       .where(
         and(
           sql`LOWER(${users.firstName}) = LOWER(${firstName})`,
+          sql`LOWER(${users.lastName}) = LOWER(${lastName})`,
           sql`${users.username} IS NULL`,
           sql`${users.password} IS NULL`
         )
