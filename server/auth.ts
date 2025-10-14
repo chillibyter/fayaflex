@@ -98,6 +98,9 @@ export function setupAuth(app: Express) {
     tableName: "sessions",
   });
 
+  // Determine if we're in production (HTTPS available)
+  const isProduction = Boolean(process.env.NODE_ENV === 'production' || process.env.REPL_SLUG);
+  
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -105,9 +108,10 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
+      secure: isProduction, // Only require HTTPS in production
+      sameSite: 'lax' as const,
       maxAge: sessionTtl,
+      path: '/',
     },
   };
 
