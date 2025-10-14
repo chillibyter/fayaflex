@@ -124,6 +124,17 @@ Preferred communication style: Simple, everyday language.
 - Frontend updated: 20MB upload limit, multipart upload with error handling
 - Static file serving at `/uploads` route for image access
 
+**Fitness Devices Tab Reorganization** (October 14, 2025)
+- Moved device connection UI from Dashboard to Track Activity page
+- Track Activity now has two tabs: "Manual Entry" (default) and "Fitness Devices"
+- Fitness Devices tab shows device connection controls for Apple Health, Google Fit/Android Health, and Garmin
+- Removed manual sync button - devices sync automatically via mobile app or API
+- Added explanatory text: devices sync automatically when mobile app pushes data
+- Dashboard simplified - removed "Connected Devices" card entirely
+- Dashboard now only shows: stats overview, progress chart, and recent activity
+- Device toggle functionality preserved: connect/disconnect via `/api/devices/toggle`
+- Status displays: "Not connected", "Connected - awaiting first sync", or "Last synced X ago"
+
 ## System Architecture
 
 ### Frontend Architecture
