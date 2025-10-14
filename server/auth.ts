@@ -99,6 +99,7 @@ export function setupAuth(app: Express) {
     cookie: {
       httpOnly: true,
       secure: true,
+      sameSite: 'lax',
       maxAge: sessionTtl,
     },
   };
