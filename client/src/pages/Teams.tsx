@@ -11,6 +11,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Search, Users, UserPlus } from "lucide-react";
 import { Link } from "wouter";
@@ -29,6 +39,7 @@ export default function Teams() {
   const [inviteCode, setInviteCode] = useState("");
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [endChallengeDialogOpen, setEndChallengeDialogOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<EnrichedTeam | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -97,6 +108,40 @@ export default function Teams() {
         title: "Copied!",
         description: "Invite code copied to clipboard.",
       });
+    }
+  };
+
+  const endChallengeMutation = useMutation({
+    mutationFn: async (teamId: string) => {
+      const res = await apiRequest("POST", `/api/teams/${teamId}/archive`, {});
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      setEndChallengeDialogOpen(false);
+      setSelectedTeam(null);
+      toast({
+        title: "Challenge ended",
+        description: "The team challenge has been successfully ended.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to end challenge",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEndChallengeClick = (team: EnrichedTeam) => {
+    setSelectedTeam(team);
+    setEndChallengeDialogOpen(true);
+  };
+
+  const confirmEndChallenge = () => {
+    if (selectedTeam) {
+      endChallengeMutation.mutate(selectedTeam.id);
     }
   };
 
@@ -213,6 +258,7 @@ export default function Teams() {
                 rank={0}
                 isOwner={Boolean(user && typeof user === 'object' && 'id' in user && team.ownerId === (user as any).id)}
                 onInvite={() => handleInviteClick(team)}
+                onEndChallenge={() => handleEndChallengeClick(team)}
               />
             ))}
         </div>
@@ -252,6 +298,28 @@ export default function Teams() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={endChallengeDialogOpen} onOpenChange={setEndChallengeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End Team Challenge?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to end the challenge for "{selectedTeam?.name}"? This action cannot be undone and the team will be archived.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-end-challenge">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmEndChallenge}
+              disabled={endChallengeMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-end-challenge"
+            >
+              {endChallengeMutation.isPending ? "Ending..." : "End Challenge"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

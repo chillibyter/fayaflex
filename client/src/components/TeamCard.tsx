@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, UserPlus } from "lucide-react";
+import { Users, UserPlus, X } from "lucide-react";
 import { Link } from "wouter";
 
 interface TeamCardProps {
@@ -12,6 +12,7 @@ interface TeamCardProps {
   rank: number;
   isOwner?: boolean;
   onInvite?: () => void;
+  onEndChallenge?: () => void;
 }
 
 export default function TeamCard({
@@ -22,6 +23,7 @@ export default function TeamCard({
   rank,
   isOwner = false,
   onInvite,
+  onEndChallenge,
 }: TeamCardProps) {
   return (
     <Link href={`/teams/${teamId}`}>
@@ -56,18 +58,32 @@ export default function TeamCard({
             </p>
           </div>
           {isOwner && (
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                onInvite?.();
-              }}
-              variant="outline"
-              className="w-full"
-              data-testid="button-invite-members"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Invite Members
-            </Button>
+            <div className="space-y-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onInvite?.();
+                }}
+                variant="outline"
+                className="w-full"
+                data-testid="button-invite-members"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Invite Members
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onEndChallenge?.();
+                }}
+                variant="destructive"
+                className="w-full"
+                data-testid="button-end-challenge"
+              >
+                <X className="h-4 w-4 mr-2" />
+                End Challenge
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
