@@ -4,6 +4,7 @@ import { Express, RequestHandler } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
+import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { User, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -62,6 +63,23 @@ const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 });
+
+// JWT token utilities
+const JWT_SECRET = process.env.SESSION_SECRET || "fallback-secret-change-in-production";
+const JWT_EXPIRES_IN = "30d"; // 30 days for mobile apps
+
+export function generateAuthToken(userId: string): string {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+export function verifyAuthToken(token: string): { userId: string } | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
 
 export function setupAuth(app: Express) {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -190,11 +208,57 @@ export function setupAuth(app: Express) {
     }
     res.json(sanitizeUser(req.user as User));
   });
+
+  // Mobile token endpoint - generates JWT token for mobile apps
+  app.post("/api/auth/mobile-token", (req, res, next) => {
+    // Validate request body
+    const validationResult = loginSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({ 
+        message: "Validation failed", 
+        errors: validationResult.error.errors 
+      });
+    }
+
+    passport.authenticate("local", (err: any, user: User | false, info: any) => {
+      if (err) return next(err);
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      }
+      
+      // Generate JWT token
+      const token = generateAuthToken(user.id);
+      
+      res.status(200).json({ 
+        token,
+        user: sanitizeUser(user)
+      });
+    })(req, res, next);
+  });
 }
 
+// Enhanced authentication middleware that supports both session and JWT
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Unauthorized" });
+  // Check session-based auth first (for web app)
+  if (req.isAuthenticated()) {
+    return next();
   }
-  next();
+  
+  // Check JWT token auth (for mobile app)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    const decoded = verifyAuthToken(token);
+    
+    if (decoded) {
+      // Load user from database and attach to request
+      const user = await storage.getUser(decoded.userId);
+      if (user) {
+        req.user = user;
+        return next();
+      }
+    }
+  }
+  
+  return res.status(401).json({ message: "Unauthorized" });
 };
