@@ -55,6 +55,7 @@ export const teams = pgTable("teams", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   inviteCode: varchar("invite_code", { length: 50 }).unique().notNull(),
+  status: varchar("status", { length: 20 }).default("active").notNull(), // 'active' or 'archived'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
