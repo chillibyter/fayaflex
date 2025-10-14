@@ -108,6 +108,22 @@ Preferred communication style: Simple, everyday language.
   - Requires GARMIN_CONSUMER_KEY and GARMIN_CONSUMER_SECRET secrets
   - OAuth 1.0a flow needs completion with oauth-1.0a library
 
+**Evidence Image Compression & 24-Hour Retention** (October 14, 2025)
+- Automatic image compression for activity evidence uploads
+- Upload endpoint: `/api/upload/evidence` (multipart/form-data, max 20MB)
+- Server-side compression using Sharp library:
+  - Converts to WebP format (quality 80, effort 6)
+  - Max dimensions: 1920x1920px (maintains aspect ratio)
+  - Significant file size reduction while maintaining quality
+- File storage: `uploads/evidence/[timestamp]_[random].webp`
+- Automated cleanup system:
+  - Runs on server startup and every hour
+  - Deletes evidence files older than 24 hours
+  - Based on file modification time
+- Database schema updated: stores file paths instead of base64 data
+- Frontend updated: 20MB upload limit, multipart upload with error handling
+- Static file serving at `/uploads` route for image access
+
 ## System Architecture
 
 ### Frontend Architecture
