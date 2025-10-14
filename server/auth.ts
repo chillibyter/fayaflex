@@ -64,6 +64,13 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const migrateAccountSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  username: z.string().min(3, "Username must be at least 3 characters").max(100),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  lastName: z.string().optional().nullable(),
+});
+
 // JWT token utilities
 const JWT_SECRET = process.env.SESSION_SECRET || "fallback-secret-change-in-production";
 const JWT_EXPIRES_IN = "30d"; // 30 days for mobile apps
@@ -201,6 +208,50 @@ export function setupAuth(app: Express) {
       if (err) return next(err);
       res.sendStatus(200);
     });
+  });
+
+  app.post("/api/migrate-account", async (req, res, next) => {
+    try {
+      // Validate request body
+      const validationResult = migrateAccountSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const { firstName, username, password, lastName } = validationResult.data;
+
+      // Find legacy user by first name (case-insensitive, username/password must be null)
+      const legacyUser = await storage.getLegacyUserByFirstName(firstName);
+      if (!legacyUser) {
+        return res.status(404).json({ 
+          message: "No legacy account found with this first name. Please check the name or create a new account." 
+        });
+      }
+
+      // Check if username is already taken by another user
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      // Update the legacy user with username, password, and optionally lastName
+      const updatedUser = await storage.updateUser(legacyUser.id, {
+        username,
+        password: await hashPassword(password),
+        lastName: lastName || legacyUser.lastName,
+      });
+
+      // Log in the user and return sanitized user object
+      req.login(updatedUser, (err) => {
+        if (err) return next(err);
+        res.status(200).json(sanitizeUser(updatedUser));
+      });
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.get("/api/auth/user", (req, res) => {

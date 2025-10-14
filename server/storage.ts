@@ -25,6 +25,7 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getLegacyUserByFirstName(firstName: string): Promise<User | undefined>;
   createUser(user: Partial<UpsertUser> & { username: string; password: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
@@ -156,6 +157,20 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getLegacyUserByFirstName(firstName: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          sql`LOWER(${users.firstName}) = LOWER(${firstName})`,
+          sql`${users.username} IS NULL`,
+          sql`${users.password} IS NULL`
+        )
+      );
     return user;
   }
 
