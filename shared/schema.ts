@@ -25,9 +25,11 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)]
 );
 
-// User storage table for Replit Auth
+// User storage table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: varchar("username", { length: 100 }).unique(),
+  password: text("password"),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
@@ -135,6 +137,17 @@ export const deviceConnectionsRelations = relations(deviceConnections, ({ one })
 // Types and schemas
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  profileImageUrl: true,
+  avatarId: true,
+}).extend({
+  username: z.string().min(3, "Username must be at least 3 characters").max(100),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type Team = typeof teams.$inferSelect;
 export const insertTeamSchema = createInsertSchema(teams).omit({
