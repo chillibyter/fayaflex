@@ -136,6 +136,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Garmin OAuth routes
+  app.get("/api/garmin/connect", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Check if Garmin credentials are configured
+      if (!process.env.GARMIN_CONSUMER_KEY || !process.env.GARMIN_CONSUMER_SECRET) {
+        return res.status(500).json({ 
+          message: "Garmin integration not configured. Please add GARMIN_CONSUMER_KEY and GARMIN_CONSUMER_SECRET." 
+        });
+      }
+      
+      // For now, return a message that this needs OAuth 1.0a implementation
+      // TODO: Implement full OAuth 1.0a flow with request token
+      res.json({ 
+        message: "Garmin OAuth flow not yet implemented. Requires OAuth 1.0a with request tokens.",
+        requiredEnvVars: ["GARMIN_CONSUMER_KEY", "GARMIN_CONSUMER_SECRET"],
+        note: "Once implemented, this will redirect to Garmin for authorization"
+      });
+    } catch (error: any) {
+      console.error("Error initiating Garmin OAuth:", error);
+      res.status(500).json({ message: "Failed to connect to Garmin" });
+    }
+  });
+
+  // Garmin webhook endpoint for push notifications
+  app.post("/api/webhooks/garmin", async (req, res) => {
+    try {
+      // Garmin sends webhook notifications when new activity data is available
+      // Format: { userId: "garmin-user-id", summaryId: "activity-summary-id", ... }
+      
+      const webhookData = req.body;
+      console.log("Received Garmin webhook:", webhookData);
+      
+      // TODO: Implement webhook processing
+      // 1. Validate webhook signature (if Garmin provides one)
+      // 2. Map Garmin user ID to our user ID (stored in device_connections)
+      // 3. Fetch activity data from Garmin API using stored access token
+      // 4. Call syncHealthActivities to store the data
+      
+      res.status(200).json({ received: true });
+    } catch (error: any) {
+      console.error("Error processing Garmin webhook:", error);
+      res.status(500).json({ message: "Failed to process webhook" });
+    }
+  });
+
   // Teammate profile routes (require shared team membership)
   app.get("/api/users/:userId/profile", isAuthenticated, async (req: any, res) => {
     try {

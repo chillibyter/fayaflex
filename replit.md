@@ -95,6 +95,19 @@ Preferred communication style: Simple, everyday language.
 - Session deserialization gracefully handles legacy Replit Auth users
 - E2E tested: registration, login, logout, session persistence, protected routes
 
+**JWT Token Authentication & Device Integration** (October 14, 2025)
+- Added JWT token authentication for mobile app support
+- New endpoint: `/api/auth/mobile-token` generates 30-day JWT tokens
+- Enhanced authentication middleware supports both session cookies (web) and JWT tokens (mobile)
+- Mobile apps authenticate with `Authorization: Bearer <token>` header
+- React Native Expo mobile app scaffold created in `/ufc-mobile` folder
+- Garmin OAuth infrastructure added (placeholder implementation):
+  - `/api/garmin/connect` - OAuth initiation endpoint
+  - `/api/webhooks/garmin` - Webhook receiver for push notifications
+  - Complete implementation guide in `GARMIN_INTEGRATION_GUIDE.md`
+  - Requires GARMIN_CONSUMER_KEY and GARMIN_CONSUMER_SECRET secrets
+  - OAuth 1.0a flow needs completion with oauth-1.0a library
+
 ## System Architecture
 
 ### Frontend Architecture
