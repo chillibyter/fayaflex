@@ -5,6 +5,7 @@ import {
   activities,
   deviceConnections,
   notifications,
+  passkeys,
   type User,
   type UpsertUser,
   type Team,
@@ -16,6 +17,8 @@ import {
   type DeviceConnection,
   type Notification,
   type InsertNotification,
+  type Passkey,
+  type InsertPasskey,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
@@ -24,6 +27,7 @@ import { randomBytes } from "crypto";
 export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserById(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getLegacyUserByFirstName(firstName: string): Promise<User | undefined>;
   getLegacyUserByFullName(firstName: string, lastName: string): Promise<User | undefined>;
@@ -60,6 +64,12 @@ export interface IStorage {
   // Device connection operations
   getDeviceConnection(userId: string, provider: string): Promise<DeviceConnection | undefined>;
   upsertDeviceConnection(connection: Partial<DeviceConnection> & { userId: string; provider: string }): Promise<DeviceConnection>;
+
+  // Passkey operations
+  createPasskey(passkey: InsertPasskey): Promise<Passkey>;
+  getUserPasskeys(userId: string): Promise<Passkey[]>;
+  getPasskeyById(id: string): Promise<Passkey | undefined>;
+  updatePasskeyCounter(id: string, counter: number): Promise<void>;
 
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
@@ -504,6 +514,42 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(notifications)
       .where(and(eq(notifications.userId, userId), eq(notifications.date, date)));
+  }
+
+  // User operations (additional)
+  async getUserById(id: string): Promise<User | undefined> {
+    return this.getUser(id);
+  }
+
+  // Passkey operations
+  async createPasskey(passkeyData: InsertPasskey): Promise<Passkey> {
+    const [passkey] = await db
+      .insert(passkeys)
+      .values(passkeyData)
+      .returning();
+    return passkey;
+  }
+
+  async getUserPasskeys(userId: string): Promise<Passkey[]> {
+    return await db
+      .select()
+      .from(passkeys)
+      .where(eq(passkeys.userId, userId));
+  }
+
+  async getPasskeyById(id: string): Promise<Passkey | undefined> {
+    const [passkey] = await db
+      .select()
+      .from(passkeys)
+      .where(eq(passkeys.id, id));
+    return passkey;
+  }
+
+  async updatePasskeyCounter(id: string, counter: number): Promise<void> {
+    await db
+      .update(passkeys)
+      .set({ counter })
+      .where(eq(passkeys.id, id));
   }
 }
 

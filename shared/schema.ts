@@ -10,6 +10,7 @@ import {
   text,
   boolean,
   uniqueIndex,
+  bigint,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -44,6 +45,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   teamMemberships: many(teamMembers),
   ownedTeams: many(teams),
   notifications: many(notifications),
+  passkeys: many(passkeys),
 }));
 
 // Teams table
@@ -193,6 +195,33 @@ export const insertActivitySchema = createInsertSchema(activities)
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 export type DeviceConnection = typeof deviceConnections.$inferSelect;
+
+// Passkeys table for WebAuthn/biometric authentication
+export const passkeys = pgTable("passkeys", {
+  id: text("id").primaryKey(), // credentialID from WebAuthn
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  credentialPublicKey: text("credential_public_key").notNull(), // Base64 encoded public key
+  counter: bigint("counter", { mode: "number" }).notNull().default(0),
+  deviceType: varchar("device_type", { length: 50 }), // 'platform' or 'cross-platform'
+  backedUp: boolean("backed_up").default(false),
+  transports: text("transports"), // JSON array of transport types
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const passkeysRelations = relations(passkeys, ({ one }) => ({
+  user: one(users, {
+    fields: [passkeys.userId],
+    references: [users.id],
+  }),
+}));
+
+export type Passkey = typeof passkeys.$inferSelect;
+export const insertPasskeySchema = createInsertSchema(passkeys).omit({
+  createdAt: true,
+});
+export type InsertPasskey = z.infer<typeof insertPasskeySchema>;
 
 // Daily notifications table
 export const notifications = pgTable("notifications", {

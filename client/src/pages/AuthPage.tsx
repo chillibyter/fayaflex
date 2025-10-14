@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, TrendingUp, Users, Trophy } from "lucide-react";
+import { Dumbbell, TrendingUp, Users, Trophy, Fingerprint } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { authenticateWithPasskey } from "@/lib/passkey";
 
 export default function AuthPage() {
   // Login state
@@ -87,6 +88,40 @@ export default function AuthPage() {
     });
   };
 
+  const passkeyLoginMutation = useMutation({
+    mutationFn: async (username: string) => {
+      const result = await authenticateWithPasskey(username);
+      return result.user;
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(["/api/auth/user"], user);
+      toast({
+        title: "Login successful!",
+        description: "You've been authenticated with your passkey.",
+      });
+      setLocation("/");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Passkey login failed",
+        description: error.message || "Could not authenticate with passkey. Please try password login.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePasskeyLogin = async () => {
+    if (!loginUsername) {
+      toast({
+        title: "Username required",
+        description: "Please enter your username to use passkey login.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await passkeyLoginMutation.mutateAsync(loginUsername);
+  };
+
   return (
     <div className="min-h-screen flex">
       {/* Form Section */}
@@ -149,6 +184,27 @@ export default function AuthPage() {
                     {loginMutation.isPending ? "Loading..." : "Sign In"}
                   </Button>
                 </form>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-testid="button-passkey-login"
+                  className="w-full gap-2"
+                  onClick={handlePasskeyLogin}
+                  disabled={passkeyLoginMutation.isPending}
+                >
+                  <Fingerprint className="w-4 h-4" />
+                  {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
+                </Button>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">

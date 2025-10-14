@@ -16,8 +16,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Backend Architecture
 - **Server Framework**: Express.js with TypeScript, following a RESTful API design.
-- **Authentication**: Custom username/password authentication using Passport.js local strategy with Scrypt hashing. Supports both session cookies (web) and JWT tokens (mobile) for authentication. Session storage in PostgreSQL. Zod validation on auth endpoints.
-- **API Structure**: Comprehensive API for user, team, activity, leaderboard, and notification management. Includes dedicated endpoints for mobile token generation and device integrations.
+- **Authentication**: Custom username/password authentication using Passport.js local strategy with Scrypt hashing. Supports both session cookies (web) and JWT tokens (mobile) for authentication. WebAuthn/Passkey authentication for biometric login (fingerprint, Face ID). Session storage in PostgreSQL. Zod validation on auth endpoints.
+- **API Structure**: Comprehensive API for user, team, activity, leaderboard, notification, and passkey management. Includes dedicated endpoints for mobile token generation and device integrations.
 - **Core Features**:
     - **Team Management**: CRUD operations for teams, member management, and challenge archiving.
     - **Activity Tracking**: Logging and retrieval of user activities, with support for evidence uploads (compressed WebP, 24-hour retention).
@@ -27,8 +27,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage
 - **Database**: PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe queries.
-- **Schema**: Includes users, teams, team_members, activities, device_connections, and sessions.
-- **Relationships**: Supports complex relationships like users owning multiple teams, many-to-many team memberships, and activities linked to users/teams.
+- **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, and sessions.
+- **Relationships**: Supports complex relationships like users owning multiple teams, many-to-many team memberships, activities linked to users/teams, and passkeys linked to users.
 
 ## External Dependencies
 
@@ -53,8 +53,25 @@ Preferred communication style: Simple, everyday language.
 - **Radix UI**: For accessible UI primitives.
 - **Class Variance Authority**: For managing component variants.
 - **Sharp**: For server-side image compression.
+- **SimpleWebAuthn**: For WebAuthn/passkey authentication (server and browser libraries).
 
 ## Recent Changes
+
+**WebAuthn/Passkey Authentication** (October 14, 2025)
+- Biometric login support using WebAuthn/Passkey authentication (fingerprint, Face ID, etc.)
+- Implementation:
+  - Backend: SimpleWebAuthn server library for registration/authentication
+  - Frontend: SimpleWebAuthn browser library for WebAuthn API interaction
+  - Database: Passkeys table storing credentialID, publicKey, counter, device metadata
+  - Storage layer: CRUD methods for passkey operations
+  - Routes: Four endpoints (register/verify for registration, login/verify for authentication)
+  - AuthPage: "Sign in with Passkey" button on login tab with username input
+  - Profile page: Security section for passkey registration and management
+- Password generator utility:
+  - Cryptographically secure password generation using Web Crypto API
+  - 16-character passwords with mixed case, numbers, and special characters
+  - Copy-to-clipboard functionality in Profile security section
+- Security: Challenge-response flow prevents replay attacks, counter tracking prevents credential cloning
 
 **Activity Source Indicators** (October 14, 2025)
 - Visual badges show whether activities were logged manually or synced from devices

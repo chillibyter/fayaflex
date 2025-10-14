@@ -7,6 +7,14 @@ import { z } from "zod";
 import { upload, compressAndSaveImage, cleanupOldEvidence } from "./imageUpload";
 import express from "express";
 import path from "path";
+import {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+  type RegistrationResponseJSON,
+  type AuthenticationResponseJSON,
+} from "@simplewebauthn/server";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -974,6 +982,223 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching notifications:", error);
       res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  // WebAuthn/Passkey configuration
+  const RP_NAME = "Ultimate Fitness Challenge";
+  const RP_ID = process.env.REPLIT_DEV_DOMAIN ? 
+    process.env.REPLIT_DEV_DOMAIN.split(':')[0] : 
+    "localhost";
+  const getOrigin = (req: any) => {
+    if (process.env.REPLIT_DEV_DOMAIN) {
+      return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+    }
+    return `http://localhost:5000`;
+  };
+
+  // Passkey Registration - Start
+  app.post("/api/passkey/register/start", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get existing passkeys for this user
+      const userPasskeys = await storage.getUserPasskeys(userId);
+
+      const options = await generateRegistrationOptions({
+        rpName: RP_NAME,
+        rpID: RP_ID,
+        userName: user.username || user.email,
+        userDisplayName: user.firstName && user.lastName ? 
+          `${user.firstName} ${user.lastName}` : 
+          (user.username || user.email),
+        timeout: 60000,
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          residentKey: 'required',
+          userVerification: 'required',
+        },
+        excludeCredentials: userPasskeys.map(pk => ({
+          id: Buffer.from(pk.id, 'base64'),
+          type: 'public-key',
+        })),
+        supportedAlgorithmIDs: [-7, -257],
+      });
+
+      // Store challenge in session
+      req.session.passkeyChallenge = options.challenge;
+      
+      res.json(options);
+    } catch (error: any) {
+      console.error("Error starting passkey registration:", error);
+      res.status(500).json({ message: error.message || "Failed to start passkey registration" });
+    }
+  });
+
+  // Passkey Registration - Verify
+  app.post("/api/passkey/register/verify", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { response } = req.body as { response: RegistrationResponseJSON };
+      const expectedChallenge = req.session.passkeyChallenge;
+
+      if (!expectedChallenge) {
+        return res.status(400).json({ message: "No challenge found in session" });
+      }
+
+      const verification = await verifyRegistrationResponse({
+        response,
+        expectedChallenge,
+        expectedOrigin: getOrigin(req),
+        expectedRPID: RP_ID,
+      });
+
+      const { verified, registrationInfo } = verification;
+
+      if (verified && registrationInfo) {
+        // Store passkey in database
+        await storage.createPasskey({
+          id: Buffer.from(registrationInfo.credentialID).toString('base64'),
+          userId,
+          credentialPublicKey: Buffer.from(registrationInfo.credentialPublicKey).toString('base64'),
+          counter: registrationInfo.counter,
+          deviceType: registrationInfo.credentialDeviceType,
+          backedUp: registrationInfo.credentialBackedUp,
+          transports: JSON.stringify(response.response.transports || []),
+        });
+
+        // Clear challenge from session
+        delete req.session.passkeyChallenge;
+
+        res.json({ verified: true });
+      } else {
+        res.status(400).json({ verified: false, message: "Verification failed" });
+      }
+    } catch (error: any) {
+      console.error("Error verifying passkey registration:", error);
+      res.status(500).json({ message: error.message || "Failed to verify passkey registration" });
+    }
+  });
+
+  // Passkey Authentication - Start
+  app.post("/api/passkey/login/start", async (req: any, res) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        // Don't reveal if user exists
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      const userPasskeys = await storage.getUserPasskeys(user.id);
+      
+      if (userPasskeys.length === 0) {
+        return res.status(400).json({ message: "No passkeys registered for this user" });
+      }
+
+      const options = await generateAuthenticationOptions({
+        rpID: RP_ID,
+        timeout: 60000,
+        allowCredentials: userPasskeys.map(pk => ({
+          id: Buffer.from(pk.id, 'base64'),
+          type: 'public-key',
+          transports: pk.transports ? JSON.parse(pk.transports) : undefined,
+        })),
+        userVerification: 'required',
+      });
+
+      // Store challenge and username in session
+      req.session.passkeyChallenge = options.challenge;
+      req.session.passkeyUsername = username;
+
+      res.json(options);
+    } catch (error: any) {
+      console.error("Error starting passkey authentication:", error);
+      res.status(500).json({ message: error.message || "Failed to start passkey authentication" });
+    }
+  });
+
+  // Get user's passkeys
+  app.get("/api/passkeys", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userPasskeys = await storage.getUserPasskeys(userId);
+      res.json(userPasskeys);
+    } catch (error: any) {
+      console.error("Error fetching passkeys:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch passkeys" });
+    }
+  });
+
+  // Passkey Authentication - Verify
+  app.post("/api/passkey/login/verify", async (req: any, res) => {
+    try {
+      const { response } = req.body as { response: AuthenticationResponseJSON };
+      const expectedChallenge = req.session.passkeyChallenge;
+      const username = req.session.passkeyUsername;
+
+      if (!expectedChallenge || !username) {
+        return res.status(400).json({ message: "No challenge or username found in session" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      // Get the passkey from storage
+      const passkey = await storage.getPasskeyById(Buffer.from(response.id, 'base64').toString('base64'));
+
+      if (!passkey || passkey.userId !== user.id) {
+        return res.status(400).json({ message: "Passkey not found or doesn't belong to this user" });
+      }
+
+      const verification = await verifyAuthenticationResponse({
+        response,
+        expectedChallenge,
+        expectedOrigin: getOrigin(req),
+        expectedRPID: RP_ID,
+        authenticator: {
+          credentialID: Buffer.from(passkey.id, 'base64'),
+          credentialPublicKey: Buffer.from(passkey.credentialPublicKey, 'base64'),
+          counter: Number(passkey.counter),
+        },
+      });
+
+      const { verified, authenticationInfo } = verification;
+
+      if (verified) {
+        // Update counter
+        await storage.updatePasskeyCounter(passkey.id, authenticationInfo.newCounter);
+
+        // Log user in
+        req.login(user, (err: any) => {
+          if (err) {
+            return res.status(500).json({ message: "Login failed" });
+          }
+
+          // Clear challenge from session
+          delete req.session.passkeyChallenge;
+          delete req.session.passkeyUsername;
+
+          res.json({ verified: true, user });
+        });
+      } else {
+        res.status(400).json({ verified: false, message: "Verification failed" });
+      }
+    } catch (error: any) {
+      console.error("Error verifying passkey authentication:", error);
+      res.status(500).json({ message: error.message || "Failed to verify passkey authentication" });
     }
   });
 
