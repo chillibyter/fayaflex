@@ -88,11 +88,11 @@ export default function DataEntryForm() {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Please upload an image smaller than 5MB",
+        description: "Please upload an image smaller than 20MB",
         variant: "destructive",
       });
       return;
@@ -126,10 +126,34 @@ export default function DataEntryForm() {
       return;
     }
     
-    // Convert attachment to Base64 if present
+    // Upload image first if present
     let attachmentUrl: string | undefined;
     if (attachmentFile) {
-      attachmentUrl = attachmentPreview || undefined;
+      try {
+        const formData = new FormData();
+        formData.append('image', attachmentFile);
+        
+        const response = await fetch('/api/upload/evidence', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to upload image');
+        }
+        
+        const result = await response.json();
+        attachmentUrl = result.path;
+      } catch (error: any) {
+        toast({
+          title: "Upload Error",
+          description: error.message || "Failed to upload evidence image",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     createActivityMutation.mutate({
@@ -323,7 +347,7 @@ export default function DataEntryForm() {
                 </div>
               )}
               <p className="text-xs text-muted-foreground">
-                Upload a photo of your workout or activity (Max 5MB)
+                Upload a photo of your workout or activity (Max 20MB, auto-compressed, stored for 24 hours)
               </p>
             </div>
           </div>
