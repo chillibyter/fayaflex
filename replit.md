@@ -135,6 +135,22 @@ Preferred communication style: Simple, everyday language.
 - Device toggle functionality preserved: connect/disconnect via `/api/devices/toggle`
 - Status displays: "Not connected", "Connected - awaiting first sync", or "Last synced X ago"
 
+**Interactive Dashboard Stats with Charts** (October 14, 2025)
+- Dashboard stat cards now clickable for detailed views
+- **Calories Card:** Opens dialog with daily bar chart showing past 30 days from month start
+- **Steps Card:** Opens dialog with daily bar chart showing past 30 days from month start
+- **Workouts Card:** Opens dialog with calendar view showing workout days this month
+- Backend endpoints:
+  - GET /api/stats/daily-breakdown?metric=calories|steps - Returns daily data for charts
+  - GET /api/stats/workout-calendar - Returns workout days with details
+- Chart implementation:
+  - Recharts bar charts for calories/steps visualization
+  - Calendar grid showing workout highlights with counts and calories
+  - Today's date highlighted in calendar view
+  - Lazy loading - data fetched only when dialog opens
+- Query invalidation fix: Dashboard stats, progress chart, and activities refresh after new activity creation
+- Stat cards use hover-elevate and active-elevate-2 for interactive feedback
+
 ## System Architecture
 
 ### Frontend Architecture
