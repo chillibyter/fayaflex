@@ -5,10 +5,15 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema } from "@shared/schema";
 import { z } from "zod";
 import { upload, compressAndSaveImage, cleanupOldEvidence } from "./imageUpload";
+import express from "express";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
+
+  // Serve uploaded evidence images
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   // Note: /api/auth/user route is now handled in auth.ts
 
