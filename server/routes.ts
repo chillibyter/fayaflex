@@ -853,12 +853,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Start cleanup job for old evidence (runs every hour)
   const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+  console.log('[Cleanup] Initializing evidence cleanup job (runs every hour)');
   setInterval(async () => {
-    console.log('[Cleanup] Running evidence cleanup job...');
+    console.log('[Cleanup] Running scheduled cleanup...');
     await cleanupOldEvidence();
   }, CLEANUP_INTERVAL);
   
   // Run cleanup immediately on startup
+  console.log('[Cleanup] Running initial cleanup on startup...');
   cleanupOldEvidence().catch(err => console.error('[Cleanup] Initial cleanup failed:', err));
   
   return httpServer;

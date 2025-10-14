@@ -61,18 +61,29 @@ export async function cleanupOldEvidence() {
     const files = await fs.readdir(UPLOAD_DIR);
     const now = Date.now();
     const twentyFourHours = 24 * 60 * 60 * 1000;
+    
+    console.log(`[Cleanup] Checking ${files.length} evidence files for cleanup...`);
+    let deletedCount = 0;
 
     for (const file of files) {
       const filepath = path.join(UPLOAD_DIR, file);
       const stats = await fs.stat(filepath);
+      const ageHours = (now - stats.mtime.getTime()) / (60 * 60 * 1000);
       
       if (now - stats.mtime.getTime() > twentyFourHours) {
         await fs.unlink(filepath);
-        console.log(`Deleted old evidence: ${file}`);
+        deletedCount++;
+        console.log(`[Cleanup] Deleted old evidence: ${file} (age: ${ageHours.toFixed(1)} hours)`);
       }
     }
+    
+    if (deletedCount === 0) {
+      console.log('[Cleanup] No files older than 24 hours found');
+    } else {
+      console.log(`[Cleanup] Cleanup complete: deleted ${deletedCount} file(s)`);
+    }
   } catch (error) {
-    console.error('Error cleaning up old evidence:', error);
+    console.error('[Cleanup] Error cleaning up old evidence:', error);
   }
 }
 
