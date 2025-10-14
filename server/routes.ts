@@ -1,34 +1,19 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  setupAuth(app);
 
-  // Auth routes
-  app.get("/api/auth/user", async (req: any, res) => {
-    try {
-      // Check if user is authenticated
-      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
-        return res.json(null);
-      }
-
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Note: /api/auth/user route is now handled in auth.ts
 
   app.patch("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Validate request body - allow firstName, lastName, and avatarId updates
       const updateUserSchema = z.object({
@@ -53,7 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Device connection routes
   app.get("/api/devices", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Get device connections for supported providers
       const providers = ['apple_health', 'garmin', 'android_health'];
@@ -78,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/devices/toggle", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const toggleSchema = z.object({
         provider: z.enum(['apple_health', 'garmin', 'android_health']),
@@ -103,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/devices/sync", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const syncSchema = z.object({
         provider: z.enum(['apple_health', 'garmin', 'android_health']),
@@ -154,7 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Teammate profile routes (require shared team membership)
   app.get("/api/users/:userId/profile", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       
       // Check if users share a team
@@ -177,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/users/:userId/activities", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       
       // Check if users share a team
@@ -200,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Profile routes
   app.get("/api/profile/stats", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Get all user activities
       const activities = await storage.getUserActivities(userId);
@@ -259,7 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Team routes
   app.post("/api/teams", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertTeamSchema.parse({ ...req.body, ownerId: userId });
       
       const team = await storage.createTeam(validatedData);
@@ -279,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/teams", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const teams = await storage.getUserTeams(userId);
       
       // Enrich teams with member counts
@@ -315,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/teams/join", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Validate request body
       const joinSchema = z.object({
@@ -384,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Activity routes
   app.post("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertActivitySchema.parse(req.body);
       
       const activity = await storage.createActivity(validatedData, userId);
@@ -397,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const month = req.query.month ? parseInt(req.query.month as string) : undefined;
       const year = req.query.year ? parseInt(req.query.year as string) : undefined;
       
@@ -413,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Personal leaderboard - only shows members from user's teams (deduplicated)
   app.get("/api/leaderboard/personal", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user.id;
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
       
@@ -522,7 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Team-specific leaderboard
   app.get("/api/leaderboard/team/:teamId", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user.id;
       const teamId = req.params.teamId;
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
@@ -574,7 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard stats route - uses global ranking based on last 30 days
   app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const month = new Date().getMonth() + 1;
       const year = new Date().getFullYear();
       
@@ -622,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Progress chart route
   app.get("/api/progress/chart", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
       
@@ -652,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Notification routes
   app.post("/api/notifications/generate", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const today = new Date().toISOString().split('T')[0];
       
       // Always regenerate notifications to ensure we have the complete set
@@ -779,7 +764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/notifications", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const today = new Date().toISOString().split('T')[0];
       
       const notifications = await storage.getUserNotifications(userId, today);

@@ -14,7 +14,7 @@ import { Home, Users, PlusCircle, Trophy, User as UserIcon, Activity, LogOut } f
 import { Link, useLocation } from "wouter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import type { User } from "@shared/schema";
 
 const menuItems = [
@@ -28,16 +28,16 @@ const menuItems = [
 
 export default function AppSidebar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const typedUser = user as User | undefined;
 
   const userName = typedUser?.firstName && typedUser?.lastName 
     ? `${typedUser.firstName} ${typedUser.lastName}`
-    : typedUser?.email || 'User';
+    : typedUser?.username || typedUser?.email || 'User';
   
   const initials = typedUser?.firstName && typedUser?.lastName
     ? `${typedUser.firstName[0]}${typedUser.lastName[0]}`
-    : typedUser?.email?.[0]?.toUpperCase() || 'U';
+    : typedUser?.username?.[0]?.toUpperCase() || typedUser?.email?.[0]?.toUpperCase() || 'U';
 
   return (
     <Sidebar>
@@ -92,11 +92,12 @@ export default function AppSidebar() {
           variant="outline"
           size="sm"
           className="w-full"
-          onClick={() => window.location.href = '/api/logout'}
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
           data-testid="button-logout"
         >
           <LogOut className="h-4 w-4 mr-2" />
-          Log Out
+          {logoutMutation.isPending ? "Logging out..." : "Log Out"}
         </Button>
       </SidebarFooter>
     </Sidebar>

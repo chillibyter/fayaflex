@@ -14,18 +14,19 @@ import TeamLeaderboard from "@/pages/TeamLeaderboard";
 import CreateTeam from "@/pages/CreateTeam";
 import Profile from "@/pages/Profile";
 import UserProfile from "@/pages/UserProfile";
-import Landing from "@/pages/Landing";
+import AuthPage from "@/pages/AuthPage";
 import NotFound from "@/pages/not-found";
-import { useAuth } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading || !user) {
     return (
       <Switch>
-        <Route path="/" component={Landing} />
-        <Route component={NotFound} />
+        <Route path="/auth" component={AuthPage} />
+        <Route path="/" component={AuthPage} />
+        <Route component={AuthPage} />
       </Switch>
     );
   }
@@ -46,7 +47,7 @@ function Router() {
 }
 
 function AuthenticatedApp() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const sidebarStyle = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
@@ -63,7 +64,7 @@ function AuthenticatedApp() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <>
         <Router />
@@ -94,7 +95,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthenticatedApp />
+        <AuthProvider>
+          <AuthenticatedApp />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
