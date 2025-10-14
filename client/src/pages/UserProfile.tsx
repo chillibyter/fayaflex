@@ -1,6 +1,5 @@
 import { useParams } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Dumbbell, Flame } from "lucide-react";
@@ -9,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import type { User as UserType, Activity } from "@shared/schema";
 import { useLocation } from "wouter";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -76,12 +76,12 @@ export default function UserProfile() {
             </div>
           ) : (
             <div className="flex items-center gap-6 flex-wrap">
-              <Avatar className="h-24 w-24">
-                {user?.profileImageUrl && (
-                  <AvatarImage src={user.profileImageUrl} alt={getUserFullName()} />
-                )}
-                <AvatarFallback className="text-2xl">{getUserInitials()}</AvatarFallback>
-              </Avatar>
+              <UserAvatar 
+                user={user} 
+                className="h-24 w-24"
+                iconClassName="h-12 w-12"
+                fallbackClassName="text-2xl"
+              />
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-1" data-testid="text-user-name">
                   {getUserFullName()}

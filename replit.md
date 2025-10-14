@@ -50,6 +50,14 @@ Preferred communication style: Simple, everyday language.
 - Avatars persist across sessions and page refreshes
 - All icons use Lucide React components (no emojis)
 
+**Avatar Display Throughout App** (October 14, 2025)
+- UserAvatar component created for consistent avatar display across the application
+- Displays selected avatar icon if user has chosen one, otherwise shows initials
+- Avatar appears in: sidebar footer, profile pages, user profile pages, and leaderboard cards
+- Leaderboard API updated to include avatarId, firstName, and lastName in responses
+- Gradient backgrounds match the user's selected avatar theme
+- Seamless fallback to initials for users without avatars
+
 **Mobile Health Integration Backend** (October 13, 2025)
 - Enhanced `/api/devices/sync` endpoint to accept bulk health data from mobile apps
 - Supports Apple Health, Google Fit, and Garmin data sources

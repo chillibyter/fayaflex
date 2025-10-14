@@ -509,6 +509,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: displayName || 'Unknown User',
               teamName: team.name,
               calories: totalCalories,
+              avatarId: user.avatarId,
+              firstName: user.firstName,
+              lastName: user.lastName,
             });
           }
         }
@@ -611,6 +614,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userId: user.id,
             name: displayName || 'Unknown User',
             calories: totalCalories,
+            avatarId: user.avatarId,
+            firstName: user.firstName,
+            lastName: user.lastName,
           });
         }
       }

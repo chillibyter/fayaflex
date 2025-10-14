@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/sidebar";
 import { Home, Users, PlusCircle, Trophy, User as UserIcon, Activity, LogOut } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import type { User } from "@shared/schema";
+import { UserAvatar } from "@/components/UserAvatar";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -34,10 +34,6 @@ export default function AppSidebar() {
   const userName = typedUser?.firstName && typedUser?.lastName 
     ? `${typedUser.firstName} ${typedUser.lastName}`
     : typedUser?.username || typedUser?.email || 'User';
-  
-  const initials = typedUser?.firstName && typedUser?.lastName
-    ? `${typedUser.firstName[0]}${typedUser.lastName[0]}`
-    : typedUser?.username?.[0]?.toUpperCase() || typedUser?.email?.[0]?.toUpperCase() || 'U';
 
   return (
     <Sidebar>
@@ -77,12 +73,11 @@ export default function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="p-4 border-t space-y-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            {typedUser?.profileImageUrl && (
-              <AvatarImage src={typedUser.profileImageUrl} alt={userName} />
-            )}
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
+          <UserAvatar 
+            user={typedUser} 
+            className="h-8 w-8"
+            iconClassName="h-4 w-4"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{userName}</p>
             <p className="text-xs text-muted-foreground truncate">{typedUser?.email}</p>

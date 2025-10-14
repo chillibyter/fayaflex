@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal } from "lucide-react";
 import { Link } from "wouter";
+import { UserAvatar } from "@/components/UserAvatar";
 
 interface LeaderboardCardProps {
   rank: number;
@@ -12,6 +12,9 @@ interface LeaderboardCardProps {
   goalPercentage: number;
   userId?: string;
   teamId?: string;
+  avatarId?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export default function LeaderboardCard({
@@ -22,6 +25,9 @@ export default function LeaderboardCard({
   goalPercentage,
   userId,
   teamId,
+  avatarId,
+  firstName,
+  lastName,
 }: LeaderboardCardProps) {
   const getMedalIcon = () => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -35,12 +41,19 @@ export default function LeaderboardCard({
     return "secondary";
   };
 
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  // Create a partial user object for UserAvatar
+  const userForAvatar = userId ? {
+    id: userId,
+    avatarId: avatarId || null,
+    firstName: firstName || null,
+    lastName: lastName || null,
+    username: name,
+    email: null,
+    profileImageUrl: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    password: null,
+  } : null;
 
   const href = userId ? `/user/${userId}` : teamId ? `/teams/${teamId}` : undefined;
 
@@ -50,9 +63,19 @@ export default function LeaderboardCard({
         <Badge variant={getRankBadgeVariant()} className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
           {rank}
         </Badge>
-        <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarFallback>{initials}</AvatarFallback>
-        </Avatar>
+        {userForAvatar ? (
+          <UserAvatar 
+            user={userForAvatar} 
+            className="h-10 w-10 flex-shrink-0"
+            iconClassName="h-5 w-5"
+          />
+        ) : (
+          <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-sm font-medium">
+              {name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+            </span>
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h4 className="font-semibold truncate" data-testid={`text-name-${rank}`}>{name}</h4>

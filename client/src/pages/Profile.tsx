@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Target, TrendingUp, Calendar, AlertCircle, User } from "lucide-react";
@@ -23,6 +22,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { FITNESS_AVATARS, getAvatarById } from "@/lib/avatars";
 import { Check } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 
 type ChartData = {
   date: string;
@@ -168,20 +168,12 @@ export default function Profile() {
             </div>
           ) : (
             <div className="flex items-center gap-6 flex-wrap">
-              <Avatar className="h-24 w-24">
-                {user?.avatarId ? (
-                  <AvatarFallback className={`bg-gradient-to-br ${getAvatarById(user.avatarId).gradient}`}>
-                    {(() => {
-                      const IconComponent = getAvatarById(user.avatarId).icon;
-                      return <IconComponent className="h-12 w-12 text-white" />;
-                    })()}
-                  </AvatarFallback>
-                ) : user?.profileImageUrl ? (
-                  <AvatarImage src={user.profileImageUrl} alt={getUserFullName()} />
-                ) : (
-                  <AvatarFallback className="text-2xl">{getUserInitials()}</AvatarFallback>
-                )}
-              </Avatar>
+              <UserAvatar 
+                user={user} 
+                className="h-24 w-24"
+                iconClassName="h-12 w-12"
+                fallbackClassName="text-2xl"
+              />
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-1" data-testid="text-user-name">
                   {getUserFullName()}
