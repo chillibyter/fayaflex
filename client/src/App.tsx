@@ -40,7 +40,7 @@ function Router() {
       <Route path="/teams/:teamId" component={TeamLeaderboard} />
       <Route path="/create-team" component={CreateTeam} />
       <Route path="/profile" component={Profile} />
-      <Route path="/user/:userId" component={UserProfile} />
+      <Route path="/users/:userId/profile" component={UserProfile} />
       <Route component={NotFound} />
     </Switch>
   );

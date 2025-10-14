@@ -55,7 +55,7 @@ export default function LeaderboardCard({
     password: null,
   } : null;
 
-  const href = userId ? `/user/${userId}` : teamId ? `/teams/${teamId}` : undefined;
+  const href = userId ? `/users/${userId}/profile` : teamId ? `/teams/${teamId}` : undefined;
 
   const content = (
     <div className="flex items-center gap-4">

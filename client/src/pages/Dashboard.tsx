@@ -3,7 +3,8 @@ import ProgressChart from "@/components/ProgressChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Smartphone, Edit3 } from "lucide-react";
+import { SiGarmin, SiApple } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
 import type { Activity as ActivityType } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,6 +21,21 @@ type ChartData = {
   date: string;
   calories: number;
 };
+
+// Helper function to get source icon and label
+function getSourceInfo(source?: string | null) {
+  switch (source) {
+    case 'apple_health':
+      return { icon: SiApple, label: 'Apple Health', color: 'text-foreground' };
+    case 'garmin':
+      return { icon: SiGarmin, label: 'Garmin', color: 'text-foreground' };
+    case 'android_health':
+      return { icon: Smartphone, label: 'Android Health', color: 'text-foreground' };
+    case 'manual':
+    default:
+      return { icon: Edit3, label: 'Manual Entry', color: 'text-foreground' };
+  }
+}
 
 export default function Dashboard() {
   const { 
@@ -130,24 +146,35 @@ export default function Dashboard() {
                 <Skeleton className="h-16 w-full" />
               </>
             ) : topActivities.length > 0 ? (
-              topActivities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center justify-between p-3 rounded-md hover-elevate"
-                  data-testid={`activity-${activity.id}`}
-                >
-                  <div>
-                    <p className="font-medium">{activity.workoutType || 'General Activity'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
-                    </p>
+              topActivities.map((activity) => {
+                const sourceInfo = getSourceInfo(activity.source);
+                const SourceIcon = sourceInfo.icon;
+                
+                return (
+                  <div
+                    key={activity.id}
+                    className="flex items-center justify-between gap-4 p-3 rounded-md hover-elevate"
+                    data-testid={`activity-${activity.id}`}
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium">{activity.workoutType || 'General Activity'}</p>
+                        <Badge variant="outline" className="text-xs gap-1" data-testid={`activity-source-${activity.id}`}>
+                          <SourceIcon className="h-3 w-3" />
+                          {sourceInfo.label}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">{activity.calories} cal</p>
+                      <p className="text-sm text-muted-foreground">{activity.steps} steps</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">{activity.calories} cal</p>
-                    <p className="text-sm text-muted-foreground">{activity.steps} steps</p>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No recent activities. Start tracking to see your progress!

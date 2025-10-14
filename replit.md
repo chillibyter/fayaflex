@@ -53,3 +53,21 @@ Preferred communication style: Simple, everyday language.
 - **Radix UI**: For accessible UI primitives.
 - **Class Variance Authority**: For managing component variants.
 - **Sharp**: For server-side image compression.
+
+## Recent Changes
+
+**Activity Source Indicators** (October 14, 2025)
+- Visual badges show whether activities were logged manually or synced from devices
+- Source types supported:
+  - Manual Entry: Edit3 icon + "Manual Entry" label
+  - Apple Health: Apple icon + "Apple Health" label  
+  - Garmin: Garmin icon + "Garmin" label
+  - Android Health: Smartphone icon + "Android Health" label
+- Implementation:
+  - Database: Activities table has "source" field (defaults to 'manual')
+  - Helper function getSourceInfo() maps source values to icons/labels
+  - Dashboard: Shows source badge in Recent Activity section
+  - UserProfile (/users/:userId/profile): Shows source badge on activity cards
+  - Profile (/profile): Shows stats and progress chart only (no activity list)
+- Route update: Fixed UserProfile route from /user/:userId to /users/:userId/profile
+- E2E tested: Manual entry displays correct badge on Dashboard

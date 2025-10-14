@@ -2,13 +2,29 @@ import { useParams } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Dumbbell, Flame } from "lucide-react";
+import { ArrowLeft, Calendar, Dumbbell, Flame, Smartphone, Edit3 } from "lucide-react";
+import { SiGarmin, SiApple } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import type { User as UserType, Activity } from "@shared/schema";
 import { useLocation } from "wouter";
 import { UserAvatar } from "@/components/UserAvatar";
+
+// Helper function to get source icon and label
+function getSourceInfo(source?: string | null) {
+  switch (source) {
+    case 'apple_health':
+      return { icon: SiApple, label: 'Apple Health', color: 'text-foreground' };
+    case 'garmin':
+      return { icon: SiGarmin, label: 'Garmin', color: 'text-foreground' };
+    case 'android_health':
+      return { icon: Smartphone, label: 'Android Health', color: 'text-foreground' };
+    case 'manual':
+    default:
+      return { icon: Edit3, label: 'Manual Entry', color: 'text-foreground' };
+  }
+}
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -161,42 +177,51 @@ export default function UserProfile() {
             </div>
           ) : activities.length > 0 ? (
             <div className="space-y-4">
-              {activities.map((activity) => (
-                <Card key={activity.id} className="hover-elevate" data-testid={`activity-${activity.id}`}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline">{activity.workoutType}</Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {format(new Date(activity.date), 'MMMM d, yyyy')}
-                          </span>
-                        </div>
-                        <div className="flex gap-6 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Calories:</span>{' '}
-                            <span className="font-semibold">{activity.calories}</span>
+              {activities.map((activity) => {
+                const sourceInfo = getSourceInfo(activity.source);
+                const SourceIcon = sourceInfo.icon;
+                
+                return (
+                  <Card key={activity.id} className="hover-elevate" data-testid={`activity-${activity.id}`}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <Badge variant="outline">{activity.workoutType}</Badge>
+                            <Badge variant="outline" className="text-xs gap-1" data-testid={`activity-source-${activity.id}`}>
+                              <SourceIcon className="h-3 w-3" />
+                              {sourceInfo.label}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              {format(new Date(activity.date), 'MMMM d, yyyy')}
+                            </span>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Steps:</span>{' '}
-                            <span className="font-semibold">{activity.steps}</span>
+                          <div className="flex gap-6 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Calories:</span>{' '}
+                              <span className="font-semibold">{activity.calories}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Steps:</span>{' '}
+                              <span className="font-semibold">{activity.steps}</span>
+                            </div>
                           </div>
                         </div>
+                        {activity.attachmentUrl && (
+                          <div className="w-32 h-32 rounded-md overflow-hidden">
+                            <img
+                              src={activity.attachmentUrl}
+                              alt="Activity evidence"
+                              className="w-full h-full object-cover"
+                              data-testid="activity-attachment"
+                            />
+                          </div>
+                        )}
                       </div>
-                      {activity.attachmentUrl && (
-                        <div className="w-32 h-32 rounded-md overflow-hidden">
-                          <img
-                            src={activity.attachmentUrl}
-                            alt="Activity evidence"
-                            className="w-full h-full object-cover"
-                            data-testid="activity-attachment"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12">
