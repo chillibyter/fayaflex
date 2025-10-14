@@ -1,0 +1,88 @@
+import multer from 'multer';
+import sharp from 'sharp';
+import path from 'path';
+import { promises as fs } from 'fs';
+
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'evidence');
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
+// Ensure upload directory exists
+export async function ensureUploadDir() {
+  try {
+    await fs.access(UPLOAD_DIR);
+  } catch {
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  }
+}
+
+// Multer configuration for handling multipart/form-data
+export const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+  },
+  fileFilter: (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'));
+    }
+    cb(null, true);
+  },
+});
+
+// Compress and save image
+export async function compressAndSaveImage(buffer: Buffer, originalName: string): Promise<string> {
+  await ensureUploadDir();
+
+  const timestamp = Date.now();
+  const randomString = Math.random().toString(36).substring(7);
+  const filename = `${timestamp}_${randomString}.webp`;
+  const filepath = path.join(UPLOAD_DIR, filename);
+
+  // Compress image to WebP format with quality optimization
+  await sharp(buffer)
+    .webp({
+      quality: 80,
+      effort: 6,
+    })
+    .resize(1920, 1920, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .toFile(filepath);
+
+  // Return relative path for storage
+  return `/uploads/evidence/${filename}`;
+}
+
+// Delete old evidence files (older than 24 hours)
+export async function cleanupOldEvidence() {
+  try {
+    await ensureUploadDir();
+    const files = await fs.readdir(UPLOAD_DIR);
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    for (const file of files) {
+      const filepath = path.join(UPLOAD_DIR, file);
+      const stats = await fs.stat(filepath);
+      
+      if (now - stats.mtime.getTime() > twentyFourHours) {
+        await fs.unlink(filepath);
+        console.log(`Deleted old evidence: ${file}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error cleaning up old evidence:', error);
+  }
+}
+
+// Get file age in hours
+export async function getFileAgeHours(filepath: string): Promise<number> {
+  try {
+    const stats = await fs.stat(filepath);
+    const now = Date.now();
+    return (now - stats.mtime.getTime()) / (60 * 60 * 1000);
+  } catch {
+    return 0;
+  }
+}

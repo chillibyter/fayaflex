@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema } from "@shared/schema";
 import { z } from "zod";
+import { upload, compressAndSaveImage, cleanupOldEvidence } from "./imageUpload";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -414,6 +415,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activity routes
+  // Image upload endpoint for evidence
+  app.post("/api/upload/evidence", isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      // Compress and save image
+      const imagePath = await compressAndSaveImage(req.file.buffer, req.file.originalname);
+      
+      res.json({ 
+        success: true,
+        path: imagePath,
+        message: "Image uploaded and compressed successfully" 
+      });
+    } catch (error: any) {
+      console.error("Error uploading evidence:", error);
+      res.status(500).json({ message: error.message || "Failed to upload image" });
+    }
+  });
+
   app.post("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
