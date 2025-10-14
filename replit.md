@@ -80,6 +80,21 @@ Preferred communication style: Simple, everyday language.
 - Authentication now falls back to primary domain if exact hostname match fails
 - Supports both development and published domains seamlessly
 
+**Custom Username/Password Authentication** (October 14, 2025)
+- Replaced Replit Auth with custom in-app username/password authentication
+- No external redirects - seamless login experience within the application
+- Passport.js local strategy with scrypt password hashing (secure + timing-safe)
+- Database schema updated: added nullable username/password fields to preserve 94 existing users
+- Security features:
+  - Password sanitization: all API responses exclude password field (even hashed)
+  - Zod validation on all auth endpoints (register, login)
+  - HttpOnly, secure session cookies stored in PostgreSQL
+  - 7-day session TTL with automatic expiration
+- Frontend: AuthProvider context, custom AuthPage with login/signup tabs
+- Backend: /api/register, /api/login, /api/logout, /api/auth/user endpoints
+- Session deserialization gracefully handles legacy Replit Auth users
+- E2E tested: registration, login, logout, session persistence, protected routes
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -108,10 +123,13 @@ Preferred communication style: Simple, everyday language.
 **Server Framework**
 - Express.js server with TypeScript
 - RESTful API design pattern
-- Session-based authentication using Replit Auth (OpenID Connect)
+- Session-based authentication using Passport.js local strategy
 
 **API Structure**
-- `/api/auth/*` - Authentication endpoints (user session, login/logout)
+- `/api/register` - User registration with username/password
+- `/api/login` - User login authentication
+- `/api/logout` - User logout (session termination)
+- `/api/auth/user` - Get current authenticated user
 - `/api/teams` - Team CRUD operations and member management
 - `/api/activities` - Activity logging and retrieval with filtering
 - `/api/leaderboard` - Ranking calculations for individuals and teams
@@ -119,10 +137,14 @@ Preferred communication style: Simple, everyday language.
 - Middleware for authentication and request logging
 
 **Authentication & Authorization**
-- Replit Auth integration via OpenID Connect/Passport.js
+- Custom username/password authentication via Passport.js local strategy
+- Scrypt password hashing with random salt and timing-safe comparison
 - Session storage in PostgreSQL via connect-pg-simple
+- Zod validation on all auth endpoints (register, login)
+- Password sanitization: responses never include password field
 - Protected routes using `isAuthenticated` middleware
 - User sessions tied to database for persistence across server restarts
+- 7-day session TTL with httpOnly, secure cookies
 
 ### Data Storage
 
@@ -145,7 +167,6 @@ Preferred communication style: Simple, everyday language.
 ### External Dependencies
 
 **Third-Party Services**
-- Replit Auth: OpenID Connect authentication provider
 - Neon Database: Serverless PostgreSQL hosting
 - Google Fonts: Inter font family for typography
 
