@@ -22,8 +22,10 @@ import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { randomBytes } from "crypto";
 
 export interface IStorage {
-  // User operations (required for Replit Auth)
+  // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: Partial<UpsertUser> & { username: string; password: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
 
@@ -69,26 +71,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    // First try to find user by ID (primary identifier)
-    const [existingById] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userData.id));
-    
-    if (existingById) {
-      // User exists by ID - update their data (handles email changes)
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          profileImageUrl: userData.profileImageUrl,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, userData.id))
-        .returning();
-      return updatedUser;
+    // First try to find user by ID (primary identifier) if provided
+    if (userData.id) {
+      const [existingById] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userData.id));
+      
+      if (existingById) {
+        // User exists by ID - update their data (handles email changes)
+        const [updatedUser] = await db
+          .update(users)
+          .set({
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            profileImageUrl: userData.profileImageUrl,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, userData.id))
+          .returning();
+        return updatedUser;
+      }
     }
     
     // User doesn't exist by ID - check for email conflict
@@ -147,6 +151,19 @@ export class DatabaseStorage implements IStorage {
       throw new Error("User not found");
     }
     
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(userData: Partial<UpsertUser> & { username: string; password: string }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
     return user;
   }
 
