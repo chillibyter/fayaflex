@@ -5,17 +5,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, TrendingUp, Users, Trophy } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  // Login state
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  
+  // Register state
+  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  
+  // Migration state
+  const [migrateFirstName, setMigrateFirstName] = useState("");
+  const [migrateUsername, setMigrateUsername] = useState("");
+  const [migratePassword, setMigratePassword] = useState("");
+  const [migrateLastName, setMigrateLastName] = useState("");
+  
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // Redirect if already logged in
   if (user) {
@@ -23,20 +39,52 @@ export default function AuthPage() {
     return null;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (isLogin) {
-      await loginMutation.mutateAsync({ username, password });
-    } else {
-      await registerMutation.mutateAsync({
-        username,
-        password,
-        email: email || null,
-        firstName: firstName || null,
-        lastName: lastName || null,
+  const migrateMutation = useMutation({
+    mutationFn: async (data: { firstName: string; username: string; password: string; lastName?: string }) => {
+      const res = await apiRequest("POST", "/api/migrate-account", data);
+      return res.json();
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(["/api/auth/user"], user);
+      toast({
+        title: "Account migrated successfully!",
+        description: "Your account has been updated. Welcome back!",
       });
-    }
+      setLocation("/");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Migration failed",
+        description: error.message || "Could not migrate account. Please check your information.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await loginMutation.mutateAsync({ username: loginUsername, password: loginPassword });
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await registerMutation.mutateAsync({
+      username: registerUsername,
+      password: registerPassword,
+      email: email || null,
+      firstName: firstName || null,
+      lastName: lastName || null,
+    });
+  };
+
+  const handleMigrate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await migrateMutation.mutateAsync({
+      firstName: migrateFirstName,
+      username: migrateUsername,
+      password: migratePassword,
+      lastName: migrateLastName || undefined,
+    });
   };
 
   return (
@@ -49,47 +97,94 @@ export default function AuthPage() {
               <Dumbbell className="w-8 h-8 text-primary" />
               <h1 className="text-2xl font-bold">Ultimate Fitness Challenge</h1>
             </div>
-            <CardTitle className="text-2xl">
-              {isLogin ? "Welcome back" : "Create an account"}
-            </CardTitle>
-            <CardDescription>
-              {isLogin
-                ? "Enter your credentials to access your account"
-                : "Join the ultimate fitness competition"}
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  data-testid="input-username"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  minLength={3}
-                />
-              </div>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="login" data-testid="tab-login">Login</TabsTrigger>
+                <TabsTrigger value="signup" data-testid="tab-signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="migrate" data-testid="tab-migrate">Migrate</TabsTrigger>
+              </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  data-testid="input-password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </div>
+              <TabsContent value="login" className="space-y-4">
+                <div className="space-y-2">
+                  <CardTitle className="text-2xl">Welcome back</CardTitle>
+                  <CardDescription>Enter your credentials to access your account</CardDescription>
+                </div>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-username">Username</Label>
+                    <Input
+                      id="login-username"
+                      data-testid="input-login-username"
+                      type="text"
+                      placeholder="Enter your username"
+                      value={loginUsername}
+                      onChange={(e) => setLoginUsername(e.target.value)}
+                      required
+                      minLength={3}
+                    />
+                  </div>
 
-              {!isLogin && (
-                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Password</Label>
+                    <Input
+                      id="login-password"
+                      data-testid="input-login-password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    data-testid="button-login"
+                    className="w-full"
+                    disabled={loginMutation.isPending}
+                  >
+                    {loginMutation.isPending ? "Loading..." : "Sign In"}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="signup" className="space-y-4">
+                <div className="space-y-2">
+                  <CardTitle className="text-2xl">Create an account</CardTitle>
+                  <CardDescription>Join the ultimate fitness competition</CardDescription>
+                </div>
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="register-username">Username</Label>
+                    <Input
+                      id="register-username"
+                      data-testid="input-register-username"
+                      type="text"
+                      placeholder="Choose a username"
+                      value={registerUsername}
+                      onChange={(e) => setRegisterUsername(e.target.value)}
+                      required
+                      minLength={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">Password</Label>
+                    <Input
+                      id="register-password"
+                      data-testid="input-register-password"
+                      type="password"
+                      placeholder="Create a password"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email (optional)</Label>
                     <Input
@@ -127,35 +222,93 @@ export default function AuthPage() {
                       />
                     </div>
                   </div>
-                </>
-              )}
 
-              <Button
-                type="submit"
-                data-testid={isLogin ? "button-login" : "button-register"}
-                className="w-full"
-                disabled={loginMutation.isPending || registerMutation.isPending}
-              >
-                {loginMutation.isPending || registerMutation.isPending
-                  ? "Loading..."
-                  : isLogin
-                  ? "Sign In"
-                  : "Create Account"}
-              </Button>
+                  <Button
+                    type="submit"
+                    data-testid="button-register"
+                    className="w-full"
+                    disabled={registerMutation.isPending}
+                  >
+                    {registerMutation.isPending ? "Loading..." : "Create Account"}
+                  </Button>
+                </form>
+              </TabsContent>
 
-              <div className="text-center text-sm">
-                <button
-                  type="button"
-                  data-testid="button-toggle-auth-mode"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-primary hover:underline"
-                >
-                  {isLogin
-                    ? "Don't have an account? Sign up"
-                    : "Already have an account? Sign in"}
-                </button>
-              </div>
-            </form>
+              <TabsContent value="migrate" className="space-y-4">
+                <div className="space-y-2">
+                  <CardTitle className="text-2xl">Claim Your Account</CardTitle>
+                  <CardDescription>
+                    Migrate your old account by setting a username and password
+                  </CardDescription>
+                </div>
+                <form onSubmit={handleMigrate} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="migrate-firstname">Your First Name</Label>
+                    <Input
+                      id="migrate-firstname"
+                      data-testid="input-migrate-firstname"
+                      type="text"
+                      placeholder="Enter your first name from old account"
+                      value={migrateFirstName}
+                      onChange={(e) => setMigrateFirstName(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This must match your old account's first name
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="migrate-username">New Username</Label>
+                    <Input
+                      id="migrate-username"
+                      data-testid="input-migrate-username"
+                      type="text"
+                      placeholder="Choose a username"
+                      value={migrateUsername}
+                      onChange={(e) => setMigrateUsername(e.target.value)}
+                      required
+                      minLength={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="migrate-password">New Password</Label>
+                    <Input
+                      id="migrate-password"
+                      data-testid="input-migrate-password"
+                      type="password"
+                      placeholder="Create a password"
+                      value={migratePassword}
+                      onChange={(e) => setMigratePassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="migrate-lastname">Last Name (optional)</Label>
+                    <Input
+                      id="migrate-lastname"
+                      data-testid="input-migrate-lastname"
+                      type="text"
+                      placeholder="Last name"
+                      value={migrateLastName}
+                      onChange={(e) => setMigrateLastName(e.target.value)}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    data-testid="button-migrate"
+                    className="w-full"
+                    disabled={migrateMutation.isPending}
+                  >
+                    {migrateMutation.isPending ? "Migrating..." : "Claim Account"}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
