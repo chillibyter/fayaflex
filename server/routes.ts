@@ -708,6 +708,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Daily breakdown route - for detailed stat views (calories/steps)
+  app.get("/api/stats/daily-breakdown", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const metric = req.query.metric as string; // 'calories' or 'steps'
+      
+      if (!metric || (metric !== 'calories' && metric !== 'steps')) {
+        return res.status(400).json({ message: "Invalid metric. Must be 'calories' or 'steps'" });
+      }
+      
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      
+      // Get all activities for the current month
+      const activities = await storage.getUserActivities(userId, month, year);
+      
+      // Get first day of month
+      const firstDayOfMonth = new Date(year, month - 1, 1);
+      
+      // Calculate 30 days from beginning of month
+      const startDate = new Date(firstDayOfMonth);
+      const endDate = new Date(firstDayOfMonth);
+      endDate.setDate(endDate.getDate() + 29); // 30 days total (0-29)
+      
+      // Group activities by date
+      const dailyData: { [key: string]: number } = {};
+      
+      // Initialize all days with 0
+      for (let d = new Date(startDate); d <= endDate && d <= now; d.setDate(d.getDate() + 1)) {
+        const dateKey = d.toISOString().split('T')[0];
+        dailyData[dateKey] = 0;
+      }
+      
+      // Sum up the metric for each day
+      activities.forEach(activity => {
+        const activityDate = new Date(activity.date);
+        if (activityDate >= startDate && activityDate <= endDate) {
+          const dateKey = activity.date;
+          dailyData[dateKey] = (dailyData[dateKey] || 0) + (metric === 'calories' ? activity.calories : activity.steps);
+        }
+      });
+      
+      // Convert to array format for charts
+      const chartData = Object.entries(dailyData)
+        .map(([date, value]) => ({
+          date: new Date(date).getDate().toString(), // Just the day number
+          fullDate: date,
+          value,
+        }))
+        .sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
+      
+      res.json(chartData);
+    } catch (error) {
+      console.error("Error fetching daily breakdown:", error);
+      res.status(500).json({ message: "Failed to fetch daily breakdown" });
+    }
+  });
+
+  // Workout calendar route - for calendar view of workout days
+  app.get("/api/stats/workout-calendar", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      
+      // Get all activities for the current month
+      const activities = await storage.getUserActivities(userId, month, year);
+      
+      // Group activities by date and check if there are workouts
+      const workoutDays = activities
+        .filter(activity => activity.workoutType) // Only activities with workout types
+        .map(activity => ({
+          date: activity.date,
+          workoutType: activity.workoutType,
+          calories: activity.calories,
+        }));
+      
+      // Get unique workout days
+      const uniqueDays = Array.from(new Set(workoutDays.map(w => w.date)))
+        .map(date => {
+          const dayWorkouts = workoutDays.filter(w => w.date === date);
+          return {
+            date,
+            workouts: dayWorkouts.length,
+            types: Array.from(new Set(dayWorkouts.map(w => w.workoutType))),
+            totalCalories: dayWorkouts.reduce((sum, w) => sum + w.calories, 0),
+          };
+        });
+      
+      res.json(uniqueDays);
+    } catch (error) {
+      console.error("Error fetching workout calendar:", error);
+      res.status(500).json({ message: "Failed to fetch workout calendar" });
+    }
+  });
+
   // Notification routes
   app.post("/api/notifications/generate", isAuthenticated, async (req: any, res) => {
     try {
