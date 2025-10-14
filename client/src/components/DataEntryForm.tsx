@@ -41,6 +41,8 @@ export default function DataEntryForm() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/progress/chart"] });
       setCalories(0);
       setSteps(0);
       setWorkoutType("");
