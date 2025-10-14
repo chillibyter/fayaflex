@@ -37,6 +37,8 @@ export interface IStorage {
   getTeamByInviteCode(code: string): Promise<Team | undefined>;
   getUserTeams(userId: string): Promise<Team[]>;
   getAllTeams(): Promise<Team[]>;
+  archiveTeam(teamId: string): Promise<Team>;
+  getTeamLastActivityDate(teamId: string): Promise<Date | null>;
 
   // Team member operations
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
@@ -235,17 +237,61 @@ export class DatabaseStorage implements IStorage {
         description: teams.description,
         ownerId: teams.ownerId,
         inviteCode: teams.inviteCode,
+        status: teams.status,
         createdAt: teams.createdAt,
       })
       .from(teamMembers)
       .innerJoin(teams, eq(teamMembers.teamId, teams.id))
-      .where(eq(teamMembers.userId, userId));
+      .where(
+        and(
+          eq(teamMembers.userId, userId),
+          eq(teams.status, "active") // Only show active teams
+        )
+      );
     
-    return userTeams;
+    // Filter out teams with no activity in the past 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const activeTeams = [];
+    for (const team of userTeams) {
+      const lastActivity = await this.getTeamLastActivityDate(team.id);
+      // Include team if it has activity within 30 days, or if it's a new team with no activities yet
+      if (!lastActivity || lastActivity >= thirtyDaysAgo) {
+        activeTeams.push(team);
+      }
+    }
+    
+    return activeTeams;
   }
 
   async getAllTeams(): Promise<Team[]> {
     return await db.select().from(teams);
+  }
+
+  async archiveTeam(teamId: string): Promise<Team> {
+    const [team] = await db
+      .update(teams)
+      .set({ status: "archived" })
+      .where(eq(teams.id, teamId))
+      .returning();
+    return team;
+  }
+
+  async getTeamLastActivityDate(teamId: string): Promise<Date | null> {
+    // Get all team members
+    const members = await this.getTeamMembers(teamId);
+    if (members.length === 0) return null;
+
+    const memberIds = members.map(m => m.userId);
+
+    // Get the most recent activity from any team member
+    const [result] = await db
+      .select({ lastActivity: sql<Date>`MAX(${activities.createdAt})` })
+      .from(activities)
+      .where(inArray(activities.userId, memberIds));
+
+    return result?.lastActivity || null;
   }
 
   // Team member operations

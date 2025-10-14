@@ -419,6 +419,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Archive team endpoint - only owner can archive
+  app.post("/api/teams/:id/archive", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const teamId = req.params.id;
+
+      // Get team and check if user is owner
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      if (team.ownerId !== userId) {
+        return res.status(403).json({ message: "Only team owner can end the challenge" });
+      }
+
+      const archivedTeam = await storage.archiveTeam(teamId);
+      res.json({ success: true, team: archivedTeam });
+    } catch (error: any) {
+      console.error("Error archiving team:", error);
+      res.status(500).json({ message: error.message || "Failed to archive team" });
+    }
+  });
+
   // Activity routes
   // Image upload endpoint for evidence
   app.post("/api/upload/evidence", isAuthenticated, upload.single('image'), async (req: any, res) => {
