@@ -172,26 +172,20 @@ export const insertActivitySchema = createInsertSchema(activities)
     userId: true,
   })
   .extend({
-    // Server-side validation for attachment data URLs
+    // Server-side validation for attachment file paths
     attachmentUrl: z.string().nullable().optional().refine(
       (val) => {
         if (!val) return true; // Optional field, accepts null and undefined
         
-        // Check if it's a valid data URL
-        if (!val.startsWith('data:image/')) {
-          return false;
-        }
-        
-        // Check size (max 5MB when Base64 encoded, ~6.7MB as Base64)
-        const base64Data = val.split(',')[1];
-        if (base64Data && base64Data.length > 6700000) {
+        // Check if it's a valid file path (starts with /uploads/evidence/)
+        if (!val.startsWith('/uploads/evidence/')) {
           return false;
         }
         
         return true;
       },
       {
-        message: "Invalid attachment: must be an image data URL under 5MB"
+        message: "Invalid attachment: must be a valid evidence file path"
       }
     ),
   });
