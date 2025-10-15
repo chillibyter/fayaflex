@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
+import { setupOAuth, isOAuthConfigured } from "./oauth";
 import { insertActivitySchema, insertTeamSchema } from "@shared/schema";
 import { z } from "zod";
 import { upload, compressAndSaveImage, cleanupOldEvidence } from "./imageUpload";
@@ -19,6 +20,9 @@ import {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
+  
+  // OAuth setup (Google, Facebook, Apple)
+  setupOAuth(app);
 
   // Serve uploaded evidence images
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
@@ -46,6 +50,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: error.message });
       }
       res.status(400).json({ message: error.message || "Failed to update user" });
+    }
+  });
+
+  // OAuth provider routes
+  app.get("/api/oauth/config", async (req, res) => {
+    try {
+      const config = isOAuthConfigured();
+      res.json(config);
+    } catch (error) {
+      console.error("Error getting OAuth config:", error);
+      res.status(500).json({ message: "Failed to get OAuth configuration" });
+    }
+  });
+
+  app.get("/api/oauth/providers", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const providers = await storage.getUserOAuthProviders(userId);
+      res.json(providers);
+    } catch (error) {
+      console.error("Error fetching OAuth providers:", error);
+      res.status(500).json({ message: "Failed to fetch OAuth providers" });
+    }
+  });
+
+  app.delete("/api/oauth/providers/:provider", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { provider } = req.params;
+      
+      await storage.unlinkOAuthProvider(userId, provider);
+      res.json({ message: "Provider unlinked successfully" });
+    } catch (error) {
+      console.error("Error unlinking OAuth provider:", error);
+      res.status(500).json({ message: "Failed to unlink provider" });
     }
   });
 
