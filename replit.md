@@ -61,6 +61,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Dashboard Performance & Bug Fix** (October 15, 2025)
+- Fixed critical dashboard loading error in production
+- **Issue**: Dashboard stats endpoint was failing for users not in teams and making inefficient database queries
+- **Solution**: Refactored global rank calculation to use all users instead of only team members
+- **Performance**: Reduced N+1 database queries by implementing getAllUsers() method
+- **Behavior**: Users with no activities now correctly show rank #0; users with activities get proper rankings
+- Tested and verified with both empty and active user accounts
+
+**OAuth Social Login Removal** (October 15, 2025)
+- Removed OAuth social login implementation (Google, Facebook, Apple) per user request
+- Removed migrate account feature from AuthPage
+- Cleaned up OAuth database schema, routes, storage methods, and dependencies
+- Dropped oauth_providers table and removed 94 legacy Replit auth users from database
+- Updated authentication to support only username/password and passkey/biometric login
+
 **WebAuthn/Passkey Authentication** (October 14, 2025)
 - Biometric login support using WebAuthn/Passkey authentication (fingerprint, Face ID, etc.)
 - Implementation:

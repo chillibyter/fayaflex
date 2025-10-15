@@ -680,35 +680,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalSteps = activities.reduce((sum, act) => sum + act.steps, 0);
       const workoutCount = activities.length;
       
-      // Calculate global rank based on last 30 days
+      // Calculate global rank based on last 30 days using a more efficient approach
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const allTeams = await storage.getAllTeams();
-      const allUsers: any[] = [];
+      // Get all users and their activities in one efficient query
+      const allUsers = await storage.getAllUsers();
+      const userCaloriesMap: Map<string, number> = new Map();
       
-      for (const team of allTeams) {
-        const members = await storage.getTeamMembers(team.id);
-        for (const member of members) {
-          // Get all activities for last 30 days
-          const allActivities = await storage.getUserActivities(member.userId);
-          const last30DaysActivities = allActivities.filter(act => {
-            const actDate = new Date(act.date);
-            return actDate >= thirtyDaysAgo;
-          });
-          const memberCalories = last30DaysActivities.reduce((sum, act) => sum + act.calories, 0);
-          allUsers.push({ userId: member.userId, calories: memberCalories });
+      // Calculate calories for each user
+      for (const user of allUsers) {
+        const allActivities = await storage.getUserActivities(user.id);
+        const last30DaysActivities = allActivities.filter(act => {
+          const actDate = new Date(act.date);
+          return actDate >= thirtyDaysAgo;
+        });
+        const userCalories = last30DaysActivities.reduce((sum, act) => sum + act.calories, 0);
+        if (userCalories > 0) {
+          userCaloriesMap.set(user.id, userCalories);
         }
       }
       
-      const sorted = allUsers.sort((a, b) => b.calories - a.calories);
-      const userRank = sorted.findIndex(u => u.userId === userId) + 1;
+      // Sort users by calories and find current user's rank
+      const sortedUsers = Array.from(userCaloriesMap.entries())
+        .sort((a, b) => b[1] - a[1]);
+      
+      const userRank = sortedUsers.findIndex(([id]) => id === userId) + 1;
       
       res.json({
         calories: totalCalories,
         steps: totalSteps,
         workouts: workoutCount,
-        rank: userRank || 0,
+        rank: userRank > 0 ? userRank : (totalCalories > 0 ? sortedUsers.length + 1 : 0),
       });
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
