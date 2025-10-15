@@ -61,6 +61,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Victory Wall Feature** (October 15, 2025)
+- Implemented team-based victory wall to showcase monthly champions
+- **Database**: Added monthly_winners table with unique constraint on (teamId, month, year)
+- **API Endpoints**: 
+  - GET /api/teams/:id/victory-wall - Retrieves all monthly winners for a team (members only)
+  - POST /api/teams/:id/calculate-winner - Calculates and records winner for a specific month/year (owner only)
+- **Storage**: Added createMonthlyWinner(), getTeamMonthlyWinners(), and getMonthlyWinner() methods
+- **UI**: 
+  - Created VictoryWall page (/teams/:teamId/victory-wall) with trophy-themed cards for each winner
+  - Added "Victory Wall" button to TeamCard component (visible to all team members)
+  - Team owners can calculate monthly winners with a single click
+  - Displays winner's name, avatar, month/year, and total calories burned
+- **Authorization**: Only team members can view victory wall; only team owner can calculate winners
+- **Data**: Winner records include userId, totalCalories, month, year, and enriched with user details
+
 **Case-Insensitive Usernames** (October 15, 2025)
 - Implemented case-insensitive username authentication
 - **Login**: Users can now login with any case variation of their username (e.g., "JohnDoe", "johndoe", "JOHNDOE" all work)
