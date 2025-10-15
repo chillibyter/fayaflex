@@ -451,6 +451,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Victory Wall endpoints
+  app.get("/api/teams/:id/victory-wall", isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = req.params.id;
+      const userId = req.user.id;
+
+      // Check if user is a member of this team
+      const isMember = await storage.isUserInTeam(userId, teamId);
+      if (!isMember) {
+        return res.status(403).json({ message: "Not authorized to view this team's victory wall" });
+      }
+
+      const winners = await storage.getTeamMonthlyWinners(teamId);
+      
+      // Enrich with user details
+      const winnersWithDetails = await Promise.all(
+        winners.map(async (winner) => {
+          const user = await storage.getUser(winner.userId);
+          return {
+            ...winner,
+            userName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown',
+            userAvatarId: user?.avatarId,
+          };
+        })
+      );
+
+      res.json(winnersWithDetails);
+    } catch (error) {
+      console.error("Error fetching victory wall:", error);
+      res.status(500).json({ message: "Failed to fetch victory wall" });
+    }
+  });
+
+  app.post("/api/teams/:id/calculate-winner", isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = req.params.id;
+      const userId = req.user.id;
+
+      // Check if user is team owner
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      if (team.ownerId !== userId) {
+        return res.status(403).json({ message: "Only team owner can calculate winners" });
+      }
+
+      // Validate request body
+      const winnerSchema = z.object({
+        month: z.number().min(1).max(12),
+        year: z.number().min(2020).max(2100),
+      });
+      const validatedData = winnerSchema.parse(req.body);
+
+      // Get all team members and calculate their totals for that month
+      const members = await storage.getTeamMembers(teamId);
+      const memberStats = [];
+
+      for (const member of members) {
+        const activities = await storage.getUserActivities(member.userId, validatedData.month, validatedData.year);
+        const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
+        
+        if (totalCalories > 0) {
+          memberStats.push({
+            userId: member.userId,
+            totalCalories,
+          });
+        }
+      }
+
+      if (memberStats.length === 0) {
+        return res.status(400).json({ message: "No activities found for this month" });
+      }
+
+      // Sort by calories and get winner
+      memberStats.sort((a, b) => b.totalCalories - a.totalCalories);
+      const winner = memberStats[0];
+
+      // Create/update monthly winner record
+      const monthlyWinner = await storage.createMonthlyWinner({
+        teamId,
+        userId: winner.userId,
+        month: validatedData.month,
+        year: validatedData.year,
+        totalCalories: winner.totalCalories,
+      });
+
+      const user = await storage.getUser(winner.userId);
+      res.json({
+        ...monthlyWinner,
+        userName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown',
+      });
+    } catch (error: any) {
+      console.error("Error calculating winner:", error);
+      res.status(400).json({ message: error.message || "Failed to calculate winner" });
+    }
+  });
+
   // Activity routes
   // Image upload endpoint for evidence
   app.post("/api/upload/evidence", isAuthenticated, upload.single('image'), async (req: any, res) => {
