@@ -6,6 +6,7 @@ import {
   deviceConnections,
   notifications,
   passkeys,
+  monthlyWinners,
   type User,
   type UpsertUser,
   type Team,
@@ -19,6 +20,8 @@ import {
   type InsertNotification,
   type Passkey,
   type InsertPasskey,
+  type MonthlyWinner,
+  type InsertMonthlyWinner,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
@@ -76,6 +79,11 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string, date: string): Promise<Notification[]>;
   deleteUserNotifications(userId: string, date: string): Promise<void>;
+
+  // Monthly winners operations (Victory Wall)
+  createMonthlyWinner(winner: InsertMonthlyWinner): Promise<MonthlyWinner>;
+  getTeamMonthlyWinners(teamId: string): Promise<MonthlyWinner[]>;
+  getMonthlyWinner(teamId: string, month: number, year: number): Promise<MonthlyWinner | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -558,6 +566,44 @@ export class DatabaseStorage implements IStorage {
       .update(passkeys)
       .set({ counter })
       .where(eq(passkeys.id, id));
+  }
+
+  // Monthly winners operations (Victory Wall)
+  async createMonthlyWinner(winnerData: InsertMonthlyWinner): Promise<MonthlyWinner> {
+    const [winner] = await db
+      .insert(monthlyWinners)
+      .values(winnerData)
+      .onConflictDoUpdate({
+        target: [monthlyWinners.teamId, monthlyWinners.month, monthlyWinners.year],
+        set: {
+          userId: winnerData.userId,
+          totalCalories: winnerData.totalCalories,
+        },
+      })
+      .returning();
+    return winner;
+  }
+
+  async getTeamMonthlyWinners(teamId: string): Promise<MonthlyWinner[]> {
+    return await db
+      .select()
+      .from(monthlyWinners)
+      .where(eq(monthlyWinners.teamId, teamId))
+      .orderBy(desc(monthlyWinners.year), desc(monthlyWinners.month));
+  }
+
+  async getMonthlyWinner(teamId: string, month: number, year: number): Promise<MonthlyWinner | undefined> {
+    const [winner] = await db
+      .select()
+      .from(monthlyWinners)
+      .where(
+        and(
+          eq(monthlyWinners.teamId, teamId),
+          eq(monthlyWinners.month, month),
+          eq(monthlyWinners.year, year)
+        )
+      );
+    return winner;
   }
 }
 
