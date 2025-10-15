@@ -250,3 +250,38 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+// Monthly team winners table (Victory Wall)
+export const monthlyWinners = pgTable("monthly_winners", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  month: integer("month").notNull(), // 1-12
+  year: integer("year").notNull(),
+  totalCalories: integer("total_calories").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  teamMonthYearUnique: uniqueIndex("monthly_winners_team_month_year_unique").on(table.teamId, table.month, table.year),
+}));
+
+export const monthlyWinnersRelations = relations(monthlyWinners, ({ one }) => ({
+  team: one(teams, {
+    fields: [monthlyWinners.teamId],
+    references: [teams.id],
+  }),
+  user: one(users, {
+    fields: [monthlyWinners.userId],
+    references: [users.id],
+  }),
+}));
+
+export type MonthlyWinner = typeof monthlyWinners.$inferSelect;
+export const insertMonthlyWinnerSchema = createInsertSchema(monthlyWinners).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertMonthlyWinner = z.infer<typeof insertMonthlyWinnerSchema>;
