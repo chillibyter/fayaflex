@@ -22,7 +22,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Search, Users, UserPlus } from "lucide-react";
+import { PlusCircle, Search, Users, UserPlus, Share2 } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -107,6 +108,64 @@ export default function Teams() {
       toast({
         title: "Copied!",
         description: "Invite code copied to clipboard.",
+      });
+    }
+  };
+
+  const shareViaWhatsApp = () => {
+    if (!selectedTeam?.inviteCode) return;
+    
+    // Get the app URL (use current domain)
+    const appUrl = window.location.origin;
+    
+    // Create the message
+    const message = `🏋️ Join my fitness team "${selectedTeam.name}" on Ultimate Fitness Challenge!\n\n` +
+      `💪 Invite Code: ${selectedTeam.inviteCode}\n\n` +
+      `Download the app and join us: ${appUrl}\n\n` +
+      `Let's compete and get fit together!`;
+    
+    // Encode the message for URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Create WhatsApp URL - use web version that works on both desktop and mobile
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    
+    // Open WhatsApp in a new window
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const shareViaGeneric = async () => {
+    if (!selectedTeam?.inviteCode) return;
+    
+    const appUrl = window.location.origin;
+    const message = `Join my fitness team "${selectedTeam.name}" on Ultimate Fitness Challenge!\n\n` +
+      `Invite Code: ${selectedTeam.inviteCode}\n\n` +
+      `Download the app: ${appUrl}`;
+    
+    // Try to use Web Share API if available
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${selectedTeam.name}`,
+          text: message,
+          url: appUrl,
+        });
+        toast({
+          title: "Shared!",
+          description: "Invite shared successfully.",
+        });
+      } catch (error: any) {
+        // User cancelled the share
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error);
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(message);
+      toast({
+        title: "Copied!",
+        description: "Share message copied to clipboard.",
       });
     }
   };
@@ -288,6 +347,33 @@ export default function Teams() {
               </div>
               <p className="text-sm text-muted-foreground">
                 Anyone with this code can join your team.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Share with Contacts</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  onClick={shareViaWhatsApp}
+                  variant="outline"
+                  className="w-full"
+                  data-testid="button-share-whatsapp"
+                >
+                  <SiWhatsapp className="h-4 w-4 mr-2 text-green-600" />
+                  WhatsApp
+                </Button>
+                <Button 
+                  onClick={shareViaGeneric}
+                  variant="outline"
+                  className="w-full"
+                  data-testid="button-share-generic"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Share via WhatsApp or other apps with a pre-filled message including the invite code and app link.
               </p>
             </div>
           </div>
