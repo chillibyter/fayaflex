@@ -46,6 +46,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   ownedTeams: many(teams),
   notifications: many(notifications),
   passkeys: many(passkeys),
+  oauthProviders: many(oauthProviders),
 }));
 
 // Teams table
@@ -222,6 +223,41 @@ export const insertPasskeySchema = createInsertSchema(passkeys).omit({
   createdAt: true,
 });
 export type InsertPasskey = z.infer<typeof insertPasskeySchema>;
+
+// OAuth providers table for social login
+export const oauthProviders = pgTable("oauth_providers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  provider: varchar("provider", { length: 50 }).notNull(), // 'google', 'facebook', 'apple'
+  providerUserId: varchar("provider_user_id", { length: 255 }).notNull(), // User ID from the OAuth provider
+  email: varchar("email"),
+  displayName: varchar("display_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userProviderUnique: uniqueIndex("oauth_providers_user_provider_unique").on(table.userId, table.provider),
+  providerUserIdUnique: uniqueIndex("oauth_providers_provider_userid_unique").on(table.provider, table.providerUserId),
+}));
+
+export const oauthProvidersRelations = relations(oauthProviders, ({ one }) => ({
+  user: one(users, {
+    fields: [oauthProviders.userId],
+    references: [users.id],
+  }),
+}));
+
+export type OAuthProvider = typeof oauthProviders.$inferSelect;
+export const insertOAuthProviderSchema = createInsertSchema(oauthProviders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertOAuthProvider = z.infer<typeof insertOAuthProviderSchema>;
 
 // Daily notifications table
 export const notifications = pgTable("notifications", {
