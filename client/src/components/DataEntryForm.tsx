@@ -29,6 +29,7 @@ export default function DataEntryForm() {
 
   const createActivityMutation = useMutation({
     mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string; attachmentUrl?: string }) => {
+      console.log('[DataEntryForm] mutationFn executing with data:', data);
       const res = await apiRequest("POST", "/api/activities", {
         date: data.date,
         calories: data.calories,
@@ -37,7 +38,9 @@ export default function DataEntryForm() {
         attachmentUrl: data.attachmentUrl || null,
         source: "manual",
       });
-      return await res.json();
+      const result = await res.json();
+      console.log('[DataEntryForm] mutationFn completed, result:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
@@ -117,6 +120,7 @@ export default function DataEntryForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[DataEntryForm] handleSubmit called');
     
     // Validate that at least some activity data is provided
     if (calories <= 0 && steps <= 0) {
@@ -158,6 +162,7 @@ export default function DataEntryForm() {
       }
     }
 
+    console.log('[DataEntryForm] Calling createActivityMutation.mutate');
     createActivityMutation.mutate({
       date: format(date, "yyyy-MM-dd"),
       calories,

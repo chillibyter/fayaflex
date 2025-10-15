@@ -361,10 +361,12 @@ export class DatabaseStorage implements IStorage {
 
   // Activity operations
   async createActivity(activityData: InsertActivity, userId: string): Promise<Activity> {
+    console.log('[Storage] createActivity called with:', { activityData, userId });
     const [activity] = await db
       .insert(activities)
       .values({ ...activityData, userId })
       .returning();
+    console.log('[Storage] Activity inserted, id:', activity.id);
     return activity;
   }
 
