@@ -7,8 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, TrendingUp, Users, Trophy, Fingerprint } from "lucide-react";
-import { SiGoogle, SiFacebook, SiApple } from "react-icons/si";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
@@ -25,48 +24,15 @@ export default function AuthPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   
-  // Migration state
-  const [migrateFirstName, setMigrateFirstName] = useState("");
-  const [migrateUsername, setMigrateUsername] = useState("");
-  const [migratePassword, setMigratePassword] = useState("");
-  const [migrateLastName, setMigrateLastName] = useState("");
-  
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-
-  // Fetch OAuth configuration to see which providers are enabled
-  const { data: oauthConfig } = useQuery<{ google: boolean; facebook: boolean; apple: boolean }>({
-    queryKey: ["/api/oauth/config"],
-  });
 
   // Redirect if already logged in
   if (user) {
     setLocation("/");
     return null;
   }
-
-  const migrateMutation = useMutation({
-    mutationFn: async (data: { firstName: string; username: string; password: string; lastName?: string }) => {
-      const res = await apiRequest("POST", "/api/migrate-account", data);
-      return res.json();
-    },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Account migrated successfully!",
-        description: "Your account has been updated. Welcome back!",
-      });
-      setLocation("/");
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Migration failed",
-        description: error.message || "Could not migrate account. Please check your information.",
-        variant: "destructive",
-      });
-    },
-  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,16 +47,6 @@ export default function AuthPage() {
       email: email || null,
       firstName: firstName || null,
       lastName: lastName || null,
-    });
-  };
-
-  const handleMigrate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await migrateMutation.mutateAsync({
-      firstName: migrateFirstName,
-      username: migrateUsername,
-      password: migratePassword,
-      lastName: migrateLastName || undefined,
     });
   };
 
@@ -141,10 +97,9 @@ export default function AuthPage() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login" data-testid="tab-login">Login</TabsTrigger>
                 <TabsTrigger value="signup" data-testid="tab-signup">Sign Up</TabsTrigger>
-                <TabsTrigger value="migrate" data-testid="tab-migrate">Migrate</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login" className="space-y-4">
@@ -200,58 +155,17 @@ export default function AuthPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    data-testid="button-passkey-login"
-                    className="w-full gap-2"
-                    onClick={handlePasskeyLogin}
-                    disabled={passkeyLoginMutation.isPending}
-                  >
-                    <Fingerprint className="w-4 h-4" />
-                    {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
-                  </Button>
-
-                  {oauthConfig?.google && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      data-testid="button-google-login"
-                      className="w-full gap-2"
-                      onClick={() => window.location.href = "/api/auth/google"}
-                    >
-                      <SiGoogle className="w-4 h-4" />
-                      Continue with Google
-                    </Button>
-                  )}
-
-                  {oauthConfig?.facebook && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      data-testid="button-facebook-login"
-                      className="w-full gap-2"
-                      onClick={() => window.location.href = "/api/auth/facebook"}
-                    >
-                      <SiFacebook className="w-4 h-4" />
-                      Continue with Facebook
-                    </Button>
-                  )}
-
-                  {oauthConfig?.apple && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      data-testid="button-apple-login"
-                      className="w-full gap-2"
-                      onClick={() => window.location.href = "/api/auth/apple"}
-                    >
-                      <SiApple className="w-4 h-4" />
-                      Continue with Apple
-                    </Button>
-                  )}
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-testid="button-passkey-login"
+                  className="w-full gap-2"
+                  onClick={handlePasskeyLogin}
+                  disabled={passkeyLoginMutation.isPending}
+                >
+                  <Fingerprint className="w-4 h-4" />
+                  {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
+                </Button>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
@@ -333,84 +247,6 @@ export default function AuthPage() {
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? "Loading..." : "Create Account"}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="migrate" className="space-y-4">
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl">Claim Your Account</CardTitle>
-                  <CardDescription>
-                    Migrate your old account by setting a username and password
-                  </CardDescription>
-                </div>
-                <form onSubmit={handleMigrate} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="migrate-firstname">Your First Name</Label>
-                    <Input
-                      id="migrate-firstname"
-                      data-testid="input-migrate-firstname"
-                      type="text"
-                      placeholder="Enter your first name from old account"
-                      value={migrateFirstName}
-                      onChange={(e) => setMigrateFirstName(e.target.value)}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Must match your old account exactly (case-insensitive)
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="migrate-username">New Username</Label>
-                    <Input
-                      id="migrate-username"
-                      data-testid="input-migrate-username"
-                      type="text"
-                      placeholder="Choose a username"
-                      value={migrateUsername}
-                      onChange={(e) => setMigrateUsername(e.target.value)}
-                      required
-                      minLength={3}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="migrate-password">New Password</Label>
-                    <Input
-                      id="migrate-password"
-                      data-testid="input-migrate-password"
-                      type="password"
-                      placeholder="Create a password"
-                      value={migratePassword}
-                      onChange={(e) => setMigratePassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="migrate-lastname">Last Name (recommended)</Label>
-                    <Input
-                      id="migrate-lastname"
-                      data-testid="input-migrate-lastname"
-                      type="text"
-                      placeholder="Enter your last name for verification"
-                      value={migrateLastName}
-                      onChange={(e) => setMigrateLastName(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Required if multiple accounts share your first name
-                    </p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    data-testid="button-migrate"
-                    className="w-full"
-                    disabled={migrateMutation.isPending}
-                  >
-                    {migrateMutation.isPending ? "Migrating..." : "Claim Account"}
                   </Button>
                 </form>
               </TabsContent>

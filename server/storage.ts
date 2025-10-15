@@ -6,7 +6,6 @@ import {
   deviceConnections,
   notifications,
   passkeys,
-  oauthProviders,
   type User,
   type UpsertUser,
   type Team,
@@ -20,8 +19,6 @@ import {
   type InsertNotification,
   type Passkey,
   type InsertPasskey,
-  type OAuthProvider,
-  type InsertOAuthProvider,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
@@ -73,19 +70,6 @@ export interface IStorage {
   getUserPasskeys(userId: string): Promise<Passkey[]>;
   getPasskeyById(id: string): Promise<Passkey | undefined>;
   updatePasskeyCounter(id: string, counter: number): Promise<void>;
-
-  // OAuth provider operations
-  findOrCreateOAuthUser(data: {
-    provider: string;
-    providerUserId: string;
-    email?: string;
-    displayName?: string;
-    profileImageUrl?: string;
-    accessToken?: string;
-    refreshToken?: string;
-  }): Promise<User>;
-  getUserOAuthProviders(userId: string): Promise<OAuthProvider[]>;
-  unlinkOAuthProvider(userId: string, provider: string): Promise<void>;
 
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
@@ -566,106 +550,6 @@ export class DatabaseStorage implements IStorage {
       .update(passkeys)
       .set({ counter })
       .where(eq(passkeys.id, id));
-  }
-
-  // OAuth provider operations
-  async findOrCreateOAuthUser(data: {
-    provider: string;
-    providerUserId: string;
-    email?: string;
-    displayName?: string;
-    profileImageUrl?: string;
-    accessToken?: string;
-    refreshToken?: string;
-  }): Promise<User> {
-    // First, check if this OAuth provider is already linked to a user
-    const [existingProvider] = await db
-      .select()
-      .from(oauthProviders)
-      .where(
-        and(
-          eq(oauthProviders.provider, data.provider),
-          eq(oauthProviders.providerUserId, data.providerUserId)
-        )
-      );
-
-    if (existingProvider) {
-      // Update the OAuth provider record with latest tokens
-      await db
-        .update(oauthProviders)
-        .set({
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-          email: data.email,
-          displayName: data.displayName,
-          profileImageUrl: data.profileImageUrl,
-          updatedAt: new Date(),
-        })
-        .where(eq(oauthProviders.id, existingProvider.id));
-
-      // Return the user
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, existingProvider.userId));
-      return user;
-    }
-
-    // Check if a user exists with this email
-    let user: User | undefined;
-    if (data.email) {
-      const [existingUser] = await db
-        .select()
-        .from(users)
-        .where(eq(users.email, data.email));
-      user = existingUser;
-    }
-
-    // If no user exists, create a new one
-    if (!user) {
-      const [newUser] = await db
-        .insert(users)
-        .values({
-          email: data.email,
-          firstName: data.displayName?.split(" ")[0],
-          lastName: data.displayName?.split(" ").slice(1).join(" ") || undefined,
-          profileImageUrl: data.profileImageUrl,
-        })
-        .returning();
-      user = newUser;
-    }
-
-    // Link the OAuth provider to the user
-    await db.insert(oauthProviders).values({
-      userId: user.id,
-      provider: data.provider,
-      providerUserId: data.providerUserId,
-      email: data.email,
-      displayName: data.displayName,
-      profileImageUrl: data.profileImageUrl,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-    });
-
-    return user;
-  }
-
-  async getUserOAuthProviders(userId: string): Promise<OAuthProvider[]> {
-    return await db
-      .select()
-      .from(oauthProviders)
-      .where(eq(oauthProviders.userId, userId));
-  }
-
-  async unlinkOAuthProvider(userId: string, provider: string): Promise<void> {
-    await db
-      .delete(oauthProviders)
-      .where(
-        and(
-          eq(oauthProviders.userId, userId),
-          eq(oauthProviders.provider, provider)
-        )
-      );
   }
 }
 

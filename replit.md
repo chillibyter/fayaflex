@@ -19,7 +19,6 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Multi-method authentication system:
   - Username/password using Passport.js local strategy with Scrypt hashing
   - WebAuthn/Passkey authentication for biometric login (fingerprint, Face ID)
-  - OAuth 2.0 social login (Google, Facebook, Apple) using Passport.js strategies
   - Supports both session cookies (web) and JWT tokens (mobile)
   - Session storage in PostgreSQL, Zod validation on auth endpoints
 - **API Structure**: Comprehensive API for user, team, activity, leaderboard, notification, and passkey management. Includes dedicated endpoints for mobile token generation and device integrations.
@@ -32,8 +31,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage
 - **Database**: PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe queries.
-- **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, oauth_providers, and sessions.
-- **Relationships**: Supports complex relationships like users owning multiple teams, many-to-many team memberships, activities linked to users/teams, passkeys linked to users, and OAuth providers linked to users.
+- **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, and sessions.
+- **Relationships**: Supports complex relationships like users owning multiple teams, many-to-many team memberships, activities linked to users/teams, and passkeys linked to users.
 
 ## External Dependencies
 
@@ -77,19 +76,6 @@ Preferred communication style: Simple, everyday language.
   - 16-character passwords with mixed case, numbers, and special characters
   - Copy-to-clipboard functionality in Profile security section
 - Security: Challenge-response flow prevents replay attacks, counter tracking prevents credential cloning
-
-**OAuth Social Login** (October 15, 2025)
-- Multi-provider social authentication supporting Google, Facebook, and Apple login
-- Implementation:
-  - Backend: Passport.js OAuth strategies (passport-google-oauth20, passport-facebook)
-  - Database: oauth_providers table linking users to social accounts (provider, providerUserId, tokens)
-  - Storage layer: findOrCreateOAuthUser method handles user creation/linking
-  - Routes: OAuth initiation and callback endpoints for each provider (/api/auth/{provider}, /api/auth/{provider}/callback)
-  - AuthPage: Social login buttons on login tab (Google, Facebook, Apple) with provider icons
-  - API: /api/oauth/config returns enabled providers, /api/oauth/providers returns user's linked accounts
-- Account linking: Automatically links OAuth accounts to existing users via email matching
-- Configuration: Requires OAuth app credentials (CLIENT_ID, CLIENT_SECRET) for each provider
-- Security: OAuth tokens stored encrypted, supports account unlinking
 
 **Activity Source Indicators** (October 14, 2025)
 - Visual badges show whether activities were logged manually or synced from devices
