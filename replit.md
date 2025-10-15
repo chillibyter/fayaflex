@@ -61,6 +61,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Case-Insensitive Usernames** (October 15, 2025)
+- Implemented case-insensitive username authentication
+- **Login**: Users can now login with any case variation of their username (e.g., "JohnDoe", "johndoe", "JOHNDOE" all work)
+- **Registration**: Prevents duplicate usernames with different casing (e.g., cannot register "testuser" if "TestUser" exists)
+- **Implementation**: Uses SQL LOWER() function for case-insensitive comparison in database queries
+- Tested and verified with multiple case variations
+
 **Dashboard Performance & Bug Fix** (October 15, 2025)
 - Fixed critical dashboard loading error in production
 - **Issue**: Dashboard stats endpoint was failing for users not in teams and making inefficient database queries
