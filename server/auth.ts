@@ -294,14 +294,7 @@ export function setupAuth(app: Express) {
 
   app.get("/api/auth/user", (req, res) => {
     if (!req.isAuthenticated()) {
-      // Temporarily return fake user for testing - auth disabled
-      return res.json({
-        id: '1',
-        username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarId: null,
-      });
+      return res.status(401).json({ message: "Not authenticated" });
     }
     res.json(sanitizeUser(req.user as User));
   });

@@ -552,7 +552,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Activity routes
   // Image upload endpoint for evidence
-  app.post("/api/upload/evidence", upload.single('image'), async (req: any, res) => {
+  app.post("/api/upload/evidence", isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
@@ -572,10 +572,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/activities", async (req: any, res) => {
+  app.post("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
-      // Temporarily using hardcoded userId for testing - auth disabled
-      const userId = req.user?.id || '1';
+      const userId = req.user.id;
       console.log('[API] POST /api/activities called for user:', userId, 'with body:', req.body);
       const validatedData = insertActivitySchema.parse(req.body);
       
@@ -589,10 +588,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/activities", async (req: any, res) => {
+  app.get("/api/activities", isAuthenticated, async (req: any, res) => {
     try {
-      // Temporarily using hardcoded userId for testing - auth disabled
-      const userId = req.user?.id || '1';
+      const userId = req.user.id;
       const month = req.query.month ? parseInt(req.query.month as string) : undefined;
       const year = req.query.year ? parseInt(req.query.year as string) : undefined;
       
@@ -773,10 +771,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard stats route - uses global ranking based on last 30 days
-  app.get("/api/dashboard/stats", async (req: any, res) => {
+  app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {
-      // Temporarily using hardcoded userId for testing - auth disabled
-      const userId = req.user?.id || '1';
+      const userId = req.user.id;
       const month = new Date().getMonth() + 1;
       const year = new Date().getFullYear();
       
