@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, TrendingUp, Users, Trophy, Fingerprint } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { SiGoogle, SiFacebook, SiApple } from "react-icons/si";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
@@ -33,6 +34,11 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Fetch OAuth configuration to see which providers are enabled
+  const { data: oauthConfig } = useQuery<{ google: boolean; facebook: boolean; apple: boolean }>({
+    queryKey: ["/api/oauth/config"],
+  });
 
   // Redirect if already logged in
   if (user) {
@@ -194,17 +200,58 @@ export default function AuthPage() {
                   </div>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  data-testid="button-passkey-login"
-                  className="w-full gap-2"
-                  onClick={handlePasskeyLogin}
-                  disabled={passkeyLoginMutation.isPending}
-                >
-                  <Fingerprint className="w-4 h-4" />
-                  {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    data-testid="button-passkey-login"
+                    className="w-full gap-2"
+                    onClick={handlePasskeyLogin}
+                    disabled={passkeyLoginMutation.isPending}
+                  >
+                    <Fingerprint className="w-4 h-4" />
+                    {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
+                  </Button>
+
+                  {oauthConfig?.google && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-testid="button-google-login"
+                      className="w-full gap-2"
+                      onClick={() => window.location.href = "/api/auth/google"}
+                    >
+                      <SiGoogle className="w-4 h-4" />
+                      Continue with Google
+                    </Button>
+                  )}
+
+                  {oauthConfig?.facebook && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-testid="button-facebook-login"
+                      className="w-full gap-2"
+                      onClick={() => window.location.href = "/api/auth/facebook"}
+                    >
+                      <SiFacebook className="w-4 h-4" />
+                      Continue with Facebook
+                    </Button>
+                  )}
+
+                  {oauthConfig?.apple && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-testid="button-apple-login"
+                      className="w-full gap-2"
+                      onClick={() => window.location.href = "/api/auth/apple"}
+                    >
+                      <SiApple className="w-4 h-4" />
+                      Continue with Apple
+                    </Button>
+                  )}
+                </div>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
