@@ -54,18 +54,20 @@ export default function VictoryWall() {
 
   const teamData = teams.find(t => t.id === teamId);
 
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<{ id: string }>({
     queryKey: ['/api/user'],
   });
 
   const isOwner = user && teamData && user.id === teamData.ownerId;
 
-  const calculateWinnerMutation = useMutation({
+  const calculateWinnerMutation = useMutation<
+    MonthlyWinner & { userName: string },
+    Error,
+    { month: number; year: number }
+  >({
     mutationFn: async ({ month, year }: { month: number; year: number }) => {
-      return await apiRequest(`/api/teams/${teamId}/calculate-winner`, {
-        method: 'POST',
-        body: JSON.stringify({ month, year }),
-      });
+      const res = await apiRequest('POST', `/api/teams/${teamId}/calculate-winner`, { month, year });
+      return await res.json();
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId, 'victory-wall'] });

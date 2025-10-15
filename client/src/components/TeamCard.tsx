@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, UserPlus, X } from "lucide-react";
+import { Users, UserPlus, X, Trophy } from "lucide-react";
 import { Link } from "wouter";
 
 interface TeamCardProps {
@@ -57,6 +57,18 @@ export default function TeamCard({
               {totalCalories.toLocaleString()}
             </p>
           </div>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = `/teams/${teamId}/victory-wall`;
+            }}
+            variant="outline"
+            className="w-full"
+            data-testid="button-victory-wall"
+          >
+            <Trophy className="h-4 w-4 mr-2" />
+            Victory Wall
+          </Button>
           {isOwner && (
             <div className="space-y-2">
               <Button

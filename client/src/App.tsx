@@ -11,6 +11,7 @@ import TrackActivity from "@/pages/TrackActivity";
 import Leaderboard from "@/pages/Leaderboard";
 import Teams from "@/pages/Teams";
 import TeamLeaderboard from "@/pages/TeamLeaderboard";
+import VictoryWall from "@/pages/VictoryWall";
 import CreateTeam from "@/pages/CreateTeam";
 import Profile from "@/pages/Profile";
 import UserProfile from "@/pages/UserProfile";
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/track" component={TrackActivity} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/teams" component={Teams} />
+      <Route path="/teams/:teamId/victory-wall" component={VictoryWall} />
       <Route path="/teams/:teamId" component={TeamLeaderboard} />
       <Route path="/create-team" component={CreateTeam} />
       <Route path="/profile" component={Profile} />
