@@ -61,6 +61,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**WhatsApp Invite Sharing** (October 15, 2025)
+- Added WhatsApp sharing functionality to invite code dialog
+- **Features**:
+  - WhatsApp share button with pre-filled message including invite code and app link
+  - Generic share button using Web Share API (falls back to clipboard copy)
+  - Professional message template with emojis and team name
+  - App download link included in share message
+- **UI**: Two share buttons in invite dialog (WhatsApp with green icon, generic Share)
+- **Implementation**: 
+  - Uses WhatsApp web URL scheme (https://wa.me/?text=...) for cross-platform compatibility
+  - Web Share API for native sharing on mobile devices
+  - Fallback to clipboard copy for unsupported browsers
+- **Message Format**: Includes team name, invite code, app URL, and motivational text
+
 **Victory Wall Feature** (October 15, 2025)
 - Implemented team-based victory wall to showcase monthly champions
 - **Database**: Added monthly_winners table with unique constraint on (teamId, month, year)
