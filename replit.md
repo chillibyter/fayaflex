@@ -61,6 +61,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Teams Display Bug Fix** (October 16, 2025)
+- Fixed issue where user's teams weren't showing on the Teams page
+- **Problem**: getUserTeams() was filtering out teams with no activity in the last 30 days
+- **Solution**: Removed the 30-day activity filter from getUserTeams() method
+- **Behavior**: Teams page now shows all active teams where user is a member, regardless of activity date
+- Only archived teams are hidden from the Teams page
+
 **WhatsApp Invite Sharing** (October 15, 2025)
 - Added WhatsApp sharing functionality to invite code dialog
 - **Features**:

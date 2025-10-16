@@ -275,20 +275,7 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
-    // Filter out teams with no activity in the past 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const activeTeams = [];
-    for (const team of userTeams) {
-      const lastActivity = await this.getTeamLastActivityDate(team.id);
-      // Include team if it has activity within 30 days, or if it's a new team with no activities yet
-      if (!lastActivity || lastActivity >= thirtyDaysAgo) {
-        activeTeams.push(team);
-      }
-    }
-    
-    return activeTeams;
+    return userTeams;
   }
 
   async getAllTeams(): Promise<Team[]> {
