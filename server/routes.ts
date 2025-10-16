@@ -17,6 +17,18 @@ import {
 } from "@simplewebauthn/server";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Helper function to remove email from user object
+  const sanitizeUserForDisplay = (user: any, currentUserId?: string) => {
+    if (!user) return user;
+    // Only show email to the user themselves
+    if (currentUserId && user.id === currentUserId) {
+      return user;
+    }
+    // Remove email for other users
+    const { email, ...userWithoutEmail } = user;
+    return userWithoutEmail;
+  };
+
   // Auth middleware
   setupAuth(app);
 
@@ -214,12 +226,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Hide email from other users (only show to the user themselves)
-      const userResponse = currentUserId === targetUserId 
-        ? user 
-        : { ...user, email: undefined };
-      
-      res.json(userResponse);
+      // Hide email from other users
+      res.json(sanitizeUserForDisplay(user, currentUserId));
     } catch (error) {
       console.error("Error fetching user profile:", error);
       res.status(500).json({ message: "Failed to fetch user profile" });
@@ -412,15 +420,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/teams/:id/members", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.id;
       const members = await storage.getTeamMembers(req.params.id);
       
-      // Get user details for each member
+      // Get user details for each member (without emails)
       const membersWithDetails = await Promise.all(
         members.map(async (member) => {
           const user = await storage.getUser(member.userId);
           return {
             ...member,
-            user,
+            user: sanitizeUserForDisplay(user, currentUserId),
           };
         })
       );
@@ -685,9 +694,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: content.trim(),
       });
 
-      // Return comment with user info
+      // Return comment with user info (without email)
       const user = await storage.getUser(userId);
-      res.json({ ...comment, user });
+      res.json({ ...comment, user: sanitizeUserForDisplay(user, userId) });
     } catch (error: any) {
       console.error("Error adding comment:", error);
       res.status(400).json({ message: error.message || "Failed to add comment" });
@@ -697,8 +706,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/activities/:activityId/comments", async (req: any, res) => {
     try {
       const { activityId } = req.params;
+      const currentUserId = req.user?.id;
       const comments = await storage.getActivityComments(activityId);
-      res.json(comments);
+      
+      // Remove emails from user data in comments
+      const sanitizedComments = comments.map(comment => ({
+        ...comment,
+        user: sanitizeUserForDisplay(comment.user, currentUserId),
+      }));
+      
+      res.json(sanitizedComments);
     } catch (error: any) {
       console.error("Error fetching comments:", error);
       res.status(500).json({ message: "Failed to fetch comments" });
@@ -1421,7 +1438,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           delete req.session.passkeyChallenge;
           delete req.session.passkeyUsername;
 
-          res.json({ verified: true, user });
+          // User can see their own email when logging in
+          res.json({ verified: true, user: sanitizeUserForDisplay(user, user.id) });
         });
       } else {
         res.status(400).json({ verified: false, message: "Verification failed" });
