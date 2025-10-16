@@ -316,12 +316,17 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ message: info?.message || "Invalid credentials" });
       }
       
-      // Generate JWT token
-      const token = generateAuthToken(user.id);
-      
-      res.status(200).json({ 
-        token,
-        user: sanitizeUser(user)
+      // Establish session for web users
+      req.login(user, (loginErr) => {
+        if (loginErr) return next(loginErr);
+        
+        // Generate JWT token for mobile users
+        const token = generateAuthToken(user.id);
+        
+        res.status(200).json({ 
+          token,
+          user: sanitizeUser(user)
+        });
       });
     })(req, res, next);
   });
