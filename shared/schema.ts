@@ -312,3 +312,67 @@ export const insertMonthlyWinnerSchema = createInsertSchema(monthlyWinners).omit
   createdAt: true,
 });
 export type InsertMonthlyWinner = z.infer<typeof insertMonthlyWinnerSchema>;
+
+// Activity reactions table (thumbs up/down)
+export const activityReactions = pgTable("activity_reactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  activityId: varchar("activity_id")
+    .notNull()
+    .references(() => activities.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 20 }).notNull(), // 'thumbs_up' or 'thumbs_down'
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  activityUserUnique: uniqueIndex("activity_reactions_activity_user_unique").on(table.activityId, table.userId),
+}));
+
+export const activityReactionsRelations = relations(activityReactions, ({ one }) => ({
+  activity: one(activities, {
+    fields: [activityReactions.activityId],
+    references: [activities.id],
+  }),
+  user: one(users, {
+    fields: [activityReactions.userId],
+    references: [users.id],
+  }),
+}));
+
+export type ActivityReaction = typeof activityReactions.$inferSelect;
+export const insertActivityReactionSchema = createInsertSchema(activityReactions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertActivityReaction = z.infer<typeof insertActivityReactionSchema>;
+
+// Activity comments table
+export const activityComments = pgTable("activity_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  activityId: varchar("activity_id")
+    .notNull()
+    .references(() => activities.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const activityCommentsRelations = relations(activityComments, ({ one }) => ({
+  activity: one(activities, {
+    fields: [activityComments.activityId],
+    references: [activities.id],
+  }),
+  user: one(users, {
+    fields: [activityComments.userId],
+    references: [users.id],
+  }),
+}));
+
+export type ActivityComment = typeof activityComments.$inferSelect;
+export const insertActivityCommentSchema = createInsertSchema(activityComments).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertActivityComment = z.infer<typeof insertActivityCommentSchema>;
