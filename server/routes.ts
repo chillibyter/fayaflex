@@ -609,6 +609,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { activityId } = req.params;
       const { type } = req.body;
 
+      console.log(`[Reactions] POST request - userId: ${userId}, activityId: ${activityId}, type: ${type}`);
+
       if (type !== 'thumbs_up' && type !== 'thumbs_down') {
         return res.status(400).json({ message: "Invalid reaction type" });
       }
@@ -619,9 +621,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type,
       });
 
+      console.log(`[Reactions] Successfully added reaction:`, reaction);
       res.json(reaction);
     } catch (error: any) {
-      console.error("Error adding reaction:", error);
+      console.error("[Reactions] Error adding reaction:", error);
+      console.error("[Reactions] Error stack:", error.stack);
       res.status(400).json({ message: error.message || "Failed to add reaction" });
     }
   });
