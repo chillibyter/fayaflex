@@ -9,6 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { Activity as ActivityType } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
+import ActivityReactions from "@/components/ActivityReactions";
+import ActivityComments from "@/components/ActivityComments";
 
 type DashboardStats = {
   calories: number;
@@ -155,24 +157,30 @@ export default function Dashboard() {
                 return (
                   <div
                     key={activity.id}
-                    className="flex items-center justify-between gap-4 p-3 rounded-md hover-elevate"
+                    className="p-3 rounded-md hover-elevate space-y-3"
                     data-testid={`activity-${activity.id}`}
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium">{activity.workoutType || 'General Activity'}</p>
-                        <Badge variant="outline" className="text-xs gap-1" data-testid={`activity-source-${activity.id}`}>
-                          <SourceIcon className="h-3 w-3" />
-                          {sourceInfo.label}
-                        </Badge>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium">{activity.workoutType || 'General Activity'}</p>
+                          <Badge variant="outline" className="text-xs gap-1" data-testid={`activity-source-${activity.id}`}>
+                            <SourceIcon className="h-3 w-3" />
+                            {sourceInfo.label}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
-                      </p>
+                      <div className="text-right">
+                        <p className="font-semibold">{activity.calories} cal</p>
+                        <p className="text-sm text-muted-foreground">{activity.steps} steps</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{activity.calories} cal</p>
-                      <p className="text-sm text-muted-foreground">{activity.steps} steps</p>
+                    <div className="flex items-center gap-4 pt-2 border-t">
+                      <ActivityReactions activityId={activity.id} />
+                      <ActivityComments activityId={activity.id} />
                     </div>
                   </div>
                 );

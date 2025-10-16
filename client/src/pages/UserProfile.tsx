@@ -10,6 +10,8 @@ import { format } from "date-fns";
 import type { User as UserType, Activity } from "@shared/schema";
 import { useLocation } from "wouter";
 import { UserAvatar } from "@/components/UserAvatar";
+import ActivityReactions from "@/components/ActivityReactions";
+import ActivityComments from "@/components/ActivityComments";
 
 // Helper function to get source icon and label
 function getSourceInfo(source?: string | null) {
@@ -183,7 +185,7 @@ export default function UserProfile() {
                 
                 return (
                   <Card key={activity.id} className="hover-elevate" data-testid={`activity-${activity.id}`}>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-6 space-y-4">
                       <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -217,6 +219,10 @@ export default function UserProfile() {
                             />
                           </div>
                         )}
+                      </div>
+                      <div className="flex items-center gap-4 pt-2 border-t">
+                        <ActivityReactions activityId={activity.id} />
+                        <ActivityComments activityId={activity.id} />
                       </div>
                     </CardContent>
                   </Card>
