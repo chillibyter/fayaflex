@@ -27,8 +27,10 @@ export default function ActivityReactions({ activityId }: ActivityReactionsProps
   // Add/update reaction
   const addReactionMutation = useMutation({
     mutationFn: async (type: 'thumbs_up' | 'thumbs_down') => {
-      const res = await apiRequest(`/api/activities/${activityId}/reactions`, {
+      const res = await fetch(`/api/activities/${activityId}/reactions`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ type }),
       });
       if (!res.ok) throw new Error('Failed to add reaction');
@@ -49,8 +51,9 @@ export default function ActivityReactions({ activityId }: ActivityReactionsProps
   // Remove reaction
   const removeReactionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest(`/api/activities/${activityId}/reactions`, {
+      const res = await fetch(`/api/activities/${activityId}/reactions`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to remove reaction');
       return res.json();

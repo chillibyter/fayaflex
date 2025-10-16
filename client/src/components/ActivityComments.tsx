@@ -35,8 +35,10 @@ export default function ActivityComments({ activityId }: ActivityCommentsProps) 
   // Add comment
   const addCommentMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await apiRequest(`/api/activities/${activityId}/comments`, {
+      const res = await fetch(`/api/activities/${activityId}/comments`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ content }),
       });
       if (!res.ok) throw new Error('Failed to add comment');
@@ -62,8 +64,9 @@ export default function ActivityComments({ activityId }: ActivityCommentsProps) 
   // Delete comment
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
-      const res = await apiRequest(`/api/activities/comments/${commentId}`, {
+      const res = await fetch(`/api/activities/comments/${commentId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to delete comment');
       return res.json();
