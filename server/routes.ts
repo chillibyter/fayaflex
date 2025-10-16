@@ -808,12 +808,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .sort((a, b) => b[1] - a[1]);
       
       const userRank = sortedUsers.findIndex(([id]) => id === userId) + 1;
+      const totalActiveUsers = sortedUsers.length;
+      
+      // Calculate percentile (0 if no rank)
+      let percentile = 0;
+      if (userRank > 0 && totalActiveUsers > 0) {
+        percentile = Math.round((userRank / totalActiveUsers) * 100);
+      }
       
       res.json({
         calories: totalCalories,
         steps: totalSteps,
         workouts: workoutCount,
         rank: userRank > 0 ? userRank : (totalCalories > 0 ? sortedUsers.length + 1 : 0),
+        totalActiveUsers,
+        percentile,
       });
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);

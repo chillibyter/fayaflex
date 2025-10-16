@@ -15,6 +15,8 @@ type DashboardStats = {
   steps: number;
   workouts: number;
   rank: number;
+  totalActiveUsers: number;
+  percentile: number;
 };
 
 type ChartData = {

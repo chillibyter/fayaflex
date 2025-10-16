@@ -49,6 +49,8 @@ interface DashboardStatsProps {
   steps: number;
   workouts: number;
   rank: number;
+  totalActiveUsers: number;
+  percentile: number;
 }
 
 type DailyData = {
@@ -64,7 +66,7 @@ type WorkoutDay = {
   totalCalories: number;
 };
 
-export default function DashboardStats({ calories, steps, workouts, rank }: DashboardStatsProps) {
+export default function DashboardStats({ calories, steps, workouts, rank, totalActiveUsers, percentile }: DashboardStatsProps) {
   const [caloriesDialogOpen, setCaloriesDialogOpen] = useState(false);
   const [stepsDialogOpen, setStepsDialogOpen] = useState(false);
   const [workoutsDialogOpen, setWorkoutsDialogOpen] = useState(false);
@@ -123,12 +125,21 @@ export default function DashboardStats({ calories, steps, workouts, rank }: Dash
           unit="this month"
           onClick={() => setWorkoutsDialogOpen(true)}
         />
-        <StatCard
-          icon={<TrendingUp className="h-8 w-8" />}
-          label="Your Rank"
-          value={`#${rank}`}
-          trend="Top 10%"
-        />
+        {rank > 0 ? (
+          <StatCard
+            icon={<TrendingUp className="h-8 w-8" />}
+            label="Your Rank"
+            value={`#${rank}`}
+            trend={`Top ${percentile}%`}
+          />
+        ) : (
+          <StatCard
+            icon={<TrendingUp className="h-8 w-8" />}
+            label="Your Rank"
+            value="Not ranked"
+            trend="Log activities to compete!"
+          />
+        )}
       </div>
 
       {/* Calories Dialog */}
