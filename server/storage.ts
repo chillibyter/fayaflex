@@ -7,6 +7,8 @@ import {
   notifications,
   passkeys,
   monthlyWinners,
+  activityReactions,
+  activityComments,
   type User,
   type UpsertUser,
   type Team,
@@ -22,6 +24,10 @@ import {
   type InsertPasskey,
   type MonthlyWinner,
   type InsertMonthlyWinner,
+  type ActivityReaction,
+  type InsertActivityReaction,
+  type ActivityComment,
+  type InsertActivityComment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
@@ -84,6 +90,17 @@ export interface IStorage {
   createMonthlyWinner(winner: InsertMonthlyWinner): Promise<MonthlyWinner>;
   getTeamMonthlyWinners(teamId: string): Promise<MonthlyWinner[]>;
   getMonthlyWinner(teamId: string, month: number, year: number): Promise<MonthlyWinner | undefined>;
+
+  // Activity reactions operations (thumbs up/down)
+  addReaction(reaction: InsertActivityReaction): Promise<ActivityReaction>;
+  removeReaction(activityId: string, userId: string): Promise<void>;
+  getUserReaction(activityId: string, userId: string): Promise<ActivityReaction | undefined>;
+  getActivityReactions(activityId: string): Promise<{ thumbsUp: number; thumbsDown: number; userReaction?: 'thumbs_up' | 'thumbs_down' }>;
+
+  // Activity comments operations
+  addComment(comment: InsertActivityComment): Promise<ActivityComment>;
+  getActivityComments(activityId: string): Promise<(ActivityComment & { user: User })[]>;
+  deleteComment(commentId: string, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -593,6 +610,93 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return winner;
+  }
+
+  // Activity reactions operations
+  async addReaction(reactionData: InsertActivityReaction): Promise<ActivityReaction> {
+    const [reaction] = await db
+      .insert(activityReactions)
+      .values(reactionData)
+      .onConflictDoUpdate({
+        target: [activityReactions.activityId, activityReactions.userId],
+        set: { type: reactionData.type },
+      })
+      .returning();
+    return reaction;
+  }
+
+  async removeReaction(activityId: string, userId: string): Promise<void> {
+    await db
+      .delete(activityReactions)
+      .where(
+        and(
+          eq(activityReactions.activityId, activityId),
+          eq(activityReactions.userId, userId)
+        )
+      );
+  }
+
+  async getUserReaction(activityId: string, userId: string): Promise<ActivityReaction | undefined> {
+    const [reaction] = await db
+      .select()
+      .from(activityReactions)
+      .where(
+        and(
+          eq(activityReactions.activityId, activityId),
+          eq(activityReactions.userId, userId)
+        )
+      );
+    return reaction;
+  }
+
+  async getActivityReactions(activityId: string): Promise<{ thumbsUp: number; thumbsDown: number; userReaction?: 'thumbs_up' | 'thumbs_down' }> {
+    const reactions = await db
+      .select()
+      .from(activityReactions)
+      .where(eq(activityReactions.activityId, activityId));
+
+    const thumbsUp = reactions.filter(r => r.type === 'thumbs_up').length;
+    const thumbsDown = reactions.filter(r => r.type === 'thumbs_down').length;
+
+    return { thumbsUp, thumbsDown };
+  }
+
+  // Activity comments operations
+  async addComment(commentData: InsertActivityComment): Promise<ActivityComment> {
+    const [comment] = await db
+      .insert(activityComments)
+      .values(commentData)
+      .returning();
+    return comment;
+  }
+
+  async getActivityComments(activityId: string): Promise<(ActivityComment & { user: User })[]> {
+    const comments = await db
+      .select({
+        id: activityComments.id,
+        activityId: activityComments.activityId,
+        userId: activityComments.userId,
+        content: activityComments.content,
+        createdAt: activityComments.createdAt,
+        user: users,
+      })
+      .from(activityComments)
+      .innerJoin(users, eq(activityComments.userId, users.id))
+      .where(eq(activityComments.activityId, activityId))
+      .orderBy(activityComments.createdAt);
+
+    return comments;
+  }
+
+  async deleteComment(commentId: string, userId: string): Promise<void> {
+    await db
+      .delete(activityComments)
+      .where(
+        and(
+          eq(activityComments.id, commentId),
+          eq(activityComments.userId, userId)
+        )
+      );
   }
 }
 
