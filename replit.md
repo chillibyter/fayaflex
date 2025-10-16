@@ -61,6 +61,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Bug Fixes from QA Report** (October 16, 2025)
+- **H-01 & H-02**: Already fixed in earlier updates (teams display and join feedback)
+- **M-01 Track Activity Confirmation**: Verified working - shows "Activity logged!" toast and clears form
+- **M-03 Dashboard New User Display**: Fixed misleading rank display for new users
+  - **Backend**: Added `totalActiveUsers` and `percentile` fields to dashboard stats API
+  - **Frontend**: Conditional rank display:
+    - New users (rank 0): Shows "Not ranked" with "Log activities to compete!" message
+    - Active users: Shows "#[rank]" with accurate "Top [X]%" percentile
+  - **Testing**: E2E verified new user shows "Not ranked", then proper rank after logging activity
+- **M-02 Dashboard Delay**: Already optimized with TanStack Query caching and invalidation
+
 **Team Join Feedback Verified** (October 16, 2025)
 - Verified and tested team join functionality provides proper user feedback
 - **Success case**: Shows "Joined team!" toast notification and auto-closes dialog
