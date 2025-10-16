@@ -33,16 +33,19 @@ export default function ActivityReactions({ activityId }: ActivityReactionsProps
         credentials: 'include',
         body: JSON.stringify({ type }),
       });
-      if (!res.ok) throw new Error('Failed to add reaction');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to add reaction');
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/activities', activityId, 'reactions'] });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to add reaction",
+        description: error.message || "Failed to add reaction",
         variant: "destructive",
       });
     },
