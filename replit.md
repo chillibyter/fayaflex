@@ -10,29 +10,31 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 - **Framework & Tooling**: React with TypeScript, Vite, Wouter for routing, TanStack Query for server state.
-- **UI System**: Shadcn UI (built on Radix UI) with Tailwind CSS for utility-first styling. Adheres to fitness-optimized Material Design principles with a custom color palette and dark mode support.
-- **State Management**: Primarily TanStack Query for server state; local component state for UI; session-based auth via API.
-- **PWA Implementation**: Full PWA support with offline capabilities, service worker (network-first API, cache-first assets), responsive design, touch-friendly UI, and platform-specific meta tags.
+- **UI System**: Shadcn UI (built on Radix UI) with Tailwind CSS, adhering to fitness-optimized Material Design principles with custom color palette and dark mode.
+- **State Management**: TanStack Query for server state; local component state for UI; session-based auth via API.
+- **PWA Implementation**: Full PWA support with offline capabilities, service worker, responsive design, and touch-friendly UI.
 
 ### Backend Architecture
 - **Server Framework**: Express.js with TypeScript, following a RESTful API design.
-- **Authentication**: Multi-method authentication system:
-  - Username/password using Passport.js local strategy with Scrypt hashing
-  - WebAuthn/Passkey authentication for biometric login (fingerprint, Face ID)
-  - Supports both session cookies (web) and JWT tokens (mobile)
-  - Session storage in PostgreSQL, Zod validation on auth endpoints
-- **API Structure**: Comprehensive API for user, team, activity, leaderboard, notification, and passkey management. Includes dedicated endpoints for mobile token generation and device integrations.
+- **Authentication**: Multi-method authentication including username/password (Passport.js local strategy, Scrypt hashing) and WebAuthn/Passkey for biometric login. Supports session cookies (web) and JWT tokens (mobile). Zod validation used on auth endpoints.
+- **API Structure**: Comprehensive RESTful API for user, team, activity, leaderboard, notification, and passkey management.
 - **Core Features**:
     - **Team Management**: CRUD operations for teams, member management, and challenge archiving.
-    - **Activity Tracking**: Logging and retrieval of user activities, with support for evidence uploads (compressed WebP, 24-hour retention).
+    - **Activity Tracking**: Logging and retrieval of user activities, with support for evidence uploads (compressed WebP).
     - **Leaderboards**: Real-time leaderboards for individuals and teams, with team-scoped and global rankings.
-    - **Notifications**: Personalized daily motivational messages based on user progress and leaderboard status.
-    - **Interactive Dashboard**: Clickable stat cards leading to detailed daily breakdowns and workout calendars using Recharts.
+    - **Notifications**: Personalized daily motivational messages.
+    - **Interactive Dashboard**: Clickable stat cards leading to detailed daily breakdowns and workout calendars.
+    - **Social Features**: Reactions (thumbs up/down) and comments on activity submissions with real-time counts and user-specific actions.
+    - **Victory Wall**: Team-based victory wall to showcase monthly champions, with owner-only calculation.
+    - **Email Privacy**: User emails are sanitized and hidden from other users across the platform.
 
 ### Data Storage
 - **Database**: PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe queries.
 - **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, sessions, activityReactions, activityComments, monthly_winners, and passwordResetTokens.
-- **Relationships**: Supports complex relationships like users owning multiple teams, many-to-many team memberships, activities linked to users/teams, passkeys linked to users, reactions and comments linked to activities and users.
+- **Relationships**: Supports complex relationships for user, team, activity, and passkey data.
+
+### Mobile Application
+- **Platform**: Capacitor for iOS and Android native app deployment.
 
 ## External Dependencies
 
@@ -43,161 +45,13 @@ Preferred communication style: Simple, everyday language.
 ### Device Integrations
 - **Apple Health**: Placeholder for iOS health data syncing.
 - **Google Fit / Android Health**: Placeholder for Android health data syncing.
-- **Garmin Connect**: Placeholder for fitness device integration, including OAuth infrastructure and webhook receiver.
-
-### Development Tools
-- **Replit-specific Vite plugins**: For error overlay, cartographer, and dev banner.
-- **ESBuild**: For production server bundling.
-- **Drizzle Kit**: For database migrations.
+- **Garmin Connect**: Placeholder for fitness device integration, including OAuth and webhooks.
 
 ### Key NPM Dependencies
-- **Recharts**: For data visualization on the dashboard.
-- **React Hook Form with Zod**: For robust form validation.
-- **date-fns**: For date manipulation utilities.
-- **Radix UI**: For accessible UI primitives.
-- **Class Variance Authority**: For managing component variants.
-- **Sharp**: For server-side image compression.
-- **SimpleWebAuthn**: For WebAuthn/passkey authentication (server and browser libraries).
-
-## Recent Changes
-
-**Social Features - Reactions & Comments** (October 16, 2025)
-- Implemented social engagement features for activity submissions
-- **Reactions System**:
-  - Users can give thumbs up or thumbs down on any activity
-  - Unique constraint (activityId, userId) ensures one reaction per user per activity
-  - Clicking same reaction removes it; clicking different reaction updates it
-  - Real-time count display for both thumbs up and thumbs down
-  - User's current reaction highlighted (green for thumbs up, red for thumbs down)
-- **Comments System**:
-  - Users can comment on any activity submission
-  - Comments display author name, avatar, and timestamp
-  - Users can delete their own comments
-  - Collapsible comments section with toggle button
-  - Comment count displayed on toggle button
-- **Database Schema**:
-  - activityReactions table: id, activityId, userId, type ('thumbs_up' | 'thumbs_down')
-  - activityComments table: id, activityId, userId, content, createdAt
-- **API Endpoints**:
-  - POST/DELETE /api/activities/:activityId/reactions
-  - GET /api/activities/:activityId/reactions
-  - POST /api/activities/:activityId/comments
-  - GET /api/activities/:activityId/comments
-  - DELETE /api/activities/comments/:commentId
-- **UI Integration**:
-  - ActivityReactions component on Dashboard and UserProfile pages
-  - ActivityComments component on Dashboard and UserProfile pages
-  - Test IDs for all interactive elements (buttons, counts, inputs)
-- **Bug Fix**: Corrected API calls from incorrect apiRequest usage to proper fetch with credentials
-- **Testing**: E2E verified reactions (add/remove/update) and comments (post/display/delete) functionality
-
-**Bug Fixes from QA Report** (October 16, 2025)
-- **H-01 & H-02**: Already fixed in earlier updates (teams display and join feedback)
-- **M-01 Track Activity Confirmation**: Verified working - shows "Activity logged!" toast and clears form
-- **M-03 Dashboard New User Display**: Fixed misleading rank display for new users
-  - **Backend**: Added `totalActiveUsers` and `percentile` fields to dashboard stats API
-  - **Frontend**: Conditional rank display:
-    - New users (rank 0): Shows "Not ranked" with "Log activities to compete!" message
-    - Active users: Shows "#[rank]" with accurate "Top [X]%" percentile
-  - **Testing**: E2E verified new user shows "Not ranked", then proper rank after logging activity
-- **M-02 Dashboard Delay**: Already optimized with TanStack Query caching and invalidation
-
-**Team Join Feedback Verified** (October 16, 2025)
-- Verified and tested team join functionality provides proper user feedback
-- **Success case**: Shows "Joined team!" toast notification and auto-closes dialog
-- **Error cases**: Shows descriptive error toasts with API messages:
-  - "Already a member of this team" when attempting duplicate join
-  - "Invalid invite code" when code doesn't exist
-  - "Team is full (maximum 20 members)" when capacity reached
-- **Implementation**: Error message extraction from API responses using regex parsing
-- E2E tested with multiple user scenarios to ensure reliability
-
-**Teams Display Bug Fix** (October 16, 2025)
-- Fixed issue where user's teams weren't showing on the Teams page
-- **Problem**: getUserTeams() was filtering out teams with no activity in the last 30 days
-- **Solution**: Removed the 30-day activity filter from getUserTeams() method
-- **Behavior**: Teams page now shows all active teams where user is a member, regardless of activity date
-- Only archived teams are hidden from the Teams page
-
-**WhatsApp Invite Sharing** (October 15, 2025)
-- Added WhatsApp sharing functionality to invite code dialog
-- **Features**:
-  - WhatsApp share button with pre-filled message including invite code and app link
-  - Generic share button using Web Share API (falls back to clipboard copy)
-  - Professional message template with emojis and team name
-  - App download link included in share message
-- **UI**: Two share buttons in invite dialog (WhatsApp with green icon, generic Share)
-- **Implementation**: 
-  - Uses WhatsApp web URL scheme (https://wa.me/?text=...) for cross-platform compatibility
-  - Web Share API for native sharing on mobile devices
-  - Fallback to clipboard copy for unsupported browsers
-- **Message Format**: Includes team name, invite code, app URL, and motivational text
-
-**Victory Wall Feature** (October 15, 2025)
-- Implemented team-based victory wall to showcase monthly champions
-- **Database**: Added monthly_winners table with unique constraint on (teamId, month, year)
-- **API Endpoints**: 
-  - GET /api/teams/:id/victory-wall - Retrieves all monthly winners for a team (members only)
-  - POST /api/teams/:id/calculate-winner - Calculates and records winner for a specific month/year (owner only)
-- **Storage**: Added createMonthlyWinner(), getTeamMonthlyWinners(), and getMonthlyWinner() methods
-- **UI**: 
-  - Created VictoryWall page (/teams/:teamId/victory-wall) with trophy-themed cards for each winner
-  - Added "Victory Wall" button to TeamCard component (visible to all team members)
-  - Team owners can calculate monthly winners with a single click
-  - Displays winner's name, avatar, month/year, and total calories burned
-- **Authorization**: Only team members can view victory wall; only team owner can calculate winners
-- **Data**: Winner records include userId, totalCalories, month, year, and enriched with user details
-
-**Case-Insensitive Usernames** (October 15, 2025)
-- Implemented case-insensitive username authentication
-- **Login**: Users can now login with any case variation of their username (e.g., "JohnDoe", "johndoe", "JOHNDOE" all work)
-- **Registration**: Prevents duplicate usernames with different casing (e.g., cannot register "testuser" if "TestUser" exists)
-- **Implementation**: Uses SQL LOWER() function for case-insensitive comparison in database queries
-- Tested and verified with multiple case variations
-
-**Dashboard Performance & Bug Fix** (October 15, 2025)
-- Fixed critical dashboard loading error in production
-- **Issue**: Dashboard stats endpoint was failing for users not in teams and making inefficient database queries
-- **Solution**: Refactored global rank calculation to use all users instead of only team members
-- **Performance**: Reduced N+1 database queries by implementing getAllUsers() method
-- **Behavior**: Users with no activities now correctly show rank #0; users with activities get proper rankings
-- Tested and verified with both empty and active user accounts
-
-**OAuth Social Login Removal** (October 15, 2025)
-- Removed OAuth social login implementation (Google, Facebook, Apple) per user request
-- Removed migrate account feature from AuthPage
-- Cleaned up OAuth database schema, routes, storage methods, and dependencies
-- Dropped oauth_providers table and removed 94 legacy Replit auth users from database
-- Updated authentication to support only username/password and passkey/biometric login
-
-**WebAuthn/Passkey Authentication** (October 14, 2025)
-- Biometric login support using WebAuthn/Passkey authentication (fingerprint, Face ID, etc.)
-- Implementation:
-  - Backend: SimpleWebAuthn server library for registration/authentication
-  - Frontend: SimpleWebAuthn browser library for WebAuthn API interaction
-  - Database: Passkeys table storing credentialID, publicKey, counter, device metadata
-  - Storage layer: CRUD methods for passkey operations
-  - Routes: Four endpoints (register/verify for registration, login/verify for authentication)
-  - AuthPage: "Sign in with Passkey" button on login tab with username input
-  - Profile page: Security section for passkey registration and management
-- Password generator utility:
-  - Cryptographically secure password generation using Web Crypto API
-  - 16-character passwords with mixed case, numbers, and special characters
-  - Copy-to-clipboard functionality in Profile security section
-- Security: Challenge-response flow prevents replay attacks, counter tracking prevents credential cloning
-
-**Activity Source Indicators** (October 14, 2025)
-- Visual badges show whether activities were logged manually or synced from devices
-- Source types supported:
-  - Manual Entry: Edit3 icon + "Manual Entry" label
-  - Apple Health: Apple icon + "Apple Health" label  
-  - Garmin: Garmin icon + "Garmin" label
-  - Android Health: Smartphone icon + "Android Health" label
-- Implementation:
-  - Database: Activities table has "source" field (defaults to 'manual')
-  - Helper function getSourceInfo() maps source values to icons/labels
-  - Dashboard: Shows source badge in Recent Activity section
-  - UserProfile (/users/:userId/profile): Shows source badge on activity cards
-  - Profile (/profile): Shows stats and progress chart only (no activity list)
-- Route update: Fixed UserProfile route from /user/:userId to /users/:userId/profile
-- E2E tested: Manual entry displays correct badge on Dashboard
+- **Recharts**: Data visualization.
+- **React Hook Form with Zod**: Form validation.
+- **date-fns**: Date manipulation utilities.
+- **Radix UI**: Accessible UI primitives.
+- **Class Variance Authority**: Component variant management.
+- **Sharp**: Server-side image compression.
+- **SimpleWebAuthn**: WebAuthn/passkey authentication (server and browser libraries).
