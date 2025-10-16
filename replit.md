@@ -61,6 +61,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Team Join Feedback Verified** (October 16, 2025)
+- Verified and tested team join functionality provides proper user feedback
+- **Success case**: Shows "Joined team!" toast notification and auto-closes dialog
+- **Error cases**: Shows descriptive error toasts with API messages:
+  - "Already a member of this team" when attempting duplicate join
+  - "Invalid invite code" when code doesn't exist
+  - "Team is full (maximum 20 members)" when capacity reached
+- **Implementation**: Error message extraction from API responses using regex parsing
+- E2E tested with multiple user scenarios to ensure reliability
+
 **Teams Display Bug Fix** (October 16, 2025)
 - Fixed issue where user's teams weren't showing on the Teams page
 - **Problem**: getUserTeams() was filtering out teams with no activity in the last 30 days

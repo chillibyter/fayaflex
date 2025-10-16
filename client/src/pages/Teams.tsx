@@ -64,12 +64,9 @@ export default function Teams() {
       });
     },
     onError: (error: any) => {
-      // Extract error message from API response
       let errorMessage = "Failed to join team";
       
       if (error?.message) {
-        // Try to parse JSON error from API response
-        // Format is typically: "400: {\"message\":\"...\"}"
         try {
           const jsonMatch = error.message.match(/\d+:\s*({.+})/);
           if (jsonMatch) {
