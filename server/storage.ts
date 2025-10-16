@@ -614,15 +614,30 @@ export class DatabaseStorage implements IStorage {
 
   // Activity reactions operations
   async addReaction(reactionData: InsertActivityReaction): Promise<ActivityReaction> {
-    const [reaction] = await db
-      .insert(activityReactions)
-      .values(reactionData)
-      .onConflictDoUpdate({
-        target: [activityReactions.activityId, activityReactions.userId],
-        set: { type: reactionData.type },
-      })
-      .returning();
-    return reaction;
+    // First, try to find existing reaction
+    const existing = await this.getUserReaction(reactionData.activityId, reactionData.userId);
+    
+    if (existing) {
+      // Update existing reaction
+      const [reaction] = await db
+        .update(activityReactions)
+        .set({ type: reactionData.type })
+        .where(
+          and(
+            eq(activityReactions.activityId, reactionData.activityId),
+            eq(activityReactions.userId, reactionData.userId)
+          )
+        )
+        .returning();
+      return reaction;
+    } else {
+      // Insert new reaction
+      const [reaction] = await db
+        .insert(activityReactions)
+        .values(reactionData)
+        .returning();
+      return reaction;
+    }
   }
 
   async removeReaction(activityId: string, userId: string): Promise<void> {
