@@ -602,6 +602,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Activity reactions routes
+  app.post("/api/activities/:activityId/reactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { activityId } = req.params;
+      const { type } = req.body;
+
+      if (type !== 'thumbs_up' && type !== 'thumbs_down') {
+        return res.status(400).json({ message: "Invalid reaction type" });
+      }
+
+      const reaction = await storage.addReaction({
+        activityId,
+        userId,
+        type,
+      });
+
+      res.json(reaction);
+    } catch (error: any) {
+      console.error("Error adding reaction:", error);
+      res.status(400).json({ message: error.message || "Failed to add reaction" });
+    }
+  });
+
+  app.delete("/api/activities/:activityId/reactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { activityId } = req.params;
+
+      await storage.removeReaction(activityId, userId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error removing reaction:", error);
+      res.status(400).json({ message: error.message || "Failed to remove reaction" });
+    }
+  });
+
+  app.get("/api/activities/:activityId/reactions", async (req: any, res) => {
+    try {
+      const { activityId } = req.params;
+      const userId = req.user?.id;
+
+      const reactions = await storage.getActivityReactions(activityId);
+      
+      let userReaction = undefined;
+      if (userId) {
+        const reaction = await storage.getUserReaction(activityId, userId);
+        userReaction = reaction?.type as 'thumbs_up' | 'thumbs_down' | undefined;
+      }
+
+      res.json({ ...reactions, userReaction });
+    } catch (error: any) {
+      console.error("Error fetching reactions:", error);
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
+
+  // Activity comments routes
+  app.post("/api/activities/:activityId/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { activityId } = req.params;
+      const { content } = req.body;
+
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ message: "Comment content is required" });
+      }
+
+      const comment = await storage.addComment({
+        activityId,
+        userId,
+        content: content.trim(),
+      });
+
+      // Return comment with user info
+      const user = await storage.getUser(userId);
+      res.json({ ...comment, user });
+    } catch (error: any) {
+      console.error("Error adding comment:", error);
+      res.status(400).json({ message: error.message || "Failed to add comment" });
+    }
+  });
+
+  app.get("/api/activities/:activityId/comments", async (req: any, res) => {
+    try {
+      const { activityId } = req.params;
+      const comments = await storage.getActivityComments(activityId);
+      res.json(comments);
+    } catch (error: any) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.delete("/api/activities/comments/:commentId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { commentId } = req.params;
+
+      await storage.deleteComment(commentId, userId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting comment:", error);
+      res.status(400).json({ message: error.message || "Failed to delete comment" });
+    }
+  });
+
   // Leaderboard routes
   // Personal leaderboard - only shows members from user's teams (deduplicated)
   app.get("/api/leaderboard/personal", isAuthenticated, async (req: any, res) => {
