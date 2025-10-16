@@ -31,8 +31,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage
 - **Database**: PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe queries.
-- **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, and sessions.
-- **Relationships**: Supports complex relationships like users owning multiple teams, many-to-many team memberships, activities linked to users/teams, and passkeys linked to users.
+- **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, sessions, activityReactions, activityComments, monthly_winners, and passwordResetTokens.
+- **Relationships**: Supports complex relationships like users owning multiple teams, many-to-many team memberships, activities linked to users/teams, passkeys linked to users, reactions and comments linked to activities and users.
 
 ## External Dependencies
 
@@ -60,6 +60,36 @@ Preferred communication style: Simple, everyday language.
 - **SimpleWebAuthn**: For WebAuthn/passkey authentication (server and browser libraries).
 
 ## Recent Changes
+
+**Social Features - Reactions & Comments** (October 16, 2025)
+- Implemented social engagement features for activity submissions
+- **Reactions System**:
+  - Users can give thumbs up or thumbs down on any activity
+  - Unique constraint (activityId, userId) ensures one reaction per user per activity
+  - Clicking same reaction removes it; clicking different reaction updates it
+  - Real-time count display for both thumbs up and thumbs down
+  - User's current reaction highlighted (green for thumbs up, red for thumbs down)
+- **Comments System**:
+  - Users can comment on any activity submission
+  - Comments display author name, avatar, and timestamp
+  - Users can delete their own comments
+  - Collapsible comments section with toggle button
+  - Comment count displayed on toggle button
+- **Database Schema**:
+  - activityReactions table: id, activityId, userId, type ('thumbs_up' | 'thumbs_down')
+  - activityComments table: id, activityId, userId, content, createdAt
+- **API Endpoints**:
+  - POST/DELETE /api/activities/:activityId/reactions
+  - GET /api/activities/:activityId/reactions
+  - POST /api/activities/:activityId/comments
+  - GET /api/activities/:activityId/comments
+  - DELETE /api/activities/comments/:commentId
+- **UI Integration**:
+  - ActivityReactions component on Dashboard and UserProfile pages
+  - ActivityComments component on Dashboard and UserProfile pages
+  - Test IDs for all interactive elements (buttons, counts, inputs)
+- **Bug Fix**: Corrected API calls from incorrect apiRequest usage to proper fetch with credentials
+- **Testing**: E2E verified reactions (add/remove/update) and comments (post/display/delete) functionality
 
 **Bug Fixes from QA Report** (October 16, 2025)
 - **H-01 & H-02**: Already fixed in earlier updates (teams display and join feedback)
