@@ -1,0 +1,113 @@
+4.1. High Priority
+H-02
+Issue
+ID
+Feature Description Recommendation
+H-01
+Team
+Management
+Creating a team does not
+add it to the user's "My
+Teams" list, making the
+feature unusable.
+Debug the backend process for
+team creation to ensure that new
+teams are correctly associated
+with the user who created them
+and are added to their team list.
+Issue
+ID
+Feature Description Recommendation
+Team
+Management
+The "Join Team"
+function provides no
+feedback when a user
+enters an invalid invite
+code. The modal does
+not close, and no error
+message is displayed.
+Implement comprehensive
+feedback for the "Join Team"
+feature. This should include
+success messages when a user
+successfully joins a team and clear
+error messages for invalid invite
+codes.
+4.2. Medium Priority
+Issue
+ID
+Feature Description Recommendation
+M-01
+Track
+Activity
+After submitting a
+fitness activity, there is
+no confirmation
+message, and the form is
+not cleared. This leaves
+the user uncertain if the
+submission was
+successful.
+Display a clear and immediate
+confirmation message (e.g., a toast
+notification or an inline message)
+upon successful activity submission.
+The form fields should also be reset
+to allow for another entry.
+M-02 Dashboard
+There is a noticeable
+delay for new activity
+data to appear on the
+dashboard, which can
+cause confusion.
+Investigate and optimize the data
+synchronization process between the
+activity logging and the dashboard
+display to ensure data appears in
+near real-time. If a delay is
+unavoidable, consider adding a
+visual indicator that the dashboard is
+updating.
+M-03 Dashboard
+For new users, the
+dashboard displays a
+rank of "#0" and a "Top
+10%" indicator, which is
+misleading before any
+activity is logged.
+For new users with no activity data,
+either hide the rank and percentage
+indicators or replace them with a
+welcoming message that guides the
+user to log their first activity.
+4.3. Low Priority
+Issue
+ID
+Feature Description Recommendation
+L-01 General
+The empty state
+messages (e.g., "No
+teams yet") could be
+more engaging and
+provide a clearer call to
+action.
+Enhance the empty state messages to
+be more encouraging and provide a
+direct call to action. For example, the
+"No teams yet" message could be
+accompanied by a more prominent
+"Create a Team" button.
+L-02
+Track
+Activity
+The date picker and
+photo upload
+functionalities were not
+fully tested for all edge
+cases.
+Conduct more thorough testing on the
+date picker, including selecting dates in
+the past and future, and on the photo
+upload functionality, including testing
+different file types and sizes.
