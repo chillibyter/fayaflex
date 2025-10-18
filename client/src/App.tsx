@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,11 +16,25 @@ import CreateTeam from "@/pages/CreateTeam";
 import Profile from "@/pages/Profile";
 import UserProfile from "@/pages/UserProfile";
 import AuthPage from "@/pages/AuthPage";
+import TeamSelection from "@/pages/TeamSelection";
 import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+
+type Team = {
+  id: number;
+  name: string;
+  memberCount: number;
+};
 
 function Router() {
   const { user, isLoading } = useAuth();
+
+  // Check if user has any teams (getUserTeams only returns teams where user is a member)
+  const { data: teams = [], isLoading: isLoadingTeams } = useQuery<Team[]>({
+    queryKey: ['/api/teams'],
+    enabled: !!user,
+  });
 
   if (isLoading || !user) {
     return (
@@ -28,6 +42,29 @@ function Router() {
         <Route path="/auth" component={AuthPage} />
         <Route path="/" component={AuthPage} />
         <Route component={AuthPage} />
+      </Switch>
+    );
+  }
+
+  // Show loading state while checking team membership
+  if (isLoadingTeams) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user has no teams, force them to team selection
+  if (teams.length === 0) {
+    return (
+      <Switch>
+        <Route path="/team-selection" component={TeamSelection} />
+        <Route path="/" component={TeamSelection} />
+        <Route component={TeamSelection} />
       </Switch>
     );
   }
@@ -43,6 +80,9 @@ function Router() {
       <Route path="/create-team" component={CreateTeam} />
       <Route path="/profile" component={Profile} />
       <Route path="/users/:userId/profile" component={UserProfile} />
+      <Route path="/team-selection">
+        <Redirect to="/" />
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

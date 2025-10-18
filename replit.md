@@ -55,3 +55,22 @@ Preferred communication style: Simple, everyday language.
 - **Class Variance Authority**: Component variant management.
 - **Sharp**: Server-side image compression.
 - **SimpleWebAuthn**: WebAuthn/passkey authentication (server and browser libraries).
+
+## Recent Changes
+
+**Required Team Selection on Signup** (October 18, 2025)
+- Implemented mandatory team selection flow for new users
+- **User Experience**:
+  - After signup/login, users without teams are redirected to team selection page
+  - Cannot access main app (dashboard, tracking, leaderboard) until on a team
+  - Team selection page offers two options: join existing team or create new team
+- **Frontend Changes**:
+  - Created `TeamSelection.tsx` page with tabbed interface (Join/Create)
+  - Join tab: Search and browse available teams, see member counts
+  - Create tab: Form to create new team with name and optional description
+  - Updated `App.tsx` router to check user's team membership and enforce team selection
+- **Routing Logic**:
+  - Checks `/api/teams` endpoint to see if user has any teams
+  - If `teams.length === 0`, all routes redirect to `/team-selection`
+  - After joining/creating team, redirects to dashboard and invalidates team queries
+- **Design**: Clean, welcoming UI with Trophy icon, clear instructions, search functionality
