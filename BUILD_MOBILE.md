@@ -65,6 +65,7 @@ npx cap open android
    - See `APP_STORE_GUIDE.md` for complete submission instructions
    - Apple App Store requires Mac + Xcode + $99/year developer account
    - Google Play Store requires Android Studio + $25 one-time fee
+   - Huawei AppGallery requires FREE developer account (see `HUAWEI_APPGALLERY_GUIDE.md`)
 
 ## Important Files
 

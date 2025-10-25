@@ -1,7 +1,10 @@
 # Mobile App Store Deployment Guide
 
 ## Overview
-This guide covers the steps to publish Ultimate Fitness Challenge to both Apple App Store (iOS) and Google Play Store (Android).
+This guide covers the steps to publish Ultimate Fitness Challenge to:
+- **Apple App Store** (iOS)
+- **Google Play Store** (Android)
+- **Huawei AppGallery** (Android - see `HUAWEI_APPGALLERY_GUIDE.md` for detailed Huawei instructions)
 
 ---
 
@@ -30,6 +33,14 @@ This guide covers the steps to publish Ultimate Fitness Challenge to both Apple 
   
 - [ ] **Android Studio** installed
   - Download from: https://developer.android.com/studio
+
+### For Huawei AppGallery
+- [ ] **Huawei Developer Account** (FREE)
+  - Sign up at: https://developer.huawei.com
+  - Complete identity verification (1-2 business days)
+  
+- [ ] **Android Studio** installed (same as Google Play)
+- [ ] See `HUAWEI_APPGALLERY_GUIDE.md` for complete Huawei-specific instructions
 
 ---
 
