@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Activity, Smartphone, Watch, RefreshCw, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Smartphone, Activity, RefreshCw, CheckCircle, XCircle, Loader2, Settings } from 'lucide-react';
 import { healthService } from '@/lib/healthService';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Capacitor } from '@capacitor/core';
@@ -15,37 +15,11 @@ interface DeviceConnection {
   lastSyncAt: Date | null;
 }
 
-const deviceInfo = {
-  google_fit: {
-    name: 'Google Fit',
-    description: 'Connect your Google Fit account to sync fitness data',
-    icon: Activity,
-    color: 'text-green-600 dark:text-green-400'
-  },
-  apple_health: {
-    name: 'Apple Health',
-    description: 'Connect to Apple Health to sync your iOS health data',
-    icon: Smartphone,
-    color: 'text-blue-600 dark:text-blue-400'
-  },
-  android_health: {
-    name: 'Health Connect',
-    description: 'Connect to Android Health Connect for fitness tracking',
-    icon: Activity,
-    color: 'text-green-600 dark:text-green-400'
-  },
-  garmin: {
-    name: 'Garmin Connect',
-    description: 'Connect your Garmin device to automatically sync activities',
-    icon: Watch,
-    color: 'text-orange-600 dark:text-orange-400'
-  }
-};
-
 export function HealthDevices() {
   const { toast } = useToast();
   const [nativeAvailable, setNativeAvailable] = useState(false);
   const [nativePermissionsGranted, setNativePermissionsGranted] = useState(false);
+  const [isNativePlatform, setIsNativePlatform] = useState(false);
 
   const { data: devices, isLoading } = useQuery<DeviceConnection[]>({
     queryKey: ['/api/devices']
@@ -56,6 +30,13 @@ export function HealthDevices() {
   }, []);
 
   async function checkNativeHealth() {
+    const isNative = Capacitor.isNativePlatform();
+    setIsNativePlatform(isNative);
+    
+    if (!isNative) {
+      return;
+    }
+
     const available = await healthService.isAvailable();
     setNativeAvailable(available);
 
@@ -72,14 +53,12 @@ export function HealthDevices() {
         throw new Error('Health permissions not granted');
       }
 
-      // Fetch last 30 days of health data
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
 
       const healthData = await healthService.getHealthData(startDate, endDate);
 
-      // Sync to backend
       const provider = healthService.getProviderName();
       await apiRequest('POST', '/api/devices/sync', {
         provider,
@@ -89,9 +68,10 @@ export function HealthDevices() {
       return provider;
     },
     onSuccess: (provider) => {
+      const displayName = provider === 'apple_health' ? 'Apple Health' : 'Health Connect';
       toast({
         title: 'Connected!',
-        description: `Successfully connected to ${deviceInfo[provider as keyof typeof deviceInfo]?.name || provider}`,
+        description: `Successfully connected to ${displayName} and synced your fitness data`,
       });
       setNativePermissionsGranted(true);
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
@@ -106,61 +86,30 @@ export function HealthDevices() {
     }
   });
 
-  const connectGoogleFitMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/google-fit/connect', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-      return data.authUrl;
-    },
-    onSuccess: (authUrl) => {
-      window.location.href = authUrl;
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Connection failed',
-        description: error.message,
-        variant: 'destructive'
-      });
-    }
-  });
-
-  const connectGarminMutation = useMutation({
-    mutationFn: async () => {
-      window.location.href = '/api/garmin/connect';
-    }
-  });
-
   const syncMutation = useMutation({
-    mutationFn: async (provider: string) => {
-      if (provider === 'apple_health' || provider === 'android_health') {
-        // Sync native health data
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 30);
+    mutationFn: async () => {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
 
-        const healthData = await healthService.getHealthData(startDate, endDate);
+      const healthData = await healthService.getHealthData(startDate, endDate);
+      const provider = healthService.getProviderName();
 
-        return await apiRequest('POST', '/api/devices/sync', {
-          provider,
-          activities: healthData
-        });
-      } else {
-        // Sync web-based provider (Google Fit, Garmin)
-        return await apiRequest('POST', `/api/${provider.replace('_', '-')}/sync`, {});
-      }
+      return await apiRequest('POST', '/api/devices/sync', {
+        provider,
+        activities: healthData
+      });
     },
-    onSuccess: (_, provider) => {
+    onSuccess: () => {
+      const displayName = Capacitor.getPlatform() === 'ios' ? 'Apple Health' : 'Health Connect';
       toast({
         title: 'Synced!',
-        description: `Successfully synced data from ${deviceInfo[provider as keyof typeof deviceInfo]?.name || provider}`,
+        description: `Successfully synced data from ${displayName}`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
-    onError: (error: Error) => {
+    onError: (error: Error) {
       toast({
         title: 'Sync failed',
         description: error.message,
@@ -170,20 +119,20 @@ export function HealthDevices() {
   });
 
   const disconnectMutation = useMutation({
-    mutationFn: async (provider: string) => {
+    mutationFn: async () => {
+      const provider = healthService.getProviderName();
       return await apiRequest('POST', '/api/devices/toggle', {
         provider,
         isConnected: false
       });
     },
-    onSuccess: (_, provider) => {
+    onSuccess: () => {
+      const displayName = Capacitor.getPlatform() === 'ios' ? 'Apple Health' : 'Health Connect';
       toast({
         title: 'Disconnected',
-        description: `Disconnected from ${deviceInfo[provider as keyof typeof deviceInfo]?.name || provider}`,
+        description: `Disconnected from ${displayName}`,
       });
-      if (provider === 'apple_health' || provider === 'android_health') {
-        setNativePermissionsGranted(false);
-      }
+      setNativePermissionsGranted(false);
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
     },
     onError: (error: Error) => {
@@ -195,7 +144,20 @@ export function HealthDevices() {
     }
   });
 
-  const getDeviceConnection = (provider: string) => {
+  const handleOpenSettings = async () => {
+    try {
+      await healthService.openHealthSettings();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to open health settings',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const getDeviceConnection = () => {
+    const provider = healthService.getProviderName();
     return devices?.find(d => d.provider === provider);
   };
 
@@ -214,6 +176,24 @@ export function HealthDevices() {
     return `${diffDays}d ago`;
   };
 
+  if (!isNativePlatform) {
+    return (
+      <Card data-testid="card-native-not-available">
+        <CardHeader>
+          <CardTitle>Native Health Integration</CardTitle>
+          <CardDescription>
+            Health tracking is only available on iOS and Android mobile apps
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Download the UFC mobile app to automatically sync your fitness data from Apple Health or Health Connect.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -222,229 +202,135 @@ export function HealthDevices() {
     );
   }
 
+  const platform = Capacitor.getPlatform();
+  const isIOS = platform === 'ios';
+  const displayName = isIOS ? 'Apple Health' : 'Health Connect';
+  const Icon = isIOS ? Smartphone : Activity;
+  const description = isIOS 
+    ? 'Connect to Apple Health to automatically sync your fitness data'
+    : 'Connect to Health Connect to automatically sync your fitness data';
+
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold">Health Device Connections</h2>
+        <h2 className="text-2xl font-bold">Health Tracking</h2>
         <p className="text-muted-foreground">
-          Connect your fitness devices and apps to automatically sync your activity data
+          Automatically sync your fitness data from your device
         </p>
       </div>
 
-      {/* Native Health (iOS/Android) */}
-      {nativeAvailable && (
-        <Card data-testid="card-native-health">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {Capacitor.getPlatform() === 'ios' ? (
-                  <Smartphone className={deviceInfo.apple_health.color} />
-                ) : (
-                  <Activity className={deviceInfo.android_health.color} />
-                )}
-                <div>
-                  <CardTitle>
-                    {Capacitor.getPlatform() === 'ios' ? deviceInfo.apple_health.name : deviceInfo.android_health.name}
-                  </CardTitle>
-                  <CardDescription>
-                    {Capacitor.getPlatform() === 'ios' ? deviceInfo.apple_health.description : deviceInfo.android_health.description}
-                  </CardDescription>
-                </div>
+      <Card data-testid="card-native-health">
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <Icon className="h-8 w-8 text-primary" />
+              <div>
+                <CardTitle>{displayName}</CardTitle>
+                <CardDescription>{description}</CardDescription>
               </div>
-              {nativePermissionsGranted ? (
-                <Badge className="gap-1" data-testid="badge-native-connected">
-                  <CheckCircle className="h-3 w-3" />
-                  Connected
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="gap-1" data-testid="badge-native-disconnected">
-                  <XCircle className="h-3 w-3" />
-                  Not Connected
-                </Badge>
-              )}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {nativePermissionsGranted && getDeviceConnection(healthService.getProviderName())?.lastSyncAt && (
-              <p className="text-sm text-muted-foreground" data-testid="text-native-last-sync">
-                Last synced: {formatLastSync(getDeviceConnection(healthService.getProviderName())?.lastSyncAt || null)}
+            {nativePermissionsGranted ? (
+              <Badge className="gap-1" data-testid="badge-native-connected">
+                <CheckCircle className="h-3 w-3" />
+                Connected
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="gap-1" data-testid="badge-native-disconnected">
+                <XCircle className="h-3 w-3" />
+                Not Connected
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!nativeAvailable ? (
+            <div className="rounded-md bg-muted p-4">
+              <p className="text-sm text-muted-foreground">
+                {isIOS 
+                  ? 'Apple Health is not available on this device.'
+                  : 'Health Connect is not installed. Please install it from the Play Store.'}
               </p>
-            )}
-            <div className="flex gap-2">
-              {!nativePermissionsGranted ? (
-                <Button
-                  onClick={() => connectNativeMutation.mutate()}
-                  disabled={connectNativeMutation.isPending}
-                  data-testid="button-connect-native"
+              {!isIOS && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={handleOpenSettings}
+                  data-testid="button-install-health-connect"
                 >
-                  {connectNativeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Connect
+                  Install Health Connect
                 </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={() => syncMutation.mutate(healthService.getProviderName())}
-                    disabled={syncMutation.isPending}
-                    variant="default"
-                    data-testid="button-sync-native"
-                  >
-                    {syncMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                    )}
-                    Sync Now
-                  </Button>
-                  <Button
-                    onClick={() => disconnectMutation.mutate(healthService.getProviderName())}
-                    disabled={disconnectMutation.isPending}
-                    variant="outline"
-                    data-testid="button-disconnect-native"
-                  >
-                    Disconnect
-                  </Button>
-                </>
               )}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Google Fit */}
-      <Card data-testid="card-google-fit">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Activity className={deviceInfo.google_fit.color} />
-              <div>
-                <CardTitle>{deviceInfo.google_fit.name}</CardTitle>
-                <CardDescription>{deviceInfo.google_fit.description}</CardDescription>
+          ) : (
+            <>
+              {nativePermissionsGranted && getDeviceConnection()?.lastSyncAt && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <RefreshCw className="h-4 w-4" />
+                  <span data-testid="text-native-last-sync">
+                    Last synced: {formatLastSync(getDeviceConnection()?.lastSyncAt || null)}
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex gap-2 flex-wrap">
+                {!nativePermissionsGranted ? (
+                  <Button
+                    onClick={() => connectNativeMutation.mutate()}
+                    disabled={connectNativeMutation.isPending}
+                    data-testid="button-connect-native"
+                  >
+                    {connectNativeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Connect {displayName}
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => syncMutation.mutate()}
+                      disabled={syncMutation.isPending}
+                      variant="default"
+                      data-testid="button-sync-native"
+                    >
+                      {syncMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                      )}
+                      Sync Now
+                    </Button>
+                    <Button
+                      onClick={handleOpenSettings}
+                      variant="outline"
+                      data-testid="button-open-settings"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Button>
+                    <Button
+                      onClick={() => disconnectMutation.mutate()}
+                      disabled={disconnectMutation.isPending}
+                      variant="outline"
+                      data-testid="button-disconnect-native"
+                    >
+                      Disconnect
+                    </Button>
+                  </>
+                )}
               </div>
-            </div>
-            {getDeviceConnection('google_fit')?.isConnected ? (
-              <Badge className="gap-1" data-testid="badge-google-fit-connected">
-                <CheckCircle className="h-3 w-3" />
-                Connected
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="gap-1" data-testid="badge-google-fit-disconnected">
-                <XCircle className="h-3 w-3" />
-                Not Connected
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {getDeviceConnection('google_fit')?.lastSyncAt && (
-            <p className="text-sm text-muted-foreground" data-testid="text-google-fit-last-sync">
-              Last synced: {formatLastSync(getDeviceConnection('google_fit')?.lastSyncAt || null)}
-            </p>
-          )}
-          <div className="flex gap-2">
-            {!getDeviceConnection('google_fit')?.isConnected ? (
-              <Button
-                onClick={() => connectGoogleFitMutation.mutate()}
-                disabled={connectGoogleFitMutation.isPending}
-                data-testid="button-connect-google-fit"
-              >
-                {connectGoogleFitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Connect
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={() => syncMutation.mutate('google_fit')}
-                  disabled={syncMutation.isPending}
-                  variant="default"
-                  data-testid="button-sync-google-fit"
-                >
-                  {syncMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                  )}
-                  Sync Now
-                </Button>
-                <Button
-                  onClick={() => disconnectMutation.mutate('google_fit')}
-                  disabled={disconnectMutation.isPending}
-                  variant="outline"
-                  data-testid="button-disconnect-google-fit"
-                >
-                  Disconnect
-                </Button>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Garmin */}
-      <Card data-testid="card-garmin">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Watch className={deviceInfo.garmin.color} />
-              <div>
-                <CardTitle>{deviceInfo.garmin.name}</CardTitle>
-                <CardDescription>{deviceInfo.garmin.description}</CardDescription>
-              </div>
-            </div>
-            {getDeviceConnection('garmin')?.isConnected ? (
-              <Badge className="gap-1" data-testid="badge-garmin-connected">
-                <CheckCircle className="h-3 w-3" />
-                Connected
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="gap-1" data-testid="badge-garmin-disconnected">
-                <XCircle className="h-3 w-3" />
-                Not Connected
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {getDeviceConnection('garmin')?.lastSyncAt && (
-            <p className="text-sm text-muted-foreground" data-testid="text-garmin-last-sync">
-              Last synced: {formatLastSync(getDeviceConnection('garmin')?.lastSyncAt || null)}
-            </p>
+              {nativePermissionsGranted && (
+                <div className="rounded-md bg-muted p-4 space-y-2">
+                  <h4 className="font-medium text-sm">How it works:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>UFC reads your daily steps and calories from {displayName}</li>
+                    <li>Your data stays on your device until you sync</li>
+                    <li>Tap "Sync Now" whenever you want to update your activities</li>
+                    <li>Data syncs for the last 30 days</li>
+                  </ul>
+                </div>
+              )}
+            </>
           )}
-          <div className="flex gap-2">
-            {!getDeviceConnection('garmin')?.isConnected ? (
-              <Button
-                onClick={() => connectGarminMutation.mutate()}
-                disabled={connectGarminMutation.isPending}
-                data-testid="button-connect-garmin"
-              >
-                {connectGarminMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Connect
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={() => syncMutation.mutate('garmin')}
-                  disabled={syncMutation.isPending}
-                  variant="default"
-                  data-testid="button-sync-garmin"
-                >
-                  {syncMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                  )}
-                  Sync Now
-                </Button>
-                <Button
-                  onClick={() => disconnectMutation.mutate('garmin')}
-                  disabled={disconnectMutation.isPending}
-                  variant="outline"
-                  data-testid="button-disconnect-garmin"
-                >
-                  Disconnect
-                </Button>
-              </>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>
