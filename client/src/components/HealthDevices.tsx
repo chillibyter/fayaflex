@@ -77,10 +77,10 @@ export function HealthDevices() {
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: 'Connection failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive'
       });
     }
@@ -109,10 +109,10 @@ export function HealthDevices() {
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
-    onError: (error: Error) {
+    onError: (error) => {
       toast({
         title: 'Sync failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive'
       });
     }
@@ -135,10 +135,10 @@ export function HealthDevices() {
       setNativePermissionsGranted(false);
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: 'Disconnect failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive'
       });
     }

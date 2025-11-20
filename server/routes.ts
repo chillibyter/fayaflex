@@ -66,8 +66,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       
-      // Get device connections for supported providers
-      const providers = ['apple_health', 'garmin', 'android_health'];
+      // Get device connections for supported providers (native only)
+      const providers = ['apple_health', 'android_health'];
       const connections = await Promise.all(
         providers.map(async (provider) => {
           const connection = await storage.getDeviceConnection(userId, provider);
@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       
       const toggleSchema = z.object({
-        provider: z.enum(['apple_health', 'garmin', 'android_health']),
+        provider: z.enum(['apple_health', 'android_health']),
         isConnected: z.boolean(),
       });
       
@@ -117,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       
       const syncSchema = z.object({
-        provider: z.enum(['apple_health', 'garmin', 'android_health']),
+        provider: z.enum(['apple_health', 'android_health']),
         activities: z.array(z.object({
           date: z.string(), // YYYY-MM-DD format
           calories: z.number().int().min(0),
@@ -128,12 +128,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = syncSchema.parse(req.body);
       
-      // Check if device is connected
-      const existingConnection = await storage.getDeviceConnection(userId, validatedData.provider);
-      if (!existingConnection || !existingConnection.isConnected) {
-        return res.status(400).json({ message: "Device is not connected" });
-      }
-      
       // Sync activities from health device
       const results = await storage.syncHealthActivities(
         userId,
@@ -141,7 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validatedData.activities
       );
       
-      // Update device connection lastSyncAt
+      // Create or update device connection
       await storage.upsertDeviceConnection({
         userId,
         provider: validatedData.provider,
