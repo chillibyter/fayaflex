@@ -1,30 +1,36 @@
-import { CapacitorHealth, RecordType, RecordData, TimeRangedQuery } from 'capacitor-health';
+import { Health } from 'capacitor-health';
 import { Capacitor } from '@capacitor/core';
 
 export interface HealthDataPoint {
   date: string; // YYYY-MM-DD
   calories: number;
   steps: number;
-  workoutType?: string;
 }
 
 class HealthService {
   async isAvailable(): Promise<boolean> {
-    return Capacitor.isNativePlatform();
+    if (!Capacitor.isNativePlatform()) {
+      return false;
+    }
+    
+    try {
+      const result = await Health.isHealthAvailable();
+      return result.available;
+    } catch (error) {
+      console.error('Error checking health availability:', error);
+      return false;
+    }
   }
 
   async requestPermissions(): Promise<boolean> {
     try {
-      const result = await CapacitorHealth.requestAuthorization({
-        read: [
-          RecordType.Steps,
-          RecordType.ActiveEnergyBurned,
-          RecordType.ExerciseSession,
-          RecordType.Distance
-        ],
-        write: []
+      const result = await Health.requestHealthPermissions({
+        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
       });
-      return result.granted;
+      
+      // iOS always returns true if permissions were requested
+      // Android returns actual permission status
+      return true;
     } catch (error) {
       console.error('Error requesting health permissions:', error);
       return false;
@@ -33,14 +39,17 @@ class HealthService {
 
   async checkPermissions(): Promise<boolean> {
     try {
-      const result = await CapacitorHealth.checkPermissions({
-        read: [
-          RecordType.Steps,
-          RecordType.ActiveEnergyBurned,
-          RecordType.ExerciseSession
-        ]
+      const result = await Health.checkHealthPermissions({
+        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
       });
-      return result.granted;
+      
+      // Check if at least one permission is granted
+      if (result.permissions && result.permissions.length > 0) {
+        const permissions = result.permissions[0];
+        return Object.values(permissions).some(granted => granted === true);
+      }
+      
+      return false;
     } catch (error) {
       console.error('Error checking health permissions:', error);
       return false;
@@ -49,44 +58,46 @@ class HealthService {
 
   async getHealthData(startDate: Date, endDate: Date): Promise<HealthDataPoint[]> {
     try {
-      const query: TimeRangedQuery = {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
-      };
+      const startDateStr = startDate.toISOString();
+      const endDateStr = endDate.toISOString();
 
-      // Fetch steps
-      const stepsData = await CapacitorHealth.queryRecords({
-        recordType: RecordType.Steps,
-        ...query
+      // Fetch steps data
+      const stepsResult = await Health.queryAggregated({
+        startDate: startDateStr,
+        endDate: endDateStr,
+        dataType: 'steps',
+        bucket: 'day'
       });
 
-      // Fetch calories
-      const caloriesData = await CapacitorHealth.queryRecords({
-        recordType: RecordType.ActiveEnergyBurned,
-        ...query
+      // Fetch calories data
+      const caloriesResult = await Health.queryAggregated({
+        startDate: startDateStr,
+        endDate: endDateStr,
+        dataType: 'active-calories',
+        bucket: 'day'
       });
 
-      // Aggregate data by date
+      // Combine data by date
       const dataByDate = new Map<string, HealthDataPoint>();
 
       // Process steps
-      for (const record of stepsData.records || []) {
-        const date = this.extractDate(record.startDate);
+      for (const sample of stepsResult.aggregatedData || []) {
+        const date = this.extractDate(sample.startDate);
         if (!dataByDate.has(date)) {
           dataByDate.set(date, { date, calories: 0, steps: 0 });
         }
         const point = dataByDate.get(date)!;
-        point.steps += Math.round(this.getNumericValue(record));
+        point.steps += Math.round(sample.value);
       }
 
       // Process calories
-      for (const record of caloriesData.records || []) {
-        const date = this.extractDate(record.startDate);
+      for (const sample of caloriesResult.aggregatedData || []) {
+        const date = this.extractDate(sample.startDate);
         if (!dataByDate.has(date)) {
           dataByDate.set(date, { date, calories: 0, steps: 0 });
         }
         const point = dataByDate.get(date)!;
-        point.calories += Math.round(this.getNumericValue(record));
+        point.calories += Math.round(sample.value);
       }
 
       return Array.from(dataByDate.values()).sort((a, b) => 
@@ -102,18 +113,20 @@ class HealthService {
     return isoString.split('T')[0];
   }
 
-  private getNumericValue(record: RecordData): number {
-    if (typeof record.value === 'number') {
-      return record.value;
-    }
-    if (typeof record.value === 'string') {
-      return parseFloat(record.value) || 0;
-    }
-    return 0;
-  }
-
   getProviderName(): 'apple_health' | 'android_health' {
     return Capacitor.getPlatform() === 'ios' ? 'apple_health' : 'android_health';
+  }
+
+  async openHealthSettings(): Promise<void> {
+    try {
+      if (Capacitor.getPlatform() === 'ios') {
+        await Health.openAppleHealthSettings();
+      } else {
+        await Health.openHealthConnectSettings();
+      }
+    } catch (error) {
+      console.error('Error opening health settings:', error);
+    }
   }
 }
 
