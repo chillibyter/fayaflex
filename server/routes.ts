@@ -162,47 +162,274 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Google Fit OAuth routes
+  app.get("/api/google-fit/connect", isAuthenticated, async (req: any, res) => {
+    try {
+      const { googleFitService } = await import('./healthIntegrations');
+      
+      if (!googleFitService.isConfigured()) {
+        return res.status(500).json({ 
+          message: "Google Fit integration not configured. Please add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI." 
+        });
+      }
+
+      const userId = req.user.id;
+      const authUrl = googleFitService.getAuthUrl(userId);
+      res.json({ authUrl });
+    } catch (error: any) {
+      console.error("Error initiating Google Fit OAuth:", error);
+      res.status(500).json({ message: "Failed to connect to Google Fit" });
+    }
+  });
+
+  app.get("/api/google-fit/callback", async (req, res) => {
+    try {
+      const { googleFitService } = await import('./healthIntegrations');
+      const { code, state: userId } = req.query;
+
+      if (!code || !userId) {
+        return res.status(400).json({ message: "Missing authorization code or user ID" });
+      }
+
+      const tokens = await googleFitService.getTokensFromCode(code as string);
+
+      // Store tokens in device connections
+      await storage.upsertDeviceConnection({
+        userId: userId as string,
+        provider: 'google_fit',
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        externalUserId: 'me',
+        isConnected: true,
+        lastSyncAt: new Date(),
+      });
+
+      // Redirect to profile or devices page
+      res.redirect('/profile?connected=google_fit');
+    } catch (error: any) {
+      console.error("Error completing Google Fit OAuth:", error);
+      res.status(500).json({ message: "Failed to complete Google Fit connection" });
+    }
+  });
+
+  app.post("/api/google-fit/sync", isAuthenticated, async (req: any, res) => {
+    try {
+      const { googleFitService } = await import('./healthIntegrations');
+      const userId = req.user.id;
+
+      // Get device connection
+      const connection = await storage.getDeviceConnection(userId, 'google_fit');
+      if (!connection || !connection.isConnected) {
+        return res.status(400).json({ message: "Google Fit not connected" });
+      }
+
+      let accessToken = connection.accessToken;
+
+      // Refresh token if needed
+      if (connection.refreshToken) {
+        try {
+          const tokens = await googleFitService.refreshAccessToken(connection.refreshToken);
+          accessToken = tokens.access_token;
+
+          // Update stored token
+          await storage.upsertDeviceConnection({
+            userId,
+            provider: 'google_fit',
+            accessToken: tokens.access_token,
+            refreshToken: tokens.refresh_token || connection.refreshToken,
+            isConnected: true,
+          });
+        } catch (error) {
+          console.error("Error refreshing Google Fit token:", error);
+        }
+      }
+
+      // Fetch last 30 days of data
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+
+      const activities = await googleFitService.getHealthData(accessToken!, startDate, endDate);
+
+      // Sync to database
+      const results = await storage.syncHealthActivities(userId, 'google_fit', activities);
+
+      // Update last sync time
+      await storage.upsertDeviceConnection({
+        userId,
+        provider: 'google_fit',
+        isConnected: true,
+        lastSyncAt: new Date(),
+      });
+
+      res.json({
+        success: true,
+        synced: results.created + results.updated,
+        created: results.created,
+        updated: results.updated,
+        skipped: results.skipped,
+      });
+    } catch (error: any) {
+      console.error("Error syncing Google Fit data:", error);
+      res.status(500).json({ message: "Failed to sync Google Fit data" });
+    }
+  });
+
   // Garmin OAuth routes
   app.get("/api/garmin/connect", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const { garminService } = await import('./healthIntegrations');
       
-      // Check if Garmin credentials are configured
-      if (!process.env.GARMIN_CONSUMER_KEY || !process.env.GARMIN_CONSUMER_SECRET) {
+      if (!garminService.isConfigured()) {
         return res.status(500).json({ 
           message: "Garmin integration not configured. Please add GARMIN_CONSUMER_KEY and GARMIN_CONSUMER_SECRET." 
         });
       }
-      
-      // For now, return a message that this needs OAuth 1.0a implementation
-      // TODO: Implement full OAuth 1.0a flow with request token
-      res.json({ 
-        message: "Garmin OAuth flow not yet implemented. Requires OAuth 1.0a with request tokens.",
-        requiredEnvVars: ["GARMIN_CONSUMER_KEY", "GARMIN_CONSUMER_SECRET"],
-        note: "Once implemented, this will redirect to Garmin for authorization"
-      });
+
+      const userId = req.user.id;
+      const callbackUrl = `${req.protocol}://${req.get('host')}/api/garmin/callback`;
+
+      // Get request token
+      const { token, tokenSecret } = await garminService.getRequestToken(callbackUrl);
+
+      // Store token secret temporarily in session
+      req.session.garminTokenSecret = tokenSecret;
+      req.session.garminUserId = userId;
+
+      // Get auth URL and redirect
+      const authUrl = garminService.getAuthUrl(token);
+      res.redirect(authUrl);
     } catch (error: any) {
       console.error("Error initiating Garmin OAuth:", error);
       res.status(500).json({ message: "Failed to connect to Garmin" });
     }
   });
 
+  app.get("/api/garmin/callback", async (req, res) => {
+    try {
+      const { garminService } = await import('./healthIntegrations');
+      const { oauth_token, oauth_verifier } = req.query;
+      const tokenSecret = req.session.garminTokenSecret;
+      const userId = req.session.garminUserId;
+
+      if (!oauth_token || !oauth_verifier || !tokenSecret || !userId) {
+        return res.status(400).json({ message: "Missing OAuth parameters" });
+      }
+
+      // Exchange for access token
+      const { token: accessToken, tokenSecret: accessTokenSecret } = await garminService.getAccessToken(
+        oauth_token as string,
+        tokenSecret,
+        oauth_verifier as string
+      );
+
+      // Store tokens in device connections
+      await storage.upsertDeviceConnection({
+        userId,
+        provider: 'garmin',
+        accessToken,
+        refreshToken: accessTokenSecret, // Store token secret as refresh token
+        externalUserId: oauth_token as string,
+        isConnected: true,
+        lastSyncAt: new Date(),
+      });
+
+      // Clean up session
+      delete req.session.garminTokenSecret;
+      delete req.session.garminUserId;
+
+      res.redirect('/profile?connected=garmin');
+    } catch (error: any) {
+      console.error("Error completing Garmin OAuth:", error);
+      res.status(500).json({ message: "Failed to complete Garmin connection" });
+    }
+  });
+
+  app.post("/api/garmin/sync", isAuthenticated, async (req: any, res) => {
+    try {
+      const { garminService } = await import('./healthIntegrations');
+      const userId = req.user.id;
+
+      // Get device connection
+      const connection = await storage.getDeviceConnection(userId, 'garmin');
+      if (!connection || !connection.isConnected) {
+        return res.status(400).json({ message: "Garmin not connected" });
+      }
+
+      // Fetch last 30 days of data
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+
+      const activities = await garminService.getHealthData(
+        connection.accessToken!,
+        connection.refreshToken!, // Token secret
+        startDate,
+        endDate
+      );
+
+      // Sync to database
+      const results = await storage.syncHealthActivities(userId, 'garmin', activities);
+
+      // Update last sync time
+      await storage.upsertDeviceConnection({
+        userId,
+        provider: 'garmin',
+        isConnected: true,
+        lastSyncAt: new Date(),
+      });
+
+      res.json({
+        success: true,
+        synced: results.created + results.updated,
+        created: results.created,
+        updated: results.updated,
+        skipped: results.skipped,
+      });
+    } catch (error: any) {
+      console.error("Error syncing Garmin data:", error);
+      res.status(500).json({ message: "Failed to sync Garmin data" });
+    }
+  });
+
   // Garmin webhook endpoint for push notifications
   app.post("/api/webhooks/garmin", async (req, res) => {
     try {
-      // Garmin sends webhook notifications when new activity data is available
-      // Format: { userId: "garmin-user-id", summaryId: "activity-summary-id", ... }
-      
+      const { garminService } = await import('./healthIntegrations');
       const webhookData = req.body;
       console.log("Received Garmin webhook:", webhookData);
+
+      if (!webhookData.userId) {
+        return res.status(400).json({ message: "Missing userId in webhook" });
+      }
+
+      // Find our user by Garmin external user ID
+      const connection = await storage.getDeviceConnectionByExternalId('garmin', webhookData.userId);
       
-      // TODO: Implement webhook processing
-      // 1. Validate webhook signature (if Garmin provides one)
-      // 2. Map Garmin user ID to our user ID (stored in device_connections)
-      // 3. Fetch activity data from Garmin API using stored access token
-      // 4. Call syncHealthActivities to store the data
-      
-      res.status(200).json({ received: true });
+      if (!connection) {
+        console.log("No user found for Garmin ID:", webhookData.userId);
+        return res.status(200).json({ received: true, processed: false });
+      }
+
+      // Transform webhook data to our format
+      const activities = garminService.transformWebhookData(webhookData);
+
+      if (activities.length > 0) {
+        // Sync activities to database
+        const results = await storage.syncHealthActivities(connection.userId, 'garmin', activities);
+        
+        // Update last sync time
+        await storage.upsertDeviceConnection({
+          userId: connection.userId,
+          provider: 'garmin',
+          isConnected: true,
+          lastSyncAt: new Date(),
+        });
+
+        console.log(`Synced ${results.created + results.updated} Garmin activities for user ${connection.userId}`);
+      }
+
+      res.status(200).json({ received: true, processed: activities.length });
     } catch (error: any) {
       console.error("Error processing Garmin webhook:", error);
       res.status(500).json({ message: "Failed to process webhook" });
