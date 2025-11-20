@@ -43,9 +43,9 @@ Preferred communication style: Simple, everyday language.
 - **Google Fonts**: Inter font family for typography.
 
 ### Device Integrations
-- **Apple Health**: Placeholder for iOS health data syncing.
-- **Google Fit / Android Health**: Placeholder for Android health data syncing.
-- **Garmin Connect**: Placeholder for fitness device integration, including OAuth and webhooks.
+- **Apple Health**: Native iOS health data syncing via capacitor-health plugin.
+- **Android Health Connect**: Native Android health data syncing via capacitor-health plugin.
+- **Native-Only Approach**: Simplified direct device access without complex OAuth flows.
 
 ### Key NPM Dependencies
 - **Recharts**: Data visualization.
@@ -57,6 +57,28 @@ Preferred communication style: Simple, everyday language.
 - **SimpleWebAuthn**: WebAuthn/passkey authentication (server and browser libraries).
 
 ## Recent Changes
+
+**Native Health Integration Implemented** (November 20, 2025)
+- Implemented simplified native-only health integration (Option 3) with Apple Health and Android Health Connect
+- **Architecture Decision**: Direct device access only via Capacitor Health plugin, no OAuth complexity
+- **Backend Implementation**:
+  - Removed complex OAuth code (Google Fit, Garmin) from server
+  - Three clean API endpoints supporting only apple_health and android_health:
+    - GET /api/devices - Returns native device connections
+    - POST /api/devices/sync - Auto-creates connections on first sync, imports health data
+    - POST /api/devices/toggle - Disconnect device
+  - Backend auto-creates device connections on first sync (no pre-connection required)
+- **Frontend Implementation**:
+  - Created native health service using capacitor-health plugin
+  - Built HealthDevices UI component with connect/sync/disconnect functionality
+  - Integrated into Profile page with web platform guards (hidden on web builds)
+  - Manual sync triggered by user button press
+- **Mobile Configuration**:
+  - Android: Health Connect permissions added to AndroidManifest.xml
+  - iOS: Capacitor Health plugin configured for Apple Health access
+- **Platform Guards**: HealthDevices checks Capacitor.isNativePlatform() to show only on iOS/Android
+- **Documentation**: HEALTH_INTEGRATIONS_STATUS.md documents the simplified approach
+- **Schema**: Device connections support apple_health and android_health providers
 
 **Required Team Selection on Signup** (October 18, 2025)
 - Implemented mandatory team selection flow for new users
