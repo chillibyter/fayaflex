@@ -20,6 +20,7 @@ export function HealthDevices() {
   const [nativeAvailable, setNativeAvailable] = useState(false);
   const [nativePermissionsGranted, setNativePermissionsGranted] = useState(false);
   const [isNativePlatform, setIsNativePlatform] = useState(false);
+  const [providerName, setProviderName] = useState<'apple_health' | 'android_health' | 'huawei_health'>('android_health');
 
   const { data: devices, isLoading } = useQuery<DeviceConnection[]>({
     queryKey: ['/api/devices']
@@ -34,6 +35,15 @@ export function HealthDevices() {
     setIsNativePlatform(isNative);
     
     if (!isNative) {
+      return;
+    }
+
+    const provider = await healthService.getProviderName();
+    setProviderName(provider);
+
+    // Huawei Health Kit requires HMS SDK integration
+    if (provider === 'huawei_health') {
+      setNativeAvailable(false);
       return;
     }
 
@@ -59,7 +69,7 @@ export function HealthDevices() {
 
       const healthData = await healthService.getHealthData(startDate, endDate);
 
-      const provider = healthService.getProviderName();
+      const provider = await healthService.getProviderName();
       await apiRequest('POST', '/api/devices/sync', {
         provider,
         activities: healthData
@@ -68,7 +78,8 @@ export function HealthDevices() {
       return provider;
     },
     onSuccess: (provider) => {
-      const displayName = provider === 'apple_health' ? 'Apple Health' : 'Health Connect';
+      const displayName = provider === 'apple_health' ? 'Apple Health' : 
+                         provider === 'huawei_health' ? 'Huawei Health' : 'Health Connect';
       toast({
         title: 'Connected!',
         description: `Successfully connected to ${displayName} and synced your fitness data`,
@@ -93,7 +104,7 @@ export function HealthDevices() {
       startDate.setDate(startDate.getDate() - 30);
 
       const healthData = await healthService.getHealthData(startDate, endDate);
-      const provider = healthService.getProviderName();
+      const provider = await healthService.getProviderName();
 
       return await apiRequest('POST', '/api/devices/sync', {
         provider,
@@ -101,7 +112,8 @@ export function HealthDevices() {
       });
     },
     onSuccess: () => {
-      const displayName = Capacitor.getPlatform() === 'ios' ? 'Apple Health' : 'Health Connect';
+      const displayName = providerName === 'apple_health' ? 'Apple Health' :
+                         providerName === 'huawei_health' ? 'Huawei Health' : 'Health Connect';
       toast({
         title: 'Synced!',
         description: `Successfully synced data from ${displayName}`,
@@ -120,14 +132,15 @@ export function HealthDevices() {
 
   const disconnectMutation = useMutation({
     mutationFn: async () => {
-      const provider = healthService.getProviderName();
+      const provider = await healthService.getProviderName();
       return await apiRequest('POST', '/api/devices/toggle', {
         provider,
         isConnected: false
       });
     },
     onSuccess: () => {
-      const displayName = Capacitor.getPlatform() === 'ios' ? 'Apple Health' : 'Health Connect';
+      const displayName = providerName === 'apple_health' ? 'Apple Health' :
+                         providerName === 'huawei_health' ? 'Huawei Health' : 'Health Connect';
       toast({
         title: 'Disconnected',
         description: `Disconnected from ${displayName}`,
@@ -157,8 +170,7 @@ export function HealthDevices() {
   };
 
   const getDeviceConnection = () => {
-    const provider = healthService.getProviderName();
-    return devices?.find(d => d.provider === provider);
+    return devices?.find(d => d.provider === providerName);
   };
 
   const formatLastSync = (lastSyncAt: Date | null) => {
@@ -204,11 +216,14 @@ export function HealthDevices() {
 
   const platform = Capacitor.getPlatform();
   const isIOS = platform === 'ios';
-  const displayName = isIOS ? 'Apple Health' : 'Health Connect';
+  const isHuawei = providerName === 'huawei_health';
+  const displayName = isIOS ? 'Apple Health' : isHuawei ? 'Huawei Health' : 'Health Connect';
   const Icon = isIOS ? Smartphone : Activity;
   const description = isIOS 
     ? 'Connect to Apple Health to automatically sync your fitness data'
-    : 'Connect to Health Connect to automatically sync your fitness data';
+    : isHuawei 
+      ? 'Connect to Huawei Health to automatically sync your fitness data'
+      : 'Connect to Health Connect to automatically sync your fitness data';
 
   return (
     <div className="space-y-4">
@@ -244,13 +259,28 @@ export function HealthDevices() {
         </CardHeader>
         <CardContent className="space-y-4">
           {!nativeAvailable ? (
-            <div className="rounded-md bg-muted p-4">
+            <div className="rounded-md bg-muted p-4 space-y-3">
               <p className="text-sm text-muted-foreground">
                 {isIOS 
                   ? 'Apple Health is not available on this device.'
-                  : 'Health Connect is not installed. Please install it from the Play Store.'}
+                  : isHuawei
+                    ? 'Huawei Health Kit integration requires HMS Core SDK setup.'
+                    : 'Health Connect is not installed. Please install it from the Play Store.'}
               </p>
-              {!isIOS && (
+              {isHuawei && (
+                <div className="text-sm space-y-2">
+                  <p className="font-medium">To enable Huawei Health:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-2">
+                    <li>Install Huawei Health app from AppGallery</li>
+                    <li>Enable HMS Core on your device</li>
+                    <li>Developer: Configure HMS Health Kit SDK</li>
+                  </ol>
+                  <p className="text-muted-foreground text-xs italic mt-2">
+                    Note: This feature requires additional development setup and is currently in progress.
+                  </p>
+                </div>
+              )}
+              {!isIOS && !isHuawei && (
                 <Button 
                   variant="outline" 
                   size="sm" 

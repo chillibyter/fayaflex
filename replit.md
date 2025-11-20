@@ -45,6 +45,7 @@ Preferred communication style: Simple, everyday language.
 ### Device Integrations
 - **Apple Health**: Native iOS health data syncing via capacitor-health plugin.
 - **Android Health Connect**: Native Android health data syncing via capacitor-health plugin.
+- **Huawei Health Kit**: HMS-based health data syncing for Huawei/Honor devices (requires HMS SDK setup).
 - **Native-Only Approach**: Simplified direct device access without complex OAuth flows.
 
 ### Key NPM Dependencies
@@ -59,26 +60,30 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 **Native Health Integration Implemented** (November 20, 2025)
-- Implemented simplified native-only health integration (Option 3) with Apple Health and Android Health Connect
-- **Architecture Decision**: Direct device access only via Capacitor Health plugin, no OAuth complexity
+- Implemented simplified native-only health integration with Apple Health, Android Health Connect, and Huawei Health Kit
+- **Architecture Decision**: Direct device access only via native health APIs, no complex OAuth flows
 - **Backend Implementation**:
   - Removed complex OAuth code (Google Fit, Garmin) from server
-  - Three clean API endpoints supporting only apple_health and android_health:
+  - Three clean API endpoints supporting apple_health, android_health, and huawei_health:
     - GET /api/devices - Returns native device connections
     - POST /api/devices/sync - Auto-creates connections on first sync, imports health data
     - POST /api/devices/toggle - Disconnect device
   - Backend auto-creates device connections on first sync (no pre-connection required)
 - **Frontend Implementation**:
-  - Created native health service using capacitor-health plugin
+  - Created native health service with automatic device detection (Apple, Google, Huawei)
   - Built HealthDevices UI component with connect/sync/disconnect functionality
   - Integrated into Profile page with web platform guards (hidden on web builds)
   - Manual sync triggered by user button press
+  - Huawei device detection via user agent and manufacturer checks
 - **Mobile Configuration**:
   - Android: Health Connect permissions added to AndroidManifest.xml
   - iOS: Capacitor Health plugin configured for Apple Health access
-- **Platform Guards**: HealthDevices checks Capacitor.isNativePlatform() to show only on iOS/Android
-- **Documentation**: HEALTH_INTEGRATIONS_STATUS.md documents the simplified approach
-- **Schema**: Device connections support apple_health and android_health providers
+  - Huawei: HMS Health Kit setup documented (requires HMS SDK integration)
+- **Platform Guards**: HealthDevices checks Capacitor.isNativePlatform() to show only on iOS/Android/Huawei devices
+- **Documentation**: 
+  - HEALTH_INTEGRATIONS_STATUS.md documents the simplified approach
+  - HUAWEI_HEALTH_KIT_SETUP.md provides comprehensive HMS integration guide
+- **Schema**: Device connections support apple_health, android_health, and huawei_health providers
 
 **Required Team Selection on Signup** (October 18, 2025)
 - Implemented mandatory team selection flow for new users

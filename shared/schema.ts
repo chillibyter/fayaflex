@@ -102,7 +102,7 @@ export const activities = pgTable("activities", {
   calories: integer("calories").notNull().default(0),
   steps: integer("steps").notNull().default(0),
   workoutType: varchar("workout_type", { length: 100 }),
-  source: varchar("source", { length: 50 }).default("manual"), // 'manual', 'apple_health', 'android_health'
+  source: varchar("source", { length: 50 }).default("manual"), // 'manual', 'apple_health', 'android_health', 'huawei_health'
   attachmentUrl: text("attachment_url"), // URL/path to uploaded evidence attachment
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -120,7 +120,7 @@ export const deviceConnections = pgTable("device_connections", {
   userId: varchar("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  provider: varchar("provider", { length: 50 }).notNull(), // 'apple_health', 'android_health'
+  provider: varchar("provider", { length: 50 }).notNull(), // 'apple_health', 'android_health', 'huawei_health'
   isConnected: boolean("is_connected").default(false),
   lastSyncAt: timestamp("last_sync_at"),
   accessToken: text("access_token"),

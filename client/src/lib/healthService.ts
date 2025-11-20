@@ -113,8 +113,34 @@ class HealthService {
     return isoString.split('T')[0];
   }
 
-  getProviderName(): 'apple_health' | 'android_health' {
-    return Capacitor.getPlatform() === 'ios' ? 'apple_health' : 'android_health';
+  async detectManufacturer(): Promise<string> {
+    // Detect Huawei devices
+    if (Capacitor.getPlatform() === 'android') {
+      try {
+        // Check for Huawei manufacturer via Device plugin if available
+        // For now, we'll check if HMS Core is available
+        const userAgent = navigator.userAgent.toLowerCase();
+        if (userAgent.includes('huawei') || userAgent.includes('honor')) {
+          return 'huawei';
+        }
+      } catch (error) {
+        console.error('Error detecting manufacturer:', error);
+      }
+    }
+    return 'standard';
+  }
+
+  async getProviderName(): Promise<'apple_health' | 'android_health' | 'huawei_health'> {
+    const platform = Capacitor.getPlatform();
+    
+    if (platform === 'ios') {
+      return 'apple_health';
+    } else if (platform === 'android') {
+      const manufacturer = await this.detectManufacturer();
+      return manufacturer === 'huawei' ? 'huawei_health' : 'android_health';
+    }
+    
+    return 'android_health'; // Default
   }
 
   async openHealthSettings(): Promise<void> {

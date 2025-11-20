@@ -67,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       
       // Get device connections for supported providers (native only)
-      const providers = ['apple_health', 'android_health'];
+      const providers = ['apple_health', 'android_health', 'huawei_health'];
       const connections = await Promise.all(
         providers.map(async (provider) => {
           const connection = await storage.getDeviceConnection(userId, provider);
@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       
       const toggleSchema = z.object({
-        provider: z.enum(['apple_health', 'android_health']),
+        provider: z.enum(['apple_health', 'android_health', 'huawei_health']),
         isConnected: z.boolean(),
       });
       
@@ -117,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       
       const syncSchema = z.object({
-        provider: z.enum(['apple_health', 'android_health']),
+        provider: z.enum(['apple_health', 'android_health', 'huawei_health']),
         activities: z.array(z.object({
           date: z.string(), // YYYY-MM-DD format
           calories: z.number().int().min(0),
