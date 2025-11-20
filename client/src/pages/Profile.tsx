@@ -24,6 +24,7 @@ import { FITNESS_AVATARS, getAvatarById } from "@/lib/avatars";
 import { Check } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { registerPasskey, generateStrongPassword } from "@/lib/passkey";
+import { HealthDevices } from "@/components/HealthDevices";
 
 type ChartData = {
   date: string;
@@ -387,6 +388,8 @@ export default function Profile() {
           </div>
         </CardContent>
       </Card>
+
+      <HealthDevices />
 
       {isLoadingChart ? (
         <Skeleton className="h-96 w-full" />
