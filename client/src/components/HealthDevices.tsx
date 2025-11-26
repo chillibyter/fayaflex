@@ -58,18 +58,32 @@ export function HealthDevices() {
 
   const connectNativeMutation = useMutation({
     mutationFn: async () => {
+      console.log('[HealthDevices] Starting connect flow...');
+      
       const granted = await healthService.requestPermissions();
+      console.log('[HealthDevices] Permissions granted:', granted);
+      
       if (!granted) {
-        throw new Error('Health permissions not granted');
+        throw new Error('Health permissions were not granted. Please allow access in your device settings and try again.');
       }
 
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
 
-      const healthData = await healthService.getHealthData(startDate, endDate);
+      console.log('[HealthDevices] Fetching health data...');
+      let healthData;
+      try {
+        healthData = await healthService.getHealthData(startDate, endDate);
+        console.log('[HealthDevices] Health data retrieved:', healthData.length, 'days');
+      } catch (dataError) {
+        console.error('[HealthDevices] Failed to fetch health data:', dataError);
+        throw new Error('Could not read health data. Make sure Health Connect is installed and has data.');
+      }
 
       const provider = await healthService.getProviderName();
+      console.log('[HealthDevices] Syncing to server with provider:', provider);
+      
       await apiRequest('POST', '/api/devices/sync', {
         provider,
         activities: healthData
@@ -89,9 +103,10 @@ export function HealthDevices() {
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
     onError: (error) => {
+      console.error('[HealthDevices] Connection error:', error);
       toast({
         title: 'Connection failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error.message : 'Could not connect to health service',
         variant: 'destructive'
       });
     }

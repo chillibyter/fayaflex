@@ -24,15 +24,28 @@ class HealthService {
 
   async requestPermissions(): Promise<boolean> {
     try {
+      console.log('[HealthService] Requesting health permissions...');
       const result = await Health.requestHealthPermissions({
         permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
       });
       
-      // iOS always returns true if permissions were requested
-      // Android returns actual permission status
-      return true;
+      console.log('[HealthService] Permission request result:', JSON.stringify(result));
+      
+      // Check if permissions were actually granted
+      if (result.permissions && result.permissions.length > 0) {
+        const permissions = result.permissions[0];
+        const hasAnyPermission = Object.values(permissions).some(granted => granted === true);
+        console.log('[HealthService] Has any permission granted:', hasAnyPermission);
+        return hasAnyPermission;
+      }
+      
+      // iOS may return empty result but still grant permissions
+      // Verify by checking permissions after request
+      const verified = await this.checkPermissions();
+      console.log('[HealthService] Verified permissions:', verified);
+      return verified;
     } catch (error) {
-      console.error('Error requesting health permissions:', error);
+      console.error('[HealthService] Error requesting health permissions:', error);
       return false;
     }
   }
