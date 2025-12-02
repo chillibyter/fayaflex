@@ -59,6 +59,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Monthly Leaderboard Reset** (December 2, 2025)
+- Leaderboards now reset on the 1st of each month (not rolling 30 days)
+- **Backend Changes**:
+  - Dashboard stats API now calculates rankings based on current month only
+  - All leaderboard APIs consistently use month/year parameters
+- **Frontend Changes**:
+  - Leaderboard page shows current month badge dynamically
+  - TeamLeaderboard page now uses dynamic month/year (was hardcoded)
+  - Added "Scores reset on the 1st of each month" message to leaderboard pages
+- **Logic**: Activities are filtered from the 1st to the last day of the current month
+
 **Native Health Integration Implemented** (November 20, 2025)
 - Implemented simplified native-only health integration with Apple Health, Android Health Connect, and Huawei Health Kit
 - **Architecture Decision**: Direct device access only via native health APIs, no complex OAuth flows

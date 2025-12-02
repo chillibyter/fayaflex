@@ -851,34 +851,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard stats route - uses global ranking based on last 30 days
+  // Dashboard stats route - uses global ranking based on current month (resets on 1st)
   app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const month = new Date().getMonth() + 1;
-      const year = new Date().getFullYear();
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
       
+      // Get activities for current month only (resets on 1st of each month)
       const activities = await storage.getUserActivities(userId, month, year);
       const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
       const totalSteps = activities.reduce((sum, act) => sum + act.steps, 0);
       const workoutCount = activities.length;
       
-      // Calculate global rank based on last 30 days using a more efficient approach
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      // Get all users and their activities in one efficient query
+      // Calculate global rank based on current month (not last 30 days)
+      // This ensures leaderboard resets on the 1st of each month
       const allUsers = await storage.getAllUsers();
       const userCaloriesMap: Map<string, number> = new Map();
       
-      // Calculate calories for each user
+      // Calculate calories for each user for current month only
       for (const user of allUsers) {
-        const allActivities = await storage.getUserActivities(user.id);
-        const last30DaysActivities = allActivities.filter(act => {
-          const actDate = new Date(act.date);
-          return actDate >= thirtyDaysAgo;
-        });
-        const userCalories = last30DaysActivities.reduce((sum, act) => sum + act.calories, 0);
+        const userActivities = await storage.getUserActivities(user.id, month, year);
+        const userCalories = userActivities.reduce((sum, act) => sum + act.calories, 0);
         if (userCalories > 0) {
           userCaloriesMap.set(user.id, userCalories);
         }
@@ -904,6 +899,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         rank: userRank > 0 ? userRank : (totalCalories > 0 ? sortedUsers.length + 1 : 0),
         totalActiveUsers,
         percentile,
+        currentMonth: month,
+        currentYear: year,
       });
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);

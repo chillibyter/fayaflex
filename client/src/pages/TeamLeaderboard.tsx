@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, Lock, Users } from "lucide-react";
 import LeaderboardCard from "@/components/LeaderboardCard";
 import { Card, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
 
 type LeaderboardEntry = {
   rank: number;
@@ -18,6 +19,10 @@ type LeaderboardEntry = {
 export default function TeamLeaderboard() {
   const params = useParams();
   const teamId = params.teamId;
+  
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+  const monthName = format(new Date(currentYear, currentMonth - 1), "MMMM yyyy");
 
   const { 
     data: leaderboard = [], 
@@ -26,9 +31,9 @@ export default function TeamLeaderboard() {
     error,
     refetch 
   } = useQuery<LeaderboardEntry[]>({
-    queryKey: ['/api/leaderboard/team', teamId],
+    queryKey: ['/api/leaderboard/team', teamId, { month: currentMonth, year: currentYear }],
     queryFn: async () => {
-      const res = await fetch(`/api/leaderboard/team/${teamId}`);
+      const res = await fetch(`/api/leaderboard/team/${teamId}?month=${currentMonth}&year=${currentYear}`);
       if (!res.ok) {
         const errorText = await res.text();
         const errorData = { status: res.status, message: errorText };
@@ -58,13 +63,13 @@ export default function TeamLeaderboard() {
                 {teamData?.name || 'Team'} Leaderboard
               </h1>
               <p className="text-muted-foreground">
-                Individual rankings for this team
+                Individual rankings for this team. Scores reset on the 1st of each month.
               </p>
             </div>
           </div>
         </div>
-        <Badge variant="secondary" className="text-sm px-4 py-2" data-testid="badge-month">
-          October 2025
+        <Badge variant="outline" className="text-base px-4 py-2" data-testid="badge-month">
+          {monthName}
         </Badge>
       </div>
 

@@ -41,7 +41,7 @@ export default function Leaderboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Leaderboard</h1>
           <p className="text-muted-foreground">
-            See how you and your team rank this month.
+            See how you and your team rank this month. Scores reset on the 1st of each month.
           </p>
         </div>
         <Badge variant="outline" className="text-base px-4 py-2" data-testid="badge-current-month">
