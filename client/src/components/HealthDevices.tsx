@@ -59,31 +59,68 @@ export function HealthDevices() {
   const connectNativeMutation = useMutation({
     mutationFn: async () => {
       console.log('[HealthDevices] Starting connect flow...');
+      const provider = await healthService.getProviderName();
+      const displayName = provider === 'apple_health' ? 'Apple Health' : 
+                         provider === 'huawei_health' ? 'Huawei Health' : 'Health Connect';
       
+      // Step 1: Re-check availability (as per PDF flow)
+      console.log('[HealthDevices] Step 1: Checking availability...');
+      const isAvailable = await healthService.isAvailable();
+      console.log('[HealthDevices] Health API available:', isAvailable);
+      
+      if (!isAvailable) {
+        // Launch the rationale/settings screen as per PDF requirements
+        console.log('[HealthDevices] Health not available, launching rationale...');
+        await healthService.showPermissionsRationale();
+        
+        if (provider === 'android_health') {
+          throw new Error('Health Connect is not installed or not available. Please install Health Connect from the Play Store, then try again.');
+        } else if (provider === 'apple_health') {
+          throw new Error('Apple Health is not available on this device. Please ensure HealthKit is enabled in Settings.');
+        }
+        throw new Error(`${displayName} is not available on this device.`);
+      }
+      
+      // Step 2: Request permissions (as per PDF flow)
+      console.log('[HealthDevices] Step 2: Requesting permissions...');
       const granted = await healthService.requestPermissions();
       console.log('[HealthDevices] Permissions granted:', granted);
       
       if (!granted) {
-        throw new Error('Health permissions were not granted. Please allow access in your device settings and try again.');
+        // Different messages for iOS vs Android
+        if (provider === 'apple_health') {
+          throw new Error('Health permissions were not granted. Please open Settings > Health > Data Access & Devices to enable access for UFC.');
+        } else {
+          throw new Error('Health permissions were not granted. Please open Health Connect app and enable permissions for UFC, then try again.');
+        }
+      }
+      
+      // Step 3: Verify we actually have permissions (Android can revoke at any time)
+      console.log('[HealthDevices] Step 3: Verifying permissions...');
+      const hasPermissions = await healthService.checkPermissions();
+      console.log('[HealthDevices] Permission verification:', hasPermissions);
+      
+      if (!hasPermissions) {
+        throw new Error('Permissions were revoked or not fully granted. Please check your health app settings and try again.');
       }
 
+      // Step 4: Query health data (as per PDF flow)
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
 
-      console.log('[HealthDevices] Fetching health data...');
+      console.log('[HealthDevices] Step 4: Querying health data...');
       let healthData;
       try {
         healthData = await healthService.getHealthData(startDate, endDate);
         console.log('[HealthDevices] Health data retrieved:', healthData.length, 'days');
       } catch (dataError) {
         console.error('[HealthDevices] Failed to fetch health data:', dataError);
-        throw new Error('Could not read health data. Make sure Health Connect is installed and has data.');
+        throw new Error(`Could not read health data from ${displayName}. The app may need to collect more data first.`);
       }
 
-      const provider = await healthService.getProviderName();
-      console.log('[HealthDevices] Syncing to server with provider:', provider);
-      
+      // Step 5: Send to backend (as per PDF flow)
+      console.log('[HealthDevices] Step 5: Syncing to server...');
       await apiRequest('POST', '/api/devices/sync', {
         provider,
         activities: healthData

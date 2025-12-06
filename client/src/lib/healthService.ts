@@ -5,6 +5,7 @@ export interface HealthDataPoint {
   date: string; // YYYY-MM-DD
   calories: number;
   steps: number;
+  workouts: number;
 }
 
 class HealthService {
@@ -25,8 +26,9 @@ class HealthService {
   async requestPermissions(): Promise<boolean> {
     try {
       console.log('[HealthService] Requesting health permissions...');
+      // Cast to any to support READ_EXERCISE which may not be in plugin types but is valid
       const result = await Health.requestHealthPermissions({
-        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
+        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'] as any
       });
       
       console.log('[HealthService] Permission request result:', JSON.stringify(result));
@@ -52,8 +54,9 @@ class HealthService {
 
   async checkPermissions(): Promise<boolean> {
     try {
+      // Cast to any to support READ_EXERCISE which may not be in plugin types but is valid
       const result = await Health.checkHealthPermissions({
-        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
+        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'] as any
       });
       
       // Check if at least one permission is granted
@@ -71,6 +74,7 @@ class HealthService {
 
   async getHealthData(startDate: Date, endDate: Date): Promise<HealthDataPoint[]> {
     try {
+      console.log('[HealthService] Fetching health data from', startDate.toISOString(), 'to', endDate.toISOString());
       const startDateStr = startDate.toISOString();
       const endDateStr = endDate.toISOString();
 
@@ -81,6 +85,7 @@ class HealthService {
         dataType: 'steps',
         bucket: 'day'
       });
+      console.log('[HealthService] Steps result:', stepsResult.aggregatedData?.length || 0, 'records');
 
       // Fetch calories data
       const caloriesResult = await Health.queryAggregated({
@@ -89,35 +94,64 @@ class HealthService {
         dataType: 'active-calories',
         bucket: 'day'
       });
+      console.log('[HealthService] Calories result:', caloriesResult.aggregatedData?.length || 0, 'records');
+
+      // Fetch exercise/workout data (using 'exercise' data type per PDF requirements)
+      let workoutsResult: any = { aggregatedData: [] };
+      try {
+        // Query exercise sessions - this matches READ_EXERCISE permission
+        workoutsResult = await (Health as any).queryAggregated({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          dataType: 'exercise',
+          bucket: 'day'
+        });
+        console.log('[HealthService] Exercise/workouts result:', workoutsResult?.aggregatedData?.length || 0, 'records');
+      } catch (workoutError) {
+        // Exercise data may not be available on all devices - gracefully handle
+        console.log('[HealthService] Exercise query not supported, skipping:', workoutError);
+      }
 
       // Combine data by date
       const dataByDate = new Map<string, HealthDataPoint>();
 
+      // Helper to initialize a date entry
+      const getOrCreate = (date: string): HealthDataPoint => {
+        if (!dataByDate.has(date)) {
+          dataByDate.set(date, { date, calories: 0, steps: 0, workouts: 0 });
+        }
+        return dataByDate.get(date)!;
+      };
+
       // Process steps
       for (const sample of stepsResult.aggregatedData || []) {
         const date = this.extractDate(sample.startDate);
-        if (!dataByDate.has(date)) {
-          dataByDate.set(date, { date, calories: 0, steps: 0 });
-        }
-        const point = dataByDate.get(date)!;
+        const point = getOrCreate(date);
         point.steps += Math.round(sample.value);
       }
 
       // Process calories
       for (const sample of caloriesResult.aggregatedData || []) {
         const date = this.extractDate(sample.startDate);
-        if (!dataByDate.has(date)) {
-          dataByDate.set(date, { date, calories: 0, steps: 0 });
-        }
-        const point = dataByDate.get(date)!;
+        const point = getOrCreate(date);
         point.calories += Math.round(sample.value);
       }
 
-      return Array.from(dataByDate.values()).sort((a, b) => 
+      // Process workouts (count number of exercise sessions per day)
+      for (const sample of workoutsResult.aggregatedData || []) {
+        const date = this.extractDate(sample.startDate);
+        const point = getOrCreate(date);
+        // Each aggregated exercise record counts as 1 workout
+        point.workouts += 1;
+      }
+
+      const result = Array.from(dataByDate.values()).sort((a, b) => 
         a.date.localeCompare(b.date)
       );
+      console.log('[HealthService] Total health data points:', result.length);
+      return result;
     } catch (error) {
-      console.error('Error fetching health data:', error);
+      console.error('[HealthService] Error fetching health data:', error);
       throw error;
     }
   }
@@ -164,7 +198,30 @@ class HealthService {
         await Health.openHealthConnectSettings();
       }
     } catch (error) {
-      console.error('Error opening health settings:', error);
+      console.error('[HealthService] Error opening health settings:', error);
+    }
+  }
+
+  async showPermissionsRationale(): Promise<void> {
+    try {
+      console.log('[HealthService] Opening permissions rationale...');
+      if (Capacitor.getPlatform() === 'android') {
+        // Try to launch the ACTION_SHOW_PERMISSIONS_RATIONALE intent as per PDF requirements
+        // This intent is declared in AndroidManifest.xml and handled by PermissionsRationaleActivity
+        try {
+          // Attempt to open Health Connect with rationale flow
+          // The registered PermissionsRationaleActivity in AndroidManifest will handle this
+          await Health.openHealthConnectSettings();
+        } catch (intentError) {
+          console.log('[HealthService] Could not launch rationale, falling back to Play Store');
+          // If Health Connect is not installed, open Play Store to install it
+          window.open('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata', '_system');
+        }
+      } else if (Capacitor.getPlatform() === 'ios') {
+        await Health.openAppleHealthSettings();
+      }
+    } catch (error) {
+      console.error('[HealthService] Error showing permissions rationale:', error);
     }
   }
 }
