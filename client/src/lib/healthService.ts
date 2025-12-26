@@ -33,7 +33,18 @@ class HealthService {
       
       console.log('[HealthService] Permission request result:', JSON.stringify(result));
       
-      // Check if permissions were actually granted
+      // iOS PRIVACY NOTE: Apple HealthKit does NOT tell apps whether permissions were granted
+      // The authorization status is intentionally hidden for privacy reasons
+      // On iOS, we must assume permissions were granted after showing the dialog
+      // and verify by actually trying to read data
+      if (Capacitor.getPlatform() === 'ios') {
+        console.log('[HealthService] iOS platform - assuming permissions granted after dialog shown');
+        // On iOS, if no error was thrown, the dialog was shown and user made a choice
+        // We can't know what they chose, so we return true and try to read data
+        return true;
+      }
+      
+      // Android: Check if permissions were actually granted
       if (result.permissions && result.permissions.length > 0) {
         const permissions = result.permissions[0];
         const hasAnyPermission = Object.values(permissions).some(granted => granted === true);
@@ -41,8 +52,7 @@ class HealthService {
         return hasAnyPermission;
       }
       
-      // iOS may return empty result but still grant permissions
-      // Verify by checking permissions after request
+      // Fallback: verify by checking permissions
       const verified = await this.checkPermissions();
       console.log('[HealthService] Verified permissions:', verified);
       return verified;
@@ -54,6 +64,13 @@ class HealthService {
 
   async checkPermissions(): Promise<boolean> {
     try {
+      // iOS PRIVACY NOTE: HealthKit doesn't reveal authorization status
+      // We can't reliably check permissions on iOS, so return true and let data query fail if denied
+      if (Capacitor.getPlatform() === 'ios') {
+        console.log('[HealthService] iOS - cannot reliably check permissions, returning true');
+        return true;
+      }
+      
       // Cast to any to support READ_EXERCISE which may not be in plugin types but is valid
       const result = await Health.checkHealthPermissions({
         permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'] as any
