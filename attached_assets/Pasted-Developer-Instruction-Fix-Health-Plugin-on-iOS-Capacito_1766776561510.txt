@@ -1,0 +1,126 @@
+Developer Instruction: Fix Health Plugin on iOS (Capacitor)
+Objective
+Fix the current Capacitor Health plugin on iOS which returns not implemented by implementing a native iOS HealthKit module that supports:
+Read-only access
+Daily totals:
+Steps
+Active calories
+Workout list (basic metadata only)
+Background access (HealthKit background delivery)
+Android implementation remains unchanged.
+Root Cause (for context)
+The existing plugin only implements Android permissions (Google Fit–style).
+iOS HealthKit is not implemented, causing Capacitor to return not implemented on real devices.
+This is expected behavior and must be fixed with native Swift code.
+Scope of Work
+1️⃣ iOS Native HealthKit Implementation (Required)
+Create or extend a Capacitor plugin with real Swift implementation using HealthKit.
+HealthKit data to READ (only):
+HKQuantityTypeIdentifier.stepCount
+HKQuantityTypeIdentifier.activeEnergyBurned
+HKWorkoutType.workoutType()
+❌ No write/update operations.
+2️⃣ Xcode Configuration (Mandatory)
+Enable Capabilities
+In ios/App/App.xcworkspace:
+App → Signing & Capabilities
+Enable HealthKit
+Enable Background Modes
+Background fetch
+Background processing
+3️⃣ Info.plist (Mandatory)
+Add the following entry:
+<key>NSHealthShareUsageDescription</key>
+<string>This app reads health data to show daily activity and workouts.</string>
+Do not add update/write descriptions (read-only).
+4️⃣ HealthKit Authorization (Swift)
+Implement read-only authorization:
+let healthStore = HKHealthStore()
+
+let readTypes: Set<HKObjectType> = [
+  HKObjectType.quantityType(forIdentifier: .stepCount)!,
+  HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+  HKObjectType.workoutType()
+]
+
+healthStore.requestAuthorization(toShare: [], read: readTypes) { success, error in
+  // Return success/failure to Capacitor JS
+}
+Authorization must persist across app launches.
+5️⃣ Daily Totals Implementation
+Use calendar-aligned HealthKit statistics.
+Steps (today)
+HKStatisticsQuery(
+  quantityType: HKQuantityType.quantityType(forIdentifier: .stepCount)!,
+  quantitySamplePredicate: todayPredicate,
+  options: .cumulativeSum
+)
+Return:
+{
+  "steps": number
+}
+Active Calories (today)
+HKStatisticsQuery(
+  quantityType: HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!,
+  quantitySamplePredicate: todayPredicate,
+  options: .cumulativeSum
+)
+Return:
+{
+  "calories": number
+}
+6️⃣ Workouts (Read-Only List)
+Query recent workouts:
+HKSampleQuery(
+  sampleType: HKWorkoutType.workoutType(),
+  predicate: nil,
+  limit: 20,
+  sortDescriptors: [
+    NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+  ]
+)
+Return minimal metadata only:
+[
+  {
+    "activityType": number,
+    "startDate": string,
+    "endDate": string,
+    "duration": number
+  }
+]
+7️⃣ Background Access (HealthKit-Approved)
+Enable background delivery, not continuous background execution:
+healthStore.enableBackgroundDelivery(
+  for: HKObjectType.quantityType(forIdentifier: .stepCount)!,
+  frequency: .daily
+)
+Repeat for:
+Active calories
+Workouts
+No background services or timers required.
+8️⃣ Capacitor Plugin Contract (JS)
+Expose the following methods:
+requestPermissions(): Promise<{ granted: boolean }>
+getDailyTotals(): Promise<{ steps: number; calories: number }>
+getWorkouts(): Promise<Workout[]>
+Ensure:
+iOS implementation exists
+Android implementation unchanged
+No platform returns not implemented
+Acceptance Criteria
+✔ Works on real iOS device
+✔ No not implemented errors
+✔ Permissions prompt shown once
+✔ Data persists across app restarts
+✔ Background updates enabled
+✔ Passes App Store review
+Non-Goals (Out of Scope)
+Writing health data
+Workout metrics breakdown
+Continuous background execution
+Simulator support (HealthKit not supported)
+Delivery Notes
+Do not reuse Android permission names on iOS
+Do not stub methods with call.unimplemented()
+Do not rely on JS-only permission checks
+iOS HealthKit must be implemented in Swift

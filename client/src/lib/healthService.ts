@@ -1,5 +1,5 @@
 import { Health } from 'capacitor-health';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 
 export interface HealthDataPoint {
   date: string; // YYYY-MM-DD
@@ -8,13 +8,32 @@ export interface HealthDataPoint {
   workouts: number;
 }
 
+interface HealthKitPluginInterface {
+  isAvailable(): Promise<{ available: boolean }>;
+  requestPermissions(): Promise<{ granted: boolean; error?: string }>;
+  getDailyTotals(): Promise<{ steps: number; calories: number }>;
+  getWorkouts(options?: { limit?: number }): Promise<{ workouts: any[] }>;
+  getHealthData(options: { startDate: string; endDate: string }): Promise<{ data: HealthDataPoint[] }>;
+}
+
+const HealthKit = registerPlugin<HealthKitPluginInterface>('HealthKit');
+
 class HealthService {
+  private isIOS(): boolean {
+    return Capacitor.getPlatform() === 'ios';
+  }
+
   async isAvailable(): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) {
       return false;
     }
     
     try {
+      if (this.isIOS()) {
+        const result = await HealthKit.isAvailable();
+        console.log('[HealthService] iOS HealthKit available:', result.available);
+        return result.available;
+      }
       const result = await Health.isHealthAvailable();
       return result.available;
     } catch (error) {
@@ -26,14 +45,21 @@ class HealthService {
   async requestPermissions(): Promise<boolean> {
     try {
       const platform = Capacitor.getPlatform();
-      const isIOS = platform === 'ios';
-      console.log('[HealthService] Platform detected:', platform, '| isIOS:', isIOS);
+      console.log('[HealthService] Platform detected:', platform);
       
-      // iOS uses READ_WORKOUTS, Android uses READ_EXERCISE
-      const permissions = isIOS 
-        ? ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
-        : ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
-      console.log('[HealthService] Requesting permissions:', permissions);
+      // iOS: Use native HealthKit plugin
+      if (this.isIOS()) {
+        console.log('[HealthService] iOS - Requesting HealthKit permissions...');
+        const result = await HealthKit.requestPermissions();
+        console.log('[HealthService] iOS permission result:', JSON.stringify(result));
+        // Note: iOS HealthKit doesn't reveal if user granted or denied
+        // We return true if no error, and verify by trying to read data
+        return result.granted !== false;
+      }
+      
+      // Android: Use capacitor-health plugin
+      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
+      console.log('[HealthService] Android - Requesting permissions:', permissions);
       
       const result = await Health.requestHealthPermissions({
         permissions: permissions as any
@@ -41,20 +67,8 @@ class HealthService {
       
       console.log('[HealthService] Permission request result:', JSON.stringify(result));
       
-      // iOS PRIVACY NOTE: Apple HealthKit does NOT tell apps whether permissions were granted
-      // The authorization status is intentionally hidden for privacy reasons
-      // On iOS, we must assume permissions were granted after showing the dialog
-      // and verify by actually trying to read data
-      if (isIOS) {
-        console.log('[HealthService] iOS platform - assuming permissions granted after dialog shown');
-        // On iOS, if no error was thrown, the dialog was shown and user made a choice
-        // We can't know what they chose, so we return true and try to read data
-        return true;
-      }
-      
       // Android: Check if permissions were actually granted
       if (result.permissions && typeof result.permissions === 'object') {
-        // Handle both array format and object format responses
         const permsObj = Array.isArray(result.permissions) ? result.permissions[0] : result.permissions;
         if (permsObj) {
           const hasAnyPermission = Object.values(permsObj).some(granted => granted === true);
@@ -79,11 +93,10 @@ class HealthService {
       const platform = Capacitor.getPlatform();
       console.log('[HealthService] checkPermissions - platform:', platform);
       
-      // iOS PRIVACY NOTE: HealthKit doesn't reveal authorization status
-      // We can't reliably check permissions on iOS, so return true and let data query fail if denied
-      // The checkHealthPermissions method is "not implemented" on iOS
-      if (platform === 'ios') {
-        console.log('[HealthService] iOS - cannot check permissions (not implemented), returning true');
+      // iOS: We cannot reliably check permissions due to Apple's privacy restrictions
+      // Return true and let data query fail if permissions weren't granted
+      if (this.isIOS()) {
+        console.log('[HealthService] iOS - skipping permission check (Apple privacy restriction)');
         return true;
       }
       
@@ -101,11 +114,6 @@ class HealthService {
       
       return false;
     } catch (error: any) {
-      // "not implemented" error means we're on iOS - return true and let data query verify
-      if (error?.errorMessage === 'not implemented' || error?.message === 'not implemented') {
-        console.log('[HealthService] checkPermissions not implemented (iOS), returning true');
-        return true;
-      }
       console.error('Error checking health permissions:', error);
       return false;
     }
@@ -116,8 +124,21 @@ class HealthService {
       console.log('[HealthService] Fetching health data from', startDate.toISOString(), 'to', endDate.toISOString());
       const startDateStr = startDate.toISOString();
       const endDateStr = endDate.toISOString();
-      const isIOS = Capacitor.getPlatform() === 'ios';
 
+      // iOS: Use native HealthKit plugin
+      if (this.isIOS()) {
+        console.log('[HealthService] iOS - Using native HealthKit plugin');
+        const result = await HealthKit.getHealthData({
+          startDate: startDateStr,
+          endDate: endDateStr
+        });
+        console.log('[HealthService] iOS HealthKit data:', result.data?.length || 0, 'days');
+        return result.data || [];
+      }
+
+      // Android: Use capacitor-health plugin
+      console.log('[HealthService] Android - Using capacitor-health plugin');
+      
       // Fetch steps data
       let stepsResult: any = { aggregatedData: [] };
       try {
@@ -127,8 +148,6 @@ class HealthService {
           dataType: 'steps',
           bucket: 'day'
         });
-        console.log('[HealthService] Steps raw response:', JSON.stringify(rawSteps));
-        // Handle different response formats (iOS vs Android)
         stepsResult.aggregatedData = rawSteps?.aggregatedData || rawSteps?.data || rawSteps || [];
         console.log('[HealthService] Steps processed:', stepsResult.aggregatedData?.length || 0, 'records');
       } catch (stepsError) {
@@ -144,68 +163,29 @@ class HealthService {
           dataType: 'active-calories',
           bucket: 'day'
         });
-        console.log('[HealthService] Calories raw response:', JSON.stringify(rawCalories));
-        // Handle different response formats (iOS vs Android)
         caloriesResult.aggregatedData = rawCalories?.aggregatedData || rawCalories?.data || rawCalories || [];
         console.log('[HealthService] Calories processed:', caloriesResult.aggregatedData?.length || 0, 'records');
       } catch (caloriesError) {
         console.warn('[HealthService] Failed to fetch calories, continuing:', caloriesError);
       }
 
-      // Fetch exercise/workout data - iOS uses different API than Android
+      // Fetch exercise/workout data
       let workoutsResult: any = { aggregatedData: [] };
       try {
-        if (isIOS) {
-          // iOS: Query workouts using the workouts API
-          console.log('[HealthService] iOS - querying workouts...');
-          const workoutsResponse = await (Health as any).queryWorkouts({
-            startDate: startDateStr,
-            endDate: endDateStr
-          });
-          console.log('[HealthService] iOS workouts raw response:', JSON.stringify(workoutsResponse));
-          // Convert workout sessions to daily counts
-          const workoutsByDay: Record<string, number> = {};
-          const workoutsArray = workoutsResponse?.workouts || workoutsResponse?.data || [];
-          if (Array.isArray(workoutsArray)) {
-            for (const workout of workoutsArray) {
-              // iOS uses 'start' or 'startDate' depending on plugin version
-              const workoutDate = workout?.startDate || workout?.start || workout?.date;
-              if (!workoutDate) {
-                console.warn('[HealthService] Workout missing date:', JSON.stringify(workout));
-                continue;
-              }
-              try {
-                const day = new Date(workoutDate).toISOString().split('T')[0];
-                workoutsByDay[day] = (workoutsByDay[day] || 0) + 1;
-              } catch (e) {
-                console.warn('[HealthService] Failed to parse workout date:', workoutDate);
-              }
-            }
-          }
-          workoutsResult.aggregatedData = Object.entries(workoutsByDay).map(([date, count]) => ({
-            startDate: date,
-            value: count
-          }));
-          console.log('[HealthService] iOS workouts result:', workoutsResult.aggregatedData.length, 'days');
-        } else {
-          // Android: Query exercise sessions using aggregated API
-          workoutsResult = await (Health as any).queryAggregated({
-            startDate: startDateStr,
-            endDate: endDateStr,
-            dataType: 'exercise',
-            bucket: 'day'
-          });
-          console.log('[HealthService] Exercise/workouts result:', workoutsResult?.aggregatedData?.length || 0, 'records');
-        }
+        workoutsResult = await (Health as any).queryAggregated({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          dataType: 'exercise',
+          bucket: 'day'
+        });
+        console.log('[HealthService] Exercise/workouts result:', workoutsResult?.aggregatedData?.length || 0, 'records');
       } catch (workoutError) {
-        // Exercise data may not be available on all devices - gracefully handle
         console.log('[HealthService] Exercise query not supported, skipping:', workoutError);
       }
 
       // Combine data by date
       const dataByDate = new Map<string, HealthDataPoint>();
 
-      // Helper to initialize a date entry
       const getOrCreate = (date: string): HealthDataPoint => {
         if (!dataByDate.has(date)) {
           dataByDate.set(date, { date, calories: 0, steps: 0, workouts: 0 });
@@ -213,17 +193,12 @@ class HealthService {
         return dataByDate.get(date)!;
       };
 
-      // Helper to extract date from sample (iOS uses 'start', Android uses 'startDate')
       const getSampleDate = (sample: any): string | null => {
         const dateStr = sample?.startDate || sample?.start || sample?.date;
-        if (!dateStr) {
-          console.warn('[HealthService] Sample missing date field:', JSON.stringify(sample));
-          return null;
-        }
+        if (!dateStr) return null;
         return this.extractDate(dateStr);
       };
 
-      // Helper to extract value from sample (iOS uses 'quantity', Android uses 'value')
       const getSampleValue = (sample: any): number => {
         const value = sample?.value ?? sample?.quantity ?? sample?.count ?? 0;
         return typeof value === 'number' ? Math.round(value) : 0;
@@ -233,25 +208,21 @@ class HealthService {
       for (const sample of stepsResult.aggregatedData || []) {
         const date = getSampleDate(sample);
         if (!date) continue;
-        const point = getOrCreate(date);
-        point.steps += getSampleValue(sample);
+        getOrCreate(date).steps += getSampleValue(sample);
       }
 
       // Process calories
       for (const sample of caloriesResult.aggregatedData || []) {
         const date = getSampleDate(sample);
         if (!date) continue;
-        const point = getOrCreate(date);
-        point.calories += getSampleValue(sample);
+        getOrCreate(date).calories += getSampleValue(sample);
       }
 
-      // Process workouts (count number of exercise sessions per day)
+      // Process workouts
       for (const sample of workoutsResult.aggregatedData || []) {
         const date = getSampleDate(sample);
         if (!date) continue;
-        const point = getOrCreate(date);
-        // Each aggregated exercise record counts as 1 workout
-        point.workouts += getSampleValue(sample) || 1;
+        getOrCreate(date).workouts += getSampleValue(sample) || 1;
       }
 
       const result = Array.from(dataByDate.values()).sort((a, b) => 
