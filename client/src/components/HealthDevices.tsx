@@ -81,27 +81,24 @@ export function HealthDevices() {
         throw new Error(`${displayName} is not available on this device.`);
       }
       
-      // Step 2: Request permissions (as per PDF flow)
+      // Step 2: Request permissions
       console.log('[HealthDevices] Step 2: Requesting permissions...');
-      const granted = await healthService.requestPermissions();
-      console.log('[HealthDevices] Permissions granted:', granted);
+      await healthService.requestPermissions();
+      console.log('[HealthDevices] Permission dialog shown');
       
-      if (!granted) {
-        // Different messages for iOS vs Android
-        if (provider === 'apple_health') {
-          throw new Error('Health permissions were not granted. Please open Settings > Health > Data Access & Devices to enable access for UFC.');
-        } else {
+      // iOS IMPORTANT: Apple HealthKit does NOT tell apps if permissions were granted
+      // We CANNOT check the result - we must just try to read data
+      // Android: We can check, but we'll verify by actually reading data
+      if (provider !== 'apple_health') {
+        // Only check permissions on Android - iOS always returns "not determined"
+        const hasPermissions = await healthService.checkPermissions();
+        console.log('[HealthDevices] Android permission check:', hasPermissions);
+        
+        if (!hasPermissions) {
           throw new Error('Health permissions were not granted. Please open Health Connect app and enable permissions for UFC, then try again.');
         }
-      }
-      
-      // Step 3: Verify we actually have permissions (Android can revoke at any time)
-      console.log('[HealthDevices] Step 3: Verifying permissions...');
-      const hasPermissions = await healthService.checkPermissions();
-      console.log('[HealthDevices] Permission verification:', hasPermissions);
-      
-      if (!hasPermissions) {
-        throw new Error('Permissions were revoked or not fully granted. Please check your health app settings and try again.');
+      } else {
+        console.log('[HealthDevices] iOS - skipping permission check (Apple privacy restriction)');
       }
 
       // Step 4: Query health data (as per PDF flow)
