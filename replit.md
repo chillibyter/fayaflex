@@ -59,6 +59,24 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Badges, Personal Bests & Enhanced How It Works** (December 26, 2025)
+- Created comprehensive badges/achievements system:
+  - **Database Schema**: Added `userBadges` and `personalBests` tables
+  - **Badge Types**: first_activity, streak_3/7/30, steps_10k, calories_1k, workouts_10, top_10, champion
+  - **API Routes**: GET /api/badges, POST /api/badges/check, GET /api/personal-bests
+  - **BadgesDisplay Component**: Shows earned badges with icons, colors, and earned dates
+  - Integrated into Profile page with progress tracking
+- Personal bests tracking for key metrics:
+  - Tracks daily_calories, daily_steps, daily_score across all time
+  - Uses aggregated data (max per day) for accurate multi-entry day calculations
+  - Displayed in DashboardStats component
+- Trend indicators for month-over-month comparison:
+  - Shows percentage change in calories and steps vs previous month
+  - Green upward arrows for increases, red downward for decreases
+- Enhanced How It Works page:
+  - Added 2 new tips: "Earn Badges" and "Set Personal Bests"
+  - Expanded FAQ section with 6 questions covering logging, teams, workouts, resets, badges, Victory Wall
+
 **Onboarding Tutorial & Scoring Guide** (December 26, 2025)
 - Added comprehensive onboarding tutorial for new users explaining scoring mechanics
 - **OnboardingTutorial Component**:
