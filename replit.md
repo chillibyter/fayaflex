@@ -59,6 +59,24 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Custom iOS HealthKit Plugin** (December 26, 2025)
+- Replaced non-functional capacitor-health iOS implementation with custom native Swift plugin
+- **iOS Plugin Architecture**:
+  - Created `HealthKitPlugin.swift` - native Swift plugin conforming to CAPBridgedPlugin
+  - Created `CustomViewController.swift` - registers plugin via capacitorDidLoad() for Capacitor 6
+  - Updated `Main.storyboard` to use CustomViewController instead of CAPBridgeViewController
+- **Plugin Methods**:
+  - `isAvailable()` - Check if HealthKit is available on device
+  - `requestPermissions()` - Request HealthKit authorization (steps, calories, workouts)
+  - `getDailyTotals(startDate, endDate)` - Aggregate steps/calories by day
+  - `getWorkouts(startDate, endDate)` - Fetch workout sessions with duration/calories
+  - `getHealthData(startDate, endDate)` - Combined daily totals + workouts
+- **Frontend Routing**:
+  - iOS calls route to native HealthKitPlugin via `registerPlugin('HealthKit')`
+  - Android calls route to capacitor-health plugin (unchanged)
+  - Platform detection via Capacitor.getPlatform()
+- **Key Note**: Apple intentionally hides HealthKit authorization status - plugin skips permission checks and attempts data query directly
+
 **Monthly Leaderboard Reset** (December 2, 2025)
 - Leaderboards now reset on the 1st of each month (not rolling 30 days)
 - **Backend Changes**:
