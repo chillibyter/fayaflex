@@ -59,6 +59,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Onboarding Tutorial & Scoring Guide** (December 26, 2025)
+- Added comprehensive onboarding tutorial for new users explaining scoring mechanics
+- **OnboardingTutorial Component**:
+  - 5 interactive slides with progress indicators and smooth animations (framer-motion)
+  - Explains scoring formula: 1 point per calorie + 1 point per step
+  - Compares Individual vs Team leaderboards
+  - Describes monthly reset timeline and Victory Wall
+- **HowItWorks Page**:
+  - Accessible from sidebar navigation
+  - Comprehensive scoring breakdown with visual icons
+  - Leaderboard explanation and monthly timeline
+  - FAQ section addressing common questions
+- **Dashboard Quick-Start Card**:
+  - Shows for users with no logged activities
+  - CTA buttons to log first activity and learn scoring
+  - Visual breakdown of tracking options (calories, steps, rankings)
+- **Onboarding Flow**:
+  - Triggers automatically for first-time users after team selection
+  - Stored in localStorage: `ufc_onboarding_seen_{userId}`
+  - Skip option available for returning users
+
 **Custom iOS HealthKit Plugin** (December 26, 2025)
 - Replaced non-functional capacitor-health iOS implementation with custom native Swift plugin
 - **iOS Plugin Architecture**:
