@@ -3,7 +3,7 @@ import ProgressChart from "@/components/ProgressChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Smartphone, Edit3 } from "lucide-react";
+import { AlertCircle, Smartphone, Edit3, Dumbbell, Footprints, Flame, ArrowRight, Trophy, Target, Sparkles } from "lucide-react";
 import { SiGarmin, SiApple } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
 import type { Activity as ActivityType } from "@shared/schema";
@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import ActivityReactions from "@/components/ActivityReactions";
 import ActivityComments from "@/components/ActivityComments";
+import { Link } from "wouter";
 
 type DashboardStats = {
   calories: number;
@@ -80,6 +81,72 @@ export default function Dashboard() {
           Welcome back! Here's your fitness progress for this month.
         </p>
       </div>
+
+      {!isLoadingActivities && recentActivities.length === 0 && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-6">
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-primary" />
+                </div>
+              </div>
+              <div className="flex-1 space-y-3">
+                <div>
+                  <h3 className="text-lg font-semibold">Ready to start your fitness journey?</h3>
+                  <p className="text-muted-foreground">
+                    Log your first activity to appear on the leaderboard and start competing with your team!
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link href="/track">
+                    <Button data-testid="button-quickstart-track">
+                      <Dumbbell className="w-4 h-4 mr-2" />
+                      Log Your First Activity
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link href="/how-it-works">
+                    <Button variant="outline" data-testid="button-quickstart-learn">
+                      <Target className="w-4 h-4 mr-2" />
+                      Learn How Scoring Works
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-primary/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                  <Flame className="w-5 h-5 text-orange-500" />
+                </div>
+                <div>
+                  <p className="font-medium">Track Calories</p>
+                  <p className="text-sm text-muted-foreground">1 point per calorie</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <Footprints className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-medium">Log Steps</p>
+                  <p className="text-sm text-muted-foreground">1 point per step</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-yellow-500" />
+                </div>
+                <div>
+                  <p className="font-medium">Climb Rankings</p>
+                  <p className="text-sm text-muted-foreground">Compete monthly</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {isErrorStats ? (
         <Card className="p-12">

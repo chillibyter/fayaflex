@@ -10,7 +10,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Home, Users, PlusCircle, Trophy, User as UserIcon, Activity, LogOut } from "lucide-react";
+import { Home, Users, PlusCircle, Trophy, User as UserIcon, Activity, LogOut, HelpCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -24,6 +24,7 @@ const menuItems = [
   { title: "My Teams", url: "/teams", icon: Users },
   { title: "Create Team", url: "/create-team", icon: PlusCircle },
   { title: "Profile", url: "/profile", icon: UserIcon },
+  { title: "How It Works", url: "/how-it-works", icon: HelpCircle },
 ];
 
 export default function AppSidebar() {

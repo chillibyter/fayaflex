@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -17,7 +18,9 @@ import Profile from "@/pages/Profile";
 import UserProfile from "@/pages/UserProfile";
 import AuthPage from "@/pages/AuthPage";
 import TeamSelection from "@/pages/TeamSelection";
+import HowItWorks from "@/pages/HowItWorks";
 import NotFound from "@/pages/not-found";
+import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 
@@ -80,6 +83,7 @@ function Router() {
       <Route path="/create-team" component={CreateTeam} />
       <Route path="/profile" component={Profile} />
       <Route path="/users/:userId/profile" component={UserProfile} />
+      <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/team-selection">
         <Redirect to="/" />
       </Route>
@@ -90,10 +94,30 @@ function Router() {
 
 function AuthenticatedApp() {
   const { user, isLoading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const sidebarStyle = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   } as React.CSSProperties;
+
+  // Check if user should see onboarding
+  useEffect(() => {
+    if (user) {
+      const onboardingKey = `ufc_onboarding_seen_${user.id}`;
+      const hasSeenOnboarding = localStorage.getItem(onboardingKey);
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [user]);
+
+  const handleOnboardingComplete = () => {
+    if (user) {
+      const onboardingKey = `ufc_onboarding_seen_${user.id}`;
+      localStorage.setItem(onboardingKey, "true");
+    }
+    setShowOnboarding(false);
+  };
 
   if (isLoading) {
     return (
@@ -117,6 +141,12 @@ function AuthenticatedApp() {
 
   return (
     <>
+      {showOnboarding && (
+        <OnboardingTutorial
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingComplete}
+        />
+      )}
       <SidebarProvider style={sidebarStyle}>
         <div className="flex h-screen w-full">
           <AppSidebar />
