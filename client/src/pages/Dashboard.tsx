@@ -20,6 +20,10 @@ type DashboardStats = {
   rank: number;
   totalActiveUsers: number;
   percentile: number;
+  caloriesTrend?: number;
+  stepsTrend?: number;
+  personalBests?: { [key: string]: number };
+  badgeCount?: number;
 };
 
 type ChartData = {

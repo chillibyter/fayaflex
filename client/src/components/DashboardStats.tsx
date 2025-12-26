@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Flame, TrendingUp, Footprints, Dumbbell } from "lucide-react";
+import { Flame, TrendingUp, TrendingDown, Footprints, Dumbbell, Minus } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -11,11 +11,39 @@ interface StatCardProps {
   label: string;
   value: string | number;
   unit?: string;
-  trend?: string;
+  trend?: number | null;
+  trendLabel?: string;
   onClick?: () => void;
 }
 
-function StatCard({ icon, label, value, unit, trend, onClick }: StatCardProps) {
+function StatCard({ icon, label, value, unit, trend, trendLabel, onClick }: StatCardProps) {
+  const getTrendDisplay = () => {
+    if (trend === null || trend === undefined) return null;
+    
+    if (trend > 0) {
+      return (
+        <p className="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+          <TrendingUp className="h-4 w-4" />
+          +{trend}% {trendLabel || 'vs last month'}
+        </p>
+      );
+    } else if (trend < 0) {
+      return (
+        <p className="text-sm text-red-500 dark:text-red-400 mt-2 flex items-center gap-1">
+          <TrendingDown className="h-4 w-4" />
+          {trend}% {trendLabel || 'vs last month'}
+        </p>
+      );
+    } else {
+      return (
+        <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+          <Minus className="h-4 w-4" />
+          No change
+        </p>
+      );
+    }
+  };
+
   return (
     <Card 
       className={`p-6 ${onClick ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
@@ -31,12 +59,7 @@ function StatCard({ icon, label, value, unit, trend, onClick }: StatCardProps) {
             </h3>
             {unit && <span className="text-lg text-muted-foreground">{unit}</span>}
           </div>
-          {trend && (
-            <p className="text-sm text-primary mt-2 flex items-center gap-1">
-              <TrendingUp className="h-4 w-4" />
-              {trend}
-            </p>
-          )}
+          {getTrendDisplay()}
         </div>
         <div className="text-primary">{icon}</div>
       </div>
@@ -51,6 +74,9 @@ interface DashboardStatsProps {
   rank: number;
   totalActiveUsers: number;
   percentile: number;
+  caloriesTrend?: number;
+  stepsTrend?: number;
+  personalBests?: { [key: string]: number };
 }
 
 type DailyData = {
@@ -66,7 +92,7 @@ type WorkoutDay = {
   totalCalories: number;
 };
 
-export default function DashboardStats({ calories, steps, workouts, rank, totalActiveUsers, percentile }: DashboardStatsProps) {
+export default function DashboardStats({ calories, steps, workouts, rank, totalActiveUsers, percentile, caloriesTrend, stepsTrend, personalBests }: DashboardStatsProps) {
   const [caloriesDialogOpen, setCaloriesDialogOpen] = useState(false);
   const [stepsDialogOpen, setStepsDialogOpen] = useState(false);
   const [workoutsDialogOpen, setWorkoutsDialogOpen] = useState(false);
@@ -108,7 +134,7 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
           label="Total Calories"
           value={calories.toLocaleString()}
           unit="cal"
-          trend="+12% this week"
+          trend={caloriesTrend}
           onClick={() => setCaloriesDialogOpen(true)}
         />
         <StatCard
@@ -116,6 +142,7 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
           label="Total Steps"
           value={steps.toLocaleString()}
           unit="steps"
+          trend={stepsTrend}
           onClick={() => setStepsDialogOpen(true)}
         />
         <StatCard
@@ -126,19 +153,40 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
           onClick={() => setWorkoutsDialogOpen(true)}
         />
         {rank > 0 ? (
-          <StatCard
-            icon={<TrendingUp className="h-8 w-8" />}
-            label="Your Rank"
-            value={`#${rank}`}
-            trend={`Top ${percentile}%`}
-          />
+          <Card className="p-6" data-testid="card-your-rank">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-2">Your Rank</p>
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-3xl font-bold tracking-tight" data-testid="stat-your-rank">
+                    #{rank}
+                  </h3>
+                </div>
+                <p className="text-sm text-primary mt-2 flex items-center gap-1">
+                  <TrendingUp className="h-4 w-4" />
+                  Top {percentile}%
+                </p>
+              </div>
+              <div className="text-primary"><TrendingUp className="h-8 w-8" /></div>
+            </div>
+          </Card>
         ) : (
-          <StatCard
-            icon={<TrendingUp className="h-8 w-8" />}
-            label="Your Rank"
-            value="Not ranked"
-            trend="Log activities to compete!"
-          />
+          <Card className="p-6" data-testid="card-your-rank">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-2">Your Rank</p>
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-3xl font-bold tracking-tight" data-testid="stat-your-rank">
+                    Not ranked
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Log activities to compete!
+                </p>
+              </div>
+              <div className="text-primary"><TrendingUp className="h-8 w-8" /></div>
+            </div>
+          </Card>
         )}
       </div>
 

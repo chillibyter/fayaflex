@@ -376,3 +376,58 @@ export const insertActivityCommentSchema = createInsertSchema(activityComments).
   createdAt: true,
 });
 export type InsertActivityComment = z.infer<typeof insertActivityCommentSchema>;
+
+// User badges/achievements table
+export const userBadges = pgTable("user_badges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  badgeType: varchar("badge_type", { length: 50 }).notNull(), // 'first_activity', 'streak_3', 'streak_7', 'streak_30', 'steps_10k', 'calories_1k', 'workouts_10', 'top_10', 'champion'
+  earnedAt: timestamp("earned_at").defaultNow(),
+  metadata: jsonb("metadata"), // Optional extra data (e.g., streak count, month/year for champion)
+}, (table) => ({
+  userBadgeUnique: uniqueIndex("user_badges_user_badge_unique").on(table.userId, table.badgeType),
+}));
+
+export const userBadgesRelations = relations(userBadges, ({ one }) => ({
+  user: one(users, {
+    fields: [userBadges.userId],
+    references: [users.id],
+  }),
+}));
+
+export type UserBadge = typeof userBadges.$inferSelect;
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
+  id: true,
+  earnedAt: true,
+});
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+
+// Personal bests table for tracking user records
+export const personalBests = pgTable("personal_bests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  metric: varchar("metric", { length: 50 }).notNull(), // 'daily_calories', 'daily_steps', 'daily_score', 'monthly_score', 'streak'
+  value: integer("value").notNull(),
+  achievedAt: timestamp("achieved_at").defaultNow(),
+  metadata: jsonb("metadata"), // Optional extra data (e.g., date achieved, month/year)
+}, (table) => ({
+  userMetricUnique: uniqueIndex("personal_bests_user_metric_unique").on(table.userId, table.metric),
+}));
+
+export const personalBestsRelations = relations(personalBests, ({ one }) => ({
+  user: one(users, {
+    fields: [personalBests.userId],
+    references: [users.id],
+  }),
+}));
+
+export type PersonalBest = typeof personalBests.$inferSelect;
+export const insertPersonalBestSchema = createInsertSchema(personalBests).omit({
+  id: true,
+  achievedAt: true,
+});
+export type InsertPersonalBest = z.infer<typeof insertPersonalBestSchema>;

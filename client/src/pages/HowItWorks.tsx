@@ -224,7 +224,7 @@ export default function HowItWorks() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5 text-primary" />
+            <Zap className="w-5 h-5 text-primary" />
             Tips for Success
           </CardTitle>
         </CardHeader>
@@ -255,6 +255,81 @@ export default function HowItWorks() {
               <p className="font-semibold mb-2">Start Early Each Month</p>
               <p className="text-sm text-muted-foreground">
                 The leaderboard resets on the 1st. Get a head start on the competition!
+              </p>
+            </div>
+
+            <div className="p-4 rounded-lg bg-muted/50">
+              <p className="font-semibold mb-2">Earn Badges</p>
+              <p className="text-sm text-muted-foreground">
+                Unlock achievements by hitting milestones like 10K steps, 3-day streaks, and more!
+              </p>
+            </div>
+
+            <div className="p-4 rounded-lg bg-muted/50">
+              <p className="font-semibold mb-2">Set Personal Bests</p>
+              <p className="text-sm text-muted-foreground">
+                Challenge yourself to beat your own records. Your best daily scores are tracked automatically.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-primary" />
+            Frequently Asked Questions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-6">
+            <div>
+              <p className="font-semibold mb-1">How often should I log my activities?</p>
+              <p className="text-sm text-muted-foreground">
+                For best results, log activities daily. If you're using Apple Health or Android Health Connect, 
+                your steps and calories can sync automatically. Manual entries are great for specific workouts.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">Can I be on multiple teams?</p>
+              <p className="text-sm text-muted-foreground">
+                Yes! You can join multiple teams and compete in different groups. Your activities count toward 
+                all teams you're a member of.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">What counts as a workout?</p>
+              <p className="text-sm text-muted-foreground">
+                Any physical activity counts! Running, walking, cycling, weight training, yoga, swimming - 
+                if it burns calories, it earns points. Just log the type and calories burned.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">Why did my score reset to zero?</p>
+              <p className="text-sm text-muted-foreground">
+                Leaderboards reset on the 1st of each month. This gives everyone a fair chance to compete 
+                and ensures consistent motivation throughout the year.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">How are badges earned?</p>
+              <p className="text-sm text-muted-foreground">
+                Badges are automatically awarded when you hit milestones: logging your first activity, 
+                maintaining streaks (3, 7, 30 days), reaching 10K steps in a day, burning 1K calories, 
+                and completing 10 workout days.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">What is the Victory Wall?</p>
+              <p className="text-sm text-muted-foreground">
+                The Victory Wall showcases monthly team champions. At the end of each month, the top 
+                performer in each team is recognized and added to the wall permanently.
               </p>
             </div>
           </div>

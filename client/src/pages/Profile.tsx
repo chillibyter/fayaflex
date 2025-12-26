@@ -25,6 +25,7 @@ import { Check } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { registerPasskey, generateStrongPassword } from "@/lib/passkey";
 import { HealthDevices } from "@/components/HealthDevices";
+import BadgesDisplay from "@/components/BadgesDisplay";
 
 type ChartData = {
   date: string;
@@ -301,6 +302,8 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      <BadgesDisplay />
 
       <Card>
         <CardHeader>

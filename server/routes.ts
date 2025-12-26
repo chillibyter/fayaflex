@@ -978,6 +978,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         percentile = Math.round((userRank / totalActiveUsers) * 100);
       }
       
+      // Calculate trend by comparing to last month
+      const lastMonth = month === 1 ? 12 : month - 1;
+      const lastYear = month === 1 ? year - 1 : year;
+      const lastMonthActivities = await storage.getUserActivities(userId, lastMonth, lastYear);
+      const lastMonthAggregated = aggregateByDate(lastMonthActivities);
+      
+      let lastMonthCalories = 0;
+      let lastMonthSteps = 0;
+      Array.from(lastMonthAggregated.values()).forEach(dayData => {
+        lastMonthCalories += dayData.calories;
+        lastMonthSteps += dayData.steps;
+      });
+      
+      // Calculate percentage changes
+      const caloriesTrend = lastMonthCalories > 0 
+        ? Math.round(((totalCalories - lastMonthCalories) / lastMonthCalories) * 100) 
+        : (totalCalories > 0 ? 100 : 0);
+      const stepsTrend = lastMonthSteps > 0 
+        ? Math.round(((totalSteps - lastMonthSteps) / lastMonthSteps) * 100) 
+        : (totalSteps > 0 ? 100 : 0);
+      
+      // Get personal bests
+      const personalBestsData = await storage.getUserPersonalBests(userId);
+      const personalBestsMap: { [key: string]: number } = {};
+      personalBestsData.forEach(pb => {
+        personalBestsMap[pb.metric] = pb.value;
+      });
+      
+      // Check and update personal bests for all days in current month
+      // Use aggregated data to get accurate daily totals (max per day across all entries)
+      for (const [dateStr, dayData] of Array.from(aggregated.entries())) {
+        const dayCalories = dayData.calories;
+        const daySteps = dayData.steps;
+        const dayScore = dayCalories + daySteps;
+        
+        // Update personal bests if new records
+        if (dayCalories > (personalBestsMap['daily_calories'] || 0)) {
+          await storage.upsertPersonalBest({ userId, metric: 'daily_calories', value: dayCalories, metadata: { date: dateStr } });
+          personalBestsMap['daily_calories'] = dayCalories;
+        }
+        if (daySteps > (personalBestsMap['daily_steps'] || 0)) {
+          await storage.upsertPersonalBest({ userId, metric: 'daily_steps', value: daySteps, metadata: { date: dateStr } });
+          personalBestsMap['daily_steps'] = daySteps;
+        }
+        if (dayScore > (personalBestsMap['daily_score'] || 0)) {
+          await storage.upsertPersonalBest({ userId, metric: 'daily_score', value: dayScore, metadata: { date: dateStr } });
+          personalBestsMap['daily_score'] = dayScore;
+        }
+      }
+      
+      // Get badges
+      const badges = await storage.getUserBadges(userId);
+      
       res.json({
         calories: totalCalories,
         steps: totalSteps,
@@ -987,6 +1040,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         percentile,
         currentMonth: month,
         currentYear: year,
+        caloriesTrend,
+        stepsTrend,
+        personalBests: personalBestsMap,
+        badgeCount: badges.length,
       });
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
@@ -1126,6 +1183,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching workout calendar:", error);
       res.status(500).json({ message: "Failed to fetch workout calendar" });
+    }
+  });
+
+  // Badge routes
+  app.get("/api/badges", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const badges = await storage.getUserBadges(userId);
+      res.json(badges);
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      res.status(500).json({ message: "Failed to fetch badges" });
+    }
+  });
+
+  app.get("/api/badges/check", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      
+      const newBadges: string[] = [];
+      
+      // Get user activities
+      const activities = await storage.getUserActivities(userId);
+      
+      // Check for first activity badge
+      if (activities.length > 0 && !(await storage.hasBadge(userId, 'first_activity'))) {
+        await storage.awardBadge({ userId, badgeType: 'first_activity' });
+        newBadges.push('first_activity');
+      }
+      
+      // Check for streak badges (consecutive days)
+      const sortedDates = [...new Set(activities.map(a => a.date))].sort();
+      let maxStreak = 0;
+      let currentStreak = 1;
+      
+      for (let i = 1; i < sortedDates.length; i++) {
+        const prev = new Date(sortedDates[i - 1]);
+        const curr = new Date(sortedDates[i]);
+        const diffDays = Math.round((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          currentStreak++;
+          maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+          currentStreak = 1;
+        }
+      }
+      maxStreak = Math.max(maxStreak, currentStreak);
+      
+      if (maxStreak >= 3 && !(await storage.hasBadge(userId, 'streak_3'))) {
+        await storage.awardBadge({ userId, badgeType: 'streak_3', metadata: { streak: maxStreak } });
+        newBadges.push('streak_3');
+      }
+      if (maxStreak >= 7 && !(await storage.hasBadge(userId, 'streak_7'))) {
+        await storage.awardBadge({ userId, badgeType: 'streak_7', metadata: { streak: maxStreak } });
+        newBadges.push('streak_7');
+      }
+      if (maxStreak >= 30 && !(await storage.hasBadge(userId, 'streak_30'))) {
+        await storage.awardBadge({ userId, badgeType: 'streak_30', metadata: { streak: maxStreak } });
+        newBadges.push('streak_30');
+      }
+      
+      // Check for milestone badges
+      const totalSteps = activities.reduce((sum, a) => sum + a.steps, 0);
+      const totalCalories = activities.reduce((sum, a) => sum + a.calories, 0);
+      const workoutDays = new Set(activities.filter(a => a.workoutType).map(a => a.date)).size;
+      
+      // Find max daily steps
+      const dailySteps = new Map<string, number>();
+      activities.forEach(a => {
+        const existing = dailySteps.get(a.date) || 0;
+        dailySteps.set(a.date, Math.max(existing, a.steps));
+      });
+      const maxDailySteps = Math.max(...Array.from(dailySteps.values()), 0);
+      
+      if (maxDailySteps >= 10000 && !(await storage.hasBadge(userId, 'steps_10k'))) {
+        await storage.awardBadge({ userId, badgeType: 'steps_10k', metadata: { steps: maxDailySteps } });
+        newBadges.push('steps_10k');
+      }
+      
+      // Find max daily calories
+      const dailyCalories = new Map<string, number>();
+      activities.forEach(a => {
+        const existing = dailyCalories.get(a.date) || 0;
+        dailyCalories.set(a.date, Math.max(existing, a.calories));
+      });
+      const maxDailyCalories = Math.max(...Array.from(dailyCalories.values()), 0);
+      
+      if (maxDailyCalories >= 1000 && !(await storage.hasBadge(userId, 'calories_1k'))) {
+        await storage.awardBadge({ userId, badgeType: 'calories_1k', metadata: { calories: maxDailyCalories } });
+        newBadges.push('calories_1k');
+      }
+      
+      if (workoutDays >= 10 && !(await storage.hasBadge(userId, 'workouts_10'))) {
+        await storage.awardBadge({ userId, badgeType: 'workouts_10', metadata: { workouts: workoutDays } });
+        newBadges.push('workouts_10');
+      }
+      
+      res.json({ newBadges, totalBadges: (await storage.getUserBadges(userId)).length });
+    } catch (error) {
+      console.error("Error checking badges:", error);
+      res.status(500).json({ message: "Failed to check badges" });
+    }
+  });
+
+  // Personal bests route
+  app.get("/api/personal-bests", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const personalBests = await storage.getUserPersonalBests(userId);
+      res.json(personalBests);
+    } catch (error) {
+      console.error("Error fetching personal bests:", error);
+      res.status(500).json({ message: "Failed to fetch personal bests" });
     }
   });
 

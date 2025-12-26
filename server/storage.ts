@@ -9,6 +9,8 @@ import {
   monthlyWinners,
   activityReactions,
   activityComments,
+  userBadges,
+  personalBests,
   type User,
   type UpsertUser,
   type Team,
@@ -28,6 +30,10 @@ import {
   type InsertActivityReaction,
   type ActivityComment,
   type InsertActivityComment,
+  type UserBadge,
+  type InsertUserBadge,
+  type PersonalBest,
+  type InsertPersonalBest,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
@@ -101,6 +107,16 @@ export interface IStorage {
   addComment(comment: InsertActivityComment): Promise<ActivityComment>;
   getActivityComments(activityId: string): Promise<(ActivityComment & { user: User })[]>;
   deleteComment(commentId: string, userId: string): Promise<void>;
+
+  // Badge operations
+  awardBadge(badge: InsertUserBadge): Promise<UserBadge>;
+  getUserBadges(userId: string): Promise<UserBadge[]>;
+  hasBadge(userId: string, badgeType: string): Promise<boolean>;
+
+  // Personal best operations
+  upsertPersonalBest(best: InsertPersonalBest): Promise<PersonalBest>;
+  getUserPersonalBests(userId: string): Promise<PersonalBest[]>;
+  getPersonalBest(userId: string, metric: string): Promise<PersonalBest | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -712,6 +728,86 @@ export class DatabaseStorage implements IStorage {
           eq(activityComments.userId, userId)
         )
       );
+  }
+
+  // Badge operations
+  async awardBadge(badgeData: InsertUserBadge): Promise<UserBadge> {
+    const [badge] = await db
+      .insert(userBadges)
+      .values(badgeData)
+      .onConflictDoNothing()
+      .returning();
+    return badge;
+  }
+
+  async getUserBadges(userId: string): Promise<UserBadge[]> {
+    return await db
+      .select()
+      .from(userBadges)
+      .where(eq(userBadges.userId, userId))
+      .orderBy(desc(userBadges.earnedAt));
+  }
+
+  async hasBadge(userId: string, badgeType: string): Promise<boolean> {
+    const [badge] = await db
+      .select()
+      .from(userBadges)
+      .where(
+        and(
+          eq(userBadges.userId, userId),
+          eq(userBadges.badgeType, badgeType)
+        )
+      );
+    return !!badge;
+  }
+
+  // Personal best operations
+  async upsertPersonalBest(bestData: InsertPersonalBest): Promise<PersonalBest> {
+    const existing = await this.getPersonalBest(bestData.userId, bestData.metric);
+    
+    if (existing && existing.value >= bestData.value) {
+      return existing;
+    }
+    
+    if (existing) {
+      const [updated] = await db
+        .update(personalBests)
+        .set({ value: bestData.value, achievedAt: new Date(), metadata: bestData.metadata })
+        .where(
+          and(
+            eq(personalBests.userId, bestData.userId),
+            eq(personalBests.metric, bestData.metric)
+          )
+        )
+        .returning();
+      return updated;
+    }
+    
+    const [created] = await db
+      .insert(personalBests)
+      .values(bestData)
+      .returning();
+    return created;
+  }
+
+  async getUserPersonalBests(userId: string): Promise<PersonalBest[]> {
+    return await db
+      .select()
+      .from(personalBests)
+      .where(eq(personalBests.userId, userId));
+  }
+
+  async getPersonalBest(userId: string, metric: string): Promise<PersonalBest | undefined> {
+    const [best] = await db
+      .select()
+      .from(personalBests)
+      .where(
+        and(
+          eq(personalBests.userId, userId),
+          eq(personalBests.metric, metric)
+        )
+      );
+    return best;
   }
 }
 
