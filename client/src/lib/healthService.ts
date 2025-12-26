@@ -76,31 +76,36 @@ class HealthService {
 
   async checkPermissions(): Promise<boolean> {
     try {
-      const isIOS = Capacitor.getPlatform() === 'ios';
+      const platform = Capacitor.getPlatform();
+      console.log('[HealthService] checkPermissions - platform:', platform);
       
       // iOS PRIVACY NOTE: HealthKit doesn't reveal authorization status
       // We can't reliably check permissions on iOS, so return true and let data query fail if denied
-      if (isIOS) {
-        console.log('[HealthService] iOS - cannot reliably check permissions, returning true');
+      // The checkHealthPermissions method is "not implemented" on iOS
+      if (platform === 'ios') {
+        console.log('[HealthService] iOS - cannot check permissions (not implemented), returning true');
         return true;
       }
       
-      // iOS uses READ_WORKOUTS, Android uses READ_EXERCISE
-      const permissions = isIOS 
-        ? ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
-        : ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
+      // Android only: check permissions
+      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
       const result = await Health.checkHealthPermissions({
         permissions: permissions as any
       });
       
       // Check if at least one permission is granted
       if (result.permissions && result.permissions.length > 0) {
-        const permissions = result.permissions[0];
-        return Object.values(permissions).some(granted => granted === true);
+        const permsArray = result.permissions[0];
+        return Object.values(permsArray).some(granted => granted === true);
       }
       
       return false;
-    } catch (error) {
+    } catch (error: any) {
+      // "not implemented" error means we're on iOS - return true and let data query verify
+      if (error?.errorMessage === 'not implemented' || error?.message === 'not implemented') {
+        console.log('[HealthService] checkPermissions not implemented (iOS), returning true');
+        return true;
+      }
       console.error('Error checking health permissions:', error);
       return false;
     }
