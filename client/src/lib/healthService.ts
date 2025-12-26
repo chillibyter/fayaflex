@@ -25,13 +25,16 @@ class HealthService {
 
   async requestPermissions(): Promise<boolean> {
     try {
-      console.log('[HealthService] Requesting health permissions...');
-      const isIOS = Capacitor.getPlatform() === 'ios';
+      const platform = Capacitor.getPlatform();
+      const isIOS = platform === 'ios';
+      console.log('[HealthService] Platform detected:', platform, '| isIOS:', isIOS);
+      
       // iOS uses READ_WORKOUTS, Android uses READ_EXERCISE
       const permissions = isIOS 
         ? ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
         : ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
       console.log('[HealthService] Requesting permissions:', permissions);
+      
       const result = await Health.requestHealthPermissions({
         permissions: permissions as any
       });
@@ -42,7 +45,7 @@ class HealthService {
       // The authorization status is intentionally hidden for privacy reasons
       // On iOS, we must assume permissions were granted after showing the dialog
       // and verify by actually trying to read data
-      if (Capacitor.getPlatform() === 'ios') {
+      if (isIOS) {
         console.log('[HealthService] iOS platform - assuming permissions granted after dialog shown');
         // On iOS, if no error was thrown, the dialog was shown and user made a choice
         // We can't know what they chose, so we return true and try to read data
@@ -50,14 +53,18 @@ class HealthService {
       }
       
       // Android: Check if permissions were actually granted
-      if (result.permissions && result.permissions.length > 0) {
-        const permissions = result.permissions[0];
-        const hasAnyPermission = Object.values(permissions).some(granted => granted === true);
-        console.log('[HealthService] Has any permission granted:', hasAnyPermission);
-        return hasAnyPermission;
+      if (result.permissions && typeof result.permissions === 'object') {
+        // Handle both array format and object format responses
+        const permsObj = Array.isArray(result.permissions) ? result.permissions[0] : result.permissions;
+        if (permsObj) {
+          const hasAnyPermission = Object.values(permsObj).some(granted => granted === true);
+          console.log('[HealthService] Has any permission granted:', hasAnyPermission);
+          return hasAnyPermission;
+        }
       }
       
-      // Fallback: verify by checking permissions
+      // Fallback: verify by checking permissions (Android only)
+      console.log('[HealthService] Fallback: checking permissions via checkPermissions()');
       const verified = await this.checkPermissions();
       console.log('[HealthService] Verified permissions:', verified);
       return verified;

@@ -51,8 +51,16 @@ export function HealthDevices() {
     setNativeAvailable(available);
 
     if (available) {
-      const hasPermissions = await healthService.checkPermissions();
-      setNativePermissionsGranted(hasPermissions);
+      // iOS: Skip permission check - Apple doesn't allow checking authorization status
+      // Android: Can check permissions
+      if (provider !== 'apple_health') {
+        const hasPermissions = await healthService.checkPermissions();
+        setNativePermissionsGranted(hasPermissions);
+      } else {
+        // On iOS, we don't know if permissions are granted until we try to read data
+        // Assume false (not connected) until user explicitly connects
+        setNativePermissionsGranted(false);
+      }
     }
   }
 
