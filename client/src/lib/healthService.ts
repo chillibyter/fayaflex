@@ -109,13 +109,16 @@ class HealthService {
       // Fetch steps data
       let stepsResult: any = { aggregatedData: [] };
       try {
-        stepsResult = await Health.queryAggregated({
+        const rawSteps: any = await Health.queryAggregated({
           startDate: startDateStr,
           endDate: endDateStr,
           dataType: 'steps',
           bucket: 'day'
         });
-        console.log('[HealthService] Steps result:', stepsResult.aggregatedData?.length || 0, 'records');
+        console.log('[HealthService] Steps raw response:', JSON.stringify(rawSteps));
+        // Handle different response formats (iOS vs Android)
+        stepsResult.aggregatedData = rawSteps?.aggregatedData || rawSteps?.data || rawSteps || [];
+        console.log('[HealthService] Steps processed:', stepsResult.aggregatedData?.length || 0, 'records');
       } catch (stepsError) {
         console.warn('[HealthService] Failed to fetch steps, continuing:', stepsError);
       }
@@ -123,13 +126,16 @@ class HealthService {
       // Fetch calories data
       let caloriesResult: any = { aggregatedData: [] };
       try {
-        caloriesResult = await Health.queryAggregated({
+        const rawCalories: any = await Health.queryAggregated({
           startDate: startDateStr,
           endDate: endDateStr,
           dataType: 'active-calories',
           bucket: 'day'
         });
-        console.log('[HealthService] Calories result:', caloriesResult.aggregatedData?.length || 0, 'records');
+        console.log('[HealthService] Calories raw response:', JSON.stringify(rawCalories));
+        // Handle different response formats (iOS vs Android)
+        caloriesResult.aggregatedData = rawCalories?.aggregatedData || rawCalories?.data || rawCalories || [];
+        console.log('[HealthService] Calories processed:', caloriesResult.aggregatedData?.length || 0, 'records');
       } catch (caloriesError) {
         console.warn('[HealthService] Failed to fetch calories, continuing:', caloriesError);
       }
@@ -144,12 +150,24 @@ class HealthService {
             startDate: startDateStr,
             endDate: endDateStr
           });
+          console.log('[HealthService] iOS workouts raw response:', JSON.stringify(workoutsResponse));
           // Convert workout sessions to daily counts
           const workoutsByDay: Record<string, number> = {};
-          if (workoutsResponse?.workouts) {
-            for (const workout of workoutsResponse.workouts) {
-              const day = new Date(workout.startDate).toISOString().split('T')[0];
-              workoutsByDay[day] = (workoutsByDay[day] || 0) + 1;
+          const workoutsArray = workoutsResponse?.workouts || workoutsResponse?.data || [];
+          if (Array.isArray(workoutsArray)) {
+            for (const workout of workoutsArray) {
+              // iOS uses 'start' or 'startDate' depending on plugin version
+              const workoutDate = workout?.startDate || workout?.start || workout?.date;
+              if (!workoutDate) {
+                console.warn('[HealthService] Workout missing date:', JSON.stringify(workout));
+                continue;
+              }
+              try {
+                const day = new Date(workoutDate).toISOString().split('T')[0];
+                workoutsByDay[day] = (workoutsByDay[day] || 0) + 1;
+              } catch (e) {
+                console.warn('[HealthService] Failed to parse workout date:', workoutDate);
+              }
             }
           }
           workoutsResult.aggregatedData = Object.entries(workoutsByDay).map(([date, count]) => ({
@@ -183,26 +201,45 @@ class HealthService {
         return dataByDate.get(date)!;
       };
 
+      // Helper to extract date from sample (iOS uses 'start', Android uses 'startDate')
+      const getSampleDate = (sample: any): string | null => {
+        const dateStr = sample?.startDate || sample?.start || sample?.date;
+        if (!dateStr) {
+          console.warn('[HealthService] Sample missing date field:', JSON.stringify(sample));
+          return null;
+        }
+        return this.extractDate(dateStr);
+      };
+
+      // Helper to extract value from sample (iOS uses 'quantity', Android uses 'value')
+      const getSampleValue = (sample: any): number => {
+        const value = sample?.value ?? sample?.quantity ?? sample?.count ?? 0;
+        return typeof value === 'number' ? Math.round(value) : 0;
+      };
+
       // Process steps
       for (const sample of stepsResult.aggregatedData || []) {
-        const date = this.extractDate(sample.startDate);
+        const date = getSampleDate(sample);
+        if (!date) continue;
         const point = getOrCreate(date);
-        point.steps += Math.round(sample.value);
+        point.steps += getSampleValue(sample);
       }
 
       // Process calories
       for (const sample of caloriesResult.aggregatedData || []) {
-        const date = this.extractDate(sample.startDate);
+        const date = getSampleDate(sample);
+        if (!date) continue;
         const point = getOrCreate(date);
-        point.calories += Math.round(sample.value);
+        point.calories += getSampleValue(sample);
       }
 
       // Process workouts (count number of exercise sessions per day)
       for (const sample of workoutsResult.aggregatedData || []) {
-        const date = this.extractDate(sample.startDate);
+        const date = getSampleDate(sample);
+        if (!date) continue;
         const point = getOrCreate(date);
         // Each aggregated exercise record counts as 1 workout
-        point.workouts += 1;
+        point.workouts += getSampleValue(sample) || 1;
       }
 
       const result = Array.from(dataByDate.values()).sort((a, b) => 
@@ -217,7 +254,22 @@ class HealthService {
   }
 
   private extractDate(isoString: string): string {
-    return isoString.split('T')[0];
+    try {
+      // Handle various date formats
+      if (isoString.includes('T')) {
+        return isoString.split('T')[0];
+      }
+      // Already in YYYY-MM-DD format
+      if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
+        return isoString;
+      }
+      // Try to parse as date
+      const date = new Date(isoString);
+      return date.toISOString().split('T')[0];
+    } catch {
+      console.warn('[HealthService] Failed to parse date:', isoString);
+      return new Date().toISOString().split('T')[0];
+    }
   }
 
   async detectManufacturer(): Promise<string> {
