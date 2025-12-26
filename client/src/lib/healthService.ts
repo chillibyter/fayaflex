@@ -26,9 +26,14 @@ class HealthService {
   async requestPermissions(): Promise<boolean> {
     try {
       console.log('[HealthService] Requesting health permissions...');
-      // Cast to any to support READ_EXERCISE which may not be in plugin types but is valid
+      const isIOS = Capacitor.getPlatform() === 'ios';
+      // iOS uses READ_WORKOUTS, Android uses READ_EXERCISE
+      const permissions = isIOS 
+        ? ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
+        : ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
+      console.log('[HealthService] Requesting permissions:', permissions);
       const result = await Health.requestHealthPermissions({
-        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'] as any
+        permissions: permissions as any
       });
       
       console.log('[HealthService] Permission request result:', JSON.stringify(result));
@@ -64,16 +69,21 @@ class HealthService {
 
   async checkPermissions(): Promise<boolean> {
     try {
+      const isIOS = Capacitor.getPlatform() === 'ios';
+      
       // iOS PRIVACY NOTE: HealthKit doesn't reveal authorization status
       // We can't reliably check permissions on iOS, so return true and let data query fail if denied
-      if (Capacitor.getPlatform() === 'ios') {
+      if (isIOS) {
         console.log('[HealthService] iOS - cannot reliably check permissions, returning true');
         return true;
       }
       
-      // Cast to any to support READ_EXERCISE which may not be in plugin types but is valid
+      // iOS uses READ_WORKOUTS, Android uses READ_EXERCISE
+      const permissions = isIOS 
+        ? ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS']
+        : ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
       const result = await Health.checkHealthPermissions({
-        permissions: ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'] as any
+        permissions: permissions as any
       });
       
       // Check if at least one permission is granted
@@ -94,36 +104,69 @@ class HealthService {
       console.log('[HealthService] Fetching health data from', startDate.toISOString(), 'to', endDate.toISOString());
       const startDateStr = startDate.toISOString();
       const endDateStr = endDate.toISOString();
+      const isIOS = Capacitor.getPlatform() === 'ios';
 
       // Fetch steps data
-      const stepsResult = await Health.queryAggregated({
-        startDate: startDateStr,
-        endDate: endDateStr,
-        dataType: 'steps',
-        bucket: 'day'
-      });
-      console.log('[HealthService] Steps result:', stepsResult.aggregatedData?.length || 0, 'records');
-
-      // Fetch calories data
-      const caloriesResult = await Health.queryAggregated({
-        startDate: startDateStr,
-        endDate: endDateStr,
-        dataType: 'active-calories',
-        bucket: 'day'
-      });
-      console.log('[HealthService] Calories result:', caloriesResult.aggregatedData?.length || 0, 'records');
-
-      // Fetch exercise/workout data (using 'exercise' data type per PDF requirements)
-      let workoutsResult: any = { aggregatedData: [] };
+      let stepsResult: any = { aggregatedData: [] };
       try {
-        // Query exercise sessions - this matches READ_EXERCISE permission
-        workoutsResult = await (Health as any).queryAggregated({
+        stepsResult = await Health.queryAggregated({
           startDate: startDateStr,
           endDate: endDateStr,
-          dataType: 'exercise',
+          dataType: 'steps',
           bucket: 'day'
         });
-        console.log('[HealthService] Exercise/workouts result:', workoutsResult?.aggregatedData?.length || 0, 'records');
+        console.log('[HealthService] Steps result:', stepsResult.aggregatedData?.length || 0, 'records');
+      } catch (stepsError) {
+        console.warn('[HealthService] Failed to fetch steps, continuing:', stepsError);
+      }
+
+      // Fetch calories data
+      let caloriesResult: any = { aggregatedData: [] };
+      try {
+        caloriesResult = await Health.queryAggregated({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          dataType: 'active-calories',
+          bucket: 'day'
+        });
+        console.log('[HealthService] Calories result:', caloriesResult.aggregatedData?.length || 0, 'records');
+      } catch (caloriesError) {
+        console.warn('[HealthService] Failed to fetch calories, continuing:', caloriesError);
+      }
+
+      // Fetch exercise/workout data - iOS uses different API than Android
+      let workoutsResult: any = { aggregatedData: [] };
+      try {
+        if (isIOS) {
+          // iOS: Query workouts using the workouts API
+          console.log('[HealthService] iOS - querying workouts...');
+          const workoutsResponse = await (Health as any).queryWorkouts({
+            startDate: startDateStr,
+            endDate: endDateStr
+          });
+          // Convert workout sessions to daily counts
+          const workoutsByDay: Record<string, number> = {};
+          if (workoutsResponse?.workouts) {
+            for (const workout of workoutsResponse.workouts) {
+              const day = new Date(workout.startDate).toISOString().split('T')[0];
+              workoutsByDay[day] = (workoutsByDay[day] || 0) + 1;
+            }
+          }
+          workoutsResult.aggregatedData = Object.entries(workoutsByDay).map(([date, count]) => ({
+            startDate: date,
+            value: count
+          }));
+          console.log('[HealthService] iOS workouts result:', workoutsResult.aggregatedData.length, 'days');
+        } else {
+          // Android: Query exercise sessions using aggregated API
+          workoutsResult = await (Health as any).queryAggregated({
+            startDate: startDateStr,
+            endDate: endDateStr,
+            dataType: 'exercise',
+            bucket: 'day'
+          });
+          console.log('[HealthService] Exercise/workouts result:', workoutsResult?.aggregatedData?.length || 0, 'records');
+        }
       } catch (workoutError) {
         // Exercise data may not be available on all devices - gracefully handle
         console.log('[HealthService] Exercise query not supported, skipping:', workoutError);
