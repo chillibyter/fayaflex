@@ -143,6 +143,8 @@ export function HealthDevices() {
       setNativePermissionsGranted(true);
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
     },
     onError: (error) => {
       console.error('[HealthDevices] Connection error:', error);
@@ -156,12 +158,29 @@ export function HealthDevices() {
 
   const syncMutation = useMutation({
     mutationFn: async () => {
+      const provider = await healthService.getProviderName();
+      
+      // Get last sync time for incremental sync
+      const deviceConnection = devices?.find(d => d.provider === provider);
+      const lastSyncAt = deviceConnection?.lastSyncAt;
+      
       const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
+      let startDate: Date;
+      
+      if (lastSyncAt) {
+        // Incremental sync: Start from last sync date (minus 1 day buffer for timezone issues)
+        startDate = new Date(lastSyncAt);
+        startDate.setDate(startDate.getDate() - 1);
+        console.log('[HealthDevices] Incremental sync from:', startDate.toISOString());
+      } else {
+        // Initial sync: Get 30 days of history
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        console.log('[HealthDevices] Initial sync for 30 days');
+      }
 
       const healthData = await healthService.getHealthData(startDate, endDate);
-      const provider = await healthService.getProviderName();
+      console.log('[HealthDevices] Syncing', healthData.length, 'days of data');
 
       return await apiRequest('POST', '/api/devices/sync', {
         provider,
@@ -177,6 +196,8 @@ export function HealthDevices() {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
     },
     onError: (error) => {
       toast({

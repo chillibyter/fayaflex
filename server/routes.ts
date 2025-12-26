@@ -122,17 +122,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           date: z.string(), // YYYY-MM-DD format
           calories: z.number().int().min(0),
           steps: z.number().int().min(0),
+          workouts: z.number().int().min(0).optional(), // Health sync sends workout count
           workoutType: z.string().optional(),
         })).max(100), // Limit to 100 activities per sync
       });
       
       const validatedData = syncSchema.parse(req.body);
       
+      // Transform activities: convert workouts count to workoutType if not already set
+      const transformedActivities = validatedData.activities.map(activity => ({
+        date: activity.date,
+        calories: activity.calories,
+        steps: activity.steps,
+        workoutType: activity.workoutType || (activity.workouts && activity.workouts > 0 
+          ? `Health Sync (${activity.workouts} workout${activity.workouts > 1 ? 's' : ''})` 
+          : undefined),
+      }));
+      
+      console.log(`[Sync] User ${userId} syncing ${transformedActivities.length} activities from ${validatedData.provider}`);
+      
       // Sync activities from health device
       const results = await storage.syncHealthActivities(
         userId,
         validatedData.provider,
-        validatedData.activities
+        transformedActivities
       );
       
       // Create or update device connection
@@ -142,6 +155,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isConnected: true,
         lastSyncAt: new Date(),
       });
+      
+      console.log(`[Sync] Results: created=${results.created}, updated=${results.updated}, skipped=${results.skipped}`);
       
       res.json({
         success: true,
@@ -691,6 +706,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
       
+      // Helper to aggregate activities by date (take max per day to avoid double-counting)
+      const aggregateCaloriesByDate = (activities: any[]) => {
+        const byDate = new Map<string, number>();
+        for (const act of activities) {
+          const existing = byDate.get(act.date) || 0;
+          byDate.set(act.date, Math.max(existing, act.calories));
+        }
+        let total = 0;
+        Array.from(byDate.values()).forEach(calories => { total += calories; });
+        return total;
+      };
+      
       // Get user's teams
       const userTeams = await storage.getUserTeams(currentUserId);
       const userStatsMap = new Map<string, any>(); // Use Map to deduplicate by userId
@@ -706,7 +733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           const activities = await storage.getUserActivities(member.userId, month, year);
-          const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
+          const totalCalories = aggregateCaloriesByDate(activities);
           const user = await storage.getUser(member.userId);
           
           if (user) {
@@ -754,6 +781,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
       
+      // Helper to aggregate team activities by user+date (take max per user per day)
+      const aggregateTeamCalories = (activities: any[]) => {
+        const byUserDate = new Map<string, number>();
+        for (const act of activities) {
+          const key = `${act.userId}:${act.date}`;
+          const existing = byUserDate.get(key) || 0;
+          byUserDate.set(key, Math.max(existing, act.calories));
+        }
+        let total = 0;
+        Array.from(byUserDate.values()).forEach(calories => { total += calories; });
+        return total;
+      };
+      
       const teams = await storage.getAllTeams();
       const teamStats = [];
       
@@ -763,7 +803,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const team of teams) {
         const activities = await storage.getTeamActivities(team.id, month, year);
         const members = await storage.getTeamMembers(team.id);
-        const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
+        const totalCalories = aggregateTeamCalories(activities);
         
         // Calculate average daily calories per user
         const avgDailyCaloriesPerUser = members.length > 0 
@@ -804,6 +844,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
       
+      // Helper to aggregate activities by date (take max per day to avoid double-counting)
+      const aggregateCaloriesByDate = (activities: any[]) => {
+        const byDate = new Map<string, number>();
+        for (const act of activities) {
+          const existing = byDate.get(act.date) || 0;
+          byDate.set(act.date, Math.max(existing, act.calories));
+        }
+        let total = 0;
+        Array.from(byDate.values()).forEach(calories => { total += calories; });
+        return total;
+      };
+      
       // Check if user is member of this team
       const isMember = await storage.isUserInTeam(currentUserId, teamId);
       if (!isMember) {
@@ -815,7 +867,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const member of members) {
         const activities = await storage.getUserActivities(member.userId, month, year);
-        const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
+        const totalCalories = aggregateCaloriesByDate(activities);
         const user = await storage.getUser(member.userId);
         
         if (user) {
@@ -859,21 +911,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const month = now.getMonth() + 1;
       const year = now.getFullYear();
       
+      // Helper function to aggregate activities by date (prevents double-counting when user has both manual + health entries)
+      // Takes the MAX of each metric per day across all sources
+      const aggregateByDate = (activities: any[]) => {
+        const byDate = new Map<string, { calories: number; steps: number; hasWorkout: boolean }>();
+        for (const act of activities) {
+          const existing = byDate.get(act.date);
+          if (existing) {
+            // Take the maximum for each metric to avoid double-counting
+            existing.calories = Math.max(existing.calories, act.calories);
+            existing.steps = Math.max(existing.steps, act.steps);
+            existing.hasWorkout = existing.hasWorkout || !!act.workoutType;
+          } else {
+            byDate.set(act.date, { 
+              calories: act.calories, 
+              steps: act.steps, 
+              hasWorkout: !!act.workoutType 
+            });
+          }
+        }
+        return byDate;
+      };
+      
       // Get activities for current month only (resets on 1st of each month)
       const activities = await storage.getUserActivities(userId, month, year);
-      const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
-      const totalSteps = activities.reduce((sum, act) => sum + act.steps, 0);
-      const workoutCount = activities.length;
+      const aggregated = aggregateByDate(activities);
+      
+      // Sum up the aggregated values
+      let totalCalories = 0;
+      let totalSteps = 0;
+      let workoutCount = 0;
+      Array.from(aggregated.values()).forEach(dayData => {
+        totalCalories += dayData.calories;
+        totalSteps += dayData.steps;
+        if (dayData.hasWorkout) workoutCount++;
+      });
       
       // Calculate global rank based on current month (not last 30 days)
       // This ensures leaderboard resets on the 1st of each month
       const allUsers = await storage.getAllUsers();
       const userCaloriesMap: Map<string, number> = new Map();
       
-      // Calculate calories for each user for current month only
+      // Calculate calories for each user for current month only (also using aggregation)
       for (const user of allUsers) {
         const userActivities = await storage.getUserActivities(user.id, month, year);
-        const userCalories = userActivities.reduce((sum, act) => sum + act.calories, 0);
+        const userAggregated = aggregateByDate(userActivities);
+        let userCalories = 0;
+        Array.from(userAggregated.values()).forEach(dayData => {
+          userCalories += dayData.calories;
+        });
         if (userCalories > 0) {
           userCaloriesMap.set(user.id, userCalories);
         }
@@ -917,13 +1003,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const activities = await storage.getUserActivities(userId, month, year);
       
+      // First aggregate by date to prevent double-counting (take max per day)
+      const byDate = new Map<string, number>();
+      for (const act of activities) {
+        const existing = byDate.get(act.date) || 0;
+        byDate.set(act.date, Math.max(existing, act.calories));
+      }
+      
       // Group by week
       const weeklyData: { [key: string]: number } = {};
-      activities.forEach(activity => {
-        const date = new Date(activity.date);
+      Array.from(byDate.entries()).forEach(([dateStr, calories]) => {
+        const date = new Date(dateStr);
         const weekNum = Math.ceil(date.getDate() / 7);
         const weekKey = `Week ${weekNum}`;
-        weeklyData[weekKey] = (weeklyData[weekKey] || 0) + activity.calories;
+        weeklyData[weekKey] = (weeklyData[weekKey] || 0) + calories;
       });
       
       const chartData = Object.entries(weeklyData).map(([date, calories]) => ({
