@@ -1,25 +1,9 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Users, TrendingUp, Target } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-
-const bannerMessages = [
-  "Track your fitness journey, compete with friends, and achieve your health goals together!",
-  "Earn 1 point per calorie burned + 1 point per step taken. The more active you are, the higher you score!",
-  "Compete on team leaderboards (based on average scores) or individual leaderboards to see who's the most active!",
-];
+import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
 
 export default function Landing() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % bannerMessages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b p-4 flex items-center justify-between">
@@ -47,37 +31,10 @@ export default function Landing() {
               Track, Compete, Win Together
             </h2>
             
-            <div className="h-20 md:h-16 flex items-center justify-center mb-8">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={currentIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-xl text-muted-foreground max-w-2xl mx-auto"
-                  data-testid={`banner-message-${currentIndex}`}
-                >
-                  {bannerMessages[currentIndex]}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-
-            <div className="flex justify-center gap-2 mb-8">
-              {bannerMessages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`h-2 w-2 rounded-full transition-all ${
-                    index === currentIndex
-                      ? "bg-primary w-6"
-                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                  }`}
-                  data-testid={`banner-dot-${index}`}
-                  aria-label={`Go to message ${index + 1}`}
-                />
-              ))}
-            </div>
+            <RotatingBanner 
+              messages={defaultBannerMessages}
+              className="mb-8 [&_p]:text-xl [&_p]:max-w-2xl [&_p]:mx-auto"
+            />
 
             <a href="/api/login">
               <Button size="lg" className="text-lg" data-testid="button-get-started">

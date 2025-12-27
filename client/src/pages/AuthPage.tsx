@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Fingerprint, ArrowLeft, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Fingerprint, ArrowLeft, AlertCircle, Eye, EyeOff, Trophy } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
-import heroBanner from "@assets/ufc-hero-banner.png";
+import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
 
 export default function AuthPage() {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -210,13 +210,19 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-green-50/50 dark:bg-green-950/20 pt-8 pb-12 px-4">
       <div className="w-full max-w-md mb-6">
-        <Card className="overflow-hidden border-0 shadow-lg">
-          <img 
-            src={heroBanner} 
-            alt="Welcome to Ultimate Fitness Challenge" 
-            className="w-full h-auto"
-            data-testid="img-hero-banner"
-          />
+        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
+          <div className="p-6 text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center">
+                <Trophy className="h-7 w-7 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold">Ultimate Fitness Challenge</h1>
+            </div>
+            <RotatingBanner 
+              messages={defaultBannerMessages} 
+              className="[&_p]:text-white/90"
+            />
+          </div>
         </Card>
       </div>
 
