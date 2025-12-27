@@ -134,37 +134,57 @@ export default function Leaderboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Leaderboard</h1>
-          <p className="text-muted-foreground">
-            See how you and your team rank this month. Scores reset on the 1st of each month.
-          </p>
+      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-6 text-white shadow-lg">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Leaderboard</h1>
+            <p className="text-yellow-50">
+              Rankings reset on the 1st of each month
+            </p>
+          </div>
+          <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2" data-testid="badge-current-month">
+            {monthName}
+          </Badge>
         </div>
-        <Badge variant="outline" className="text-base px-4 py-2" data-testid="badge-current-month">
-          {monthName}
-        </Badge>
       </div>
 
       <Tabs defaultValue="teams" className="w-full">
-        <TabsList className="grid w-full grid-cols-4" data-testid="leaderboard-tabs">
-          <TabsTrigger value="teams" className="flex items-center gap-2" data-testid="tab-teams">
-            <Trophy className="w-4 h-4" />
-            <span className="hidden sm:inline">Teams</span>
-          </TabsTrigger>
-          <TabsTrigger value="calories" className="flex items-center gap-2" data-testid="tab-calories">
-            <Flame className="w-4 h-4" />
-            <span className="hidden sm:inline">Calories</span>
-          </TabsTrigger>
-          <TabsTrigger value="steps" className="flex items-center gap-2" data-testid="tab-steps">
-            <Footprints className="w-4 h-4" />
-            <span className="hidden sm:inline">Steps</span>
-          </TabsTrigger>
-          <TabsTrigger value="workouts" className="flex items-center gap-2" data-testid="tab-workouts">
-            <Dumbbell className="w-4 h-4" />
-            <span className="hidden sm:inline">Workouts</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex gap-2 overflow-x-auto pb-2" data-testid="leaderboard-tabs">
+          <TabsList className="bg-transparent p-0 h-auto gap-2">
+            <TabsTrigger 
+              value="teams" 
+              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              data-testid="tab-teams"
+            >
+              <Trophy className="w-4 h-4" />
+              <span>Teams</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calories" 
+              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              data-testid="tab-calories"
+            >
+              <Flame className="w-4 h-4" />
+              <span>Calories</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="steps" 
+              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              data-testid="tab-steps"
+            >
+              <Footprints className="w-4 h-4" />
+              <span>Steps</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="workouts" 
+              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              data-testid="tab-workouts"
+            >
+              <Dumbbell className="w-4 h-4" />
+              <span>Workouts</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="teams" className="space-y-4 mt-6">
           <div className="flex items-center gap-2 mb-4">

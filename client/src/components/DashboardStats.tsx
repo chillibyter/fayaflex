@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Flame, TrendingUp, TrendingDown, Footprints, Dumbbell, Minus } from "lucide-react";
+import { Flame, TrendingUp, TrendingDown, Footprints, Dumbbell, Minus, Trophy, Award } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -8,61 +8,69 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatCardProps {
   icon: React.ReactNode;
+  iconBgColor: string;
   label: string;
   value: string | number;
   unit?: string;
   trend?: number | null;
   trendLabel?: string;
+  personalBest?: number;
   onClick?: () => void;
 }
 
-function StatCard({ icon, label, value, unit, trend, trendLabel, onClick }: StatCardProps) {
+function StatCard({ icon, iconBgColor, label, value, unit, trend, trendLabel, personalBest, onClick }: StatCardProps) {
   const getTrendDisplay = () => {
     if (trend === null || trend === undefined) return null;
     
     if (trend > 0) {
       return (
-        <p className="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+        <div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
           <TrendingUp className="h-4 w-4" />
-          +{trend}% {trendLabel || 'vs last month'}
-        </p>
+          <span>+{trend}%</span>
+        </div>
       );
     } else if (trend < 0) {
       return (
-        <p className="text-sm text-red-500 dark:text-red-400 mt-2 flex items-center gap-1">
+        <div className="flex items-center gap-1 text-sm text-red-500 dark:text-red-400">
           <TrendingDown className="h-4 w-4" />
-          {trend}% {trendLabel || 'vs last month'}
-        </p>
+          <span>{trend}%</span>
+        </div>
       );
     } else {
       return (
-        <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Minus className="h-4 w-4" />
-          No change
-        </p>
+          <span>No change</span>
+        </div>
       );
     }
   };
 
   return (
     <Card 
-      className={`p-6 ${onClick ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
+      className={`p-5 shadow-sm hover:shadow-md transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
       data-testid={`card-${label.toLowerCase().replace(/\s/g, '-')}`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <p className="text-sm text-muted-foreground mb-2">{label}</p>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-bold tracking-tight" data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}>
-              {value}
-            </h3>
-            {unit && <span className="text-lg text-muted-foreground">{unit}</span>}
-          </div>
-          {getTrendDisplay()}
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className={`${iconBgColor} p-3 rounded-lg`}>
+          {icon}
         </div>
-        <div className="text-primary">{icon}</div>
+        {getTrendDisplay()}
       </div>
+      
+      <div className="text-muted-foreground text-sm mb-1">{label}</div>
+      <div className="text-foreground text-2xl font-semibold mb-2" data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}>
+        {value}
+        {unit && <span className="text-sm font-normal text-muted-foreground ml-1">{unit}</span>}
+      </div>
+      
+      {personalBest !== undefined && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Award className="w-3 h-3" />
+          <span>Best: {personalBest.toLocaleString()}</span>
+        </div>
+      )}
     </Card>
   );
 }
@@ -130,64 +138,47 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon={<Flame className="h-8 w-8" />}
+          icon={<Flame className="h-6 w-6 text-orange-500" />}
+          iconBgColor="bg-orange-50 dark:bg-orange-950"
           label="Total Calories"
           value={calories.toLocaleString()}
-          unit="cal"
           trend={caloriesTrend}
+          personalBest={personalBests?.daily_calories}
           onClick={() => setCaloriesDialogOpen(true)}
         />
         <StatCard
-          icon={<Footprints className="h-8 w-8" />}
+          icon={<Footprints className="h-6 w-6 text-blue-500" />}
+          iconBgColor="bg-blue-50 dark:bg-blue-950"
           label="Total Steps"
           value={steps.toLocaleString()}
-          unit="steps"
           trend={stepsTrend}
+          personalBest={personalBests?.daily_steps}
           onClick={() => setStepsDialogOpen(true)}
         />
         <StatCard
-          icon={<Dumbbell className="h-8 w-8" />}
-          label="Workouts"
+          icon={<Dumbbell className="h-6 w-6 text-purple-500" />}
+          iconBgColor="bg-purple-50 dark:bg-purple-950"
+          label="Workout Days"
           value={workouts}
           unit="this month"
           onClick={() => setWorkoutsDialogOpen(true)}
         />
-        {rank > 0 ? (
-          <Card className="p-6" data-testid="card-your-rank">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-2">Your Rank</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold tracking-tight" data-testid="stat-your-rank">
-                    #{rank}
-                  </h3>
-                </div>
-                <p className="text-sm text-primary mt-2 flex items-center gap-1">
-                  <TrendingUp className="h-4 w-4" />
-                  Top {percentile}%
-                </p>
-              </div>
-              <div className="text-primary"><TrendingUp className="h-8 w-8" /></div>
+        <Card className="p-5 shadow-sm" data-testid="card-your-rank">
+          <div className="flex items-start justify-between mb-3 gap-2">
+            <div className="bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg">
+              <Trophy className="h-6 w-6 text-yellow-500" />
             </div>
-          </Card>
-        ) : (
-          <Card className="p-6" data-testid="card-your-rank">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-2">Your Rank</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold tracking-tight" data-testid="stat-your-rank">
-                    Not ranked
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Log activities to compete!
-                </p>
-              </div>
-              <div className="text-primary"><TrendingUp className="h-8 w-8" /></div>
-            </div>
-          </Card>
-        )}
+          </div>
+          <div className="text-muted-foreground text-sm mb-1">Global Rank</div>
+          <div className="text-foreground text-2xl font-semibold mb-2" data-testid="stat-your-rank">
+            {rank > 0 ? `#${rank}` : 'Not ranked'}
+          </div>
+          {rank > 0 ? (
+            <div className="text-xs text-muted-foreground">Top {percentile}%</div>
+          ) : (
+            <div className="text-xs text-muted-foreground">Log activities to compete!</div>
+          )}
+        </Card>
       </div>
 
       {/* Calories Dialog */}
