@@ -219,6 +219,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Teammate comparison stats - daily averages for comparison chart
+  app.get("/api/users/:userId/comparison-stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.userId;
+      const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
+      const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+      
+      // Check authorization first (before expensive queries)
+      const shareTeam = await storage.doUsersShareTeam(currentUserId, targetUserId);
+      if (!shareTeam && currentUserId !== targetUserId) {
+        return res.status(403).json({ message: "You can only view comparison stats of teammates" });
+      }
+      
+      // Helper to aggregate activities by date (max calories/steps per day, count workouts)
+      const aggregateByDate = (activities: any[]) => {
+        const byDate = new Map<string, { calories: number; steps: number; workouts: number }>();
+        for (const act of activities) {
+          const existing = byDate.get(act.date) || { calories: 0, steps: 0, workouts: 0 };
+          byDate.set(act.date, {
+            calories: Math.max(existing.calories, act.calories),
+            steps: Math.max(existing.steps, act.steps),
+            workouts: existing.workouts + (act.workoutType ? 1 : 0),
+          });
+        }
+        return byDate;
+      };
+      
+      // Get days in current month up to today
+      const today = new Date();
+      const currentMonth = today.getMonth() + 1;
+      const currentYear = today.getFullYear();
+      const daysToCount = (month === currentMonth && year === currentYear) 
+        ? today.getDate() 
+        : new Date(year, month, 0).getDate();
+      
+      // 1. Target user's daily data
+      const targetActivities = await storage.getUserActivities(targetUserId, month, year);
+      const targetByDate = aggregateByDate(targetActivities);
+      
+      // Calculate target user totals
+      const targetTotals = { calories: 0, steps: 0, workouts: 0 };
+      targetByDate.forEach(val => {
+        targetTotals.calories += val.calories;
+        targetTotals.steps += val.steps;
+        targetTotals.workouts += val.workouts;
+      });
+      const targetDailyAvg = {
+        calories: Math.round(targetTotals.calories / daysToCount),
+        steps: Math.round(targetTotals.steps / daysToCount),
+        workouts: Math.round((targetTotals.workouts / daysToCount) * 100) / 100,
+      };
+      
+      // 2. Get all users for global stats
+      const allUsers = await storage.getAllUsers();
+      let globalTotals = { calories: 0, steps: 0, workouts: 0 };
+      let bestUserTotals = { calories: 0, steps: 0, workouts: 0 };
+      
+      for (const user of allUsers) {
+        const userActivities = await storage.getUserActivities(user.id, month, year);
+        const userByDate = aggregateByDate(userActivities);
+        
+        let userTotals = { calories: 0, steps: 0, workouts: 0 };
+        userByDate.forEach(val => {
+          userTotals.calories += val.calories;
+          userTotals.steps += val.steps;
+          userTotals.workouts += val.workouts;
+        });
+        
+        globalTotals.calories += userTotals.calories;
+        globalTotals.steps += userTotals.steps;
+        globalTotals.workouts += userTotals.workouts;
+        
+        // Track best user (highest totals for each metric - may be different users)
+        if (userTotals.calories > bestUserTotals.calories) {
+          bestUserTotals.calories = userTotals.calories;
+        }
+        if (userTotals.steps > bestUserTotals.steps) {
+          bestUserTotals.steps = userTotals.steps;
+        }
+        if (userTotals.workouts > bestUserTotals.workouts) {
+          bestUserTotals.workouts = userTotals.workouts;
+        }
+      }
+      
+      const globalDailyAvg = {
+        calories: allUsers.length > 0 ? Math.round(globalTotals.calories / (allUsers.length * daysToCount)) : 0,
+        steps: allUsers.length > 0 ? Math.round(globalTotals.steps / (allUsers.length * daysToCount)) : 0,
+        workouts: allUsers.length > 0 ? Math.round((globalTotals.workouts / (allUsers.length * daysToCount)) * 100) / 100 : 0,
+      };
+      
+      const bestGlobalDailyAvg = {
+        calories: Math.round(bestUserTotals.calories / daysToCount),
+        steps: Math.round(bestUserTotals.steps / daysToCount),
+        workouts: Math.round((bestUserTotals.workouts / daysToCount) * 100) / 100,
+      };
+      
+      // 3. Team average (get teams the target user is in)
+      const userTeams = await storage.getUserTeams(targetUserId);
+      let teamTotals = { calories: 0, steps: 0, workouts: 0 };
+      let teamMemberCount = 0;
+      const processedMembers = new Set<string>();
+      
+      for (const team of userTeams) {
+        const members = await storage.getTeamMembers(team.id);
+        for (const member of members) {
+          if (processedMembers.has(member.userId)) continue;
+          processedMembers.add(member.userId);
+          
+          const memberActivities = await storage.getUserActivities(member.userId, month, year);
+          const memberByDate = aggregateByDate(memberActivities);
+          
+          memberByDate.forEach(val => {
+            teamTotals.calories += val.calories;
+            teamTotals.steps += val.steps;
+            teamTotals.workouts += val.workouts;
+          });
+          teamMemberCount++;
+        }
+      }
+      
+      const teamDailyAvg = {
+        calories: teamMemberCount > 0 ? Math.round(teamTotals.calories / (teamMemberCount * daysToCount)) : 0,
+        steps: teamMemberCount > 0 ? Math.round(teamTotals.steps / (teamMemberCount * daysToCount)) : 0,
+        workouts: teamMemberCount > 0 ? Math.round((teamTotals.workouts / (teamMemberCount * daysToCount)) * 100) / 100 : 0,
+      };
+      
+      // 4. Generate daily data points for chart with all metrics
+      const dailyData: { 
+        date: string; 
+        day: number;
+        userCalories: number; 
+        userSteps: number; 
+        userWorkouts: number;
+      }[] = [];
+      
+      for (let day = 1; day <= daysToCount; day++) {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const userData = targetByDate.get(dateStr) || { calories: 0, steps: 0, workouts: 0 };
+        
+        dailyData.push({
+          date: dateStr,
+          day,
+          userCalories: userData.calories,
+          userSteps: userData.steps,
+          userWorkouts: userData.workouts,
+        });
+      }
+      
+      res.json({
+        targetUser: targetDailyAvg,
+        bestGlobal: bestGlobalDailyAvg,
+        globalAvg: globalDailyAvg,
+        teamAvg: teamDailyAvg,
+        dailyData,
+        daysInMonth: daysToCount,
+      });
+    } catch (error) {
+      console.error("Error fetching comparison stats:", error);
+      res.status(500).json({ message: "Failed to fetch comparison stats" });
+    }
+  });
+
+  // Get badges for a specific user (for teammate profile)
+  app.get("/api/users/:userId/badges", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.userId;
+      
+      // Check if users share a team
+      const shareTeam = await storage.doUsersShareTeam(currentUserId, targetUserId);
+      if (!shareTeam && currentUserId !== targetUserId) {
+        return res.status(403).json({ message: "You can only view badges of teammates" });
+      }
+      
+      const badges = await storage.getUserBadges(targetUserId);
+      res.json(badges);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ message: "Failed to fetch user badges" });
+    }
+  });
+
   // Profile routes
   app.get("/api/profile/stats", isAuthenticated, async (req: any, res) => {
     try {

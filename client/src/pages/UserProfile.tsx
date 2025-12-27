@@ -1,32 +1,15 @@
 import { useParams } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Dumbbell, Flame, Smartphone, Edit3 } from "lucide-react";
-import { SiGarmin, SiApple } from "react-icons/si";
+import { ArrowLeft, Calendar, Dumbbell, Flame, Footprints } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import type { User as UserType, Activity } from "@shared/schema";
 import { useLocation } from "wouter";
 import { UserAvatar } from "@/components/UserAvatar";
-import ActivityReactions from "@/components/ActivityReactions";
-import ActivityComments from "@/components/ActivityComments";
-
-// Helper function to get source icon and label
-function getSourceInfo(source?: string | null) {
-  switch (source) {
-    case 'apple_health':
-      return { icon: SiApple, label: 'Apple Health', color: 'text-foreground' };
-    case 'garmin':
-      return { icon: SiGarmin, label: 'Garmin', color: 'text-foreground' };
-    case 'android_health':
-      return { icon: Smartphone, label: 'Android Health', color: 'text-foreground' };
-    case 'manual':
-    default:
-      return { icon: Edit3, label: 'Manual Entry', color: 'text-foreground' };
-  }
-}
+import TeammateComparisonChart from "@/components/TeammateComparisonChart";
+import UserBadgesDisplay from "@/components/UserBadgesDisplay";
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -40,19 +23,11 @@ export default function UserProfile() {
     queryKey: [`/api/users/${userId}/activities`],
   });
 
-  const getUserInitials = () => {
-    if (!user) return "?";
-    const first = user.firstName?.[0] || "";
-    const last = user.lastName?.[0] || "";
-    return (first + last).toUpperCase() || user.email?.[0]?.toUpperCase() || "?";
-  };
-
   const getUserFullName = () => {
     if (!user) return "Loading...";
     if (user.firstName || user.lastName) {
       return `${user.firstName || ""} ${user.lastName || ""}`.trim();
     }
-    // Extract from email
     if (user.email) {
       const emailUsername = user.email.split('@')[0];
       return emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
@@ -62,6 +37,7 @@ export default function UserProfile() {
 
   const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
   const totalSteps = activities.reduce((sum, act) => sum + act.steps, 0);
+  const workoutDays = new Set(activities.filter(a => a.workoutType).map(a => a.date)).size;
 
   return (
     <div className="space-y-6">
@@ -104,9 +80,6 @@ export default function UserProfile() {
                 <h2 className="text-2xl font-bold mb-1" data-testid="text-user-name">
                   {getUserFullName()}
                 </h2>
-                <p className="text-muted-foreground mb-3">
-                  {user?.email}
-                </p>
                 <p className="text-sm text-muted-foreground">
                   Member since {user?.createdAt ? format(new Date(user.createdAt), 'MMMM yyyy') : 'Unknown'}
                 </p>
@@ -120,12 +93,12 @@ export default function UserProfile() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Flame className="h-6 w-6 text-primary" />
+              <div className="h-12 w-12 rounded-full bg-orange-50 dark:bg-orange-950 flex items-center justify-center">
+                <Flame className="h-6 w-6 text-orange-500" />
               </div>
               <div>
                 <p className="text-2xl font-bold" data-testid="text-total-calories">
-                  {totalCalories}
+                  {isLoadingActivities ? "..." : totalCalories.toLocaleString()}
                 </p>
                 <p className="text-sm text-muted-foreground">Total Calories</p>
               </div>
@@ -136,14 +109,14 @@ export default function UserProfile() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-primary" />
+              <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
+                <Footprints className="h-6 w-6 text-blue-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold" data-testid="text-total-workouts">
-                  {activities.length}
+                <p className="text-2xl font-bold" data-testid="text-total-steps">
+                  {isLoadingActivities ? "..." : totalSteps.toLocaleString()}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Workouts</p>
+                <p className="text-sm text-muted-foreground">Total Steps</p>
               </div>
             </div>
           </CardContent>
@@ -152,90 +125,27 @@ export default function UserProfile() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Dumbbell className="h-6 w-6 text-primary" />
+              <div className="h-12 w-12 rounded-full bg-purple-50 dark:bg-purple-950 flex items-center justify-center">
+                <Dumbbell className="h-6 w-6 text-purple-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold" data-testid="text-total-steps">
-                  {totalSteps.toLocaleString()}
+                <p className="text-2xl font-bold" data-testid="text-total-workouts">
+                  {isLoadingActivities ? "..." : workoutDays}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Steps</p>
+                <p className="text-sm text-muted-foreground">Workout Days</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activities</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingActivities ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-20 w-full" />
-              ))}
-            </div>
-          ) : activities.length > 0 ? (
-            <div className="space-y-4">
-              {activities.map((activity) => {
-                const sourceInfo = getSourceInfo(activity.source);
-                const SourceIcon = sourceInfo.icon;
-                
-                return (
-                  <Card key={activity.id} className="hover-elevate" data-testid={`activity-${activity.id}`}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <Badge variant="outline">{activity.workoutType}</Badge>
-                            <Badge variant="outline" className="text-xs gap-1" data-testid={`activity-source-${activity.id}`}>
-                              <SourceIcon className="h-3 w-3" />
-                              {sourceInfo.label}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">
-                              {format(new Date(activity.date), 'MMMM d, yyyy')}
-                            </span>
-                          </div>
-                          <div className="flex gap-6 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Calories:</span>{' '}
-                              <span className="font-semibold">{activity.calories}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Steps:</span>{' '}
-                              <span className="font-semibold">{activity.steps}</span>
-                            </div>
-                          </div>
-                        </div>
-                        {activity.attachmentUrl && (
-                          <div className="w-32 h-32 rounded-md overflow-hidden">
-                            <img
-                              src={activity.attachmentUrl}
-                              alt="Activity evidence"
-                              className="w-full h-full object-cover"
-                              data-testid="activity-attachment"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 pt-2 border-t">
-                        <ActivityReactions activityId={activity.id} />
-                        <ActivityComments activityId={activity.id} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No activities logged yet</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {userId && (
+        <TeammateComparisonChart userId={userId} userName={getUserFullName()} />
+      )}
+
+      {userId && (
+        <UserBadgesDisplay userId={userId} />
+      )}
     </div>
   );
 }
