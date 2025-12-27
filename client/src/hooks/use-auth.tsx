@@ -5,7 +5,7 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query";
 import { insertUserSchema, type User, type InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { getQueryFn, apiRequest, queryClient, setAuthToken, clearAuthToken } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
@@ -22,6 +22,8 @@ type LoginData = {
   password: string;
 };
 
+type AuthResponse = User & { token?: string };
+
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -33,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery<User | undefined, Error>({
     queryKey: ["/api/auth/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
-    staleTime: 0, // Always refetch to ensure session is valid
+    staleTime: 0,
   });
 
   const loginMutation = useMutation({
@@ -41,12 +43,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/login", credentials);
       return await res.json();
     },
-    onSuccess: async (user: User) => {
-      // Invalidate and refetch to ensure session cookie is properly established
+    onSuccess: async (response: AuthResponse) => {
+      if (response.token) {
+        setAuthToken(response.token);
+      }
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Welcome back!",
-        description: `Logged in as ${user.username}`,
+        description: `Logged in as ${response.username}`,
       });
     },
     onError: (error: Error) => {
@@ -63,12 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
-    onSuccess: async (user: User) => {
-      // Invalidate and refetch to ensure session cookie is properly established
+    onSuccess: async (response: AuthResponse) => {
+      if (response.token) {
+        setAuthToken(response.token);
+      }
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Account created!",
-        description: `Welcome, ${user.username}!`,
+        description: `Welcome, ${response.username}!`,
       });
     },
     onError: (error: Error) => {
@@ -85,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiRequest("POST", "/api/logout");
     },
     onSuccess: () => {
+      clearAuthToken();
       queryClient.setQueryData(["/api/auth/user"], null);
       toast({
         title: "Logged out",

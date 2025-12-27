@@ -101,8 +101,18 @@ export function setupAuth(app: Express) {
   // Must set trust proxy BEFORE session middleware
   app.set("trust proxy", 1);
   
-  // Session configuration - secure cookie is set dynamically per-request
-  // since Replit terminates TLS at the proxy and forwards HTTP
+  // Debug: Log incoming request headers to understand the proxy setup
+  app.use((req, res, next) => {
+    if (req.path === '/api/login' || req.path === '/api/register') {
+      console.log('[Session Debug] x-forwarded-proto:', req.headers['x-forwarded-proto']);
+      console.log('[Session Debug] req.secure:', req.secure);
+      console.log('[Session Debug] req.protocol:', req.protocol);
+    }
+    next();
+  });
+  
+  // Session configuration
+  // Replit webview runs on HTTPS from a different domain, requiring cross-site cookies
   app.use(session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -111,14 +121,43 @@ export function setupAuth(app: Express) {
     name: 'connect.sid',
     cookie: {
       httpOnly: true,
-      secure: 'auto', // Automatically set based on x-forwarded-proto
-      sameSite: 'lax' as const,
+      secure: true, // Required for sameSite: 'none'
+      sameSite: 'none' as const, // Required for cross-site cookies (Replit webview)
       maxAge: sessionTtl,
       path: '/',
     },
   }));
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  // JWT token authentication middleware
+  // This runs after session auth and checks for Bearer token
+  // If a valid JWT is found, it authenticates the user even without a session
+  app.use(async (req, res, next) => {
+    // Skip if already authenticated via session
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const decoded = verifyAuthToken(token);
+      
+      if (decoded) {
+        try {
+          const user = await storage.getUser(decoded.userId);
+          if (user) {
+            // Attach user to request for use in routes
+            req.user = user;
+          }
+        } catch (error) {
+          console.error('[JWT Auth] Error fetching user:', error);
+        }
+      }
+    }
+    next();
+  });
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
@@ -175,13 +214,15 @@ export function setupAuth(app: Express) {
         lastName: lastName ?? undefined,
       });
 
-      // Log in the user and return sanitized user object
+      // Log in the user and return sanitized user object with JWT token
       req.login(user, (err) => {
         if (err) {
           console.error("Error during req.login after registration:", err);
           return next(err);
         }
-        res.status(201).json(sanitizeUser(user));
+        // Include JWT token for token-based auth (works around third-party cookie blocking)
+        const token = generateAuthToken(user.id);
+        res.status(201).json({ ...sanitizeUser(user), token });
       });
     } catch (error) {
       console.error("Error during registration:", error);
@@ -218,7 +259,9 @@ export function setupAuth(app: Express) {
             console.error("Error saving session after login:", saveErr);
             return next(saveErr);
           }
-          res.status(200).json(sanitizeUser(user));
+          // Include JWT token for token-based auth (works around third-party cookie blocking)
+          const token = generateAuthToken(user.id);
+          res.status(200).json({ ...sanitizeUser(user), token });
         });
       });
     })(req, res, next);
@@ -300,7 +343,8 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/auth/user", (req, res) => {
-    if (!req.isAuthenticated()) {
+    // Check both session auth and JWT auth (req.user is set by JWT middleware too)
+    if (!req.isAuthenticated() && !req.user) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     res.json(sanitizeUser(req.user as User));
