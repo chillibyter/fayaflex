@@ -24,6 +24,7 @@ import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
 
 type Team = {
   id: number;
@@ -35,8 +36,9 @@ function Router() {
   const { user, isLoading } = useAuth();
 
   // Check if user has any teams (getUserTeams only returns teams where user is a member)
-  const { data: teams = [], isLoading: isLoadingTeams } = useQuery<Team[]>({
+  const { data: teams = [], isLoading: isLoadingTeams } = useQuery<Team[] | null>({
     queryKey: ['/api/teams'],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!user,
   });
 
@@ -64,7 +66,7 @@ function Router() {
   }
 
   // If user has no teams, force them to team selection
-  if (teams.length === 0) {
+  if (!teams || teams.length === 0) {
     return (
       <Switch>
         <Route path="/team-selection" component={TeamSelection} />
