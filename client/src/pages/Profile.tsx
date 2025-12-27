@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, TrendingUp, Calendar, AlertCircle, User, Fingerprint, Shield, Copy, RefreshCw } from "lucide-react";
+import { Trophy, Target, TrendingUp, Calendar, AlertCircle, User } from "lucide-react";
 import ProgressChart from "@/components/ProgressChart";
 import { useQuery } from "@tanstack/react-query";
-import type { User as UserType, Passkey } from "@shared/schema";
+import type { User as UserType } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import {
@@ -23,7 +23,6 @@ import { format } from "date-fns";
 import { FITNESS_AVATARS, getAvatarById } from "@/lib/avatars";
 import { Check } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
-import { registerPasskey, generateStrongPassword } from "@/lib/passkey";
 import { HealthDevices } from "@/components/HealthDevices";
 import BadgesDisplay from "@/components/BadgesDisplay";
 
@@ -44,8 +43,6 @@ export default function Profile() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
-  const [generatedPassword, setGeneratedPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
   const {
     data: user,
@@ -68,34 +65,6 @@ export default function Profile() {
     isLoading: isLoadingStats
   } = useQuery<UserStats>({
     queryKey: ['/api/profile/stats'],
-  });
-
-  const {
-    data: passkeys = [],
-    isLoading: isLoadingPasskeys
-  } = useQuery<Passkey[]>({
-    queryKey: ['/api/passkeys'],
-    enabled: !!user,
-  });
-
-  const registerPasskeyMutation = useMutation({
-    mutationFn: async () => {
-      return await registerPasskey();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/passkeys'] });
-      toast({
-        title: "Passkey registered",
-        description: "Your passkey has been registered successfully. You can now use it to log in.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Passkey registration failed",
-        description: error.message || "Failed to register passkey. Please try again.",
-        variant: "destructive",
-      });
-    },
   });
 
   const updateProfileMutation = useMutation({
@@ -130,24 +99,6 @@ export default function Profile() {
 
   const handleSaveProfile = () => {
     updateProfileMutation.mutate({ firstName, lastName, avatarId: selectedAvatar });
-  };
-
-  const handleGeneratePassword = () => {
-    const password = generateStrongPassword(16);
-    setGeneratedPassword(password);
-    setShowPassword(true);
-  };
-
-  const handleCopyPassword = () => {
-    navigator.clipboard.writeText(generatedPassword);
-    toast({
-      title: "Password copied",
-      description: "The generated password has been copied to your clipboard.",
-    });
-  };
-
-  const handleRegisterPasskey = () => {
-    registerPasskeyMutation.mutate();
   };
 
   const getUserInitials = () => {
@@ -304,93 +255,6 @@ export default function Profile() {
       </div>
 
       <BadgesDisplay />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Security & Authentication
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold mb-2 flex items-center gap-2">
-                <Fingerprint className="h-4 w-4" />
-                Passkey Authentication
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Use biometric authentication (fingerprint, face ID) to securely sign in without a password.
-              </p>
-              {isLoadingPasskeys ? (
-                <Skeleton className="h-10 w-full" />
-              ) : passkeys.length > 0 ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Fingerprint className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">Passkey Registered</p>
-                        <p className="text-xs text-muted-foreground">
-                          {passkeys[0].deviceType || "Unknown device"}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="secondary">Active</Badge>
-                  </div>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  data-testid="button-register-passkey"
-                  onClick={handleRegisterPasskey}
-                  disabled={registerPasskeyMutation.isPending}
-                  className="gap-2"
-                >
-                  <Fingerprint className="h-4 w-4" />
-                  {registerPasskeyMutation.isPending ? "Registering..." : "Register Passkey"}
-                </Button>
-              )}
-            </div>
-
-            <div className="pt-4 border-t">
-              <h3 className="font-semibold mb-2">Password Generator</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Generate a strong, secure password for use with other accounts or services.
-              </p>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    data-testid="button-generate-password"
-                    onClick={handleGeneratePassword}
-                    className="gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Generate Password
-                  </Button>
-                  {generatedPassword && (
-                    <Button
-                      variant="outline"
-                      data-testid="button-copy-password"
-                      onClick={handleCopyPassword}
-                      className="gap-2"
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </Button>
-                  )}
-                </div>
-                {generatedPassword && (
-                  <div className="p-3 rounded-md bg-muted/50 font-mono text-sm break-all" data-testid="text-generated-password">
-                    {showPassword ? generatedPassword : "••••••••••••••••"}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <HealthDevices />
 
