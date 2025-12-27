@@ -9,6 +9,7 @@ import { storage } from "./storage";
 import { User, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import connectPg from "connect-pg-simple";
+import { sendPasswordResetEmail } from "./emailService";
 
 declare global {
   namespace Express {
@@ -412,13 +413,20 @@ export function setupAuth(app: Express) {
       // Save token to database
       await storage.createPasswordResetToken(user.id, resetToken, expiresAt);
       
-      // Log the reset link (since we don't have email service configured)
-      const resetLink = `${process.env.NODE_ENV === 'production' ? 'https://' + (process.env.REPL_SLUG || 'app') + '.replit.app' : 'http://localhost:5000'}/reset-password?token=${resetToken}`;
-      console.log(`[Password Reset] Reset link for ${email}: ${resetLink}`);
-      console.log(`[Password Reset] Token: ${resetToken}`);
+      // Build reset link
+      const baseUrl = process.env.APP_URL || 
+        (process.env.NODE_ENV === 'production' 
+          ? 'https://ultimatefitnesschallenge.com' 
+          : 'http://localhost:5000');
+      const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
       
-      // TODO: Send email with reset link when email service is configured
-      // For now, the token is logged for testing purposes
+      // Send password reset email
+      const emailSent = await sendPasswordResetEmail(email, resetLink);
+      if (emailSent) {
+        console.log(`[Password Reset] Email sent to ${email}`);
+      } else {
+        console.log(`[Password Reset] Email not sent (check config). Reset link: ${resetLink}`);
+      }
       
       res.status(200).json({ 
         message: "If an account with that email exists, a password reset link has been sent." 
