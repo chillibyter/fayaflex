@@ -98,9 +98,8 @@ export function setupAuth(app: Express) {
     tableName: "sessions",
   });
 
-  // Determine if we're in production (HTTPS available)
-  const isProduction = Boolean(process.env.NODE_ENV === 'production' || process.env.REPL_SLUG);
-  
+  // On Replit, even development runs over HTTPS via the proxy
+  // We need secure: true for the cookie to work over HTTPS
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -108,8 +107,8 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: isProduction, // Only require HTTPS in production
-      sameSite: 'lax' as const,
+      secure: true, // Always use secure cookies on Replit (HTTPS)
+      sameSite: 'none' as const, // Required for cross-origin cookies with secure
       maxAge: sessionTtl,
       path: '/',
     },
