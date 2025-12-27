@@ -98,17 +98,17 @@ export function setupAuth(app: Express) {
     tableName: "sessions",
   });
 
-  // On Replit, even development runs over HTTPS via the proxy
-  // We need secure: true for the cookie to work over HTTPS
+  // Session configuration
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    name: 'connect.sid', // Explicit session cookie name
     cookie: {
       httpOnly: true,
-      secure: true, // Always use secure cookies on Replit (HTTPS)
-      sameSite: 'none' as const, // Required for cross-origin cookies with secure
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
       maxAge: sessionTtl,
       path: '/',
     },
