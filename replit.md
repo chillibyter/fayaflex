@@ -59,6 +59,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Goal Journeys & Category Leaderboards** (December 27, 2025)
+- Implemented Goal Journeys system for daily/weekly quests:
+  - **Database Schema**: Added `userGoals` table with goal_type, category, target/current values, dates
+  - **API Routes**: GET /api/goals, GET /api/goals/active, POST /api/goals
+  - **GoalJourneys Component**: Dialog-based goal creation, progress bars, icons by category
+  - Uses max-per-day aggregation for accurate progress tracking (no double-counting)
+  - No DB mutations on GET requests (read-only progress calculation)
+- Added Category Leaderboards:
+  - **API Route**: GET /api/leaderboard/category/:category (calories, steps, workouts)
+  - **Frontend**: Tabs for Teams/Calories/Steps/Workouts with appropriate icons
+  - Uses same max-per-day aggregation as main leaderboards
+- Integrated GoalJourneys into Dashboard page (right column)
+
 **Badges, Personal Bests & Enhanced How It Works** (December 26, 2025)
 - Created comprehensive badges/achievements system:
   - **Database Schema**: Added `userBadges` and `personalBests` tables
