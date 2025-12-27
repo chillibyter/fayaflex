@@ -40,8 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/login", credentials);
       return await res.json();
     },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
+    onSuccess: async (user: User) => {
+      // Invalidate and refetch to ensure session cookie is properly established
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Welcome back!",
         description: `Logged in as ${user.username}`,
@@ -61,8 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
+    onSuccess: async (user: User) => {
+      // Invalidate and refetch to ensure session cookie is properly established
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Account created!",
         description: `Welcome, ${user.username}!`,
