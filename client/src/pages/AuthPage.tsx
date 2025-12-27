@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Fingerprint, ArrowLeft } from "lucide-react";
+import { Fingerprint, ArrowLeft, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -18,17 +18,22 @@ export default function AuthPage() {
   // Login state
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
   
   // Register state
   const [registerUsername, setRegisterUsername] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
   
   // Forgot password state
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotError, setForgotError] = useState("");
   
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
@@ -40,20 +45,95 @@ export default function AuthPage() {
     return null;
   }
 
+  const validateLogin = () => {
+    if (!loginUsername.trim()) {
+      setLoginError("Please enter your username");
+      return false;
+    }
+    if (loginUsername.trim().length < 3) {
+      setLoginError("Username must be at least 3 characters");
+      return false;
+    }
+    if (!loginPassword) {
+      setLoginError("Please enter your password");
+      return false;
+    }
+    if (loginPassword.length < 6) {
+      setLoginError("Password must be at least 6 characters");
+      return false;
+    }
+    return true;
+  };
+
+  const validateRegister = () => {
+    const errors: Record<string, string> = {};
+    
+    if (!registerUsername.trim()) {
+      errors.username = "Username is required";
+    } else if (registerUsername.trim().length < 3) {
+      errors.username = "Username must be at least 3 characters";
+    }
+    
+    if (!registerPassword) {
+      errors.password = "Password is required";
+    } else if (registerPassword.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+    
+    if (!email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    
+    setRegisterErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await loginMutation.mutateAsync({ username: loginUsername, password: loginPassword });
+    setLoginError("");
+    
+    if (!validateLogin()) return;
+    
+    try {
+      await loginMutation.mutateAsync({ username: loginUsername.trim(), password: loginPassword });
+    } catch (error: any) {
+      const message = error.message || "Login failed";
+      if (message.includes("Invalid") || message.includes("credentials") || message.includes("password")) {
+        setLoginError("Incorrect username or password. Please try again.");
+      } else if (message.includes("not found") || message.includes("User")) {
+        setLoginError("No account found with this username.");
+      } else {
+        setLoginError(message);
+      }
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    await registerMutation.mutateAsync({
-      username: registerUsername,
-      password: registerPassword,
-      email: email,
-      firstName: firstName || undefined,
-      lastName: lastName || undefined,
-    });
+    setRegisterErrors({});
+    
+    if (!validateRegister()) return;
+    
+    try {
+      await registerMutation.mutateAsync({
+        username: registerUsername.trim(),
+        password: registerPassword,
+        email: email.trim(),
+        firstName: firstName.trim() || undefined,
+        lastName: lastName.trim() || undefined,
+      });
+    } catch (error: any) {
+      const message = error.message || "Registration failed";
+      if (message.includes("username") && (message.includes("exists") || message.includes("taken"))) {
+        setRegisterErrors({ username: "This username is already taken. Please choose another." });
+      } else if (message.includes("email") && (message.includes("exists") || message.includes("taken"))) {
+        setRegisterErrors({ email: "An account with this email already exists." });
+      } else {
+        setRegisterErrors({ general: message });
+      }
+    }
   };
 
   const passkeyLoginMutation = useMutation({
@@ -70,11 +150,7 @@ export default function AuthPage() {
       setLocation("/");
     },
     onError: (error: any) => {
-      toast({
-        title: "Passkey login failed",
-        description: error.message || "Could not authenticate with passkey. Please try password login.",
-        variant: "destructive",
-      });
+      setLoginError(error.message || "Could not authenticate with passkey. Please try password login.");
     },
   });
 
@@ -90,36 +166,49 @@ export default function AuthPage() {
       });
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
+      setForgotError("");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      setForgotError(error.message || "Something went wrong. Please try again.");
     },
   });
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    await forgotPasswordMutation.mutateAsync(forgotPasswordEmail);
+    setForgotError("");
+    
+    if (!forgotPasswordEmail.trim()) {
+      setForgotError("Please enter your email address");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail)) {
+      setForgotError("Please enter a valid email address");
+      return;
+    }
+    
+    await forgotPasswordMutation.mutateAsync(forgotPasswordEmail.trim());
   };
 
   const handlePasskeyLogin = async () => {
-    if (!loginUsername) {
-      toast({
-        title: "Username required",
-        description: "Please enter your username to use passkey login.",
-        variant: "destructive",
-      });
+    setLoginError("");
+    if (!loginUsername.trim()) {
+      setLoginError("Please enter your username to use passkey login");
       return;
     }
-    await passkeyLoginMutation.mutateAsync(loginUsername);
+    await passkeyLoginMutation.mutateAsync(loginUsername.trim());
+  };
+
+  const clearLoginError = () => setLoginError("");
+  const clearRegisterError = (field: string) => {
+    setRegisterErrors(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-green-50/50 dark:bg-green-950/20 pt-8 pb-12 px-4">
-      {/* Hero Banner */}
       <div className="w-full max-w-md mb-6">
         <Card className="overflow-hidden border-0 shadow-lg">
           <img 
@@ -131,7 +220,6 @@ export default function AuthPage() {
         </Card>
       </div>
 
-      {/* Form Card */}
       <Card className="w-full max-w-md shadow-lg border border-gray-100 dark:border-gray-800">
         <CardHeader className="text-center pb-2">
           <h2 className="text-xl font-semibold text-foreground" data-testid="text-auth-title">
@@ -147,7 +235,7 @@ export default function AuthPage() {
                   variant="ghost"
                   size="sm"
                   className="gap-1 p-0 h-auto text-muted-foreground"
-                  onClick={() => setShowForgotPassword(false)}
+                  onClick={() => { setShowForgotPassword(false); setForgotError(""); }}
                   data-testid="button-back-to-login"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -165,10 +253,15 @@ export default function AuthPage() {
                       type="email"
                       placeholder="Enter your email address"
                       value={forgotPasswordEmail}
-                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                      required
-                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                      onChange={(e) => { setForgotPasswordEmail(e.target.value); setForgotError(""); }}
+                      className={`rounded-[10px] ${forgotError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 dark:border-gray-700"}`}
                     />
+                    {forgotError && (
+                      <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-forgot">
+                        <AlertCircle className="w-4 h-4" />
+                        {forgotError}
+                      </p>
+                    )}
                   </div>
 
                   <Button
@@ -184,41 +277,56 @@ export default function AuthPage() {
             ) : (
               <>
                 <form onSubmit={handleLogin} className="space-y-4">
+                  {loginError && (
+                    <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800" data-testid="error-login-banner">
+                      <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        {loginError}
+                      </p>
+                    </div>
+                  )}
+                  
                   <div className="space-y-2">
                     <Label htmlFor="login-username">Username</Label>
                     <Input
                       id="login-username"
                       data-testid="input-login-username"
                       type="text"
-                      placeholder=""
+                      placeholder="Enter your username"
                       value={loginUsername}
-                      onChange={(e) => setLoginUsername(e.target.value)}
-                      required
-                      minLength={3}
-                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                      onChange={(e) => { setLoginUsername(e.target.value); clearLoginError(); }}
+                      className={`rounded-[10px] ${loginError ? "border-red-300 dark:border-red-700" : "border-gray-300 dark:border-gray-700"}`}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      data-testid="input-login-password"
-                      type="password"
-                      placeholder=""
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="login-password"
+                        data-testid="input-login-password"
+                        type={showLoginPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={loginPassword}
+                        onChange={(e) => { setLoginPassword(e.target.value); clearLoginError(); }}
+                        className={`rounded-[10px] pr-10 ${loginError ? "border-red-300 dark:border-red-700" : "border-gray-300 dark:border-gray-700"}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginPassword(!showLoginPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        data-testid="button-toggle-login-password"
+                      >
+                        {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="text-right">
                     <button
                       type="button"
                       className="text-sm text-[#00A63E] hover:text-[#009035] hover:underline"
-                      onClick={() => setShowForgotPassword(true)}
+                      onClick={() => { setShowForgotPassword(true); clearLoginError(); }}
                       data-testid="button-forgot-password"
                     >
                       Forgot password?
@@ -231,7 +339,7 @@ export default function AuthPage() {
                     className="w-full bg-[#00A63E] hover:bg-[#009035] text-white rounded-[10px]"
                     disabled={loginMutation.isPending}
                   >
-                    {loginMutation.isPending ? "Loading..." : "Sign In"}
+                    {loginMutation.isPending ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
 
@@ -252,7 +360,7 @@ export default function AuthPage() {
                   <button
                     type="button"
                     className="text-[#00A63E] hover:text-[#009035] hover:underline font-medium"
-                    onClick={() => setIsLoginView(false)}
+                    onClick={() => { setIsLoginView(false); clearLoginError(); }}
                     data-testid="button-switch-to-signup"
                   >
                     Sign up
@@ -263,6 +371,15 @@ export default function AuthPage() {
           ) : (
             <>
               <form onSubmit={handleRegister} className="space-y-4">
+                {registerErrors.general && (
+                  <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800" data-testid="error-register-banner">
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      {registerErrors.general}
+                    </p>
+                  </div>
+                )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="register-username">Username</Label>
                   <Input
@@ -271,26 +388,44 @@ export default function AuthPage() {
                     type="text"
                     placeholder="Choose a username"
                     value={registerUsername}
-                    onChange={(e) => setRegisterUsername(e.target.value)}
-                    required
-                    minLength={3}
-                    className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                    onChange={(e) => { setRegisterUsername(e.target.value); clearRegisterError("username"); }}
+                    className={`rounded-[10px] ${registerErrors.username ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 dark:border-gray-700"}`}
                   />
+                  {registerErrors.username && (
+                    <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-username">
+                      <AlertCircle className="w-4 h-4" />
+                      {registerErrors.username}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="register-password">Password</Label>
-                  <Input
-                    id="register-password"
-                    data-testid="input-register-password"
-                    type="password"
-                    placeholder="Create a password"
-                    value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="rounded-[10px] border-gray-300 dark:border-gray-700"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="register-password"
+                      data-testid="input-register-password"
+                      type={showRegisterPassword ? "text" : "password"}
+                      placeholder="Create a password (min. 6 characters)"
+                      value={registerPassword}
+                      onChange={(e) => { setRegisterPassword(e.target.value); clearRegisterError("password"); }}
+                      className={`rounded-[10px] pr-10 ${registerErrors.password ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 dark:border-gray-700"}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      data-testid="button-toggle-register-password"
+                    >
+                      {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {registerErrors.password && (
+                    <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-password">
+                      <AlertCircle className="w-4 h-4" />
+                      {registerErrors.password}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -301,10 +436,15 @@ export default function AuthPage() {
                     type="email"
                     placeholder="your.email@example.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                    onChange={(e) => { setEmail(e.target.value); clearRegisterError("email"); }}
+                    className={`rounded-[10px] ${registerErrors.email ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 dark:border-gray-700"}`}
                   />
+                  {registerErrors.email && (
+                    <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-email">
+                      <AlertCircle className="w-4 h-4" />
+                      {registerErrors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -341,7 +481,7 @@ export default function AuthPage() {
                   className="w-full bg-[#00A63E] hover:bg-[#009035] text-white rounded-[10px]"
                   disabled={registerMutation.isPending}
                 >
-                  {registerMutation.isPending ? "Loading..." : "Create Account"}
+                  {registerMutation.isPending ? "Creating account..." : "Create Account"}
                 </Button>
               </form>
 
@@ -350,7 +490,7 @@ export default function AuthPage() {
                 <button
                   type="button"
                   className="text-[#00A63E] hover:text-[#009035] hover:underline font-medium"
-                  onClick={() => setIsLoginView(true)}
+                  onClick={() => { setIsLoginView(true); setRegisterErrors({}); }}
                   data-testid="button-switch-to-login"
                 >
                   Sign in
