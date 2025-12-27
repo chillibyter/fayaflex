@@ -487,12 +487,14 @@ export function setupAuth(app: Express) {
   app.get("/api/auth/validate-reset-token", async (req, res) => {
     try {
       const token = req.query.token as string;
+      console.log(`[Token Validation] Received token: ${token ? token.substring(0, 10) + '...' : 'none'}`);
       
       if (!token) {
         return res.status(400).json({ valid: false, message: "Token is required" });
       }
       
       const resetToken = await storage.getPasswordResetToken(token);
+      console.log(`[Token Validation] Token found in DB: ${!!resetToken}`);
       
       if (!resetToken) {
         return res.status(400).json({ valid: false, message: "Invalid reset token" });
