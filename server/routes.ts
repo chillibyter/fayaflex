@@ -903,6 +903,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Category leaderboard - separate rankings for calories, steps, and workouts
+  app.get("/api/leaderboard/category/:category", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const category = req.params.category; // 'calories', 'steps', 'workouts'
+      const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
+      const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+      
+      if (!['calories', 'steps', 'workouts'].includes(category)) {
+        return res.status(400).json({ message: "Invalid category. Use 'calories', 'steps', or 'workouts'" });
+      }
+      
+      // Helper to aggregate activities by date
+      const aggregateByDate = (activities: any[]) => {
+        const byDate = new Map<string, { calories: number; steps: number; hasWorkout: boolean }>();
+        for (const act of activities) {
+          const existing = byDate.get(act.date);
+          if (existing) {
+            existing.calories = Math.max(existing.calories, act.calories);
+            existing.steps = Math.max(existing.steps, act.steps);
+            existing.hasWorkout = existing.hasWorkout || !!act.workoutType;
+          } else {
+            byDate.set(act.date, { 
+              calories: act.calories, 
+              steps: act.steps, 
+              hasWorkout: !!act.workoutType 
+            });
+          }
+        }
+        return byDate;
+      };
+      
+      // Get user's teams to show only teammates
+      const userTeams = await storage.getUserTeams(currentUserId);
+      const userStatsMap = new Map<string, any>();
+      
+      for (const team of userTeams) {
+        const members = await storage.getTeamMembers(team.id);
+        
+        for (const member of members) {
+          if (userStatsMap.has(member.userId)) continue;
+          
+          const activities = await storage.getUserActivities(member.userId, month, year);
+          const aggregated = aggregateByDate(activities);
+          const user = await storage.getUser(member.userId);
+          
+          if (user) {
+            let displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            if (!displayName && user.email) {
+              const emailUsername = user.email.split('@')[0];
+              displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+            }
+            
+            let totalCalories = 0;
+            let totalSteps = 0;
+            let workoutDays = 0;
+            
+            Array.from(aggregated.values()).forEach(dayData => {
+              totalCalories += dayData.calories;
+              totalSteps += dayData.steps;
+              if (dayData.hasWorkout) workoutDays++;
+            });
+            
+            userStatsMap.set(user.id, {
+              userId: user.id,
+              name: displayName || 'Unknown User',
+              teamName: team.name,
+              calories: totalCalories,
+              steps: totalSteps,
+              workouts: workoutDays,
+              avatarId: user.avatarId,
+            });
+          }
+        }
+      }
+      
+      // Sort by the selected category
+      const sortKey = category === 'workouts' ? 'workouts' : category;
+      const sorted = Array.from(userStatsMap.values())
+        .sort((a, b) => b[sortKey] - a[sortKey])
+        .map((stat, index) => ({
+          ...stat,
+          rank: index + 1,
+          value: stat[sortKey],
+          goalPercentage: category === 'calories' 
+            ? Math.round((stat.calories / 30000) * 100)
+            : category === 'steps'
+            ? Math.round((stat.steps / 300000) * 100)
+            : Math.round((stat.workouts / 20) * 100),
+        }));
+      
+      res.json(sorted);
+    } catch (error) {
+      console.error("Error fetching category leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch category leaderboard" });
+    }
+  });
+
+  // Goals/Quests API routes
+  app.get("/api/goals", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const goals = await storage.getUserGoals(userId);
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching goals:", error);
+      res.status(500).json({ message: "Failed to fetch goals" });
+    }
+  });
+
+  app.get("/api/goals/active", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const goals = await storage.getActiveGoals(userId);
+      
+      // Get all user activities once (no month filter to cover all goal date ranges)
+      const allActivities = await storage.getUserActivities(userId);
+      
+      // Calculate current progress for each goal (read-only, no DB mutations)
+      const goalsWithProgress = goals.map((goal) => {
+        // Filter activities within goal date range
+        const relevantActivities = allActivities.filter(a => 
+          a.date >= goal.startDate && a.date <= goal.endDate
+        );
+        
+        // Aggregate by date using max-per-day logic to avoid double-counting
+        const byDate = new Map<string, { calories: number; steps: number; hasWorkout: boolean }>();
+        for (const act of relevantActivities) {
+          const existing = byDate.get(act.date);
+          if (existing) {
+            existing.calories = Math.max(existing.calories, act.calories);
+            existing.steps = Math.max(existing.steps, act.steps);
+            existing.hasWorkout = existing.hasWorkout || !!act.workoutType;
+          } else {
+            byDate.set(act.date, { 
+              calories: act.calories, 
+              steps: act.steps, 
+              hasWorkout: !!act.workoutType 
+            });
+          }
+        }
+        
+        let currentValue = 0;
+        Array.from(byDate.values()).forEach(dayData => {
+          if (goal.category === 'calories') currentValue += dayData.calories;
+          else if (goal.category === 'steps') currentValue += dayData.steps;
+          else if (goal.category === 'workouts' && dayData.hasWorkout) currentValue++;
+        });
+        
+        const isCompleted = currentValue >= goal.targetValue;
+        
+        return {
+          ...goal,
+          currentValue,
+          isCompleted: goal.isCompleted || isCompleted,
+          progressPercentage: Math.min(100, Math.round((currentValue / goal.targetValue) * 100)),
+        };
+      });
+      
+      res.json(goalsWithProgress);
+    } catch (error) {
+      console.error("Error fetching active goals:", error);
+      res.status(500).json({ message: "Failed to fetch active goals" });
+    }
+  });
+
+  app.post("/api/goals", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { goalType, category, targetValue } = req.body;
+      
+      if (!['daily', 'weekly'].includes(goalType)) {
+        return res.status(400).json({ message: "Goal type must be 'daily' or 'weekly'" });
+      }
+      if (!['calories', 'steps', 'workouts'].includes(category)) {
+        return res.status(400).json({ message: "Category must be 'calories', 'steps', or 'workouts'" });
+      }
+      if (!targetValue || targetValue <= 0) {
+        return res.status(400).json({ message: "Target value must be positive" });
+      }
+      
+      // Calculate start and end dates
+      const today = new Date();
+      const startDate = today.toISOString().split('T')[0];
+      let endDate: string;
+      
+      if (goalType === 'daily') {
+        endDate = startDate;
+      } else {
+        // Weekly: end date is 6 days from start (7 days total)
+        const end = new Date(today);
+        end.setDate(end.getDate() + 6);
+        endDate = end.toISOString().split('T')[0];
+      }
+      
+      const goal = await storage.createGoal({
+        userId,
+        goalType,
+        category,
+        targetValue,
+        startDate,
+        endDate,
+      });
+      
+      res.json(goal);
+    } catch (error) {
+      console.error("Error creating goal:", error);
+      res.status(500).json({ message: "Failed to create goal" });
+    }
+  });
+
   // Dashboard stats route - uses global ranking based on current month (resets on 1st)
   app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {

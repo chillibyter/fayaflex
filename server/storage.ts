@@ -11,6 +11,7 @@ import {
   activityComments,
   userBadges,
   personalBests,
+  userGoals,
   type User,
   type UpsertUser,
   type Team,
@@ -34,9 +35,11 @@ import {
   type InsertUserBadge,
   type PersonalBest,
   type InsertPersonalBest,
+  type UserGoal,
+  type InsertUserGoal,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc, inArray } from "drizzle-orm";
+import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
 import { randomBytes } from "crypto";
 
 export interface IStorage {
@@ -117,6 +120,13 @@ export interface IStorage {
   upsertPersonalBest(best: InsertPersonalBest): Promise<PersonalBest>;
   getUserPersonalBests(userId: string): Promise<PersonalBest[]>;
   getPersonalBest(userId: string, metric: string): Promise<PersonalBest | undefined>;
+
+  // Goal operations
+  createGoal(goal: InsertUserGoal): Promise<UserGoal>;
+  getUserGoals(userId: string): Promise<UserGoal[]>;
+  getActiveGoals(userId: string): Promise<UserGoal[]>;
+  updateGoalProgress(goalId: string, currentValue: number): Promise<UserGoal>;
+  completeGoal(goalId: string): Promise<UserGoal>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -808,6 +818,71 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return best;
+  }
+
+  // Goal operations
+  async createGoal(goal: InsertUserGoal): Promise<UserGoal> {
+    const [created] = await db
+      .insert(userGoals)
+      .values(goal)
+      .returning();
+    return created;
+  }
+
+  async getUserGoals(userId: string): Promise<UserGoal[]> {
+    return await db
+      .select()
+      .from(userGoals)
+      .where(eq(userGoals.userId, userId))
+      .orderBy(desc(userGoals.createdAt));
+  }
+
+  async getActiveGoals(userId: string): Promise<UserGoal[]> {
+    const today = new Date().toISOString().split('T')[0];
+    return await db
+      .select()
+      .from(userGoals)
+      .where(
+        and(
+          eq(userGoals.userId, userId),
+          eq(userGoals.isCompleted, false),
+          lte(userGoals.startDate, today),
+          gte(userGoals.endDate, today)
+        )
+      )
+      .orderBy(desc(userGoals.createdAt));
+  }
+
+  async updateGoalProgress(goalId: string, currentValue: number): Promise<UserGoal> {
+    const [goal] = await db
+      .select()
+      .from(userGoals)
+      .where(eq(userGoals.id, goalId));
+    
+    const isCompleted = currentValue >= goal.targetValue;
+    
+    const [updated] = await db
+      .update(userGoals)
+      .set({ 
+        currentValue,
+        isCompleted,
+        completedAt: isCompleted ? new Date() : null
+      })
+      .where(eq(userGoals.id, goalId))
+      .returning();
+    return updated;
+  }
+
+  async completeGoal(goalId: string): Promise<UserGoal> {
+    const [updated] = await db
+      .update(userGoals)
+      .set({ 
+        isCompleted: true,
+        completedAt: new Date()
+      })
+      .where(eq(userGoals.id, goalId))
+      .returning();
+    return updated;
   }
 }
 

@@ -1,5 +1,6 @@
 import DashboardStats from "@/components/DashboardStats";
 import ProgressChart from "@/components/ProgressChart";
+import GoalJourneys from "@/components/GoalJourneys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -197,6 +198,9 @@ export default function Dashboard() {
               </div>
             </Card>
           )}
+        </div>
+        <div>
+          <GoalJourneys />
         </div>
       </div>
 

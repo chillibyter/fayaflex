@@ -431,3 +431,37 @@ export const insertPersonalBestSchema = createInsertSchema(personalBests).omit({
   achievedAt: true,
 });
 export type InsertPersonalBest = z.infer<typeof insertPersonalBestSchema>;
+
+// Goal Journeys / Quests table
+export const userGoals = pgTable("user_goals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  goalType: varchar("goal_type", { length: 20 }).notNull(), // 'daily' or 'weekly'
+  category: varchar("category", { length: 20 }).notNull(), // 'calories', 'steps', 'workouts'
+  targetValue: integer("target_value").notNull(),
+  currentValue: integer("current_value").default(0).notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userGoalsRelations = relations(userGoals, ({ one }) => ({
+  user: one(users, {
+    fields: [userGoals.userId],
+    references: [users.id],
+  }),
+}));
+
+export type UserGoal = typeof userGoals.$inferSelect;
+export const insertUserGoalSchema = createInsertSchema(userGoals).omit({
+  id: true,
+  currentValue: true,
+  isCompleted: true,
+  completedAt: true,
+  createdAt: true,
+});
+export type InsertUserGoal = z.infer<typeof insertUserGoalSchema>;
