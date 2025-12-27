@@ -465,6 +465,12 @@ export function setupAuth(app: Express) {
 
 // Enhanced authentication middleware that supports both session and JWT
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // Debug logging
+  console.log("[Auth Debug] Session ID:", req.sessionID);
+  console.log("[Auth Debug] Session user:", req.session?.passport?.user);
+  console.log("[Auth Debug] isAuthenticated:", req.isAuthenticated());
+  console.log("[Auth Debug] Cookie header:", req.headers.cookie?.substring(0, 100));
+  
   // Check session-based auth first (for web app)
   if (req.isAuthenticated()) {
     return next();
