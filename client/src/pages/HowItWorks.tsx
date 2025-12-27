@@ -20,16 +20,19 @@ import {
 
 export default function HowItWorks() {
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="text-center mb-8">
-        <Badge className="mb-4">Scoring Guide</Badge>
-        <h1 className="text-3xl font-bold mb-2" data-testid="text-howitworks-title">
-          How Scoring Works
-        </h1>
-        <p className="text-muted-foreground">
-          Everything you need to know about earning points and climbing the leaderboard
-        </p>
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-500 dark:from-blue-700 dark:to-purple-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-white" data-testid="text-howitworks-title">
+            How It Works
+          </h1>
+          <p className="text-blue-50">
+            Everything you need to know about UFC
+          </p>
+        </div>
       </div>
+      
+      <div className="max-w-4xl mx-auto space-y-6">
 
       <Card>
         <CardHeader>
@@ -350,6 +353,7 @@ export default function HowItWorks() {
             View Leaderboard
           </Button>
         </Link>
+      </div>
       </div>
     </div>
   );
