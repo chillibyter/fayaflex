@@ -55,24 +55,42 @@
 ### D. Component Library
 
 **Navigation**
+- Sidebar navigation (desktop): White background, green active states
 - Bottom tab bar (mobile): Home, Teams, Track, Leaderboard, Profile
-- Top header (desktop): Logo left, nav center, profile/notifications right
+- Top header with sidebar trigger and theme toggle
 - Sticky positioning with subtle shadow on scroll
+- Active menu items: bg-green-50 text-green-600
+
+**Stats Cards**
+- Colored icon backgrounds matching metric type:
+  - Calories: bg-orange-50 with text-orange-500 icon
+  - Steps: bg-blue-50 with text-blue-500 icon
+  - Workouts: bg-purple-50 with text-purple-500 icon
+  - Rank: bg-yellow-50 with text-yellow-500 icon
+- White card background with shadow-sm
+- Trend indicators: green for increase, red for decrease
+- Personal best display with Award icon
 
 **Data Entry Forms**
 - Large touch targets (min 44px height)
+- Green focus rings (focus:ring-green-500)
 - Segmented controls for workout type selection
 - Number steppers for calories/steps with quick increment buttons (+100, +500)
 - Date picker with calendar view and "Today" quick select
-- Prominent "Submit Entry" CTA button (full-width on mobile)
+- Prominent "Submit Entry" CTA button (full-width on mobile, bg-green-600)
 
-**Leaderboard Cards**
-- Rank badge (circular, gradient for top 3)
-- User avatar with team badge overlay
-- Name and team affiliation
-- Calorie count (large, prominent numbers)
-- Progress indicator (% of goal)
-- Medal icons for 1st/2nd/3rd positions
+**Leaderboard**
+- Gradient header: bg-gradient-to-r from-yellow-500 to-orange-500
+- White text on gradient header
+- Pill-style tabs: bg-green-600 text-white when active, bg-gray-200 when inactive
+- White card container with rounded-xl and shadow-sm
+- Current user row highlighted with bg-green-50
+
+**Auth Pages**
+- Green gradient hero section: bg-gradient-to-br from-green-500 to-green-600
+- White text on hero background
+- Form card with shadow-lg
+- Green primary buttons for actions
 
 **Team Management**
 - Team cards with cover photo area (gradient fallback)

@@ -38,13 +38,13 @@ export default function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4 border-b">
+      <SidebarHeader className="p-6 border-b">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-md bg-primary flex items-center justify-center">
+          <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
             <Trophy className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="font-bold text-lg">UFC</h2>
+            <h2 className="font-bold text-lg text-primary">UFC</h2>
             <p className="text-xs text-muted-foreground">Fitness Challenge</p>
           </div>
         </div>

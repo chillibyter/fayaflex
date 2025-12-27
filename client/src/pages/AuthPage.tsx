@@ -116,14 +116,16 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gradient-to-b from-green-50 to-white dark:from-green-950 dark:to-background">
       {/* Form Section */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-2 mb-4">
-              <Dumbbell className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold">Ultimate Fitness Challenge</h1>
+              <div className="bg-primary p-2 rounded-lg">
+                <Dumbbell className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <h1 className="text-2xl font-bold text-primary">UFC</h1>
             </div>
           </CardHeader>
           <CardContent>
@@ -344,43 +346,43 @@ export default function AuthPage() {
       </div>
 
       {/* Hero Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/20 via-background to-primary/10 items-center justify-center p-12">
-        <div className="max-w-lg space-y-8 text-center">
-          <h2 className="text-4xl font-bold tracking-tight">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-500 to-green-600 items-center justify-center p-12">
+        <div className="max-w-lg space-y-8 text-center text-white">
+          <h2 className="text-4xl font-bold tracking-tight text-white">
             Track. Compete. Achieve.
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-green-50">
             Join teams, track your fitness activities, and compete in monthly challenges.
             Burn calories, crush goals, and climb the leaderboard!
           </p>
           
           <div className="grid grid-cols-3 gap-6 pt-8">
             <div className="space-y-2">
-              <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                <TrendingUp className="w-8 h-8 text-primary" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center">
+                <TrendingUp className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-semibold">Track Progress</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-semibold text-white">Track Progress</h3>
+              <p className="text-sm text-green-100">
                 Log calories, steps, and workouts daily
               </p>
             </div>
 
             <div className="space-y-2">
-              <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                <Users className="w-8 h-8 text-primary" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center">
+                <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-semibold">Join Teams</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-semibold text-white">Join Teams</h3>
+              <p className="text-sm text-green-100">
                 Compete with up to 20 teammates
               </p>
             </div>
 
             <div className="space-y-2">
-              <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-primary" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-semibold">Win Challenges</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-semibold text-white">Win Challenges</h3>
+              <p className="text-sm text-green-100">
                 Climb monthly leaderboards
               </p>
             </div>

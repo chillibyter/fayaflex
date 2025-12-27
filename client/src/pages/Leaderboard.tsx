@@ -134,7 +134,7 @@ export default function Leaderboard() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-600 dark:to-orange-600 rounded-xl p-6 text-white shadow-lg">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Leaderboard</h1>

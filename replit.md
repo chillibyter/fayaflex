@@ -59,6 +59,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**UI Design Refresh** (December 27, 2025)
+- Implemented new visual design matching updated design specifications:
+  - **Stats Cards**: Colored icon backgrounds (orange-50 for calories, blue-50 for steps, purple-50 for workouts, yellow-50 for rank) with matching icon colors
+  - **Leaderboard Page**: New gradient header (yellow-500 to orange-500), pill-style tabs with green active states
+  - **Auth Page**: Green gradient hero section (from-green-500 to-green-600), updated form styling with shadow-lg cards
+  - **Sidebar**: Enhanced header styling with green branding, improved spacing
+- Updated design_guidelines.md with new component specifications
+- Dark mode support for all new color schemes (using dark: variants)
+- Personal bests now displayed in stats cards with Award icon
+
 **Goal Journeys & Category Leaderboards** (December 27, 2025)
 - Implemented Goal Journeys system for daily/weekly quests:
   - **Database Schema**: Added `userGoals` table with goal_type, category, target/current values, dates
