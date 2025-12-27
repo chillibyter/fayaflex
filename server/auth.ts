@@ -98,24 +98,25 @@ export function setupAuth(app: Express) {
     tableName: "sessions",
   });
 
-  // Session configuration
-  const sessionSettings: session.SessionOptions = {
+  // Must set trust proxy BEFORE session middleware
+  app.set("trust proxy", 1);
+  
+  // Session configuration - secure cookie is set dynamically per-request
+  // since Replit terminates TLS at the proxy and forwards HTTP
+  app.use(session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    name: 'connect.sid', // Explicit session cookie name
+    name: 'connect.sid',
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: 'auto', // Automatically set based on x-forwarded-proto
       sameSite: 'lax' as const,
       maxAge: sessionTtl,
       path: '/',
     },
-  };
-
-  app.set("trust proxy", 1);
-  app.use(session(sessionSettings));
+  }));
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -464,12 +465,6 @@ export function setupAuth(app: Express) {
 
 // Enhanced authentication middleware that supports both session and JWT
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Debug logging
-  console.log("[Auth Debug] Session ID:", req.sessionID);
-  console.log("[Auth Debug] Session user:", req.session?.passport?.user);
-  console.log("[Auth Debug] isAuthenticated:", req.isAuthenticated());
-  console.log("[Auth Debug] Cookie header:", req.headers.cookie?.substring(0, 100));
-  
   // Check session-based auth first (for web app)
   if (req.isAuthenticated()) {
     return next();
