@@ -24,23 +24,23 @@ function StatCard({ icon, iconBgColor, label, value, unit, trend, trendLabel, pe
     
     if (trend > 0) {
       return (
-        <div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-          <TrendingUp className="h-4 w-4" />
+        <div className="flex items-center gap-0.5 text-xs text-green-600 dark:text-green-400">
+          <TrendingUp className="h-3 w-3" />
           <span>+{trend}%</span>
         </div>
       );
     } else if (trend < 0) {
       return (
-        <div className="flex items-center gap-1 text-sm text-red-500 dark:text-red-400">
-          <TrendingDown className="h-4 w-4" />
+        <div className="flex items-center gap-0.5 text-xs text-red-500 dark:text-red-400">
+          <TrendingDown className="h-3 w-3" />
           <span>{trend}%</span>
         </div>
       );
     } else {
       return (
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Minus className="h-4 w-4" />
-          <span>No change</span>
+        <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
+          <Minus className="h-3 w-3" />
+          <span>0%</span>
         </div>
       );
     }
@@ -48,29 +48,31 @@ function StatCard({ icon, iconBgColor, label, value, unit, trend, trendLabel, pe
 
   return (
     <Card 
-      className={`p-5 shadow-sm hover:shadow-md transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
+      className={`p-3 shadow-sm hover:shadow-md transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
       data-testid={`card-${label.toLowerCase().replace(/\s/g, '-')}`}
     >
-      <div className="flex items-start justify-between mb-3 gap-2">
-        <div className={`${iconBgColor} p-3 rounded-lg`}>
+      <div className="flex items-center gap-3">
+        <div className={`${iconBgColor} p-2 rounded-lg flex-shrink-0`}>
           {icon}
         </div>
-        {getTrendDisplay()}
-      </div>
-      
-      <div className="text-muted-foreground text-sm mb-1">{label}</div>
-      <div className="text-foreground text-2xl font-semibold mb-2" data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}>
-        {value}
-        {unit && <span className="text-sm font-normal text-muted-foreground ml-1">{unit}</span>}
-      </div>
-      
-      {personalBest !== undefined && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Award className="w-3 h-3" />
-          <span>Best: {personalBest.toLocaleString()}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-xs">{label}</span>
+            {getTrendDisplay()}
+          </div>
+          <div className="text-foreground text-lg font-semibold" data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}>
+            {value}
+            {unit && <span className="text-xs font-normal text-muted-foreground ml-1">{unit}</span>}
+          </div>
+          {personalBest !== undefined && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Award className="w-3 h-3" />
+              <span>Best: {personalBest.toLocaleString()}</span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </Card>
   );
 }
@@ -138,7 +140,7 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon={<Flame className="h-6 w-6 text-orange-500" />}
+          icon={<Flame className="h-5 w-5 text-orange-500" />}
           iconBgColor="bg-orange-50 dark:bg-orange-950"
           label="Total Calories"
           value={calories.toLocaleString()}
@@ -147,7 +149,7 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
           onClick={() => setCaloriesDialogOpen(true)}
         />
         <StatCard
-          icon={<Footprints className="h-6 w-6 text-blue-500" />}
+          icon={<Footprints className="h-5 w-5 text-blue-500" />}
           iconBgColor="bg-blue-50 dark:bg-blue-950"
           label="Total Steps"
           value={steps.toLocaleString()}
@@ -156,28 +158,33 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
           onClick={() => setStepsDialogOpen(true)}
         />
         <StatCard
-          icon={<Dumbbell className="h-6 w-6 text-purple-500" />}
+          icon={<Dumbbell className="h-5 w-5 text-purple-500" />}
           iconBgColor="bg-purple-50 dark:bg-purple-950"
           label="Workout Days"
           value={workouts}
           unit="this month"
           onClick={() => setWorkoutsDialogOpen(true)}
         />
-        <Card className="p-5 shadow-sm" data-testid="card-your-rank">
-          <div className="flex items-start justify-between mb-3 gap-2">
-            <div className="bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg">
-              <Trophy className="h-6 w-6 text-yellow-500" />
+        <Card className="p-3 shadow-sm" data-testid="card-your-rank">
+          <div className="flex items-center gap-3">
+            <div className="bg-yellow-50 dark:bg-yellow-950 p-2 rounded-lg flex-shrink-0">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground text-xs">Global Rank</span>
+                {rank > 0 && (
+                  <span className="text-xs text-muted-foreground">Top {percentile}%</span>
+                )}
+              </div>
+              <div className="text-foreground text-lg font-semibold" data-testid="stat-your-rank">
+                {rank > 0 ? `#${rank}` : 'Not ranked'}
+              </div>
+              {rank <= 0 && (
+                <div className="text-xs text-muted-foreground">Log activities to compete!</div>
+              )}
             </div>
           </div>
-          <div className="text-muted-foreground text-sm mb-1">Global Rank</div>
-          <div className="text-foreground text-2xl font-semibold mb-2" data-testid="stat-your-rank">
-            {rank > 0 ? `#${rank}` : 'Not ranked'}
-          </div>
-          {rank > 0 ? (
-            <div className="text-xs text-muted-foreground">Top {percentile}%</div>
-          ) : (
-            <div className="text-xs text-muted-foreground">Log activities to compete!</div>
-          )}
         </Card>
       </div>
 
