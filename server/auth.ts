@@ -212,7 +212,14 @@ export function setupAuth(app: Express) {
           console.error("Error during req.login after login:", err);
           return next(err);
         }
-        res.status(200).json(sanitizeUser(user));
+        // Explicitly save session to ensure it's persisted before responding
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Error saving session after login:", saveErr);
+            return next(saveErr);
+          }
+          res.status(200).json(sanitizeUser(user));
+        });
       });
     })(req, res, next);
   });
