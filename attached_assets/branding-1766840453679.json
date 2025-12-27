@@ -1,0 +1,123 @@
+{
+  "colorScheme": "light",
+  "fonts": [
+    {
+      "family": "ui-sans-serif",
+      "count": 11
+    },
+    {
+      "family": "system-ui",
+      "count": 11
+    },
+    {
+      "family": "sans-serif",
+      "count": 11
+    },
+    {
+      "family": "Apple Color Emoji",
+      "count": 11
+    },
+    {
+      "family": "Segoe UI Emoji",
+      "count": 11
+    },
+    {
+      "family": "Segoe UI Symbol",
+      "count": 11
+    },
+    {
+      "family": "Noto Color Emoji",
+      "count": 11
+    }
+  ],
+  "colors": {
+    "primary": "#364153",
+    "accent": "#00A63E",
+    "background": "#FFFFFF",
+    "textPrimary": "#00A63E",
+    "link": "#00A63E"
+  },
+  "typography": {
+    "fontFamilies": {
+      "primary": "ui-sans-serif",
+      "heading": "ui-sans-serif"
+    },
+    "fontStacks": {
+      "body": [
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji"
+      ],
+      "heading": [
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji"
+      ],
+      "paragraph": [
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji"
+      ]
+    },
+    "fontSizes": {
+      "h1": "16px",
+      "h2": "16px",
+      "body": "14px"
+    }
+  },
+  "spacing": {
+    "baseUnit": 8,
+    "borderRadius": "10px"
+  },
+  "components": {
+    "input": {
+      "background": "transparent",
+      "textColor": "#0A0A0A",
+      "borderColor": "#D1D5DC",
+      "borderRadius": "10px",
+      "borderRadiusCorners": {
+        "topLeft": "10px",
+        "topRight": "10px",
+        "bottomRight": "10px",
+        "bottomLeft": "10px"
+      },
+      "shadow": "none"
+    }
+  },
+  "images": {
+    "logo": null,
+    "favicon": "https://halo-yang-14327010.figma.site/_assets/v11/23a2e34ccd4063d881558dbc7d641bac9ece43e5.png",
+    "ogImage": "https://halo-yang-14327010.figma.site/_assets/v11/365d19d725355b946616cb2850d6abdd6f40bf86.png"
+  },
+  "__framework_hints": [],
+  "__llm_button_reasoning": {
+    "primary": {
+      "index": -1,
+      "text": "N/A",
+      "reasoning": "LLM failed"
+    },
+    "secondary": {
+      "index": -1,
+      "text": "N/A",
+      "reasoning": "LLM failed"
+    },
+    "confidence": 0
+  },
+  "confidence": {
+    "buttons": 0,
+    "colors": 0,
+    "overall": 0
+  }
+}

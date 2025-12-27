@@ -3,16 +3,18 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, TrendingUp, Users, Trophy, Fingerprint, ArrowLeft } from "lucide-react";
+import { Fingerprint, ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
+import heroBanner from "@assets/ufc-hero-banner.png";
 
 export default function AuthPage() {
+  const [isLoginView, setIsLoginView] = useState(true);
+  
   // Login state
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -116,279 +118,248 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-b from-green-50 to-white dark:from-green-950 dark:to-background">
-      {/* Form Section */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="space-y-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-primary p-2 rounded-lg">
-                <Dumbbell className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <h1 className="text-2xl font-bold text-primary">UFC</h1>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login" data-testid="tab-login">Login</TabsTrigger>
-                <TabsTrigger value="signup" data-testid="tab-signup">Sign Up</TabsTrigger>
-              </TabsList>
+    <div className="min-h-screen flex flex-col items-center justify-start bg-green-50/50 dark:bg-green-950/20 pt-8 pb-12 px-4">
+      {/* Hero Banner */}
+      <div className="w-full max-w-md mb-6">
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <img 
+            src={heroBanner} 
+            alt="Welcome to Ultimate Fitness Challenge" 
+            className="w-full h-auto"
+            data-testid="img-hero-banner"
+          />
+        </Card>
+      </div>
 
-              <TabsContent value="login" className="space-y-4">
-                {showForgotPassword ? (
-                  <>
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1 p-0 h-auto"
-                        onClick={() => setShowForgotPassword(false)}
-                        data-testid="button-back-to-login"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to login
-                      </Button>
-                      <CardTitle className="text-2xl">Reset Password</CardTitle>
-                      <CardDescription>Enter your email to receive a password reset link</CardDescription>
-                    </div>
-                    <form onSubmit={handleForgotPassword} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="forgot-email">Email</Label>
-                        <Input
-                          id="forgot-email"
-                          data-testid="input-forgot-email"
-                          type="email"
-                          placeholder="Enter your email address"
-                          value={forgotPasswordEmail}
-                          onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        data-testid="button-send-reset"
-                        className="w-full"
-                        disabled={forgotPasswordMutation.isPending}
-                      >
-                        {forgotPasswordMutation.isPending ? "Sending..." : "Send Reset Link"}
-                      </Button>
-                    </form>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <CardTitle className="text-2xl">Welcome back</CardTitle>
-                      <CardDescription>Enter your credentials to access your account</CardDescription>
-                    </div>
-                    <form onSubmit={handleLogin} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="login-username">Username</Label>
-                        <Input
-                          id="login-username"
-                          data-testid="input-login-username"
-                          type="text"
-                          placeholder="Enter your username"
-                          value={loginUsername}
-                          onChange={(e) => setLoginUsername(e.target.value)}
-                          required
-                          minLength={3}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="login-password">Password</Label>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            className="p-0 h-auto text-sm text-muted-foreground"
-                            onClick={() => setShowForgotPassword(true)}
-                            data-testid="button-forgot-password"
-                          >
-                            Forgot password?
-                          </Button>
-                        </div>
-                        <Input
-                          id="login-password"
-                          data-testid="input-login-password"
-                          type="password"
-                          placeholder="Enter your password"
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          required
-                          minLength={6}
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        data-testid="button-login"
-                        className="w-full"
-                        disabled={loginMutation.isPending}
-                      >
-                        {loginMutation.isPending ? "Loading..." : "Sign In"}
-                      </Button>
-                    </form>
-
-                    <div className="relative my-4">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      data-testid="button-passkey-login"
-                      className="w-full gap-2"
-                      onClick={handlePasskeyLogin}
-                      disabled={passkeyLoginMutation.isPending}
-                    >
-                      <Fingerprint className="w-4 h-4" />
-                      {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
-                    </Button>
-                  </>
-                )}
-              </TabsContent>
-
-              <TabsContent value="signup" className="space-y-4">
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl">Create an account</CardTitle>
-                  <CardDescription>Join the ultimate fitness competition</CardDescription>
-                </div>
-                <form onSubmit={handleRegister} className="space-y-4">
+      {/* Form Card */}
+      <Card className="w-full max-w-md shadow-lg border border-gray-100 dark:border-gray-800">
+        <CardHeader className="text-center pb-2">
+          <h2 className="text-xl font-semibold text-foreground" data-testid="text-auth-title">
+            {showForgotPassword ? "Reset Password" : (isLoginView ? "Welcome Back" : "Create Account")}
+          </h2>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoginView ? (
+            showForgotPassword ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 p-0 h-auto text-muted-foreground"
+                  onClick={() => setShowForgotPassword(false)}
+                  data-testid="button-back-to-login"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to login
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Enter your email to receive a password reset link
+                </p>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-username">Username</Label>
+                    <Label htmlFor="forgot-email">Email</Label>
                     <Input
-                      id="register-username"
-                      data-testid="input-register-username"
-                      type="text"
-                      placeholder="Choose a username"
-                      value={registerUsername}
-                      onChange={(e) => setRegisterUsername(e.target.value)}
-                      required
-                      minLength={3}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Password</Label>
-                    <Input
-                      id="register-password"
-                      data-testid="input-register-password"
-                      type="password"
-                      placeholder="Create a password"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      data-testid="input-email"
+                      id="forgot-email"
+                      data-testid="input-forgot-email"
                       type="email"
-                      placeholder="your.email@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email address"
+                      value={forgotPasswordEmail}
+                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
                       required
+                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name (optional)</Label>
-                      <Input
-                        id="firstName"
-                        data-testid="input-firstname"
-                        type="text"
-                        placeholder="First name"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name (optional)</Label>
-                      <Input
-                        id="lastName"
-                        data-testid="input-lastname"
-                        type="text"
-                        placeholder="Last name"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                      />
-                    </div>
                   </div>
 
                   <Button
                     type="submit"
-                    data-testid="button-register"
-                    className="w-full"
-                    disabled={registerMutation.isPending}
+                    data-testid="button-send-reset"
+                    className="w-full bg-[#00A63E] hover:bg-[#009035] text-white rounded-[10px]"
+                    disabled={forgotPasswordMutation.isPending}
                   >
-                    {registerMutation.isPending ? "Loading..." : "Create Account"}
+                    {forgotPasswordMutation.isPending ? "Sending..." : "Send Reset Link"}
                   </Button>
                 </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+              </>
+            ) : (
+              <>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-username">Username</Label>
+                    <Input
+                      id="login-username"
+                      data-testid="input-login-username"
+                      type="text"
+                      placeholder=""
+                      value={loginUsername}
+                      onChange={(e) => setLoginUsername(e.target.value)}
+                      required
+                      minLength={3}
+                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                    />
+                  </div>
 
-      {/* Hero Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-500 to-green-600 items-center justify-center p-12">
-        <div className="max-w-lg space-y-8 text-center text-white">
-          <h2 className="text-4xl font-bold tracking-tight text-white">
-            Track. Compete. Achieve.
-          </h2>
-          <p className="text-lg text-green-50">
-            Join teams, track your fitness activities, and compete in monthly challenges.
-            Burn calories, crush goals, and climb the leaderboard!
-          </p>
-          
-          <div className="grid grid-cols-3 gap-6 pt-8">
-            <div className="space-y-2">
-              <div className="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center">
-                <TrendingUp className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="font-semibold text-white">Track Progress</h3>
-              <p className="text-sm text-green-100">
-                Log calories, steps, and workouts daily
-              </p>
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Password</Label>
+                    <Input
+                      id="login-password"
+                      data-testid="input-login-password"
+                      type="password"
+                      placeholder=""
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                    />
+                  </div>
 
-            <div className="space-y-2">
-              <div className="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="font-semibold text-white">Join Teams</h3>
-              <p className="text-sm text-green-100">
-                Compete with up to 20 teammates
-              </p>
-            </div>
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      className="text-sm text-[#00A63E] hover:text-[#009035] hover:underline"
+                      onClick={() => setShowForgotPassword(true)}
+                      data-testid="button-forgot-password"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
 
-            <div className="space-y-2">
-              <div className="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="font-semibold text-white">Win Challenges</h3>
-              <p className="text-sm text-green-100">
-                Climb monthly leaderboards
+                  <Button
+                    type="submit"
+                    data-testid="button-login"
+                    className="w-full bg-[#00A63E] hover:bg-[#009035] text-white rounded-[10px]"
+                    disabled={loginMutation.isPending}
+                  >
+                    {loginMutation.isPending ? "Loading..." : "Sign In"}
+                  </Button>
+                </form>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-testid="button-passkey-login"
+                  className="w-full gap-2 rounded-[10px] border-gray-300 dark:border-gray-700"
+                  onClick={handlePasskeyLogin}
+                  disabled={passkeyLoginMutation.isPending}
+                >
+                  <Fingerprint className="w-4 h-4" />
+                  {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
+                </Button>
+
+                <p className="text-center text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    className="text-[#00A63E] hover:text-[#009035] hover:underline font-medium"
+                    onClick={() => setIsLoginView(false)}
+                    data-testid="button-switch-to-signup"
+                  >
+                    Sign up
+                  </button>
+                </p>
+              </>
+            )
+          ) : (
+            <>
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="register-username">Username</Label>
+                  <Input
+                    id="register-username"
+                    data-testid="input-register-username"
+                    type="text"
+                    placeholder="Choose a username"
+                    value={registerUsername}
+                    onChange={(e) => setRegisterUsername(e.target.value)}
+                    required
+                    minLength={3}
+                    className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Password</Label>
+                  <Input
+                    id="register-password"
+                    data-testid="input-register-password"
+                    type="password"
+                    placeholder="Create a password"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    data-testid="input-email"
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name (optional)</Label>
+                    <Input
+                      id="firstName"
+                      data-testid="input-firstname"
+                      type="text"
+                      placeholder="First name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name (optional)</Label>
+                    <Input
+                      id="lastName"
+                      data-testid="input-lastname"
+                      type="text"
+                      placeholder="Last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  data-testid="button-register"
+                  className="w-full bg-[#00A63E] hover:bg-[#009035] text-white rounded-[10px]"
+                  disabled={registerMutation.isPending}
+                >
+                  {registerMutation.isPending ? "Loading..." : "Create Account"}
+                </Button>
+              </form>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  className="text-[#00A63E] hover:text-[#009035] hover:underline font-medium"
+                  onClick={() => setIsLoginView(true)}
+                  data-testid="button-switch-to-login"
+                >
+                  Sign in
+                </button>
               </p>
-            </div>
-          </div>
-        </div>
-      </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
