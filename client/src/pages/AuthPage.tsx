@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, TrendingUp, Users, Trophy, Fingerprint } from "lucide-react";
+import { Dumbbell, TrendingUp, Users, Trophy, Fingerprint, ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,10 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
@@ -44,9 +48,9 @@ export default function AuthPage() {
     await registerMutation.mutateAsync({
       username: registerUsername,
       password: registerPassword,
-      email: email || null,
-      firstName: firstName || null,
-      lastName: lastName || null,
+      email: email,
+      firstName: firstName || undefined,
+      lastName: lastName || undefined,
     });
   };
 
@@ -71,6 +75,33 @@ export default function AuthPage() {
       });
     },
   });
+
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const res = await apiRequest('POST', '/api/auth/forgot-password', { email });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Check your email",
+        description: data.message,
+      });
+      setShowForgotPassword(false);
+      setForgotPasswordEmail("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await forgotPasswordMutation.mutateAsync(forgotPasswordEmail);
+  };
 
   const handlePasskeyLogin = async () => {
     if (!loginUsername) {
@@ -103,69 +134,125 @@ export default function AuthPage() {
               </TabsList>
 
               <TabsContent value="login" className="space-y-4">
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl">Welcome back</CardTitle>
-                  <CardDescription>Enter your credentials to access your account</CardDescription>
-                </div>
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-username">Username</Label>
-                    <Input
-                      id="login-username"
-                      data-testid="input-login-username"
-                      type="text"
-                      placeholder="Enter your username"
-                      value={loginUsername}
-                      onChange={(e) => setLoginUsername(e.target.value)}
-                      required
-                      minLength={3}
-                    />
-                  </div>
+                {showForgotPassword ? (
+                  <>
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1 p-0 h-auto"
+                        onClick={() => setShowForgotPassword(false)}
+                        data-testid="button-back-to-login"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to login
+                      </Button>
+                      <CardTitle className="text-2xl">Reset Password</CardTitle>
+                      <CardDescription>Enter your email to receive a password reset link</CardDescription>
+                    </div>
+                    <form onSubmit={handleForgotPassword} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="forgot-email">Email</Label>
+                        <Input
+                          id="forgot-email"
+                          data-testid="input-forgot-email"
+                          type="email"
+                          placeholder="Enter your email address"
+                          value={forgotPasswordEmail}
+                          onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                          required
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      data-testid="input-login-password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                  </div>
+                      <Button
+                        type="submit"
+                        data-testid="button-send-reset"
+                        className="w-full"
+                        disabled={forgotPasswordMutation.isPending}
+                      >
+                        {forgotPasswordMutation.isPending ? "Sending..." : "Send Reset Link"}
+                      </Button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <CardTitle className="text-2xl">Welcome back</CardTitle>
+                      <CardDescription>Enter your credentials to access your account</CardDescription>
+                    </div>
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="login-username">Username</Label>
+                        <Input
+                          id="login-username"
+                          data-testid="input-login-username"
+                          type="text"
+                          placeholder="Enter your username"
+                          value={loginUsername}
+                          onChange={(e) => setLoginUsername(e.target.value)}
+                          required
+                          minLength={3}
+                        />
+                      </div>
 
-                  <Button
-                    type="submit"
-                    data-testid="button-login"
-                    className="w-full"
-                    disabled={loginMutation.isPending}
-                  >
-                    {loginMutation.isPending ? "Loading..." : "Sign In"}
-                  </Button>
-                </form>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="login-password">Password</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="p-0 h-auto text-sm text-muted-foreground"
+                            onClick={() => setShowForgotPassword(true)}
+                            data-testid="button-forgot-password"
+                          >
+                            Forgot password?
+                          </Button>
+                        </div>
+                        <Input
+                          id="login-password"
+                          data-testid="input-login-password"
+                          type="password"
+                          placeholder="Enter your password"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          required
+                          minLength={6}
+                        />
+                      </div>
 
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
+                      <Button
+                        type="submit"
+                        data-testid="button-login"
+                        className="w-full"
+                        disabled={loginMutation.isPending}
+                      >
+                        {loginMutation.isPending ? "Loading..." : "Sign In"}
+                      </Button>
+                    </form>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  data-testid="button-passkey-login"
-                  className="w-full gap-2"
-                  onClick={handlePasskeyLogin}
-                  disabled={passkeyLoginMutation.isPending}
-                >
-                  <Fingerprint className="w-4 h-4" />
-                  {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
-                </Button>
+                    <div className="relative my-4">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-testid="button-passkey-login"
+                      className="w-full gap-2"
+                      onClick={handlePasskeyLogin}
+                      disabled={passkeyLoginMutation.isPending}
+                    >
+                      <Fingerprint className="w-4 h-4" />
+                      {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
+                    </Button>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">

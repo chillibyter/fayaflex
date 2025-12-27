@@ -12,6 +12,7 @@ import {
   userBadges,
   personalBests,
   userGoals,
+  passwordResetTokens,
   type User,
   type UpsertUser,
   type Team,
@@ -37,6 +38,8 @@ import {
   type InsertPersonalBest,
   type UserGoal,
   type InsertUserGoal,
+  type PasswordResetToken,
+  type InsertPasswordResetToken,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
@@ -127,6 +130,13 @@ export interface IStorage {
   getActiveGoals(userId: string): Promise<UserGoal[]>;
   updateGoalProgress(goalId: string, currentValue: number): Promise<UserGoal>;
   completeGoal(goalId: string): Promise<UserGoal>;
+
+  // Password reset operations
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
+  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markPasswordResetTokenUsed(tokenId: string): Promise<void>;
+  deleteExpiredPasswordResetTokens(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -273,7 +283,15 @@ export class DatabaseStorage implements IStorage {
   async createUser(userData: Partial<UpsertUser> & { username: string; password: string }): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values({
+        username: userData.username,
+        password: userData.password,
+        email: userData.email || `${userData.username}@temp.local`, // Email is required, use temp if not provided
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profileImageUrl: userData.profileImageUrl,
+        avatarId: userData.avatarId,
+      })
       .returning();
     return user;
   }
@@ -883,6 +901,44 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userGoals.id, goalId))
       .returning();
     return updated;
+  }
+
+  // Password reset operations
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(sql`LOWER(${users.email}) = LOWER(${email})`);
+    return user;
+  }
+
+  async createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {
+    const [created] = await db
+      .insert(passwordResetTokens)
+      .values({ userId, token, expiresAt, used: false })
+      .returning();
+    return created;
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [result] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.token, token));
+    return result;
+  }
+
+  async markPasswordResetTokenUsed(tokenId: string): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.id, tokenId));
+  }
+
+  async deleteExpiredPasswordResetTokens(): Promise<void> {
+    await db
+      .delete(passwordResetTokens)
+      .where(lte(passwordResetTokens.expiresAt, new Date()));
   }
 }
 

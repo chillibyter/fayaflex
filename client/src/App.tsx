@@ -17,6 +17,7 @@ import CreateTeam from "@/pages/CreateTeam";
 import Profile from "@/pages/Profile";
 import UserProfile from "@/pages/UserProfile";
 import AuthPage from "@/pages/AuthPage";
+import ResetPassword from "@/pages/ResetPassword";
 import TeamSelection from "@/pages/TeamSelection";
 import HowItWorks from "@/pages/HowItWorks";
 import NotFound from "@/pages/not-found";
@@ -43,6 +44,7 @@ function Router() {
     return (
       <Switch>
         <Route path="/auth" component={AuthPage} />
+        <Route path="/reset-password" component={ResetPassword} />
         <Route path="/" component={AuthPage} />
         <Route component={AuthPage} />
       </Switch>
