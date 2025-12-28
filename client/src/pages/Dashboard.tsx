@@ -1,7 +1,8 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone } from "lucide-react";
+import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal } from "lucide-react";
 import { SiApple } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
 import type { Activity as ActivityType } from "@shared/schema";
@@ -9,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+import OnboardingTutorial from "@/components/OnboardingTutorial";
+import { useAuth } from "@/hooks/use-auth";
 
 type DashboardStats = {
   calories: number;
@@ -28,6 +31,13 @@ type ChartData = {
   calories: number;
 };
 
+type Notification = {
+  id: string;
+  message: string;
+  type: string;
+  date: string;
+};
+
 function getSourceInfo(source?: string | null) {
   switch (source) {
     case 'apple_health':
@@ -41,6 +51,9 @@ function getSourceInfo(source?: string | null) {
 }
 
 export default function Dashboard() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const { user } = useAuth();
+
   const { 
     data: stats, 
     isLoading: isLoadingStats,
@@ -64,15 +77,47 @@ export default function Dashboard() {
     queryKey: ['/api/activities'],
   });
 
+  const { 
+    data: notifications = [],
+    isLoading: isLoadingNotifications,
+  } = useQuery<Notification[]>({
+    queryKey: ['/api/notifications'],
+  });
+
+  useEffect(() => {
+    if (user?.id && !isLoadingActivities) {
+      const onboardingKey = `ufc_onboarding_seen_${user.id}`;
+      const hasSeenOnboarding = localStorage.getItem(onboardingKey);
+      if (!hasSeenOnboarding && recentActivities.length === 0) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [user?.id, isLoadingActivities, recentActivities.length]);
+
+  const handleOnboardingComplete = () => {
+    if (user?.id) {
+      localStorage.setItem(`ufc_onboarding_seen_${user.id}`, 'true');
+    }
+    setShowOnboarding(false);
+  };
+
   const topActivities = recentActivities.slice(0, 5);
+  const dailyMotivation = notifications.find(n => n.type === 'motivation') || notifications[0];
 
   const formattedChartData = chartData.slice(-10).map(d => ({
     ...d,
-    label: new Date(d.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })
+    label: d.date.startsWith('Week') ? d.date : new Date(d.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })
   }));
 
   return (
     <div className="min-h-screen bg-background">
+      {showOnboarding && (
+        <OnboardingTutorial 
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingComplete}
+        />
+      )}
+
       <header className="bg-gradient-to-br from-green-500 to-green-600 text-white px-4 pt-4 pb-6 rounded-b-3xl">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
@@ -129,6 +174,52 @@ export default function Dashboard() {
             <Skeleton className="h-24 w-full rounded-xl" />
           </div>
         )}
+
+        {dailyMotivation && (
+          <Card className="border-yellow-200 dark:border-yellow-800 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-800/50 flex items-center justify-center shrink-0">
+                  <Sparkles className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-yellow-800 dark:text-yellow-200 mb-1">Daily Motivation</h3>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300" data-testid="text-daily-motivation">{dailyMotivation.message}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Link href="/leaderboard">
+          <Card className="cursor-pointer hover-elevate border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                    <Medal className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Global Ranking</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {stats?.totalActiveUsers ? `Out of ${stats.totalActiveUsers} active users` : 'View your position'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-primary" data-testid="text-global-rank">
+                    #{stats?.rank || '-'}
+                  </p>
+                  {stats?.percentile && stats.percentile > 0 && (
+                    <Badge variant="secondary" className="mt-1">
+                      Top {Math.round(stats.percentile)}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
 
         {!isLoadingActivities && recentActivities.length === 0 && (
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
