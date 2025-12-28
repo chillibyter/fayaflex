@@ -24,6 +24,7 @@ import DailyChart from "@/pages/DailyChart";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { useAutoHealthSync } from "@/hooks/use-auto-health-sync";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 
@@ -102,6 +103,9 @@ function Router() {
 function AuthenticatedApp() {
   const { user, isLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // Auto-sync health data when app is in use (native platforms only)
+  useAutoHealthSync();
 
   useEffect(() => {
     if (user) {
