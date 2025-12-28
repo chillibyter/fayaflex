@@ -9,6 +9,7 @@ import { format } from "date-fns";
 
 type DailyData = {
   date: string;
+  fullDate: string;
   value: number;
 };
 
@@ -38,13 +39,13 @@ export default function DailyChart() {
 
   const formattedData = dailyData.map(d => ({
     ...d,
-    label: format(new Date(d.date), 'MMM d'),
-    shortLabel: format(new Date(d.date), 'd')
+    label: format(new Date(d.fullDate), 'MMM d'),
+    shortLabel: format(new Date(d.fullDate), 'd')
   }));
 
   const total = dailyData.reduce((sum, d) => sum + d.value, 0);
   const average = dailyData.length > 0 ? Math.round(total / dailyData.length) : 0;
-  const maxDay = dailyData.reduce((max, d) => d.value > max.value ? d : max, { date: '', value: 0 });
+  const maxDay = dailyData.reduce((max, d) => d.value > max.value ? d : max, { date: '', fullDate: '', value: 0 });
   
   const lastWeek = formattedData.slice(-7);
   const previousWeek = formattedData.slice(-14, -7);
@@ -145,7 +146,7 @@ export default function DailyChart() {
                         {formattedData.map((entry, index) => (
                           <Cell 
                             key={`cell-${index}`} 
-                            fill={entry.date === maxDay.date ? color : `${color}80`} 
+                            fill={entry.fullDate === maxDay.fullDate ? color : `${color}80`} 
                           />
                         ))}
                       </Bar>
@@ -155,7 +156,7 @@ export default function DailyChart() {
               </CardContent>
             </Card>
 
-            {maxDay.value > 0 && (
+            {maxDay.value > 0 && maxDay.fullDate && (
               <Card className={`border-${isCalories ? 'orange' : 'green'}-200 dark:border-${isCalories ? 'orange' : 'green'}-800`}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
@@ -165,7 +166,7 @@ export default function DailyChart() {
                     <div>
                       <p className="text-sm text-muted-foreground">Best Day This Month</p>
                       <p className="font-semibold">
-                        {format(new Date(maxDay.date), 'MMMM d')} - {maxDay.value.toLocaleString()} {unit}
+                        {format(new Date(maxDay.fullDate), 'MMMM d')} - {maxDay.value.toLocaleString()} {unit}
                       </p>
                     </div>
                   </div>
@@ -180,7 +181,7 @@ export default function DailyChart() {
               <CardContent>
                 <div className="space-y-2">
                   {formattedData.slice(-7).reverse().map((day) => (
-                    <div key={day.date} className="flex items-center justify-between py-2 border-b last:border-0">
+                    <div key={day.fullDate} className="flex items-center justify-between py-2 border-b last:border-0">
                       <span className="text-sm">{day.label}</span>
                       <span className="font-medium">{day.value.toLocaleString()} {unit}</span>
                     </div>
