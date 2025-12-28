@@ -20,6 +20,7 @@ import TeamSelection from "@/pages/TeamSelection";
 import HowItWorks from "@/pages/HowItWorks";
 import Support from "@/pages/Support";
 import Privacy from "@/pages/Privacy";
+import DailyChart from "@/pages/DailyChart";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -78,6 +79,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/daily-chart" component={DailyChart} />
       <Route path="/track" component={TrackActivity} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/teams" component={Teams} />

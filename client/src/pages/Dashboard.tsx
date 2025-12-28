@@ -127,7 +127,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <Link href="/track">
+          <Link href="/daily-chart?metric=calories">
             <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-calories">
               <Flame className="h-6 w-6 text-orange-500 mx-auto mb-1" />
               <p className="text-xs text-muted-foreground">Total Calories</p>
@@ -135,7 +135,7 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground">kcal</p>
             </div>
           </Link>
-          <Link href="/track">
+          <Link href="/daily-chart?metric=steps">
             <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-steps">
               <Footprints className="h-6 w-6 text-green-500 mx-auto mb-1" />
               <p className="text-xs text-muted-foreground">Total Steps</p>
