@@ -1,5 +1,4 @@
 import LeaderboardCard from "@/components/LeaderboardCard";
-import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,7 +86,6 @@ export default function Leaderboard() {
     isLoading: boolean,
     isError: boolean,
     refetch: () => void,
-    valueLabel: string,
     valueKey: 'calories' | 'steps' | 'workouts' | 'value'
   ) => {
     if (isError) {
@@ -104,120 +102,114 @@ export default function Leaderboard() {
 
     if (isLoading) {
       return (
-        <>
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </>
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
       );
     }
 
     if (data.length === 0) {
       return (
         <div className="text-center py-12 text-muted-foreground">
-          No rankings yet. Start logging activities to appear on the leaderboard!
+          No rankings yet. Start logging activities!
         </div>
       );
     }
 
-    return data.map((entry) => (
-      <LeaderboardCard 
-        key={`${entry.rank}-${entry.userId || entry.teamId}`} 
-        {...entry}
-        calories={valueKey === 'calories' ? entry.calories : 
-                  valueKey === 'steps' ? (entry.steps || 0) :
-                  valueKey === 'workouts' ? (entry.workouts || 0) :
-                  (entry.value || entry.calories)}
-      />
-    ));
+    return (
+      <div className="space-y-3">
+        {data.map((entry) => (
+          <LeaderboardCard 
+            key={`${entry.rank}-${entry.userId || entry.teamId}`} 
+            {...entry}
+            calories={valueKey === 'calories' ? entry.calories : 
+                      valueKey === 'steps' ? (entry.steps || 0) :
+                      valueKey === 'workouts' ? (entry.workouts || 0) :
+                      (entry.value || entry.calories)}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-600 dark:to-orange-600 rounded-xl p-6 text-white shadow-lg">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Leaderboard</h1>
-            <p className="text-yellow-50">
-              Rankings reset on the 1st of each month
-            </p>
-          </div>
-          <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2" data-testid="badge-current-month">
-            {monthName}
-          </Badge>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      <header className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 pt-6 pb-8 rounded-b-3xl">
+        <h1 className="text-3xl font-bold text-center mb-1">Leaderboard</h1>
+        <p className="text-center text-orange-100 text-lg">{monthName}</p>
+        <p className="text-center text-orange-200 text-sm mt-1">Rankings reset on the 1st of each month</p>
+      </header>
 
-      <Tabs defaultValue="teams" className="w-full">
-        <div className="flex gap-2 overflow-x-auto pb-2" data-testid="leaderboard-tabs">
-          <TabsList className="bg-transparent p-0 h-auto gap-2">
+      <div className="px-4 -mt-4">
+        <Tabs defaultValue="teams" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-card shadow-md rounded-xl p-1">
             <TabsTrigger 
               value="teams" 
-              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-teams"
             >
-              <Trophy className="w-4 h-4" />
-              <span>Teams</span>
+              Teams
             </TabsTrigger>
             <TabsTrigger 
               value="calories" 
-              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-calories"
             >
-              <Flame className="w-4 h-4" />
-              <span>Calories</span>
+              Calories
             </TabsTrigger>
             <TabsTrigger 
               value="steps" 
-              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-steps"
             >
-              <Footprints className="w-4 h-4" />
-              <span>Steps</span>
+              Steps
             </TabsTrigger>
             <TabsTrigger 
               value="workouts" 
-              className="flex items-center gap-2 px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-muted" 
+              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-workouts"
             >
-              <Dumbbell className="w-4 h-4" />
-              <span>Workouts</span>
+              Workouts
             </TabsTrigger>
           </TabsList>
-        </div>
 
-        <TabsContent value="teams" className="space-y-4 mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold">Team Rankings</h2>
-          </div>
-          {renderLeaderboardContent(teamLeaderboard, isLoadingTeams, isErrorTeams, refetchTeams, 'Avg Daily Cal', 'calories')}
-        </TabsContent>
+          <div className="mt-6">
+            <TabsContent value="teams" className="mt-0">
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Team Rankings</h2>
+              </div>
+              {renderLeaderboardContent(teamLeaderboard, isLoadingTeams, isErrorTeams, refetchTeams, 'calories')}
+            </TabsContent>
 
-        <TabsContent value="calories" className="space-y-4 mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Flame className="w-5 h-5 text-orange-500" />
-            <h2 className="text-lg font-semibold">Calories Burned</h2>
-          </div>
-          {renderLeaderboardContent(caloriesLeaderboard, isLoadingCalories, isErrorCalories, refetchCalories, 'Calories', 'calories')}
-        </TabsContent>
+            <TabsContent value="calories" className="mt-0">
+              <div className="flex items-center gap-2 mb-4">
+                <Flame className="w-5 h-5 text-orange-500" />
+                <h2 className="text-lg font-semibold">Calories Burned</h2>
+              </div>
+              {renderLeaderboardContent(caloriesLeaderboard, isLoadingCalories, isErrorCalories, refetchCalories, 'calories')}
+            </TabsContent>
 
-        <TabsContent value="steps" className="space-y-4 mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Footprints className="w-5 h-5 text-blue-500" />
-            <h2 className="text-lg font-semibold">Steps Taken</h2>
-          </div>
-          {renderLeaderboardContent(stepsLeaderboard, isLoadingSteps, isErrorSteps, refetchSteps, 'Steps', 'steps')}
-        </TabsContent>
+            <TabsContent value="steps" className="mt-0">
+              <div className="flex items-center gap-2 mb-4">
+                <Footprints className="w-5 h-5 text-blue-500" />
+                <h2 className="text-lg font-semibold">Steps Taken</h2>
+              </div>
+              {renderLeaderboardContent(stepsLeaderboard, isLoadingSteps, isErrorSteps, refetchSteps, 'steps')}
+            </TabsContent>
 
-        <TabsContent value="workouts" className="space-y-4 mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Dumbbell className="w-5 h-5 text-purple-500" />
-            <h2 className="text-lg font-semibold">Workout Days</h2>
+            <TabsContent value="workouts" className="mt-0">
+              <div className="flex items-center gap-2 mb-4">
+                <Dumbbell className="w-5 h-5 text-purple-500" />
+                <h2 className="text-lg font-semibold">Workout Days</h2>
+              </div>
+              {renderLeaderboardContent(workoutsLeaderboard, isLoadingWorkouts, isErrorWorkouts, refetchWorkouts, 'workouts')}
+            </TabsContent>
           </div>
-          {renderLeaderboardContent(workoutsLeaderboard, isLoadingWorkouts, isErrorWorkouts, refetchWorkouts, 'Workouts', 'workouts')}
-        </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }

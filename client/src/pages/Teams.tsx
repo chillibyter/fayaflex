@@ -32,7 +32,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-// Extended type with member count from API
 type EnrichedTeam = Team & { memberCount: number };
 
 export default function Teams() {
@@ -58,114 +57,12 @@ export default function Teams() {
       queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
       setJoinDialogOpen(false);
       setInviteCode("");
-      toast({
-        title: "Joined team!",
-        description: "You've successfully joined the team.",
-      });
+      toast({ title: "Joined team!", description: "You've successfully joined the team." });
     },
     onError: (error: any) => {
-      let errorMessage = "Failed to join team";
-      
-      if (error?.message) {
-        try {
-          const jsonMatch = error.message.match(/\d+:\s*({.+})/);
-          if (jsonMatch) {
-            const errorData = JSON.parse(jsonMatch[1]);
-            errorMessage = errorData.message || errorMessage;
-          } else {
-            errorMessage = error.message;
-          }
-        } catch {
-          errorMessage = error.message;
-        }
-      }
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error?.message || "Failed to join team", variant: "destructive" });
     },
   });
-
-  const handleJoinTeam = () => {
-    if (inviteCode.trim()) {
-      joinTeamMutation.mutate(inviteCode.trim());
-    }
-  };
-
-  const handleInviteClick = (team: EnrichedTeam) => {
-    setSelectedTeam(team);
-    setShareDialogOpen(true);
-  };
-
-  const copyInviteCode = () => {
-    if (selectedTeam?.inviteCode) {
-      navigator.clipboard.writeText(selectedTeam.inviteCode);
-      toast({
-        title: "Copied!",
-        description: "Invite code copied to clipboard.",
-      });
-    }
-  };
-
-  const shareViaWhatsApp = () => {
-    if (!selectedTeam?.inviteCode) return;
-    
-    // Get the app URL (use current domain)
-    const appUrl = window.location.origin;
-    
-    // Create the message
-    const message = `🏋️ Join my fitness team "${selectedTeam.name}" on Ultimate Fitness Challenge!\n\n` +
-      `💪 Invite Code: ${selectedTeam.inviteCode}\n\n` +
-      `Download the app and join us: ${appUrl}\n\n` +
-      `Let's compete and get fit together!`;
-    
-    // Encode the message for URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Create WhatsApp URL - use web version that works on both desktop and mobile
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    
-    // Open WhatsApp in a new window
-    window.open(whatsappUrl, '_blank');
-  };
-
-  const shareViaGeneric = async () => {
-    if (!selectedTeam?.inviteCode) return;
-    
-    const appUrl = window.location.origin;
-    const message = `Join my fitness team "${selectedTeam.name}" on Ultimate Fitness Challenge!\n\n` +
-      `Invite Code: ${selectedTeam.inviteCode}\n\n` +
-      `Download the app: ${appUrl}`;
-    
-    // Try to use Web Share API if available
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Join ${selectedTeam.name}`,
-          text: message,
-          url: appUrl,
-        });
-        toast({
-          title: "Shared!",
-          description: "Invite shared successfully.",
-        });
-      } catch (error: any) {
-        // User cancelled the share
-        if (error.name !== 'AbortError') {
-          console.error('Error sharing:', error);
-        }
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(message);
-      toast({
-        title: "Copied!",
-        description: "Share message copied to clipboard.",
-      });
-    }
-  };
 
   const endChallengeMutation = useMutation({
     mutationFn: async (teamId: string) => {
@@ -176,208 +73,154 @@ export default function Teams() {
       queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
       setEndChallengeDialogOpen(false);
       setSelectedTeam(null);
-      toast({
-        title: "Challenge ended",
-        description: "The team challenge has been successfully ended.",
-      });
+      toast({ title: "Challenge ended", description: "The team challenge has been ended." });
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to end challenge",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to end challenge", variant: "destructive" });
     },
   });
 
-  const handleEndChallengeClick = (team: EnrichedTeam) => {
+  const handleInviteClick = (team: EnrichedTeam) => {
     setSelectedTeam(team);
-    setEndChallengeDialogOpen(true);
+    setShareDialogOpen(true);
   };
 
-  const confirmEndChallenge = () => {
-    if (selectedTeam) {
-      endChallengeMutation.mutate(selectedTeam.id);
+  const copyInviteCode = () => {
+    if (selectedTeam?.inviteCode) {
+      navigator.clipboard.writeText(selectedTeam.inviteCode);
+      toast({ title: "Copied!", description: "Invite code copied to clipboard." });
+    }
+  };
+
+  const shareViaWhatsApp = () => {
+    if (!selectedTeam?.inviteCode) return;
+    const appUrl = window.location.origin;
+    const message = `Join my fitness team "${selectedTeam.name}" on Ultimate Fitness Challenge!\n\nInvite Code: ${selectedTeam.inviteCode}\n\nDownload the app: ${appUrl}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const shareViaGeneric = async () => {
+    if (!selectedTeam?.inviteCode) return;
+    const appUrl = window.location.origin;
+    const message = `Join my fitness team "${selectedTeam.name}"!\n\nInvite Code: ${selectedTeam.inviteCode}\n\n${appUrl}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Join ${selectedTeam.name}`, text: message, url: appUrl });
+      } catch {}
+    } else {
+      navigator.clipboard.writeText(message);
+      toast({ title: "Copied!", description: "Share message copied." });
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">My Teams</h1>
-          <p className="text-muted-foreground">
-            Manage your teams and track group progress.
-          </p>
-        </div>
-        <div className="flex gap-3">
+    <div className="min-h-screen bg-background">
+      <div className="bg-gradient-to-br from-primary/10 to-primary/5 px-4 pt-4 pb-6">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" data-testid="button-join-team">
-                <UserPlus className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" data-testid="button-join-team">
                 Join Team
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Join a Team</DialogTitle>
-                <DialogDescription>
-                  Enter the invite code shared by your team owner to join.
-                </DialogDescription>
+                <DialogDescription>Enter the invite code shared by your team owner.</DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="invite-code">Invite Code</Label>
-                  <Input
-                    id="invite-code"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value)}
-                    placeholder="Enter invite code"
-                    data-testid="input-invite-code"
-                  />
-                </div>
+              <div className="py-4 space-y-2">
+                <Label>Invite Code</Label>
+                <Input value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} placeholder="Enter invite code" data-testid="input-invite-code" />
               </div>
               <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setJoinDialogOpen(false)}
-                  disabled={joinTeamMutation.isPending}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleJoinTeam}
-                  disabled={!inviteCode.trim() || joinTeamMutation.isPending}
-                  data-testid="button-join-team-submit"
-                >
+                <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>Cancel</Button>
+                <Button onClick={() => joinTeamMutation.mutate(inviteCode.trim())} disabled={!inviteCode.trim() || joinTeamMutation.isPending} data-testid="button-join-team-submit">
                   {joinTeamMutation.isPending ? "Joining..." : "Join Team"}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button asChild data-testid="button-create-team">
-            <Link href="/create-team">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Team
-            </Link>
+          <Button size="sm" asChild data-testid="button-create-team">
+            <Link href="/create-team">Create Team</Link>
           </Button>
         </div>
+
+        <h1 className="text-2xl font-bold mb-2">My Teams</h1>
+        
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search teams..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 bg-background" data-testid="input-search-teams" />
+        </div>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search teams..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
-          data-testid="input-search-teams"
-        />
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="mt-4 text-muted-foreground">Loading teams...</p>
+      <div className="px-4 py-4">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        </div>
-      ) : teams.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No teams yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Create your first team or join an existing one to get started!
-            </p>
-            <Button asChild>
-              <Link href="/create-team">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Create Team
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teams
-            .filter((team) =>
-              team.name.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((team) => (
-              <TeamCard
-                key={team.id}
-                teamId={team.id}
-                name={team.name}
-                memberCount={team.memberCount}
-                totalCalories={0}
-                rank={0}
-                isOwner={Boolean(user && typeof user === 'object' && 'id' in user && team.ownerId === (user as any).id)}
-                onInvite={() => handleInviteClick(team)}
-                onEndChallenge={() => handleEndChallengeClick(team)}
-              />
-            ))}
-        </div>
-      )}
+        ) : teams.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No teams yet</h3>
+              <p className="text-muted-foreground mb-6">Create or join a team to get started!</p>
+              <Button asChild>
+                <Link href="/create-team">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Create Team
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x">
+            {teams
+              .filter((team) => team.name.toLowerCase().includes(searchQuery.toLowerCase()))
+              .map((team) => (
+                <div key={team.id} className="min-w-[280px] max-w-[280px] snap-start">
+                  <TeamCard
+                    teamId={team.id}
+                    name={team.name}
+                    memberCount={team.memberCount}
+                    totalCalories={0}
+                    rank={0}
+                    isOwner={Boolean(user && typeof user === 'object' && 'id' in user && team.ownerId === (user as any).id)}
+                    onInvite={() => handleInviteClick(team)}
+                    onEndChallenge={() => { setSelectedTeam(team); setEndChallengeDialogOpen(true); }}
+                  />
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
 
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite Members to {selectedTeam?.name}</DialogTitle>
-            <DialogDescription>
-              Share this invite code with others to let them join your team.
-            </DialogDescription>
+            <DialogTitle>Invite to {selectedTeam?.name}</DialogTitle>
+            <DialogDescription>Share this code with others to let them join.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="py-4 space-y-4">
             <div className="space-y-2">
               <Label>Invite Code</Label>
               <div className="flex gap-2">
-                <Input
-                  value={selectedTeam?.inviteCode || ""}
-                  readOnly
-                  className="font-mono"
-                  data-testid="text-invite-code"
-                />
-                <Button onClick={copyInviteCode} data-testid="button-copy-code">
-                  Copy
-                </Button>
+                <Input value={selectedTeam?.inviteCode || ""} readOnly className="font-mono" data-testid="text-invite-code" />
+                <Button onClick={copyInviteCode} data-testid="button-copy-code">Copy</Button>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Anyone with this code can join your team.
-              </p>
             </div>
-            
-            <div className="space-y-2">
-              <Label>Share with Contacts</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button 
-                  onClick={shareViaWhatsApp}
-                  variant="outline"
-                  className="w-full"
-                  data-testid="button-share-whatsapp"
-                >
-                  <SiWhatsapp className="h-4 w-4 mr-2 text-green-600" />
-                  WhatsApp
-                </Button>
-                <Button 
-                  onClick={shareViaGeneric}
-                  variant="outline"
-                  className="w-full"
-                  data-testid="button-share-generic"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Share via WhatsApp or other apps with a pre-filled message including the invite code and app link.
-              </p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={shareViaWhatsApp} variant="outline" data-testid="button-share-whatsapp">
+                <SiWhatsapp className="h-4 w-4 mr-2 text-green-600" />
+                WhatsApp
+              </Button>
+              <Button onClick={shareViaGeneric} variant="outline" data-testid="button-share-generic">
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShareDialogOpen(false)}>
-              Close
-            </Button>
+            <Button variant="outline" onClick={() => setShareDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -387,15 +230,15 @@ export default function Teams() {
           <AlertDialogHeader>
             <AlertDialogTitle>End Team Challenge?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to end the challenge for "{selectedTeam?.name}"? This action cannot be undone and the team will be archived.
+              Are you sure you want to end the challenge for "{selectedTeam?.name}"? This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-end-challenge">Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={confirmEndChallenge}
+              onClick={() => selectedTeam && endChallengeMutation.mutate(selectedTeam.id)}
               disabled={endChallengeMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground"
               data-testid="button-confirm-end-challenge"
             >
               {endChallengeMutation.isPending ? "Ending..." : "End Challenge"}
