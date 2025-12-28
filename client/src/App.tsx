@@ -20,6 +20,8 @@ import AuthPage from "@/pages/AuthPage";
 import ResetPassword from "@/pages/ResetPassword";
 import TeamSelection from "@/pages/TeamSelection";
 import HowItWorks from "@/pages/HowItWorks";
+import Support from "@/pages/Support";
+import Privacy from "@/pages/Privacy";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -47,6 +49,8 @@ function Router() {
       <Switch>
         <Route path="/auth" component={AuthPage} />
         <Route path="/reset-password" component={ResetPassword} />
+        <Route path="/support" component={Support} />
+        <Route path="/privacy" component={Privacy} />
         <Route path="/" component={AuthPage} />
         <Route component={AuthPage} />
       </Switch>
@@ -88,6 +92,8 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/users/:userId/profile" component={UserProfile} />
       <Route path="/how-it-works" component={HowItWorks} />
+      <Route path="/support" component={Support} />
+      <Route path="/privacy" component={Privacy} />
       <Route path="/team-selection">
         <Redirect to="/" />
       </Route>
