@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { useAuth } from "@/hooks/use-auth";
+import GoalJourneys from "@/components/GoalJourneys";
 
 type DashboardStats = {
   calories: number;
@@ -220,6 +221,8 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </Link>
+
+        <GoalJourneys />
 
         {!isLoadingActivities && recentActivities.length === 0 && (
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
