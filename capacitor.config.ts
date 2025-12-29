@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Ultimate Fitness Challenge',
   webDir: 'dist/public',
   server: {
-    url: 'https://98486641-5e4c-4068-bb02-76442c3051c6-00-1mexn797h6ztd.worf.replit.dev',
+    url: 'https://www.ultimatefitnesschallenge.com',
     androidScheme: 'https',
     iosScheme: 'https',
     cleartext: true,
