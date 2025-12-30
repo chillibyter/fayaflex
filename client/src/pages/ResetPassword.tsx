@@ -161,7 +161,7 @@ export default function ResetPassword() {
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-4">
             <img 
-              src="/fayaflex-logo.png" 
+              src="/fayaflex-logo.webp" 
               alt="FayaFlex" 
               className="w-8 h-8 rounded"
             />

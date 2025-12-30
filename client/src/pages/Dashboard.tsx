@@ -194,7 +194,7 @@ export default function Dashboard() {
       <header className="bg-gradient-to-br from-green-500 to-green-600 text-white px-4 pt-4 pb-6 rounded-b-3xl">
         <div className="flex items-center gap-2 mb-6">
           <img 
-            src="/fayaflex-logo.png" 
+            src="/fayaflex-logo.webp" 
             alt="FayaFlex" 
             className="w-8 h-8 rounded"
           />

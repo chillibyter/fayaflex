@@ -41,7 +41,7 @@ export default function AppSidebar() {
       <SidebarHeader className="p-6 border-b">
         <div className="flex items-center gap-3">
           <img 
-            src="/fayaflex-logo.png" 
+            src="/fayaflex-logo.webp" 
             alt="FayaFlex" 
             className="h-10 w-10 rounded-lg"
           />

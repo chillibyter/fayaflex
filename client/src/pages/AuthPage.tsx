@@ -229,7 +229,7 @@ export default function AuthPage() {
           <div className="p-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <img 
-                src="/fayaflex-logo.png" 
+                src="/fayaflex-logo.webp" 
                 alt="FayaFlex" 
                 className="h-12 w-12 rounded-lg"
               />

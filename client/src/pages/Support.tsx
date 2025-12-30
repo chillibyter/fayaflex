@@ -15,7 +15,7 @@ export default function Support() {
           </Link>
           <div className="flex items-center gap-2">
             <img 
-              src="/fayaflex-logo.png" 
+              src="/fayaflex-logo.webp" 
               alt="FayaFlex" 
               className="h-8 w-8 rounded-md"
             />

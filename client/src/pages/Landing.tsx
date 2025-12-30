@@ -9,7 +9,7 @@ export default function Landing() {
       <header className="border-b p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img 
-            src="/fayaflex-logo.png" 
+            src="/fayaflex-logo.webp" 
             alt="FayaFlex" 
             className="h-10 w-10 rounded-md"
           />

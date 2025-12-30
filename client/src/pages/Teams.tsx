@@ -31,7 +31,7 @@ import type { Team } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-const fayaflexLogo = "/fayaflex-logo.png";
+const fayaflexLogo = "/fayaflex-logo.webp";
 
 type MemberAvatar = {
   id: string;
