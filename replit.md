@@ -64,6 +64,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Location-Based Rankings** (December 30, 2025)
+- Added hierarchical location system (Continent → Country → Region → Town)
+- Users can set their location in Profile settings via cascading dropdown selects
+- Leaderboard page now includes location scope filter (Global, Continent, Country, Region, Town)
+- Scope options only available when user has set their location data
+- Location data stored in users table (continentId, countryId, regionId, townId)
+- Comprehensive geographic seed data covering 6 continents with countries, regions, and towns
+- New LocationPicker component handles cascading location selection
+
 **Profile Photo Upload** (December 30, 2025)
 - Users can now upload a photo or take a selfie as their profile picture
 - Added POST /api/upload/profile-image endpoint with Sharp image compression
