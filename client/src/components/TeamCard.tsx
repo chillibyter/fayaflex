@@ -1,104 +1,156 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, UserPlus, X, Trophy } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Trophy, UserPlus, Flame, Footprints, Dumbbell } from "lucide-react";
 import { Link } from "wouter";
+import { FITNESS_AVATARS } from "@/lib/avatars";
+
+type MemberAvatar = {
+  id: string;
+  profileImageUrl?: string | null;
+  avatarId?: string | null;
+  firstName?: string | null;
+};
 
 interface TeamCardProps {
   teamId: string;
   name: string;
   memberCount: number;
   totalCalories: number;
+  totalSteps: number;
+  totalWorkouts: number;
   rank: number;
+  memberAvatars: MemberAvatar[];
   isOwner?: boolean;
   onInvite?: () => void;
-  onEndChallenge?: () => void;
 }
+
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(0)}k`;
+  return num.toString();
+};
 
 export default function TeamCard({
   teamId,
   name,
   memberCount,
   totalCalories,
+  totalSteps,
+  totalWorkouts,
   rank,
+  memberAvatars,
   isOwner = false,
   onInvite,
-  onEndChallenge,
 }: TeamCardProps) {
+  const extraMembers = memberCount > 3 ? memberCount - 3 : 0;
+
   return (
-    <Link href={`/teams/${teamId}`}>
-      <Card 
-        className="hover-elevate cursor-pointer transition-all" 
-        data-testid={`card-team-${teamId}`}
-      >
-        <CardHeader className="pb-4">
-          <div
-            className="h-24 -mx-6 -mt-6 mb-4 rounded-t-md flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-2)) 100%)",
-            }}
-          >
-            <h3 className="text-2xl font-bold text-primary-foreground" data-testid={`text-team-name`}>
-              {name}
-            </h3>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>{memberCount} members</span>
+    <Card className="overflow-hidden hover-elevate" data-testid={`card-team-${teamId}`}>
+      <Link href={`/teams/${teamId}`}>
+        <div
+          className="px-4 py-4 text-white"
+          style={{
+            background: "linear-gradient(135deg, #10B981 0%, #06B6D4 100%)",
+          }}
+        >
+          <h3 className="text-xl font-bold mb-3" data-testid="text-team-name">
+            {name}
+          </h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {memberAvatars.map((member, idx) => (
+                  <Avatar key={member.id} className="h-8 w-8 border-2 border-white/30">
+                    {member.profileImageUrl ? (
+                      <AvatarImage src={member.profileImageUrl} alt="" />
+                    ) : member.avatarId ? (
+                      (() => {
+                        const avatar = FITNESS_AVATARS.find(a => a.id === member.avatarId);
+                        if (avatar) {
+                          const Icon = avatar.icon;
+                          return (
+                            <div className={`flex items-center justify-center w-full h-full bg-gradient-to-br ${avatar.gradient}`}>
+                              <Icon className="h-4 w-4 text-white" />
+                            </div>
+                          );
+                        }
+                        return <AvatarFallback className="text-xs bg-white/20 text-white">{member.firstName?.[0] || '?'}</AvatarFallback>;
+                      })()
+                    ) : (
+                      <AvatarFallback className="text-xs bg-white/20 text-white">
+                        {member.firstName?.[0] || '?'}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                ))}
+                {extraMembers > 0 && (
+                  <div className="h-8 w-8 rounded-full bg-white/30 border-2 border-white/30 flex items-center justify-center text-xs font-medium text-white">
+                    +{extraMembers}
+                  </div>
+                )}
+              </div>
+              <span className="text-sm text-white/90">{memberCount} members</span>
             </div>
-            <div className="text-sm font-medium">Rank #{rank}</div>
+            <div className="flex items-center gap-1 text-white">
+              <Trophy className="h-4 w-4" />
+              <span className="font-semibold">Rank {rank}</span>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Total Calories</p>
-            <p className="text-3xl font-bold" data-testid="text-team-calories">
-              {totalCalories.toLocaleString()}
-            </p>
+        </div>
+      </Link>
+
+      <CardContent className="pt-4 pb-4">
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="text-center">
+            <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mx-auto mb-1">
+              <Flame className="h-5 w-5 text-orange-500" />
+            </div>
+            <p className="text-lg font-bold" data-testid="text-team-calories">{formatNumber(totalCalories)}</p>
+            <p className="text-xs text-muted-foreground">calories</p>
           </div>
+          <div className="text-center">
+            <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-1">
+              <Footprints className="h-5 w-5 text-green-600" />
+            </div>
+            <p className="text-lg font-bold" data-testid="text-team-steps">{formatNumber(totalSteps)}</p>
+            <p className="text-xs text-muted-foreground">steps</p>
+          </div>
+          <div className="text-center">
+            <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-1">
+              <Dumbbell className="h-5 w-5 text-green-600" />
+            </div>
+            <p className="text-lg font-bold" data-testid="text-team-workouts">{totalWorkouts}</p>
+            <p className="text-xs text-muted-foreground">workouts</p>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Link href={`/teams/${teamId}/victory-wall`} className="flex-1">
+            <Button
+              variant="outline"
+              className="w-full"
+              data-testid="button-victory-wall"
+            >
+              <Trophy className="h-4 w-4 mr-2 text-yellow-500" />
+              Victory Wall
+            </Button>
+          </Link>
           <Button
             onClick={(e) => {
               e.preventDefault();
-              window.location.href = `/teams/${teamId}/victory-wall`;
+              e.stopPropagation();
+              onInvite?.();
             }}
-            variant="outline"
-            className="w-full"
-            data-testid="button-victory-wall"
+            variant={isOwner ? "default" : "outline"}
+            className="flex-1"
+            data-testid="button-invite-members"
           >
-            <Trophy className="h-4 w-4 mr-2" />
-            Victory Wall
+            <UserPlus className="h-4 w-4 mr-2" />
+            {isOwner ? "Invite Members" : "View Members"}
           </Button>
-          {isOwner && (
-            <div className="space-y-2">
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  onInvite?.();
-                }}
-                variant="outline"
-                className="w-full"
-                data-testid="button-invite-members"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Members
-              </Button>
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  onEndChallenge?.();
-                }}
-                variant="destructive"
-                className="w-full"
-                data-testid="button-end-challenge"
-              >
-                <X className="h-4 w-4 mr-2" />
-                End Challenge
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </Link>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

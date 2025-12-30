@@ -78,6 +78,7 @@ export interface IStorage {
   // Activity operations
   createActivity(activity: InsertActivity, userId: string): Promise<Activity>;
   getUserActivities(userId: string, month?: number, year?: number): Promise<Activity[]>;
+  getUserActivitiesForDate(userId: string, date: string): Promise<Activity[]>;
   getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]>;
   syncHealthActivities(
     userId: string,
@@ -457,6 +458,18 @@ export class DatabaseStorage implements IStorage {
       .from(activities)
       .where(eq(activities.userId, userId))
       .orderBy(desc(activities.date));
+  }
+
+  async getUserActivitiesForDate(userId: string, date: string): Promise<Activity[]> {
+    return await db
+      .select()
+      .from(activities)
+      .where(
+        and(
+          eq(activities.userId, userId),
+          eq(activities.date, date)
+        )
+      );
   }
 
   async getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]> {

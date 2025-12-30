@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, TrendingUp, Calendar, AlertCircle, User, HelpCircle, Shield, BookOpen, LogOut, ChevronRight, Camera, Upload, Loader2, X } from "lucide-react";
-import ProgressChart from "@/components/ProgressChart";
+import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { User as UserType } from "@shared/schema";
+import type { User as UserType, Team } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useRef } from "react";
 import {
@@ -20,30 +19,34 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { FITNESS_AVATARS } from "@/lib/avatars";
-import { Check } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
-import { HealthDevices } from "@/components/HealthDevices";
 import BadgesDisplay from "@/components/BadgesDisplay";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CitySearch } from "@/components/CitySearch";
 
-type ChartData = {
-  date: string;
-  calories: number;
-};
-
 type UserStats = {
   totalWorkouts: number;
   currentStreak: number;
+  totalCalories?: number;
+  totalSteps?: number;
 };
+
+type DailyGoals = {
+  calories: { current: number; goal: number };
+  steps: { current: number; goal: number };
+  workouts: { current: number; goal: number };
+};
+
+type EnrichedTeam = Team & { memberCount: number };
 
 export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logoutMutation } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
@@ -56,27 +59,20 @@ export default function Profile() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    data: user,
-    isLoading: isLoadingUser,
-    isError: isErrorUser,
-    refetch: refetchUser
-  } = useQuery<UserType>({
+  const { data: user, isLoading: isLoadingUser, isError: isErrorUser, refetch: refetchUser } = useQuery<UserType>({
     queryKey: ['/api/auth/user'],
   });
 
-  const {
-    data: chartData = [],
-    isLoading: isLoadingChart
-  } = useQuery<ChartData[]>({
-    queryKey: ['/api/progress/chart'],
+  const { data: stats, isLoading: isLoadingStats } = useQuery<UserStats>({
+    queryKey: ['/api/profile/stats'],
   });
 
-  const {
-    data: stats,
-    isLoading: isLoadingStats
-  } = useQuery<UserStats>({
-    queryKey: ['/api/profile/stats'],
+  const { data: teams = [] } = useQuery<EnrichedTeam[]>({
+    queryKey: ['/api/teams'],
+  });
+
+  const { data: dailyGoals } = useQuery<DailyGoals>({
+    queryKey: ['/api/goals/daily'],
   });
 
   const updateProfileMutation = useMutation({
@@ -112,8 +108,6 @@ export default function Profile() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       toast({ title: "Photo uploaded", description: "Your profile photo has been saved." });
-      // Keep dialog open so user can continue editing other fields
-      // Update preview with the saved image path
       setPreviewImage(data.path);
       setUseCustomPhoto(true);
     },
@@ -138,60 +132,40 @@ export default function Profile() {
   };
 
   const handleSaveProfile = () => {
-    // Build update payload - always include name, avatar, and location
-    const updateData: { 
-      firstName: string; 
-      lastName: string; 
-      avatarId?: string; 
-      profileImageUrl?: string;
-      continentId?: string | null;
-      countryId?: string | null;
-      regionId?: string | null;
-      townId?: string | null;
-    } = {
+    const updateData: any = {
       firstName,
       lastName,
-      avatarId: selectedAvatar, // Always save avatar as fallback
+      avatarId: selectedAvatar,
       continentId,
       countryId,
       regionId,
       townId,
     };
-    
-    // If user is switching from custom photo to avatar, clear the profile image
     if (!useCustomPhoto && user?.profileImageUrl) {
       updateData.profileImageUrl = "";
     }
-    
     updateProfileMutation.mutate(updateData);
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({ title: "Invalid file", description: "Please select an image file", variant: "destructive" });
       return;
     }
-
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewImage(e.target?.result as string);
       setUseCustomPhoto(true);
     };
     reader.readAsDataURL(file);
-
-    // Upload the image
     uploadProfileImageMutation.mutate(file);
   };
 
   const handleRemovePhoto = () => {
     setPreviewImage(null);
     setUseCustomPhoto(false);
-    // Clear file inputs
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
@@ -206,6 +180,46 @@ export default function Profile() {
 
   const handleLogout = () => {
     logoutMutation.mutate();
+  };
+
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}k`;
+    return num.toString();
+  };
+
+  const CircularProgress = ({ current, goal, label, color, showCheck }: { current: number; goal: number; label: string; color: string; showCheck?: boolean }) => {
+    const percentage = Math.min((current / goal) * 100, 100);
+    const strokeWidth = 8;
+    const radius = 40;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+    const isComplete = current >= goal;
+
+    return (
+      <div className="flex flex-col items-center">
+        <div className="relative w-24 h-24">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r={radius} fill="none" stroke="currentColor" strokeWidth={strokeWidth} className="text-muted/30" />
+            <circle
+              cx="50" cy="50" r={radius} fill="none" stroke={color}
+              strokeWidth={strokeWidth} strokeLinecap="round"
+              strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
+              className="transition-all duration-500"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            {showCheck && isComplete ? (
+              <Check className="h-6 w-6 text-green-500" />
+            ) : (
+              <span className="text-lg font-bold">{formatNumber(current)}</span>
+            )}
+            <span className="text-[10px] text-muted-foreground">of {formatNumber(goal)}</span>
+          </div>
+        </div>
+        <p className="text-sm font-medium mt-2">{label}</p>
+      </div>
+    );
   };
 
   if (isErrorUser) {
@@ -227,128 +241,174 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-4 pt-6 pb-4">
-        <h1 className="text-2xl font-bold mb-6">Profile</h1>
+      <div
+        className="relative px-4 pt-8 pb-16 text-white"
+        style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}
+      >
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+          data-testid="button-settings"
+        >
+          <Settings className="h-5 w-5" />
+        </button>
 
+        <div className="flex flex-col items-center">
+          {isLoadingUser ? (
+            <Skeleton className="h-24 w-24 rounded-full" />
+          ) : (
+            <div className="relative">
+              <UserAvatar user={user} className="h-24 w-24 border-4 border-white/30" iconClassName="h-12 w-12" />
+              <button
+                onClick={handleEditClick}
+                className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white text-gray-700 shadow-md hover:bg-gray-100"
+                data-testid="button-edit-photo"
+              >
+                <User className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          <h2 className="text-2xl font-bold mt-4" data-testid="text-user-name">{getUserFullName()}</h2>
+          <p className="text-white/80 text-sm" data-testid="text-member-since">
+            Member since {user?.createdAt ? format(new Date(user.createdAt), 'MMM yyyy') : 'Unknown'}
+          </p>
+
+          {!isLoadingStats && (stats?.currentStreak || 0) > 0 && (
+            <div className="flex items-center gap-2 mt-3 px-4 py-2 bg-black/20 rounded-full">
+              <Flame className="h-5 w-5 text-orange-400" />
+              <span className="font-semibold">{stats?.currentStreak} Day Streak</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="px-4 -mt-8">
         <Card className="mb-6">
-          <CardContent className="pt-6">
-            {isLoadingUser ? (
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-4 w-48" />
-                </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Daily Goals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingStats ? (
+              <div className="flex justify-around py-4">
+                <Skeleton className="h-24 w-24 rounded-full" />
+                <Skeleton className="h-24 w-24 rounded-full" />
+                <Skeleton className="h-24 w-24 rounded-full" />
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <UserAvatar user={user} className="h-16 w-16" iconClassName="h-8 w-8" />
-                <div className="flex-1">
-                  <h2 className="text-xl font-bold" data-testid="text-user-name">{getUserFullName()}</h2>
-                  <p className="text-sm text-muted-foreground" data-testid="text-member-since">
-                    Member since {user?.createdAt ? format(new Date(user.createdAt), 'MMM yyyy') : 'Unknown'}
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleEditClick} data-testid="button-edit-profile">
-                  <User className="h-4 w-4" />
-                </Button>
+              <div className="flex justify-around py-2">
+                <CircularProgress
+                  current={dailyGoals?.calories?.current || 0}
+                  goal={dailyGoals?.calories?.goal || 2200}
+                  label="Calories"
+                  color="#F97316"
+                />
+                <CircularProgress
+                  current={dailyGoals?.steps?.current || 0}
+                  goal={dailyGoals?.steps?.goal || 10000}
+                  label="Steps"
+                  color="#10B981"
+                />
+                <CircularProgress
+                  current={dailyGoals?.workouts?.current || 0}
+                  goal={dailyGoals?.workouts?.goal || 1}
+                  label="Workouts"
+                  color="#10B981"
+                  showCheck
+                />
               </div>
             )}
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              {isLoadingStats ? (
-                <Skeleton className="h-12 w-full" />
-              ) : (
-                <div className="text-center">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                  <p className="text-2xl font-bold" data-testid="text-total-workouts">{stats?.totalWorkouts || 0}</p>
-                  <p className="text-xs text-muted-foreground">Workouts</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              {isLoadingStats ? (
-                <Skeleton className="h-12 w-full" />
-              ) : (
-                <div className="text-center">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                  </div>
-                  <p className="text-2xl font-bold" data-testid="text-current-streak">{stats?.currentStreak || 0}</p>
-                  <p className="text-xs text-muted-foreground">Day Streak</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <div className="mb-6">
+          <h3 className="text-base font-semibold mb-3">Monthly Stats</h3>
+          <div className="grid grid-cols-3 gap-3">
+            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
+              <CardContent className="py-3 px-3 text-center">
+                <Flame className="h-6 w-6 text-orange-500 mx-auto mb-1" />
+                <p className="text-lg font-bold">{formatNumber(stats?.totalCalories || 0)}</p>
+                <p className="text-xs text-muted-foreground">Total Calories</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
+              <CardContent className="py-3 px-3 text-center">
+                <Footprints className="h-6 w-6 text-green-600 mx-auto mb-1" />
+                <p className="text-lg font-bold">{formatNumber(stats?.totalSteps || 0)}</p>
+                <p className="text-xs text-muted-foreground">Total Steps</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
+              <CardContent className="py-3 px-3 text-center">
+                <Dumbbell className="h-6 w-6 text-green-600 mx-auto mb-1" />
+                <p className="text-lg font-bold">{stats?.totalWorkouts || 0}</p>
+                <p className="text-xs text-muted-foreground">Total Workouts</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <BadgesDisplay />
 
-        <HealthDevices />
+        {teams.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-base font-semibold mb-3">My Teams</h3>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+              {teams.map((team) => (
+                <Link key={team.id} href={`/teams/${team.id}`}>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border hover-elevate cursor-pointer min-w-fit">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">{team.name[0]}</span>
+                    </div>
+                    <span className="text-sm font-medium whitespace-nowrap">{team.name}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <Card className="mt-6">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Settings & Support</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            <Link href="/how-it-works">
-              <button className="w-full flex items-center justify-between py-3 px-1 hover:bg-muted/50 rounded-md transition-colors" data-testid="link-how-it-works">
-                <div className="flex items-center gap-3">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                  <span className="font-medium">How It Works</span>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        <Button
+          onClick={handleEditClick}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white mb-6"
+          size="lg"
+          data-testid="button-edit-profile"
+        >
+          Edit Profile
+        </Button>
+      </div>
+
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1 py-2">
+            <Link href="/how-it-works" onClick={() => setIsSettingsOpen(false)}>
+              <button className="w-full flex items-center gap-3 py-3 px-2 hover:bg-muted/50 rounded-md transition-colors" data-testid="link-how-it-works">
+                <span className="font-medium">How It Works</span>
               </button>
             </Link>
-            <Link href="/support">
-              <button className="w-full flex items-center justify-between py-3 px-1 hover:bg-muted/50 rounded-md transition-colors" data-testid="link-support">
-                <div className="flex items-center gap-3">
-                  <HelpCircle className="h-5 w-5 text-primary" />
-                  <span className="font-medium">Support</span>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            <Link href="/support" onClick={() => setIsSettingsOpen(false)}>
+              <button className="w-full flex items-center gap-3 py-3 px-2 hover:bg-muted/50 rounded-md transition-colors" data-testid="link-support">
+                <span className="font-medium">Support</span>
               </button>
             </Link>
-            <Link href="/privacy">
-              <button className="w-full flex items-center justify-between py-3 px-1 hover:bg-muted/50 rounded-md transition-colors" data-testid="link-privacy">
-                <div className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <span className="font-medium">Privacy Policy</span>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            <Link href="/privacy" onClick={() => setIsSettingsOpen(false)}>
+              <button className="w-full flex items-center gap-3 py-3 px-2 hover:bg-muted/50 rounded-md transition-colors" data-testid="link-privacy">
+                <span className="font-medium">Privacy Policy</span>
               </button>
             </Link>
-            <button 
+            <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-between py-3 px-1 hover:bg-destructive/10 rounded-md transition-colors text-destructive"
+              className="w-full flex items-center gap-3 py-3 px-2 hover:bg-destructive/10 rounded-md transition-colors text-destructive"
               data-testid="button-logout"
             >
-              <div className="flex items-center gap-3">
-                <LogOut className="h-5 w-5" />
-                <span className="font-medium">Log Out</span>
-              </div>
-              <ChevronRight className="h-5 w-5" />
+              <span className="font-medium">Log Out</span>
             </button>
-          </CardContent>
-        </Card>
-
-        {isLoadingChart ? (
-          <Skeleton className="h-64 w-full mt-6" />
-        ) : chartData.length > 0 ? (
-          <div className="mt-6">
-            <ProgressChart data={chartData} title="My Progress" />
           </div>
-        ) : null}
-      </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent data-testid="dialog-edit-profile">
@@ -356,7 +416,7 @@ export default function Profile() {
             <DialogTitle>Edit Profile</DialogTitle>
             <DialogDescription>Update your profile information</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
               <Input id="firstName" data-testid="input-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" />
@@ -365,10 +425,9 @@ export default function Profile() {
               <Label htmlFor="lastName">Last Name</Label>
               <Input id="lastName" data-testid="input-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" />
             </div>
-            
+
             <div className="space-y-3">
               <Label>Profile Photo</Label>
-              
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <Avatar className="h-20 w-20">
@@ -407,28 +466,13 @@ export default function Profile() {
                     </button>
                   )}
                 </div>
-                
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadProfileImageMutation.isPending}
-                      data-testid="button-upload-photo"
-                    >
+                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadProfileImageMutation.isPending} data-testid="button-upload-photo">
                       <Upload className="h-4 w-4 mr-2" />
                       Upload
                     </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => cameraInputRef.current?.click()}
-                      disabled={uploadProfileImageMutation.isPending}
-                      data-testid="button-take-selfie"
-                    >
+                    <Button type="button" variant="outline" size="sm" onClick={() => cameraInputRef.current?.click()} disabled={uploadProfileImageMutation.isPending} data-testid="button-take-selfie">
                       <Camera className="h-4 w-4 mr-2" />
                       Selfie
                     </Button>
@@ -436,24 +480,8 @@ export default function Profile() {
                   <p className="text-xs text-muted-foreground">Or choose an avatar below</p>
                 </div>
               </div>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-                data-testid="input-file-upload"
-              />
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="user"
-                onChange={handleFileSelect}
-                className="hidden"
-                data-testid="input-camera-capture"
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" data-testid="input-file-upload" />
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handleFileSelect} className="hidden" data-testid="input-camera-capture" />
             </div>
 
             <div className="space-y-2">
@@ -499,10 +527,10 @@ export default function Profile() {
               <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
                 Cancel
               </Button>
-              <Button 
-                type="button" 
-                onClick={handleSaveProfile} 
-                disabled={updateProfileMutation.isPending || uploadProfileImageMutation.isPending} 
+              <Button
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={updateProfileMutation.isPending || uploadProfileImageMutation.isPending}
                 data-testid="button-save-profile"
               >
                 {updateProfileMutation.isPending ? "Saving..." : "Save"}

@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Search, Users, UserPlus, Share2 } from "lucide-react";
+import { PlusCircle, Search, Users, Share2, Flame } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -31,8 +31,23 @@ import type { Team } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+const fayaflexLogo = "/fayaflex-logo.png";
 
-type EnrichedTeam = Team & { memberCount: number };
+type MemberAvatar = {
+  id: string;
+  profileImageUrl?: string | null;
+  avatarId?: string | null;
+  firstName?: string | null;
+};
+
+type EnrichedTeam = Team & {
+  memberCount: number;
+  totalCalories: number;
+  totalSteps: number;
+  totalWorkouts: number;
+  rank: number;
+  memberAvatars: MemberAvatar[];
+};
 
 export default function Teams() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,13 +128,24 @@ export default function Teams() {
     }
   };
 
+  const filteredTeams = teams.filter((team) =>
+    team.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-gradient-to-br from-primary/10 to-primary/5 px-4 pt-4 pb-6">
-        <div className="flex items-center justify-between gap-2 mb-4">
+      <div className="px-4 pt-6 pb-4">
+        <div className="flex items-center justify-center gap-2 mb-6" data-testid="logo-fayaflex">
+          <img src={fayaflexLogo} alt="FayaFlex" className="h-10 w-10" />
+          <span className="text-2xl font-bold text-primary">FayaFlex</span>
+        </div>
+
+        <h1 className="text-2xl font-bold mb-4">My Teams</h1>
+
+        <div className="flex gap-2 mb-4">
           <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" data-testid="button-join-team">
+              <Button variant="outline" className="flex-1" data-testid="button-join-team">
                 Join Team
               </Button>
             </DialogTrigger>
@@ -130,30 +156,47 @@ export default function Teams() {
               </DialogHeader>
               <div className="py-4 space-y-2">
                 <Label>Invite Code</Label>
-                <Input value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} placeholder="Enter invite code" data-testid="input-invite-code" />
+                <Input
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  placeholder="Enter invite code"
+                  data-testid="input-invite-code"
+                />
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>Cancel</Button>
-                <Button onClick={() => joinTeamMutation.mutate(inviteCode.trim())} disabled={!inviteCode.trim() || joinTeamMutation.isPending} data-testid="button-join-team-submit">
+                <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => joinTeamMutation.mutate(inviteCode.trim())}
+                  disabled={!inviteCode.trim() || joinTeamMutation.isPending}
+                  data-testid="button-join-team-submit"
+                >
                   {joinTeamMutation.isPending ? "Joining..." : "Join Team"}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button size="sm" asChild data-testid="button-create-team">
-            <Link href="/create-team">Create Team</Link>
+
+          <Button className="flex-1" asChild data-testid="button-create-team">
+            <Link href="/create-team">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Create Team
+            </Link>
           </Button>
         </div>
 
-        <h1 className="text-2xl font-bold mb-2">My Teams</h1>
-        
-        <div className="relative">
+        <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search teams..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 bg-background" data-testid="input-search-teams" />
+          <Input
+            placeholder="Search teams"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+            data-testid="input-search-teams"
+          />
         </div>
-      </div>
 
-      <div className="px-4 py-4">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -173,23 +216,22 @@ export default function Teams() {
             </CardContent>
           </Card>
         ) : (
-          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x">
-            {teams
-              .filter((team) => team.name.toLowerCase().includes(searchQuery.toLowerCase()))
-              .map((team) => (
-                <div key={team.id} className="min-w-[280px] max-w-[280px] snap-start">
-                  <TeamCard
-                    teamId={team.id}
-                    name={team.name}
-                    memberCount={team.memberCount}
-                    totalCalories={0}
-                    rank={0}
-                    isOwner={Boolean(user && typeof user === 'object' && 'id' in user && team.ownerId === (user as any).id)}
-                    onInvite={() => handleInviteClick(team)}
-                    onEndChallenge={() => { setSelectedTeam(team); setEndChallengeDialogOpen(true); }}
-                  />
-                </div>
-              ))}
+          <div className="space-y-4">
+            {filteredTeams.map((team) => (
+              <TeamCard
+                key={team.id}
+                teamId={team.id}
+                name={team.name}
+                memberCount={team.memberCount}
+                totalCalories={team.totalCalories}
+                totalSteps={team.totalSteps}
+                totalWorkouts={team.totalWorkouts}
+                rank={team.rank}
+                memberAvatars={team.memberAvatars}
+                isOwner={Boolean(user && typeof user === 'object' && 'id' in user && team.ownerId === (user as any).id)}
+                onInvite={() => handleInviteClick(team)}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -204,8 +246,15 @@ export default function Teams() {
             <div className="space-y-2">
               <Label>Invite Code</Label>
               <div className="flex gap-2">
-                <Input value={selectedTeam?.inviteCode || ""} readOnly className="font-mono" data-testid="text-invite-code" />
-                <Button onClick={copyInviteCode} data-testid="button-copy-code">Copy</Button>
+                <Input
+                  value={selectedTeam?.inviteCode || ""}
+                  readOnly
+                  className="font-mono"
+                  data-testid="text-invite-code"
+                />
+                <Button onClick={copyInviteCode} data-testid="button-copy-code">
+                  Copy
+                </Button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -220,7 +269,9 @@ export default function Teams() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShareDialogOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setShareDialogOpen(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -228,18 +279,16 @@ export default function Teams() {
       <AlertDialog open={endChallengeDialogOpen} onOpenChange={setEndChallengeDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>End Team Challenge?</AlertDialogTitle>
+            <AlertDialogTitle>End Challenge?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to end the challenge for "{selectedTeam?.name}"? This cannot be undone.
+              This will archive the team "{selectedTeam?.name}". Members will no longer be able to log activities for this team.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-end-challenge">Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => selectedTeam && endChallengeMutation.mutate(selectedTeam.id)}
-              disabled={endChallengeMutation.isPending}
-              className="bg-destructive text-destructive-foreground"
-              data-testid="button-confirm-end-challenge"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {endChallengeMutation.isPending ? "Ending..." : "End Challenge"}
             </AlertDialogAction>

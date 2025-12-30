@@ -537,10 +537,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      res.json({ totalWorkouts, currentStreak });
+      // Calculate monthly totals (sum all activities, take max per day to avoid double counting)
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const monthActivities = await storage.getUserActivities(userId, currentMonth, currentYear);
+      
+      const calByDate = new Map<string, number>();
+      const stepsByDate = new Map<string, number>();
+      for (const act of monthActivities) {
+        // Take max per day to avoid double-counting from multiple syncs
+        calByDate.set(act.date, Math.max(calByDate.get(act.date) || 0, act.calories));
+        stepsByDate.set(act.date, Math.max(stepsByDate.get(act.date) || 0, act.steps || 0));
+      }
+      
+      // Sum across all days
+      let totalCalories = 0;
+      let totalSteps = 0;
+      calByDate.forEach(cal => { totalCalories += cal; });
+      stepsByDate.forEach(steps => { totalSteps += steps; });
+      
+      res.json({ totalWorkouts, currentStreak, totalCalories, totalSteps });
     } catch (error) {
       console.error("Error fetching profile stats:", error);
       res.status(500).json({ message: "Failed to fetch profile stats" });
+    }
+  });
+
+  // Daily goals endpoint
+  app.get("/api/goals/daily", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Get today's activities
+      const todayActivities = await storage.getUserActivitiesForDate(userId, today);
+      
+      // Calculate today's totals (take max per activity type to avoid double counting)
+      let todayCalories = 0;
+      let todaySteps = 0;
+      let todayWorkouts = 0;
+      
+      for (const act of todayActivities) {
+        // Take max values (health syncs may create multiple entries per day)
+        todayCalories = Math.max(todayCalories, act.calories);
+        todaySteps = Math.max(todaySteps, act.steps || 0);
+        if (act.workoutCompleted) todayWorkouts = 1;
+      }
+      
+      // Default goals (TODO: allow user-customizable goals in future)
+      res.json({
+        calories: { current: todayCalories, goal: 2200 },
+        steps: { current: todaySteps, goal: 10000 },
+        workouts: { current: todayWorkouts, goal: 1 },
+      });
+    } catch (error) {
+      console.error("Error fetching daily goals:", error);
+      res.status(500).json({ message: "Failed to fetch daily goals" });
     }
   });
 
@@ -569,14 +621,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const teams = await storage.getUserTeams(userId);
+      const month = new Date().getMonth() + 1;
+      const year = new Date().getFullYear();
       
-      // Enrich teams with member counts
+      // Get all teams for ranking calculation
+      const allTeams = await storage.getAllTeams();
+      const allTeamStats: { teamId: string; totalCalories: number }[] = [];
+      
+      for (const team of allTeams) {
+        const activities = await storage.getTeamActivities(team.id, month, year);
+        let totalCalories = 0;
+        const byUserDate = new Map<string, number>();
+        for (const act of activities) {
+          const key = `${act.userId}:${act.date}`;
+          const existing = byUserDate.get(key) || 0;
+          byUserDate.set(key, Math.max(existing, act.calories));
+        }
+        byUserDate.forEach(cal => { totalCalories += cal; });
+        allTeamStats.push({ teamId: team.id, totalCalories });
+      }
+      
+      // Sort to determine ranks
+      allTeamStats.sort((a, b) => b.totalCalories - a.totalCalories);
+      const rankMap = new Map(allTeamStats.map((t, i) => [t.teamId, i + 1]));
+      
+      // Enrich user's teams with full data
       const enrichedTeams = await Promise.all(
         teams.map(async (team) => {
           const members = await storage.getTeamMembers(team.id);
+          const activities = await storage.getTeamActivities(team.id, month, year);
+          
+          // Calculate stats
+          const calByUserDate = new Map<string, number>();
+          const stepsByUserDate = new Map<string, number>();
+          const workoutDates = new Set<string>();
+          
+          for (const act of activities) {
+            const calKey = `${act.userId}:${act.date}`;
+            calByUserDate.set(calKey, Math.max(calByUserDate.get(calKey) || 0, act.calories));
+            stepsByUserDate.set(calKey, Math.max(stepsByUserDate.get(calKey) || 0, act.steps || 0));
+            if (act.workoutCompleted) {
+              workoutDates.add(`${act.userId}:${act.date}`);
+            }
+          }
+          
+          let totalCalories = 0;
+          let totalSteps = 0;
+          calByUserDate.forEach(cal => { totalCalories += cal; });
+          stepsByUserDate.forEach(steps => { totalSteps += steps; });
+          
+          // Get member avatars (up to 3)
+          const memberAvatars = await Promise.all(
+            members.slice(0, 3).map(async (m) => {
+              const user = await storage.getUser(m.userId);
+              return {
+                id: m.userId,
+                profileImageUrl: user?.profileImageUrl,
+                avatarId: user?.avatarId,
+                firstName: user?.firstName,
+              };
+            })
+          );
+          
           return {
             ...team,
             memberCount: members.length,
+            totalCalories,
+            totalSteps,
+            totalWorkouts: workoutDates.size,
+            rank: rankMap.get(team.id) || 0,
+            memberAvatars,
           };
         })
       );
