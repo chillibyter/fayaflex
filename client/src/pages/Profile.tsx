@@ -482,7 +482,13 @@ export default function Profile() {
                   <Camera className="h-4 w-4 mr-2" />
                   Take Photo
                 </Button>
-                <Button type="button" variant="outline" size="sm" onClick={() => {}} data-testid="button-choose-avatar">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => document.getElementById('avatar-grid')?.scrollIntoView({ behavior: 'smooth' })} 
+                  data-testid="button-choose-avatar"
+                >
                   <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
@@ -492,7 +498,7 @@ export default function Profile() {
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" data-testid="input-file-upload" />
               <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handleFileSelect} className="hidden" data-testid="input-camera-capture" />
 
-              <div className="space-y-2">
+              <div className="space-y-2" id="avatar-grid">
                 <Label>Choose Your Avatar</Label>
                 <div className="grid grid-cols-6 gap-2">
                   {FITNESS_AVATARS.map((avatar) => {

@@ -36,16 +36,3 @@ export function getAvatarById(id: string | null | undefined) {
   return FITNESS_AVATARS.find(avatar => avatar.id === id) || FITNESS_AVATARS[0];
 }
 
-export function getAvatarSpriteStyle(avatarId: string, size: number = 48) {
-  const avatar = getAvatarById(avatarId);
-  const cellSize = 20; // percentage for 5x5 grid
-  
-  return {
-    backgroundImage: `url(${AVATAR_SPRITE_URL})`,
-    backgroundSize: '500%',
-    backgroundPosition: `${avatar.col * 25}% ${avatar.row * 25}%`,
-    width: size,
-    height: size,
-    borderRadius: '50%',
-  };
-}
