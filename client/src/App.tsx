@@ -27,6 +27,8 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useAutoHealthSync } from "@/hooks/use-auto-health-sync";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 type Team = {
   id: number;
@@ -165,6 +167,13 @@ function AuthenticatedApp() {
 }
 
 function App() {
+  useEffect(() => {
+    // Hide splash screen when app is loaded (for native mobile apps)
+    if (Capacitor.isNativePlatform()) {
+      SplashScreen.hide();
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
