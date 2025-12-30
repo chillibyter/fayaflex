@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'FayaFlex',
   webDir: 'dist/public',
   server: {
-    url: 'https://www.fayaflex.com',
+    url: 'https://fayaflex.com',
     androidScheme: 'https',
     iosScheme: 'https',
     cleartext: true,
