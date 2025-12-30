@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById } from "@/lib/avatars";
 import type { User } from "@shared/schema";
 
@@ -24,9 +24,18 @@ export function UserAvatar({ user, className, iconClassName, fallbackClassName }
   const selectedAvatar = user?.avatarId ? getAvatarById(user.avatarId) : null;
   const AvatarIcon = selectedAvatar?.icon;
 
+  // Check if user has a custom profile image
+  const hasProfileImage = user?.profileImageUrl;
+
   return (
     <Avatar className={className}>
-      {selectedAvatar && AvatarIcon ? (
+      {hasProfileImage ? (
+        <AvatarImage 
+          src={user.profileImageUrl!} 
+          alt={userName}
+          className="object-cover"
+        />
+      ) : selectedAvatar && AvatarIcon ? (
         <div className={`flex items-center justify-center w-full h-full bg-gradient-to-br ${selectedAvatar.gradient}`}>
           <AvatarIcon className={iconClassName || "h-1/2 w-1/2 text-white"} />
         </div>

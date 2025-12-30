@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema } from "@shared/schema";
 import { z } from "zod";
-import { upload, compressAndSaveImage, cleanupOldEvidence } from "./imageUpload";
+import { upload, compressAndSaveImage, compressAndSaveProfileImage, cleanupOldEvidence } from "./imageUpload";
 import express from "express";
 import path from "path";
 import {
@@ -41,11 +41,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       
-      // Validate request body - allow firstName, lastName, and avatarId updates
+      // Validate request body - allow firstName, lastName, avatarId, and profileImageUrl updates
       const updateUserSchema = z.object({
         firstName: z.string().optional(),
         lastName: z.string().optional(),
         avatarId: z.string().optional(),
+        profileImageUrl: z.string().optional(),
       });
       
       const validatedData = updateUserSchema.parse(req.body);
@@ -729,6 +730,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error uploading evidence:", error);
       res.status(500).json({ message: error.message || "Failed to upload image" });
+    }
+  });
+
+  // Profile image upload endpoint
+  app.post("/api/upload/profile-image", isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const userId = req.user.id;
+
+      // Compress and save profile image
+      const imagePath = await compressAndSaveProfileImage(req.file.buffer, userId);
+      
+      // Update user's profile image URL
+      const updatedUser = await storage.updateUser(userId, { profileImageUrl: imagePath });
+      
+      res.json({ 
+        success: true,
+        path: imagePath,
+        user: updatedUser,
+        message: "Profile image uploaded successfully" 
+      });
+    } catch (error: any) {
+      console.error("Error uploading profile image:", error);
+      res.status(500).json({ message: error.message || "Failed to upload profile image" });
     }
   });
 

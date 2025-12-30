@@ -4,6 +4,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'evidence');
+const PROFILE_UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'profiles');
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Ensure upload directory exists
@@ -12,6 +13,15 @@ export async function ensureUploadDir() {
     await fs.access(UPLOAD_DIR);
   } catch {
     await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  }
+}
+
+// Ensure profile upload directory exists
+export async function ensureProfileUploadDir() {
+  try {
+    await fs.access(PROFILE_UPLOAD_DIR);
+  } catch {
+    await fs.mkdir(PROFILE_UPLOAD_DIR, { recursive: true });
   }
 }
 
@@ -52,6 +62,30 @@ export async function compressAndSaveImage(buffer: Buffer, originalName: string)
 
   // Return relative path for storage
   return `/uploads/evidence/${filename}`;
+}
+
+// Compress and save profile image (smaller size, circular crop friendly)
+export async function compressAndSaveProfileImage(buffer: Buffer, userId: string): Promise<string> {
+  await ensureProfileUploadDir();
+
+  const timestamp = Date.now();
+  const filename = `${userId}_${timestamp}.webp`;
+  const filepath = path.join(PROFILE_UPLOAD_DIR, filename);
+
+  // Compress and resize profile image to reasonable size (500x500 max for avatars)
+  await sharp(buffer)
+    .resize(500, 500, {
+      fit: 'cover',
+      position: 'center',
+    })
+    .webp({
+      quality: 85,
+      effort: 6,
+    })
+    .toFile(filepath);
+
+  // Return relative path for storage
+  return `/uploads/profiles/${filename}`;
 }
 
 // Delete old evidence files (older than 24 hours)

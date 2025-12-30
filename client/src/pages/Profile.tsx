@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, TrendingUp, Calendar, AlertCircle, User, HelpCircle, Shield, BookOpen, LogOut, ChevronRight } from "lucide-react";
+import { Trophy, TrendingUp, Calendar, AlertCircle, User, HelpCircle, Shield, BookOpen, LogOut, ChevronRight, Camera, Upload, Loader2, X } from "lucide-react";
 import ProgressChart from "@/components/ProgressChart";
 import { useQuery } from "@tanstack/react-query";
 import type { User as UserType } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import { HealthDevices } from "@/components/HealthDevices";
 import BadgesDisplay from "@/components/BadgesDisplay";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type ChartData = {
   date: string;
@@ -45,6 +46,10 @@ export default function Profile() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [useCustomPhoto, setUseCustomPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const {
     data: user,
@@ -70,16 +75,45 @@ export default function Profile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string; avatarId?: string }) => {
+    mutationFn: async (data: { firstName: string; lastName: string; avatarId?: string; profileImageUrl?: string }) => {
       return await apiRequest('PATCH', '/api/auth/user', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       toast({ title: "Profile updated", description: "Your profile has been updated." });
       setIsEditOpen(false);
+      setPreviewImage(null);
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message || "Failed to update profile", variant: "destructive" });
+    },
+  });
+
+  const uploadProfileImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/upload/profile-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to upload image');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      toast({ title: "Photo uploaded", description: "Your profile photo has been saved." });
+      // Keep dialog open so user can continue editing other fields
+      // Update preview with the saved image path
+      setPreviewImage(data.path);
+      setUseCustomPhoto(true);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message || "Failed to upload photo", variant: "destructive" });
     },
   });
 
@@ -88,12 +122,56 @@ export default function Profile() {
       setFirstName(user.firstName || "");
       setLastName(user.lastName || "");
       setSelectedAvatar(user.avatarId || "runner");
+      setUseCustomPhoto(!!user.profileImageUrl);
+      setPreviewImage(user.profileImageUrl || null);
     }
     setIsEditOpen(true);
   };
 
   const handleSaveProfile = () => {
-    updateProfileMutation.mutate({ firstName, lastName, avatarId: selectedAvatar });
+    // Build update payload - always include name and avatar
+    const updateData: { firstName: string; lastName: string; avatarId?: string; profileImageUrl?: string } = {
+      firstName,
+      lastName,
+      avatarId: selectedAvatar, // Always save avatar as fallback
+    };
+    
+    // If user is switching from custom photo to avatar, clear the profile image
+    if (!useCustomPhoto && user?.profileImageUrl) {
+      updateData.profileImageUrl = "";
+    }
+    
+    updateProfileMutation.mutate(updateData);
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({ title: "Invalid file", description: "Please select an image file", variant: "destructive" });
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewImage(e.target?.result as string);
+      setUseCustomPhoto(true);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload the image
+    uploadProfileImageMutation.mutate(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setPreviewImage(null);
+    setUseCustomPhoto(false);
+    // Clear file inputs
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const getUserFullName = () => {
@@ -265,21 +343,117 @@ export default function Profile() {
               <Label htmlFor="lastName">Last Name</Label>
               <Input id="lastName" data-testid="input-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" />
             </div>
+            
+            <div className="space-y-3">
+              <Label>Profile Photo</Label>
+              
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Avatar className="h-20 w-20">
+                    {useCustomPhoto && previewImage ? (
+                      <AvatarImage src={previewImage} alt="Profile preview" className="object-cover" />
+                    ) : selectedAvatar ? (
+                      <div className={`flex items-center justify-center w-full h-full bg-gradient-to-br ${FITNESS_AVATARS.find(a => a.id === selectedAvatar)?.gradient || 'from-blue-500 to-cyan-500'}`}>
+                        {(() => {
+                          const avatar = FITNESS_AVATARS.find(a => a.id === selectedAvatar);
+                          if (avatar) {
+                            const Icon = avatar.icon;
+                            return <Icon className="h-10 w-10 text-white" />;
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    ) : (
+                      <AvatarFallback className="text-xl">
+                        {firstName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  {uploadProfileImageMutation.isPending && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+                    </div>
+                  )}
+                  {useCustomPhoto && previewImage && !uploadProfileImageMutation.isPending && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive flex items-center justify-center hover:bg-destructive/80"
+                      data-testid="button-remove-photo"
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </button>
+                  )}
+                </div>
+                
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadProfileImageMutation.isPending}
+                      data-testid="button-upload-photo"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => cameraInputRef.current?.click()}
+                      disabled={uploadProfileImageMutation.isPending}
+                      data-testid="button-take-selfie"
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      Selfie
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Or choose an avatar below</p>
+                </div>
+              </div>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+                data-testid="input-file-upload"
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                onChange={handleFileSelect}
+                className="hidden"
+                data-testid="input-camera-capture"
+              />
+            </div>
+
             <div className="space-y-2">
-              <Label>Avatar</Label>
-              <div className="grid grid-cols-5 gap-2">
+              <Label>Choose Avatar</Label>
+              <div className="grid grid-cols-6 gap-2">
                 {FITNESS_AVATARS.map((avatar) => {
                   const IconComponent = avatar.icon;
+                  const isSelected = !useCustomPhoto && selectedAvatar === avatar.id;
                   return (
                     <button
                       key={avatar.id}
                       type="button"
-                      onClick={() => setSelectedAvatar(avatar.id)}
-                      className={`relative h-12 w-12 rounded-md bg-gradient-to-br ${avatar.gradient} flex items-center justify-center hover-elevate`}
+                      onClick={() => {
+                        setSelectedAvatar(avatar.id);
+                        setUseCustomPhoto(false);
+                        setPreviewImage(null);
+                      }}
+                      className={`relative h-10 w-10 rounded-md bg-gradient-to-br ${avatar.gradient} flex items-center justify-center hover-elevate ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                       data-testid={`button-avatar-${avatar.id}`}
                     >
-                      <IconComponent className="h-6 w-6 text-white" />
-                      {selectedAvatar === avatar.id && (
+                      <IconComponent className="h-5 w-5 text-white" />
+                      {isSelected && (
                         <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
                           <Check className="h-2.5 w-2.5 text-primary-foreground" />
                         </div>
@@ -289,11 +463,17 @@ export default function Profile() {
                 })}
               </div>
             </div>
+
             <div className="flex gap-3 justify-end pt-2">
               <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
                 Cancel
               </Button>
-              <Button type="button" onClick={handleSaveProfile} disabled={updateProfileMutation.isPending} data-testid="button-save-profile">
+              <Button 
+                type="button" 
+                onClick={handleSaveProfile} 
+                disabled={updateProfileMutation.isPending || uploadProfileImageMutation.isPending} 
+                data-testid="button-save-profile"
+              >
                 {updateProfileMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </div>

@@ -64,6 +64,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Profile Photo Upload** (December 30, 2025)
+- Users can now upload a photo or take a selfie as their profile picture
+- Added POST /api/upload/profile-image endpoint with Sharp image compression
+- Profile images stored in /uploads/profiles/ as WebP (500x500, optimized)
+- UserAvatar component prioritizes custom photo over avatar icons
+- Edit Profile dialog includes Upload and Selfie buttons with live preview
+- Avatar icons remain as fallback when no custom photo is set
+
 **FayaFlex Rebrand** (December 30, 2025)
 - Complete rebrand from "Ultimate Fitness Challenge (UFC)" to "FayaFlex" due to trademark concerns
 - Updated all text references, logos, email addresses (support@fayaflex.com)
