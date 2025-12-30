@@ -30,6 +30,7 @@ export default function Leaderboard() {
   const currentYear = new Date().getFullYear();
   const monthName = format(new Date(currentYear, currentMonth - 1), "MMMM yyyy");
   const [locationScope, setLocationScope] = useState<LocationScope>("global");
+  const [activeTab, setActiveTab] = useState<string>("teams");
 
   // Get current user's location for filtering
   const { data: user } = useQuery<User>({
@@ -61,10 +62,9 @@ export default function Leaderboard() {
     isError: isErrorTeams,
     refetch: refetchTeams 
   } = useQuery<LeaderboardEntry[]>({
-    queryKey: ['/api/leaderboard/teams', { month: currentMonth, year: currentYear, scope: locationScope, userLocation: user?.continentId }],
+    queryKey: ['/api/leaderboard/teams', { month: currentMonth, year: currentYear }],
     queryFn: async () => {
-      const scopeParams = getScopeParams(locationScope, user);
-      const res = await fetch(`/api/leaderboard/teams?month=${currentMonth}&year=${currentYear}${scopeParams}`);
+      const res = await fetch(`/api/leaderboard/teams?month=${currentMonth}&year=${currentYear}`);
       if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
       return res.json();
     },
@@ -228,39 +228,41 @@ export default function Leaderboard() {
         <p className="text-center text-orange-100 text-lg">{monthName}</p>
         <p className="text-center text-orange-200 text-sm mt-1">Rankings reset on the 1st of each month</p>
         
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <div className="flex items-center gap-1 text-sm text-orange-100">
-            {locationScope === "global" ? <Globe className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
-            <span>Scope:</span>
+        {activeTab !== "teams" && (
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="flex items-center gap-1 text-sm text-orange-100">
+              {locationScope === "global" ? <Globe className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+              <span>Scope:</span>
+            </div>
+            <Select value={locationScope} onValueChange={(v) => setLocationScope(v as LocationScope)}>
+              <SelectTrigger 
+                className="w-32 h-8 bg-white/20 border-white/30 text-white text-sm" 
+                data-testid="select-location-scope"
+              >
+                <SelectValue placeholder="Scope" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="global">Global</SelectItem>
+                <SelectItem value="continent" disabled={!isScopeAvailable("continent")}>
+                  Continent {!isScopeAvailable("continent") && "(Set in Profile)"}
+                </SelectItem>
+                <SelectItem value="country" disabled={!isScopeAvailable("country")}>
+                  Country {!isScopeAvailable("country") && "(Set in Profile)"}
+                </SelectItem>
+                <SelectItem value="region" disabled={!isScopeAvailable("region")}>
+                  Region {!isScopeAvailable("region") && "(Set in Profile)"}
+                </SelectItem>
+                <SelectItem value="town" disabled={!isScopeAvailable("town")}>
+                  Town {!isScopeAvailable("town") && "(Set in Profile)"}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={locationScope} onValueChange={(v) => setLocationScope(v as LocationScope)}>
-            <SelectTrigger 
-              className="w-32 h-8 bg-white/20 border-white/30 text-white text-sm" 
-              data-testid="select-location-scope"
-            >
-              <SelectValue placeholder="Scope" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="global">Global</SelectItem>
-              <SelectItem value="continent" disabled={!isScopeAvailable("continent")}>
-                Continent {!isScopeAvailable("continent") && "(Set in Profile)"}
-              </SelectItem>
-              <SelectItem value="country" disabled={!isScopeAvailable("country")}>
-                Country {!isScopeAvailable("country") && "(Set in Profile)"}
-              </SelectItem>
-              <SelectItem value="region" disabled={!isScopeAvailable("region")}>
-                Region {!isScopeAvailable("region") && "(Set in Profile)"}
-              </SelectItem>
-              <SelectItem value="town" disabled={!isScopeAvailable("town")}>
-                Town {!isScopeAvailable("town") && "(Set in Profile)"}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        )}
       </header>
 
       <div className="px-4 -mt-4">
-        <Tabs defaultValue="teams" className="w-full">
+        <Tabs defaultValue="teams" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 bg-card shadow-md rounded-xl p-1">
             <TabsTrigger 
               value="teams" 
@@ -299,7 +301,7 @@ export default function Leaderboard() {
                 <h2 className="text-lg font-semibold">
                   Team Rankings
                   <span className="text-muted-foreground font-normal text-sm ml-1">
-                    ({getScopeDisplayName()})
+                    (Global)
                   </span>
                 </h2>
               </div>
@@ -309,7 +311,12 @@ export default function Leaderboard() {
             <TabsContent value="calories" className="mt-0">
               <div className="flex items-center gap-2 mb-4">
                 <Flame className="w-5 h-5 text-orange-500" />
-                <h2 className="text-lg font-semibold">Calories Burned</h2>
+                <h2 className="text-lg font-semibold">
+                  Calories Burned
+                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                    ({getScopeDisplayName()})
+                  </span>
+                </h2>
               </div>
               {renderLeaderboardContent(caloriesLeaderboard, isLoadingCalories, isErrorCalories, refetchCalories, 'calories')}
             </TabsContent>
@@ -317,7 +324,12 @@ export default function Leaderboard() {
             <TabsContent value="steps" className="mt-0">
               <div className="flex items-center gap-2 mb-4">
                 <Footprints className="w-5 h-5 text-blue-500" />
-                <h2 className="text-lg font-semibold">Steps Taken</h2>
+                <h2 className="text-lg font-semibold">
+                  Steps Taken
+                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                    ({getScopeDisplayName()})
+                  </span>
+                </h2>
               </div>
               {renderLeaderboardContent(stepsLeaderboard, isLoadingSteps, isErrorSteps, refetchSteps, 'steps')}
             </TabsContent>
@@ -325,7 +337,12 @@ export default function Leaderboard() {
             <TabsContent value="workouts" className="mt-0">
               <div className="flex items-center gap-2 mb-4">
                 <Dumbbell className="w-5 h-5 text-purple-500" />
-                <h2 className="text-lg font-semibold">Workout Days</h2>
+                <h2 className="text-lg font-semibold">
+                  Workout Days
+                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                    ({getScopeDisplayName()})
+                  </span>
+                </h2>
               </div>
               {renderLeaderboardContent(workoutsLeaderboard, isLoadingWorkouts, isErrorWorkouts, refetchWorkouts, 'workouts')}
             </TabsContent>
