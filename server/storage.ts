@@ -144,6 +144,7 @@ export interface IStorage {
   getLocations(type?: string, parentId?: string): Promise<Location[]>;
   getLocationById(id: string): Promise<Location | undefined>;
   getLocationHierarchy(id: string): Promise<Location[]>;
+  searchCities(query: string, limit?: number): Promise<{ city: Location; hierarchy: Location[] }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -989,6 +990,29 @@ export class DatabaseStorage implements IStorage {
     }
     
     return hierarchy;
+  }
+
+  async searchCities(query: string, limit: number = 10): Promise<{ city: Location; hierarchy: Location[] }[]> {
+    if (!query || query.length < 2) return [];
+    
+    // Search for towns/cities matching the query (case-insensitive)
+    const cities = await db.select().from(locations)
+      .where(and(
+        eq(locations.type, 'town'),
+        sql`LOWER(${locations.name}) LIKE LOWER(${'%' + query + '%'})`
+      ))
+      .orderBy(locations.name)
+      .limit(limit);
+    
+    // Get hierarchy for each city
+    const results = await Promise.all(
+      cities.map(async (city) => {
+        const hierarchy = await this.getLocationHierarchy(city.id);
+        return { city, hierarchy };
+      })
+    );
+    
+    return results;
   }
 }
 

@@ -190,6 +190,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Search cities by name with full hierarchy (must be before :id route)
+  app.get("/api/locations/search/cities", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+      
+      const results = await storage.searchCities(query, limit);
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching cities:", error);
+      res.status(500).json({ message: "Failed to search cities" });
+    }
+  });
+
   app.get("/api/locations/:id", async (req, res) => {
     try {
       const location = await storage.getLocationById(req.params.id);
