@@ -145,6 +145,15 @@ export interface IStorage {
   getLocationById(id: string): Promise<Location | undefined>;
   getLocationHierarchy(id: string): Promise<Location[]>;
   searchCities(query: string, limit?: number): Promise<{ city: Location; hierarchy: Location[] }[]>;
+  createLocationHierarchyFromGeoNames(data: {
+    geonameId: number;
+    cityName: string;
+    regionName: string;
+    countryName: string;
+    countryCode: string;
+    continentCode: string;
+    continentName: string;
+  }): Promise<{ continentId: string; countryId: string; regionId: string; townId: string }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1013,6 +1022,114 @@ export class DatabaseStorage implements IStorage {
     );
     
     return results;
+  }
+
+  async createLocationHierarchyFromGeoNames(data: {
+    geonameId: number;
+    cityName: string;
+    regionName: string;
+    countryName: string;
+    countryCode: string;
+    continentCode: string;
+    continentName: string;
+  }): Promise<{ continentId: string; countryId: string; regionId: string; townId: string }> {
+    // Create or get continent
+    let [continent] = await db.select().from(locations)
+      .where(and(eq(locations.type, 'continent'), eq(locations.name, data.continentName)));
+    
+    if (!continent) {
+      [continent] = await db.insert(locations).values({
+        id: `continent_${data.continentCode.toLowerCase()}`,
+        name: data.continentName,
+        type: 'continent',
+        parentId: null,
+        sortOrder: 0,
+      }).onConflictDoNothing().returning();
+      
+      if (!continent) {
+        [continent] = await db.select().from(locations)
+          .where(eq(locations.id, `continent_${data.continentCode.toLowerCase()}`));
+      }
+    }
+
+    // Create or get country
+    let [country] = await db.select().from(locations)
+      .where(and(
+        eq(locations.type, 'country'),
+        eq(locations.name, data.countryName),
+        eq(locations.parentId, continent.id)
+      ));
+    
+    if (!country) {
+      const countryId = `country_${data.countryCode.toLowerCase()}`;
+      [country] = await db.insert(locations).values({
+        id: countryId,
+        name: data.countryName,
+        type: 'country',
+        parentId: continent.id,
+        sortOrder: 0,
+      }).onConflictDoNothing().returning();
+      
+      if (!country) {
+        [country] = await db.select().from(locations).where(eq(locations.id, countryId));
+      }
+    }
+
+    // Create or get region (use country if no region)
+    let region = country;
+    if (data.regionName && data.regionName.trim() !== '') {
+      const regionSlug = data.regionName.toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 30);
+      const regionId = `region_${data.countryCode.toLowerCase()}_${regionSlug}`;
+      
+      [region] = await db.select().from(locations)
+        .where(and(
+          eq(locations.type, 'region'),
+          eq(locations.name, data.regionName),
+          eq(locations.parentId, country.id)
+        ));
+      
+      if (!region) {
+        [region] = await db.insert(locations).values({
+          id: regionId,
+          name: data.regionName,
+          type: 'region',
+          parentId: country.id,
+          sortOrder: 0,
+        }).onConflictDoNothing().returning();
+        
+        if (!region) {
+          [region] = await db.select().from(locations).where(eq(locations.id, regionId));
+        }
+      }
+    }
+
+    // Create or get town/city
+    const townSlug = data.cityName.toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 30);
+    const townId = `town_${data.geonameId}`;
+    
+    let [town] = await db.select().from(locations)
+      .where(eq(locations.id, townId));
+    
+    if (!town) {
+      [town] = await db.insert(locations).values({
+        id: townId,
+        name: data.cityName,
+        type: 'town',
+        parentId: region?.id || country.id,
+        sortOrder: 0,
+      }).onConflictDoNothing().returning();
+      
+      if (!town) {
+        [town] = await db.select().from(locations).where(eq(locations.id, townId));
+      }
+    }
+
+    return {
+      continentId: continent.id,
+      countryId: country.id,
+      regionId: region?.id || country.id,
+      townId: town.id,
+    };
   }
 }
 

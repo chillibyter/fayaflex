@@ -3,21 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, X, Check } from "lucide-react";
+import { MapPin, Search, X, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 
-type Location = {
-  id: string;
-  name: string;
-  type: string;
-  parentId: string | null;
-  isoCode: string | null;
-  sortOrder: number | null;
-};
-
-type CityResult = {
-  city: Location;
-  hierarchy: Location[];
+type GeoNamesResult = {
+  geonameId: number;
+  cityName: string;
+  regionName: string;
+  countryName: string;
+  countryCode: string;
+  continentCode: string;
+  continentName: string;
+  displayName: string;
+  population: number;
 };
 
 interface CitySearchProps {
@@ -39,15 +38,16 @@ interface CitySearchProps {
 export function CitySearch({ onSelect, initialLocation, className }: CitySearchProps) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<CityResult | null>(null);
+  const [selectedCity, setSelectedCity] = useState<GeoNamesResult | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { data: results = [], isLoading } = useQuery<CityResult[]>({
+  const { data: results = [], isLoading } = useQuery<GeoNamesResult[]>({
     queryKey: ['/api/locations/search/cities', query],
     queryFn: async () => {
       if (query.length < 2) return [];
-      const res = await fetch(`/api/locations/search/cities?q=${encodeURIComponent(query)}&limit=8`);
+      const res = await fetch(`/api/locations/search/cities?q=${encodeURIComponent(query)}&limit=10`);
       return res.json();
     },
     enabled: query.length >= 2,
@@ -68,23 +68,37 @@ export function CitySearch({ onSelect, initialLocation, className }: CitySearchP
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (result: CityResult) => {
+  const handleSelect = async (result: GeoNamesResult) => {
     setSelectedCity(result);
     setQuery("");
     setIsOpen(false);
+    setIsCreating(true);
 
-    const hierarchy = result.hierarchy;
-    const continent = hierarchy.find(l => l.type === 'continent');
-    const country = hierarchy.find(l => l.type === 'country');
-    const region = hierarchy.find(l => l.type === 'region');
-    const town = hierarchy.find(l => l.type === 'town');
-
-    onSelect({
-      continentId: continent?.id || null,
-      countryId: country?.id || null,
-      regionId: region?.id || null,
-      townId: town?.id || null,
-    });
+    try {
+      const response = await apiRequest("POST", "/api/locations/from-geonames", {
+        geonameId: result.geonameId,
+        cityName: result.cityName,
+        regionName: result.regionName,
+        countryName: result.countryName,
+        countryCode: result.countryCode,
+        continentCode: result.continentCode,
+        continentName: result.continentName,
+      });
+      
+      const hierarchy = await response.json();
+      
+      onSelect({
+        continentId: hierarchy.continentId || null,
+        countryId: hierarchy.countryId || null,
+        regionId: hierarchy.regionId || null,
+        townId: hierarchy.townId || null,
+      });
+    } catch (error) {
+      console.error("Failed to create location hierarchy:", error);
+      setSelectedCity(null);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleClear = () => {
@@ -99,11 +113,12 @@ export function CitySearch({ onSelect, initialLocation, className }: CitySearchP
     inputRef.current?.focus();
   };
 
-  const formatLocationPath = (hierarchy: Location[]) => {
-    return hierarchy
-      .filter(l => l.type !== 'town')
-      .map(l => l.name)
-      .join(', ');
+  const formatLocationPath = (result: GeoNamesResult) => {
+    const parts = [];
+    if (result.regionName) parts.push(result.regionName);
+    parts.push(result.countryName);
+    parts.push(result.continentName);
+    return parts.join(', ');
   };
 
   return (
@@ -120,11 +135,15 @@ export function CitySearch({ onSelect, initialLocation, className }: CitySearchP
             data-testid="selected-city-display"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Check className="h-4 w-4 text-primary shrink-0" />
+              {isCreating ? (
+                <Loader2 className="h-4 w-4 text-primary shrink-0 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4 text-primary shrink-0" />
+              )}
               <div className="min-w-0">
-                <span className="font-medium truncate block">{selectedCity.city.name}</span>
+                <span className="font-medium truncate block">{selectedCity.cityName}</span>
                 <span className="text-xs text-muted-foreground truncate block">
-                  {formatLocationPath(selectedCity.hierarchy)}
+                  {formatLocationPath(selectedCity)}
                 </span>
               </div>
             </div>
@@ -134,6 +153,7 @@ export function CitySearch({ onSelect, initialLocation, className }: CitySearchP
               size="icon"
               className="h-8 w-8 shrink-0"
               onClick={handleClear}
+              disabled={isCreating}
               data-testid="button-clear-city"
             >
               <X className="h-4 w-4" />
@@ -165,7 +185,8 @@ export function CitySearch({ onSelect, initialLocation, className }: CitySearchP
               >
                 {isLoading ? (
                   <div className="p-3 text-center text-muted-foreground text-sm">
-                    Searching...
+                    <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                    Searching worldwide...
                   </div>
                 ) : results.length === 0 ? (
                   <div className="p-3 text-center text-muted-foreground text-sm">
@@ -174,15 +195,15 @@ export function CitySearch({ onSelect, initialLocation, className }: CitySearchP
                 ) : (
                   results.map((result) => (
                     <button
-                      key={result.city.id}
+                      key={result.geonameId}
                       type="button"
                       className="w-full text-left p-3 hover-elevate transition-colors border-b last:border-0"
                       onClick={() => handleSelect(result)}
-                      data-testid={`city-result-${result.city.id}`}
+                      data-testid={`city-result-${result.geonameId}`}
                     >
-                      <div className="font-medium">{result.city.name}</div>
+                      <div className="font-medium">{result.cityName}</div>
                       <div className="text-xs text-muted-foreground">
-                        {formatLocationPath(result.hierarchy)}
+                        {formatLocationPath(result)}
                       </div>
                     </button>
                   ))

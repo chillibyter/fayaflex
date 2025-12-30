@@ -190,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Search cities by name with full hierarchy (must be before :id route)
+  // Search cities by name using GeoNames API (must be before :id route)
   app.get("/api/locations/search/cities", async (req, res) => {
     try {
       const query = req.query.q as string;
@@ -200,11 +200,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       
-      const results = await storage.searchCities(query, limit);
+      const { searchCitiesGeoNames } = await import("./geonames");
+      const results = await searchCitiesGeoNames(query, limit);
       res.json(results);
     } catch (error) {
       console.error("Error searching cities:", error);
       res.status(500).json({ message: "Failed to search cities" });
+    }
+  });
+
+  // Create location hierarchy from GeoNames data when user selects a city
+  app.post("/api/locations/from-geonames", async (req, res) => {
+    try {
+      const schema = z.object({
+        geonameId: z.number(),
+        cityName: z.string(),
+        regionName: z.string(),
+        countryName: z.string(),
+        countryCode: z.string(),
+        continentCode: z.string(),
+        continentName: z.string(),
+      });
+      
+      const data = schema.parse(req.body);
+      const hierarchy = await storage.createLocationHierarchyFromGeoNames(data);
+      res.json(hierarchy);
+    } catch (error) {
+      console.error("Error creating location from GeoNames:", error);
+      res.status(500).json({ message: "Failed to create location" });
     }
   });
 
