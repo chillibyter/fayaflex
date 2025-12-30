@@ -192,6 +192,35 @@ export default function Leaderboard() {
     }
   };
 
+  // Fetch location name for current scope
+  const getLocationId = (scope: LocationScope) => {
+    if (!user) return null;
+    switch (scope) {
+      case "continent": return user.continentId;
+      case "country": return user.countryId;
+      case "region": return user.regionId;
+      case "town": return user.townId;
+      default: return null;
+    }
+  };
+
+  const { data: locationData } = useQuery<{ id: string; name: string }>({
+    queryKey: ['/api/locations', getLocationId(locationScope)],
+    queryFn: async () => {
+      const id = getLocationId(locationScope);
+      if (!id) return null;
+      const res = await fetch(`/api/locations/${id}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: locationScope !== "global" && !!getLocationId(locationScope),
+  });
+
+  const getScopeDisplayName = () => {
+    if (locationScope === "global") return "Global";
+    return locationData?.name || getScopeLabel(locationScope);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 pt-6 pb-8 rounded-b-3xl">
@@ -267,7 +296,12 @@ export default function Leaderboard() {
             <TabsContent value="teams" className="mt-0">
               <div className="flex items-center gap-2 mb-4">
                 <Trophy className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Team Rankings</h2>
+                <h2 className="text-lg font-semibold">
+                  Team Rankings
+                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                    ({getScopeDisplayName()})
+                  </span>
+                </h2>
               </div>
               {renderLeaderboardContent(teamLeaderboard, isLoadingTeams, isErrorTeams, refetchTeams, 'calories')}
             </TabsContent>

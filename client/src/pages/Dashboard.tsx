@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal } from "lucide-react";
+import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin } from "lucide-react";
 import { SiApple } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
-import type { Activity as ActivityType } from "@shared/schema";
+import type { Activity as ActivityType, User } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
@@ -13,6 +13,8 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { useAuth } from "@/hooks/use-auth";
 import GoalJourneys from "@/components/GoalJourneys";
+
+type LocationScope = "global" | "continent" | "country" | "region" | "town";
 
 type DashboardStats = {
   calories: number;
@@ -53,7 +55,77 @@ function getSourceInfo(source?: string | null) {
 
 export default function Dashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentScopeIndex, setCurrentScopeIndex] = useState(0);
   const { user } = useAuth();
+
+  // Get current user data for location IDs
+  const { data: userData } = useQuery<User>({
+    queryKey: ['/api/auth/user'],
+  });
+
+  // Build available scopes based on user's location data (starting from most specific)
+  const availableScopes = useMemo(() => {
+    const scopes: { scope: LocationScope; locationId: string | null }[] = [];
+    if (userData?.townId) scopes.push({ scope: "town", locationId: userData.townId });
+    if (userData?.regionId) scopes.push({ scope: "region", locationId: userData.regionId });
+    if (userData?.countryId) scopes.push({ scope: "country", locationId: userData.countryId });
+    if (userData?.continentId) scopes.push({ scope: "continent", locationId: userData.continentId });
+    scopes.push({ scope: "global", locationId: null });
+    return scopes;
+  }, [userData]);
+
+  const currentScope = availableScopes[currentScopeIndex] || { scope: "global", locationId: null };
+
+  // Rotate through scopes every 5 seconds
+  useEffect(() => {
+    if (availableScopes.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentScopeIndex((prev) => (prev + 1) % availableScopes.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [availableScopes.length]);
+
+  // Fetch location name for current scope
+  const { data: locationName } = useQuery<{ id: string; name: string }>({
+    queryKey: ['/api/locations', currentScope.locationId],
+    queryFn: async () => {
+      if (!currentScope.locationId) return null;
+      const res = await fetch(`/api/locations/${currentScope.locationId}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: currentScope.scope !== "global" && !!currentScope.locationId,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+
+  // Fetch rank for current location scope
+  const getScopeParams = () => {
+    if (currentScope.scope === "global" || !currentScope.locationId) return "";
+    return `&scope=${currentScope.scope}&locationId=${currentScope.locationId}`;
+  };
+
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
+  const { data: scopedRankData } = useQuery<{ rank: number; total: number }>({
+    queryKey: ['/api/leaderboard/user-rank', currentScope.scope, currentScope.locationId],
+    queryFn: async () => {
+      const res = await fetch(`/api/leaderboard/user-rank?month=${currentMonth}&year=${currentYear}${getScopeParams()}`);
+      if (!res.ok) return { rank: 0, total: 0 };
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const getScopeDisplayName = () => {
+    if (currentScope.scope === "global") return "Global";
+    return locationName?.name || currentScope.scope.charAt(0).toUpperCase() + currentScope.scope.slice(1);
+  };
 
   const { 
     data: stats, 
@@ -195,25 +267,48 @@ export default function Dashboard() {
         )}
 
         <Link href="/leaderboard">
-          <Card className="cursor-pointer hover-elevate border-primary/20">
+          <Card className="cursor-pointer hover-elevate border-primary/20 transition-all duration-500">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                    <Medal className="h-6 w-6 text-white" />
+                    {currentScope.scope === "global" ? (
+                      <Globe className="h-6 w-6 text-white" />
+                    ) : (
+                      <MapPin className="h-6 w-6 text-white" />
+                    )}
                   </div>
                   <div>
-                    <h3 className="font-semibold">Global Ranking</h3>
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <span>{getScopeDisplayName()}</span>
+                      <span className="text-xs text-muted-foreground">Ranking</span>
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      {stats?.totalActiveUsers ? `Out of ${stats.totalActiveUsers} active users` : 'View your position'}
+                      {scopedRankData?.total 
+                        ? `Out of ${scopedRankData.total} active users`
+                        : stats?.totalActiveUsers 
+                          ? `Out of ${stats.totalActiveUsers} active users` 
+                          : 'View your position'}
                     </p>
+                    {availableScopes.length > 1 && (
+                      <div className="flex gap-1 mt-1">
+                        {availableScopes.map((_, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`h-1 w-4 rounded-full transition-colors ${
+                              idx === currentScopeIndex ? 'bg-primary' : 'bg-muted'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-primary" data-testid="text-global-rank">
-                    #{stats?.rank || '-'}
+                  <p className="text-3xl font-bold text-primary transition-all duration-300" data-testid="text-global-rank">
+                    #{scopedRankData?.rank || stats?.rank || '-'}
                   </p>
-                  {stats?.percentile && stats.percentile > 0 && (
+                  {stats?.percentile && stats.percentile > 0 && currentScope.scope === "global" && (
                     <Badge variant="secondary" className="mt-1">
                       Top {Math.round(stats.percentile)}%
                     </Badge>

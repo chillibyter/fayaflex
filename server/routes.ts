@@ -992,6 +992,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Leaderboard routes
+  
+  // Get current user's rank for a specific location scope
+  app.get("/api/leaderboard/user-rank", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
+      const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+      const scope = req.query.scope as string | undefined;
+      const locationId = req.query.locationId as string | undefined;
+
+      // Get all activities for the month
+      const allActivities = await storage.getAllActivitiesForMonth(month, year);
+      
+      // Helper to aggregate calories by date per user (avoid double-counting)
+      const aggregateByUser = (activities: any[], filterFn?: (userId: string) => boolean) => {
+        const userCalories = new Map<string, Map<string, number>>();
+        for (const act of activities) {
+          if (filterFn && !filterFn(act.userId)) continue;
+          
+          if (!userCalories.has(act.userId)) {
+            userCalories.set(act.userId, new Map());
+          }
+          const userDates = userCalories.get(act.userId)!;
+          const existing = userDates.get(act.date) || 0;
+          userDates.set(act.date, Math.max(existing, act.calories));
+        }
+        
+        const results: { userId: string; totalCalories: number }[] = [];
+        for (const [uid, dates] of userCalories.entries()) {
+          let total = 0;
+          for (const cal of dates.values()) total += cal;
+          results.push({ userId: uid, totalCalories: total });
+        }
+        return results.sort((a, b) => b.totalCalories - a.totalCalories);
+      };
+
+      let userFilter: ((userId: string) => boolean) | undefined;
+      
+      if (scope && locationId && scope !== 'global') {
+        // Get all users and filter by location
+        const allUsers = await storage.getAllUsers();
+        const usersInLocation = new Set<string>();
+        
+        for (const user of allUsers) {
+          let matches = false;
+          switch (scope) {
+            case 'continent':
+              matches = user.continentId === locationId;
+              break;
+            case 'country':
+              matches = user.countryId === locationId;
+              break;
+            case 'region':
+              matches = user.regionId === locationId;
+              break;
+            case 'town':
+              matches = user.townId === locationId;
+              break;
+          }
+          if (matches) usersInLocation.add(user.id);
+        }
+        
+        userFilter = (uid: string) => usersInLocation.has(uid);
+      }
+
+      const rankedUsers = aggregateByUser(allActivities, userFilter);
+      const userRankIndex = rankedUsers.findIndex(u => u.userId === userId);
+      
+      res.json({
+        rank: userRankIndex >= 0 ? userRankIndex + 1 : 0,
+        total: rankedUsers.length,
+      });
+    } catch (error) {
+      console.error("Error fetching user rank:", error);
+      res.status(500).json({ message: "Failed to fetch user rank" });
+    }
+  });
+
   // Personal leaderboard - only shows members from user's teams (deduplicated)
   app.get("/api/leaderboard/personal", isAuthenticated, async (req: any, res) => {
     try {
