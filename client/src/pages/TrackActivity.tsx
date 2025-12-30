@@ -130,10 +130,7 @@ export default function TrackActivity() {
   return (
     <div className="min-h-screen bg-background">
       <div className="px-4 pt-6 pb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <img src="/fayaflex-logo.png" alt="" className="h-8 w-8" />
-          <h1 className="text-2xl font-bold">Track Activity</h1>
-        </div>
+        <h1 className="text-2xl font-bold text-primary mb-2">Track Activity</h1>
         
         <Tabs defaultValue="manual" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">

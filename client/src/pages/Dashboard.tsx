@@ -119,51 +119,39 @@ export default function Dashboard() {
         />
       )}
 
-      <header className="bg-background px-4 pt-4 pb-6">
-        <div className="flex items-center gap-2 mb-2">
+      <header className="bg-gradient-to-br from-green-500 to-green-600 text-white px-4 pt-4 pb-6 rounded-b-3xl">
+        <div className="flex items-center gap-2 mb-6">
           <img 
             src="/fayaflex-logo.png" 
             alt="FayaFlex" 
-            className="w-10 h-10"
+            className="w-8 h-8 rounded"
           />
+          <h1 className="text-xl font-bold">FayaFlex</h1>
         </div>
-        <h1 className="text-2xl font-bold text-primary mb-1">FayaFlex</h1>
-        <p className="text-xl font-bold text-foreground mb-6">Dashboard</p>
 
         <div className="grid grid-cols-3 gap-3">
           <Link href="/daily-chart?metric=calories">
-            <div className="bg-card text-card-foreground rounded-xl p-3 cursor-pointer hover-elevate shadow-sm border" data-testid="stat-calories">
-              <div className="flex items-center gap-1 mb-1">
-                <div className="h-6 w-6 rounded bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <Flame className="h-4 w-4 text-green-600" />
-                </div>
-                <p className="text-[10px] text-muted-foreground">Total<br/>Calories</p>
-                <ArrowUp className="h-3 w-3 text-muted-foreground ml-auto" />
-              </div>
-              <p className="text-2xl font-bold">{stats?.calories?.toLocaleString() || 0}<span className="text-xs font-normal text-muted-foreground ml-1">kcal</span></p>
+            <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-calories">
+              <Flame className="h-6 w-6 text-orange-500 mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Total Calories</p>
+              <p className="text-2xl font-bold">{stats?.calories?.toLocaleString() || 0}</p>
+              <p className="text-xs text-muted-foreground">kcal</p>
             </div>
           </Link>
           <Link href="/daily-chart?metric=steps">
-            <div className="bg-card text-card-foreground rounded-xl p-3 cursor-pointer hover-elevate shadow-sm border" data-testid="stat-steps">
-              <div className="flex items-center gap-1 mb-1">
-                <div className="h-6 w-6 rounded bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <Footprints className="h-4 w-4 text-green-600" />
-                </div>
-                <p className="text-[10px] text-muted-foreground">Total<br/>Steps</p>
-                <ArrowUp className="h-3 w-3 text-muted-foreground ml-auto" />
-              </div>
-              <p className="text-2xl font-bold">{stats?.steps?.toLocaleString() || 0}<span className="text-xs font-normal text-muted-foreground ml-1">steps</span></p>
+            <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-steps">
+              <Footprints className="h-6 w-6 text-green-500 mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Total Steps</p>
+              <p className="text-2xl font-bold">{stats?.steps?.toLocaleString() || 0}</p>
+              <p className="text-xs text-muted-foreground">steps</p>
             </div>
           </Link>
           <Link href="/track">
-            <div className="bg-card text-card-foreground rounded-xl p-3 cursor-pointer hover-elevate shadow-sm border" data-testid="stat-workouts">
-              <div className="flex items-center gap-1 mb-1">
-                <div className="h-6 w-6 rounded bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <Calendar className="h-4 w-4 text-green-600" />
-                </div>
-                <p className="text-[10px] text-muted-foreground">Workout<br/>Days</p>
-              </div>
-              <p className="text-2xl font-bold">{stats?.workouts || 0}<span className="text-xs font-normal text-muted-foreground ml-1">days</span></p>
+            <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-workouts">
+              <Calendar className="h-6 w-6 text-green-600 mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Workout Days</p>
+              <p className="text-2xl font-bold">{stats?.workouts || 0}</p>
+              <p className="text-xs text-muted-foreground">days</p>
             </div>
           </Link>
         </div>

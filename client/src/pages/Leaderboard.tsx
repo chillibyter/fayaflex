@@ -136,13 +136,10 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 text-white px-4 pt-6 pb-8 rounded-b-3xl">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <img src="/fayaflex-logo.png" alt="" className="h-8 w-8" />
-          <h1 className="text-3xl font-bold">Leaderboard</h1>
-        </div>
-        <p className="text-center text-white text-lg font-medium">{monthName}</p>
-        <p className="text-center text-white/80 text-sm mt-1">Rankings reset on the 1st of each month.</p>
+      <header className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 pt-6 pb-8 rounded-b-3xl">
+        <h1 className="text-3xl font-bold text-center mb-1">Leaderboard</h1>
+        <p className="text-center text-orange-100 text-lg">{monthName}</p>
+        <p className="text-center text-orange-200 text-sm mt-1">Rankings reset on the 1st of each month</p>
       </header>
 
       <div className="px-4 -mt-4">

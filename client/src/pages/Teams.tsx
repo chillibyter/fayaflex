@@ -115,12 +115,11 @@ export default function Teams() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-4 pt-4 pb-6 bg-background">
-        <div className="flex items-center justify-end gap-2 mb-4">
+      <div className="bg-gradient-to-br from-primary/10 to-primary/5 px-4 pt-4 pb-6">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="border-primary text-primary" data-testid="button-join-team">
-                <PlusCircle className="h-4 w-4 mr-1" />
+              <Button variant="outline" size="sm" data-testid="button-join-team">
                 Join Team
               </Button>
             </DialogTrigger>
@@ -141,19 +140,12 @@ export default function Teams() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button size="sm" className="border-primary text-primary" variant="outline" asChild data-testid="button-create-team">
-            <Link href="/create-team">
-              <Users className="h-4 w-4 mr-1" />
-              Create Team
-            </Link>
+          <Button size="sm" asChild data-testid="button-create-team">
+            <Link href="/create-team">Create Team</Link>
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 mb-2">
-          <img src="/fayaflex-logo.png" alt="" className="h-8 w-8" />
-          <h1 className="text-2xl font-bold">My Teams</h1>
-        </div>
-        <p className="text-muted-foreground mb-4">Manage your teams and track group progress.</p>
+        <h1 className="text-2xl font-bold mb-2">My Teams</h1>
         
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
