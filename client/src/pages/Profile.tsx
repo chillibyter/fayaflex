@@ -27,7 +27,7 @@ import BadgesDisplay from "@/components/BadgesDisplay";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LocationPicker } from "@/components/LocationPicker";
+import { CitySearch } from "@/components/CitySearch";
 
 type ChartData = {
   date: string;
@@ -486,15 +486,13 @@ export default function Profile() {
               </div>
             </div>
 
-            <LocationPicker
-              continentId={continentId}
-              countryId={countryId}
-              regionId={regionId}
-              townId={townId}
-              onContinentChange={setContinentId}
-              onCountryChange={setCountryId}
-              onRegionChange={setRegionId}
-              onTownChange={setTownId}
+            <CitySearch
+              onSelect={(location) => {
+                setContinentId(location.continentId);
+                setCountryId(location.countryId);
+                setRegionId(location.regionId);
+                setTownId(location.townId);
+              }}
             />
 
             <div className="flex gap-3 justify-end pt-2">

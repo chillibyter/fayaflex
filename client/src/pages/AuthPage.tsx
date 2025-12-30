@@ -93,6 +93,10 @@ export default function AuthPage() {
       errors.email = "Please enter a valid email address";
     }
     
+    if (!townId) {
+      errors.city = "Please select your city";
+    }
+    
     setRegisterErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -494,14 +498,23 @@ export default function AuthPage() {
                   </div>
                 </div>
 
-                <CitySearch
-                  onSelect={(location) => {
-                    setContinentId(location.continentId);
-                    setCountryId(location.countryId);
-                    setRegionId(location.regionId);
-                    setTownId(location.townId);
-                  }}
-                />
+                <div className="space-y-2">
+                  <CitySearch
+                    onSelect={(location) => {
+                      setContinentId(location.continentId);
+                      setCountryId(location.countryId);
+                      setRegionId(location.regionId);
+                      setTownId(location.townId);
+                      clearRegisterError("city");
+                    }}
+                  />
+                  {registerErrors.city && (
+                    <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-city">
+                      <AlertCircle className="w-4 h-4" />
+                      {registerErrors.city}
+                    </p>
+                  )}
+                </div>
 
                 <Button
                   type="submit"

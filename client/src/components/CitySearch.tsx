@@ -110,7 +110,7 @@ export function CitySearch({ onSelect, initialLocation, className }: CitySearchP
     <div className={cn("space-y-2", className)}>
       <div className="flex items-center gap-2">
         <MapPin className="h-4 w-4 text-muted-foreground" />
-        <Label className="text-sm font-medium">City (optional)</Label>
+        <Label className="text-sm font-medium">City</Label>
       </div>
       
       <div className="relative">

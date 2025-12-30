@@ -68,7 +68,8 @@ Preferred communication style: Simple, everyday language.
 - Added CitySearch component with autocomplete for finding cities during registration
 - Search API endpoint /api/locations/search/cities returns cities with full location hierarchy
 - Selecting a city auto-populates continent, country, region, and town location fields
-- Location selection is optional during registration
+- City selection is REQUIRED during registration (validation enforced)
+- Users can change their city in Profile settings using the same CitySearch component
 - searchCities storage method supports case-insensitive matching with minimum 2 characters
 
 **Location-Based Rankings** (December 30, 2025)
