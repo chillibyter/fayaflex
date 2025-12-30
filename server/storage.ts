@@ -13,6 +13,7 @@ import {
   personalBests,
   userGoals,
   passwordResetTokens,
+  locations,
   type User,
   type UpsertUser,
   type Team,
@@ -40,6 +41,7 @@ import {
   type InsertUserGoal,
   type PasswordResetToken,
   type InsertPasswordResetToken,
+  type Location,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
@@ -137,6 +139,11 @@ export interface IStorage {
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(tokenId: string): Promise<void>;
   deleteExpiredPasswordResetTokens(): Promise<void>;
+
+  // Location operations
+  getLocations(type?: string, parentId?: string): Promise<Location[]>;
+  getLocationById(id: string): Promise<Location | undefined>;
+  getLocationHierarchy(id: string): Promise<Location[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -939,6 +946,49 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(passwordResetTokens)
       .where(lte(passwordResetTokens.expiresAt, new Date()));
+  }
+
+  // Location operations
+  async getLocations(type?: string, parentId?: string): Promise<Location[]> {
+    let query = db.select().from(locations);
+    
+    if (type && parentId) {
+      return await db.select().from(locations)
+        .where(and(eq(locations.type, type), eq(locations.parentId, parentId)))
+        .orderBy(locations.sortOrder);
+    } else if (type) {
+      return await db.select().from(locations)
+        .where(eq(locations.type, type))
+        .orderBy(locations.sortOrder);
+    } else if (parentId) {
+      return await db.select().from(locations)
+        .where(eq(locations.parentId, parentId))
+        .orderBy(locations.sortOrder);
+    } else {
+      // Return only top-level locations (continents)
+      return await db.select().from(locations)
+        .where(sql`${locations.parentId} IS NULL`)
+        .orderBy(locations.sortOrder);
+    }
+  }
+
+  async getLocationById(id: string): Promise<Location | undefined> {
+    const [location] = await db.select().from(locations).where(eq(locations.id, id));
+    return location;
+  }
+
+  async getLocationHierarchy(id: string): Promise<Location[]> {
+    const hierarchy: Location[] = [];
+    let currentId: string | null = id;
+    
+    while (currentId) {
+      const [location] = await db.select().from(locations).where(eq(locations.id, currentId));
+      if (!location) break;
+      hierarchy.unshift(location); // Add to beginning to maintain order from top to bottom
+      currentId = location.parentId;
+    }
+    
+    return hierarchy;
   }
 }
 

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertTeamSchema } from "@shared/schema";
+import { insertActivitySchema, insertTeamSchema, locations } from "@shared/schema";
 import { z } from "zod";
 import { upload, compressAndSaveImage, compressAndSaveProfileImage, cleanupOldEvidence } from "./imageUpload";
 import express from "express";
@@ -47,6 +47,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: z.string().optional(),
         avatarId: z.string().optional(),
         profileImageUrl: z.string().optional(),
+        continentId: z.string().nullable().optional(),
+        countryId: z.string().nullable().optional(),
+        regionId: z.string().nullable().optional(),
+        townId: z.string().nullable().optional(),
       });
       
       const validatedData = updateUserSchema.parse(req.body);
@@ -172,6 +176,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Location API routes for hierarchical geo rankings
+  app.get("/api/locations", async (req, res) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const parentId = req.query.parentId as string | undefined;
+      
+      const locationsList = await storage.getLocations(type, parentId);
+      res.json(locationsList);
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+      res.status(500).json({ message: "Failed to fetch locations" });
+    }
+  });
+
+  app.get("/api/locations/:id", async (req, res) => {
+    try {
+      const location = await storage.getLocationById(req.params.id);
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      res.json(location);
+    } catch (error) {
+      console.error("Error fetching location:", error);
+      res.status(500).json({ message: "Failed to fetch location" });
+    }
+  });
+
+  // Get full location hierarchy for a location
+  app.get("/api/locations/:id/hierarchy", async (req, res) => {
+    try {
+      const hierarchy = await storage.getLocationHierarchy(req.params.id);
+      res.json(hierarchy);
+    } catch (error) {
+      console.error("Error fetching location hierarchy:", error);
+      res.status(500).json({ message: "Failed to fetch location hierarchy" });
+    }
+  });
 
   // Teammate profile routes (require shared team membership)
   app.get("/api/users/:userId/profile", isAuthenticated, async (req: any, res) => {

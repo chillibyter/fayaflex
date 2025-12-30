@@ -504,11 +504,13 @@ export async function seedLocations(): Promise<void> {
   console.log("Locations seeded successfully!");
 }
 
-if (require.main === module) {
-  seedLocations()
-    .then(() => process.exit(0))
-    .catch((err) => {
-      console.error("Error seeding locations:", err);
-      process.exit(1);
-    });
-}
+// Run seed when executed directly
+seedLocations()
+  .then(() => {
+    console.log("Seed complete");
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("Error seeding locations:", err);
+    process.exit(1);
+  });
