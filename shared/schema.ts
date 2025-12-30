@@ -36,6 +36,11 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   avatarId: varchar("avatar_id"), // Fitness-themed avatar selection
+  // Location hierarchy for geo rankings (denormalized for fast queries)
+  continentId: varchar("continent_id"),
+  countryId: varchar("country_id"),
+  regionId: varchar("region_id"),
+  townId: varchar("town_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -431,6 +436,31 @@ export const insertPersonalBestSchema = createInsertSchema(personalBests).omit({
   achievedAt: true,
 });
 export type InsertPersonalBest = z.infer<typeof insertPersonalBestSchema>;
+
+// Locations table for hierarchical geo ranking
+export const locations = pgTable("locations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 20 }).notNull(), // 'continent', 'country', 'region', 'town'
+  parentId: varchar("parent_id").references((): any => locations.id, { onDelete: "cascade" }),
+  isoCode: varchar("iso_code", { length: 10 }), // ISO country/region codes where applicable
+  sortOrder: integer("sort_order").default(0),
+});
+
+export const locationsRelations = relations(locations, ({ one, many }) => ({
+  parent: one(locations, {
+    fields: [locations.parentId],
+    references: [locations.id],
+    relationName: "parentChild",
+  }),
+  children: many(locations, { relationName: "parentChild" }),
+}));
+
+export type Location = typeof locations.$inferSelect;
+export const insertLocationSchema = createInsertSchema(locations).omit({
+  id: true,
+});
+export type InsertLocation = z.infer<typeof insertLocationSchema>;
 
 // Goal Journeys / Quests table
 export const userGoals = pgTable("user_goals", {
