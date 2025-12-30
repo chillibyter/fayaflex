@@ -14,10 +14,12 @@ export default function Support() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center">
-              <Trophy className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-semibold">Ultimate Fitness Challenge</span>
+            <img 
+              src="/fayaflex-logo.png" 
+              alt="FayaFlex" 
+              className="h-8 w-8 rounded-md"
+            />
+            <span className="font-semibold">FayaFlex</span>
           </div>
         </div>
       </header>
@@ -25,7 +27,7 @@ export default function Support() {
       <main className="max-w-4xl mx-auto p-6 space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold">Support Center</h1>
-          <p className="text-muted-foreground">We're here to help you get the most out of Ultimate Fitness Challenge</p>
+          <p className="text-muted-foreground">We're here to help you get the most out of FayaFlex</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -40,9 +42,9 @@ export default function Support() {
               <p className="text-muted-foreground">
                 Have a question or need help? Send us an email and we'll get back to you within 24-48 hours.
               </p>
-              <a href="mailto:support@ultimatefitnesschallenge.com">
+              <a href="mailto:support@fayaflex.com">
                 <Button className="w-full" data-testid="button-email-support">
-                  support@ultimatefitnesschallenge.com
+                  support@fayaflex.com
                 </Button>
               </a>
             </CardContent>
@@ -59,7 +61,7 @@ export default function Support() {
               <p className="text-muted-foreground">
                 Have suggestions for improving the app? We'd love to hear from you!
               </p>
-              <a href="mailto:feedback@ultimatefitnesschallenge.com">
+              <a href="mailto:feedback@fayaflex.com">
                 <Button variant="outline" className="w-full" data-testid="button-feedback">
                   Send Feedback
                 </Button>
@@ -128,7 +130,7 @@ export default function Support() {
         </Card>
 
         <div className="text-center text-sm text-muted-foreground">
-          <p>Ultimate Fitness Challenge</p>
+          <p>FayaFlex</p>
           <p>Version 1.0</p>
         </div>
       </main>

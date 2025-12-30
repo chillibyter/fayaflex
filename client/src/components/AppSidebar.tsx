@@ -40,11 +40,13 @@ export default function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-6 border-b">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-            <Trophy className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <img 
+            src="/fayaflex-logo.png" 
+            alt="FayaFlex" 
+            className="h-10 w-10 rounded-lg"
+          />
           <div>
-            <h2 className="font-bold text-lg text-primary">UFC</h2>
+            <h2 className="font-bold text-lg text-primary">FayaFlex</h2>
             <p className="text-xs text-muted-foreground">Fitness Challenge</p>
           </div>
         </div>

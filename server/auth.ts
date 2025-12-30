@@ -416,7 +416,7 @@ export function setupAuth(app: Express) {
       // Build reset link
       const baseUrl = process.env.APP_URL || 
         (process.env.NODE_ENV === 'production' 
-          ? 'https://ultimatefitnesschallenge.com' 
+          ? 'https://fayaflex.com' 
           : 'http://localhost:5000');
       const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
       

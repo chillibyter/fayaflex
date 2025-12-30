@@ -27,7 +27,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Ultimate Fitness Challenge" <${process.env.ZOHO_EMAIL}>`,
+      from: `"FayaFlex" <${process.env.ZOHO_EMAIL}>`,
       to: options.to,
       subject: options.subject,
       text: options.text,
@@ -43,12 +43,12 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 }
 
 export async function sendPasswordResetEmail(email: string, resetLink: string): Promise<boolean> {
-  const subject = 'Reset Your Password - Ultimate Fitness Challenge';
+  const subject = 'Reset Your Password - FayaFlex';
   
   const text = `
 Hi,
 
-You requested to reset your password for Ultimate Fitness Challenge.
+You requested to reset your password for FayaFlex.
 
 Click this link to reset your password:
 ${resetLink}
@@ -57,7 +57,7 @@ This link will expire in 1 hour.
 
 If you didn't request this, please ignore this email.
 
-- The Ultimate Fitness Challenge Team
+- The FayaFlex Team
 `;
 
   const html = `
@@ -77,7 +77,7 @@ If you didn't request this, please ignore this email.
     </div>
     
     <p style="color: #52525b; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
-      You requested to reset your password for Ultimate Fitness Challenge. Click the button below to create a new password.
+      You requested to reset your password for FayaFlex. Click the button below to create a new password.
     </p>
     
     <div style="text-align: center; margin: 32px 0;">
@@ -93,7 +93,7 @@ If you didn't request this, please ignore this email.
     <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
     
     <p style="color: #a1a1aa; font-size: 12px; text-align: center; margin: 0;">
-      Ultimate Fitness Challenge<br>
+      FayaFlex<br>
       Build healthy habits together
     </p>
   </div>

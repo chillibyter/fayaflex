@@ -27,7 +27,7 @@ export default function HowItWorks() {
             How It Works
           </h1>
           <p className="text-blue-50">
-            Everything you need to know about UFC
+            Everything you need to know about FayaFlex
           </p>
         </div>
       </div>

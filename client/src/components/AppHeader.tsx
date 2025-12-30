@@ -10,7 +10,7 @@ export default function AppHeader() {
           data-testid="button-sidebar-toggle" 
           className="h-10 w-10 bg-primary/10 border border-primary/20 hover:bg-primary/20 data-[state=open]:bg-primary/20"
         />
-        <h1 className="text-lg font-semibold hidden sm:block">UFC Dashboard</h1>
+        <h1 className="text-lg font-semibold hidden sm:block">FayaFlex</h1>
       </div>
       <div className="flex items-center gap-2">
         <NotificationCenter />

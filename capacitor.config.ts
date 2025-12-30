@@ -1,11 +1,11 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.ufc.fitness',
-  appName: 'Ultimate Fitness Challenge',
+  appId: 'com.fayaflex.app',
+  appName: 'FayaFlex',
   webDir: 'dist/public',
   server: {
-    url: 'https://www.ultimatefitnesschallenge.com',
+    url: 'https://www.fayaflex.com',
     androidScheme: 'https',
     iosScheme: 'https',
     cleartext: true,

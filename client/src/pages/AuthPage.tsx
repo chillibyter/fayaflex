@@ -213,10 +213,12 @@ export default function AuthPage() {
         <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
           <div className="p-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center">
-                <Trophy className="h-7 w-7 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold">Ultimate Fitness Challenge</h1>
+              <img 
+                src="/fayaflex-logo.png" 
+                alt="FayaFlex" 
+                className="h-12 w-12 rounded-lg"
+              />
+              <h1 className="text-2xl font-bold">FayaFlex</h1>
             </div>
             <RotatingBanner 
               messages={defaultBannerMessages} 

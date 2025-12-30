@@ -8,10 +8,12 @@ export default function Landing() {
     <div className="min-h-screen flex flex-col">
       <header className="border-b p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-md bg-primary flex items-center justify-center">
-            <Trophy className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <h1 className="text-xl font-bold">Ultimate Fitness Challenge</h1>
+          <img 
+            src="/fayaflex-logo.png" 
+            alt="FayaFlex" 
+            className="h-10 w-10 rounded-md"
+          />
+          <h1 className="text-xl font-bold">FayaFlex</h1>
         </div>
         <a href="/api/login">
           <Button data-testid="button-login">Log In</Button>
@@ -46,7 +48,7 @@ export default function Landing() {
 
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <h3 className="text-3xl font-bold text-center mb-12">Why UFC?</h3>
+            <h3 className="text-3xl font-bold text-center mb-12">Why FayaFlex?</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardContent className="pt-6 text-center">
@@ -115,7 +117,7 @@ export default function Landing() {
       </main>
 
       <footer className="border-t py-6 px-4 text-center text-sm text-muted-foreground">
-        <p>&copy; 2025 Ultimate Fitness Challenge. All rights reserved.</p>
+        <p>&copy; 2025 FayaFlex. All rights reserved.</p>
       </footer>
     </div>
   );

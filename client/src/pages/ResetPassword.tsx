@@ -160,8 +160,12 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-4">
-            <Dumbbell className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold">Ultimate Fitness Challenge</h1>
+            <img 
+              src="/fayaflex-logo.png" 
+              alt="FayaFlex" 
+              className="w-8 h-8 rounded"
+            />
+            <h1 className="text-2xl font-bold">FayaFlex</h1>
           </div>
           <CardTitle className="text-2xl">Set New Password</CardTitle>
           <CardDescription>

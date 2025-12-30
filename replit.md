@@ -1,7 +1,7 @@
-# Ultimate Fitness Challenge (UFC)
+# FayaFlex
 
 ## Overview
-Ultimate Fitness Challenge (UFC) is a team-based fitness tracking and competition platform designed to foster engagement and healthy competition. Users can track daily fitness activities (calories, steps, workouts), form or join teams, and compete in monthly challenges. The platform features real-time leaderboards, personalized progress tracking, and integration capabilities for various fitness devices. UFC aims to provide a motivating and interactive experience to encourage consistent fitness activity among its users.
+FayaFlex is a team-based fitness tracking and competition platform designed to foster engagement and healthy competition. Users can track daily fitness activities (calories, steps, workouts), form or join teams, and compete in monthly challenges. The platform features real-time leaderboards, personalized progress tracking, and integration capabilities for various fitness devices. FayaFlex aims to provide a motivating and interactive experience to encourage consistent fitness activity among its users.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -13,6 +13,7 @@ Preferred communication style: Simple, everyday language.
 - **UI System**: Shadcn UI (built on Radix UI) with Tailwind CSS, adhering to fitness-optimized Material Design principles with custom color palette and dark mode.
 - **State Management**: TanStack Query for server state; local component state for UI; session-based auth via API.
 - **PWA Implementation**: Full PWA support with offline capabilities, service worker, responsive design, and touch-friendly UI.
+- **Mobile-First**: Horizontal bottom navigation used as primary navigation for both web and mobile builds.
 
 ### Backend Architecture
 - **Server Framework**: Express.js with TypeScript, following a RESTful API design.
@@ -27,14 +28,17 @@ Preferred communication style: Simple, everyday language.
     - **Social Features**: Reactions (thumbs up/down) and comments on activity submissions with real-time counts and user-specific actions.
     - **Victory Wall**: Team-based victory wall to showcase monthly champions, with owner-only calculation.
     - **Email Privacy**: User emails are sanitized and hidden from other users across the platform.
+    - **Goal Journeys**: Daily/weekly fitness goals with progress tracking.
 
 ### Data Storage
 - **Database**: PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe queries.
-- **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, sessions, activityReactions, activityComments, monthly_winners, and passwordResetTokens.
+- **Schema**: Includes users, teams, team_members, activities, device_connections, passkeys, sessions, activityReactions, activityComments, monthly_winners, passwordResetTokens, and userGoals.
 - **Relationships**: Supports complex relationships for user, team, activity, and passkey data.
 
 ### Mobile Application
 - **Platform**: Capacitor for iOS and Android native app deployment.
+- **App ID**: com.fayaflex.app
+- **Production Server**: https://www.fayaflex.com
 
 ## External Dependencies
 
@@ -43,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 - **Google Fonts**: Inter font family for typography.
 
 ### Device Integrations
-- **Apple Health**: Native iOS health data syncing via capacitor-health plugin.
+- **Apple Health**: Native iOS health data syncing via custom HealthKit Swift plugin.
 - **Android Health Connect**: Native Android health data syncing via capacitor-health plugin.
 - **Huawei Health Kit**: HMS-based health data syncing for Huawei/Honor devices (requires HMS SDK setup).
 - **Native-Only Approach**: Simplified direct device access without complex OAuth flows.
@@ -56,139 +60,41 @@ Preferred communication style: Simple, everyday language.
 - **Class Variance Authority**: Component variant management.
 - **Sharp**: Server-side image compression.
 - **SimpleWebAuthn**: WebAuthn/passkey authentication (server and browser libraries).
+- **Framer Motion**: Animations for onboarding and UI transitions.
 
 ## Recent Changes
 
-**UI Design Refresh** (December 27, 2025)
-- Implemented new visual design matching updated design specifications:
-  - **Stats Cards**: Colored icon backgrounds (orange-50 for calories, blue-50 for steps, purple-50 for workouts, yellow-50 for rank) with matching icon colors
-  - **Leaderboard Page**: New gradient header (yellow-500 to orange-500), pill-style tabs with green active states
-  - **Auth Page**: Green gradient hero section (from-green-500 to-green-600), updated form styling with shadow-lg cards
-  - **Sidebar**: Enhanced header styling with green branding, improved spacing
-- Updated design_guidelines.md with new component specifications
-- Dark mode support for all new color schemes (using dark: variants)
-- Personal bests now displayed in stats cards with Award icon
+**FayaFlex Rebrand** (December 30, 2025)
+- Complete rebrand from "Ultimate Fitness Challenge (UFC)" to "FayaFlex" due to trademark concerns
+- Updated all text references, logos, email addresses (support@fayaflex.com)
+- Capacitor config updated: appId: com.fayaflex.app, server URL: fayaflex.com
+- Email service updated with new branding
+- WebAuthn RP_NAME updated to "FayaFlex"
+- PWA manifest updated with new app name
+- iOS capacitor.config.json updated for native builds
 
-**Goal Journeys & Category Leaderboards** (December 27, 2025)
-- Implemented Goal Journeys system for daily/weekly quests:
-  - **Database Schema**: Added `userGoals` table with goal_type, category, target/current values, dates
-  - **API Routes**: GET /api/goals, GET /api/goals/active, POST /api/goals
-  - **GoalJourneys Component**: Dialog-based goal creation, progress bars, icons by category
-  - Uses max-per-day aggregation for accurate progress tracking (no double-counting)
-  - No DB mutations on GET requests (read-only progress calculation)
-- Added Category Leaderboards:
-  - **API Route**: GET /api/leaderboard/category/:category (calories, steps, workouts)
-  - **Frontend**: Tabs for Teams/Calories/Steps/Workouts with appropriate icons
-  - Uses same max-per-day aggregation as main leaderboards
-- Integrated GoalJourneys into Dashboard page (right column)
+**Goal Journeys Feature** (December 30, 2025)
+- Added Goal Journeys component to Dashboard for daily/weekly fitness goals
+- Users can set goals for calories, steps, or workouts
+- Progress bars show real-time goal completion
+- Integrated with existing activity tracking system
 
-**Badges, Personal Bests & Enhanced How It Works** (December 26, 2025)
-- Created comprehensive badges/achievements system:
-  - **Database Schema**: Added `userBadges` and `personalBests` tables
-  - **Badge Types**: first_activity, streak_3/7/30, steps_10k, calories_1k, workouts_10, top_10, champion
-  - **API Routes**: GET /api/badges, POST /api/badges/check, GET /api/personal-bests
-  - **BadgesDisplay Component**: Shows earned badges with icons, colors, and earned dates
-  - Integrated into Profile page with progress tracking
-- Personal bests tracking for key metrics:
-  - Tracks daily_calories, daily_steps, daily_score across all time
-  - Uses aggregated data (max per day) for accurate multi-entry day calculations
-  - Displayed in DashboardStats component
-- Trend indicators for month-over-month comparison:
-  - Shows percentage change in calories and steps vs previous month
-  - Green upward arrows for increases, red downward for decreases
-- Enhanced How It Works page:
-  - Added 2 new tips: "Earn Badges" and "Set Personal Bests"
-  - Expanded FAQ section with 6 questions covering logging, teams, workouts, resets, badges, Victory Wall
+**Privacy Policy Updates** (December 30, 2025)
+- Enhanced Privacy Policy to meet Apple App Store requirements
+- Added HealthKit data disclosure
+- Added CCPA/GDPR compliance sections
+- Added account deletion process documentation
 
-**Onboarding Tutorial & Scoring Guide** (December 26, 2025)
-- Added comprehensive onboarding tutorial for new users explaining scoring mechanics
-- **OnboardingTutorial Component**:
-  - 5 interactive slides with progress indicators and smooth animations (framer-motion)
-  - Explains scoring formula: 1 point per calorie + 1 point per step
-  - Compares Individual vs Team leaderboards
-  - Describes monthly reset timeline and Victory Wall
-- **HowItWorks Page**:
-  - Accessible from sidebar navigation
-  - Comprehensive scoring breakdown with visual icons
-  - Leaderboard explanation and monthly timeline
-  - FAQ section addressing common questions
-- **Dashboard Quick-Start Card**:
-  - Shows for users with no logged activities
-  - CTA buttons to log first activity and learn scoring
-  - Visual breakdown of tracking options (calories, steps, rankings)
-- **Onboarding Flow**:
-  - Triggers automatically for first-time users after team selection
-  - Stored in localStorage: `ufc_onboarding_seen_{userId}`
-  - Skip option available for returning users
+**Auto Health Sync** (December 30, 2025)
+- Implemented automatic health data syncing when app comes to foreground
+- Uses 5-minute cooldown between syncs to prevent excessive API calls
+- Works with Apple Health, Android Health Connect, and Huawei Health Kit
 
-**Custom iOS HealthKit Plugin** (December 26, 2025)
-- Replaced non-functional capacitor-health iOS implementation with custom native Swift plugin
-- **iOS Plugin Architecture**:
-  - Created `HealthKitPlugin.swift` - native Swift plugin conforming to CAPBridgedPlugin
-  - Created `CustomViewController.swift` - registers plugin via capacitorDidLoad() for Capacitor 6
-  - Updated `Main.storyboard` to use CustomViewController instead of CAPBridgeViewController
-- **Plugin Methods**:
-  - `isAvailable()` - Check if HealthKit is available on device
-  - `requestPermissions()` - Request HealthKit authorization (steps, calories, workouts)
-  - `getDailyTotals(startDate, endDate)` - Aggregate steps/calories by day
-  - `getWorkouts(startDate, endDate)` - Fetch workout sessions with duration/calories
-  - `getHealthData(startDate, endDate)` - Combined daily totals + workouts
-- **Frontend Routing**:
-  - iOS calls route to native HealthKitPlugin via `registerPlugin('HealthKit')`
-  - Android calls route to capacitor-health plugin (unchanged)
-  - Platform detection via Capacitor.getPlatform()
-- **Key Note**: Apple intentionally hides HealthKit authorization status - plugin skips permission checks and attempts data query directly
+## Branding
 
-**Monthly Leaderboard Reset** (December 2, 2025)
-- Leaderboards now reset on the 1st of each month (not rolling 30 days)
-- **Backend Changes**:
-  - Dashboard stats API now calculates rankings based on current month only
-  - All leaderboard APIs consistently use month/year parameters
-- **Frontend Changes**:
-  - Leaderboard page shows current month badge dynamically
-  - TeamLeaderboard page now uses dynamic month/year (was hardcoded)
-  - Added "Scores reset on the 1st of each month" message to leaderboard pages
-- **Logic**: Activities are filtered from the 1st to the last day of the current month
-
-**Native Health Integration Implemented** (November 20, 2025)
-- Implemented simplified native-only health integration with Apple Health, Android Health Connect, and Huawei Health Kit
-- **Architecture Decision**: Direct device access only via native health APIs, no complex OAuth flows
-- **Backend Implementation**:
-  - Removed complex OAuth code (Google Fit, Garmin) from server
-  - Three clean API endpoints supporting apple_health, android_health, and huawei_health:
-    - GET /api/devices - Returns native device connections
-    - POST /api/devices/sync - Auto-creates connections on first sync, imports health data
-    - POST /api/devices/toggle - Disconnect device
-  - Backend auto-creates device connections on first sync (no pre-connection required)
-- **Frontend Implementation**:
-  - Created native health service with automatic device detection (Apple, Google, Huawei)
-  - Built HealthDevices UI component with connect/sync/disconnect functionality
-  - Integrated into Profile page with web platform guards (hidden on web builds)
-  - Manual sync triggered by user button press
-  - Huawei device detection via user agent and manufacturer checks
-- **Mobile Configuration**:
-  - Android: Health Connect permissions added to AndroidManifest.xml
-  - iOS: Capacitor Health plugin configured for Apple Health access
-  - Huawei: HMS Health Kit setup documented (requires HMS SDK integration)
-- **Platform Guards**: HealthDevices checks Capacitor.isNativePlatform() to show only on iOS/Android/Huawei devices
-- **Documentation**: 
-  - HEALTH_INTEGRATIONS_STATUS.md documents the simplified approach
-  - HUAWEI_HEALTH_KIT_SETUP.md provides comprehensive HMS integration guide
-- **Schema**: Device connections support apple_health, android_health, and huawei_health providers
-
-**Required Team Selection on Signup** (October 18, 2025)
-- Implemented mandatory team selection flow for new users
-- **User Experience**:
-  - After signup/login, users without teams are redirected to team selection page
-  - Cannot access main app (dashboard, tracking, leaderboard) until on a team
-  - Team selection page offers two options: join existing team or create new team
-- **Frontend Changes**:
-  - Created `TeamSelection.tsx` page with tabbed interface (Join/Create)
-  - Join tab: Search and browse available teams, see member counts
-  - Create tab: Form to create new team with name and optional description
-  - Updated `App.tsx` router to check user's team membership and enforce team selection
-- **Routing Logic**:
-  - Checks `/api/teams` endpoint to see if user has any teams
-  - If `teams.length === 0`, all routes redirect to `/team-selection`
-  - After joining/creating team, redirects to dashboard and invalidates team queries
-- **Design**: Clean, welcoming UI with Trophy icon, clear instructions, search functionality
+- **App Name**: FayaFlex
+- **App ID**: com.fayaflex.app
+- **Support Email**: support@fayaflex.com
+- **Feedback Email**: feedback@fayaflex.com
+- **Logo**: /fayaflex-logo.png
+- **Production Domain**: https://www.fayaflex.com

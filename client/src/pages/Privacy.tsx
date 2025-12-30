@@ -14,10 +14,12 @@ export default function Privacy() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center">
-              <Trophy className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-semibold">Ultimate Fitness Challenge</span>
+            <img 
+              src="/fayaflex-logo.png" 
+              alt="FayaFlex" 
+              className="h-8 w-8 rounded-md"
+            />
+            <span className="font-semibold">FayaFlex</span>
           </div>
         </div>
       </header>
@@ -37,7 +39,7 @@ export default function Privacy() {
                 Introduction
               </h2>
               <p className="text-muted-foreground">
-                Ultimate Fitness Challenge ("UFC," "we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application for iOS and Android, and our website (collectively, the "Service").
+                FayaFlex ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application for iOS and Android, and our website (collectively, the "Service").
               </p>
               <p className="text-muted-foreground mt-2">
                 By using the Service, you agree to the collection and use of information in accordance with this policy. If you do not agree with this policy, please do not use our Service.
@@ -246,7 +248,7 @@ export default function Privacy() {
                 You may request deletion of your account and all associated data at any time. To delete your account:
               </p>
               <ul className="list-disc pl-5 text-muted-foreground space-y-1 mt-2">
-                <li>Email us at support@ultimatefitnesschallenge.com with subject "Account Deletion Request"</li>
+                <li>Email us at support@fayaflex.com with subject "Account Deletion Request"</li>
                 <li>Include your username or email address associated with the account</li>
               </ul>
               <p className="text-muted-foreground mt-2">
@@ -292,9 +294,9 @@ export default function Privacy() {
                 If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
               </p>
               <div className="mt-4 p-4 bg-muted rounded-lg">
-                <p className="font-medium">Ultimate Fitness Challenge</p>
+                <p className="font-medium">FayaFlex</p>
                 <p className="text-muted-foreground mt-2">
-                  <strong>Email:</strong> support@ultimatefitnesschallenge.com
+                  <strong>Email:</strong> support@fayaflex.com
                 </p>
                 <p className="text-muted-foreground mt-1">
                   <strong>Subject Line:</strong> Privacy Inquiry
@@ -307,7 +309,7 @@ export default function Privacy() {
 
             <section className="border-t pt-6">
               <p className="text-sm text-muted-foreground text-center">
-                By using Ultimate Fitness Challenge, you acknowledge that you have read and understood this Privacy Policy.
+                By using FayaFlex, you acknowledge that you have read and understood this Privacy Policy.
               </p>
             </section>
           </CardContent>

@@ -109,7 +109,7 @@ function AuthenticatedApp() {
 
   useEffect(() => {
     if (user) {
-      const onboardingKey = `ufc_onboarding_seen_${user.id}`;
+      const onboardingKey = `fayaflex_onboarding_seen_${user.id}`;
       const hasSeenOnboarding = localStorage.getItem(onboardingKey);
       if (!hasSeenOnboarding) {
         setShowOnboarding(true);
@@ -119,7 +119,7 @@ function AuthenticatedApp() {
 
   const handleOnboardingComplete = () => {
     if (user) {
-      const onboardingKey = `ufc_onboarding_seen_${user.id}`;
+      const onboardingKey = `fayaflex_onboarding_seen_${user.id}`;
       localStorage.setItem(onboardingKey, "true");
     }
     setShowOnboarding(false);

@@ -87,7 +87,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user?.id && !isLoadingActivities) {
-      const onboardingKey = `ufc_onboarding_seen_${user.id}`;
+      const onboardingKey = `fayaflex_onboarding_seen_${user.id}`;
       const hasSeenOnboarding = localStorage.getItem(onboardingKey);
       if (!hasSeenOnboarding && recentActivities.length === 0) {
         setShowOnboarding(true);
@@ -97,7 +97,7 @@ export default function Dashboard() {
 
   const handleOnboardingComplete = () => {
     if (user?.id) {
-      localStorage.setItem(`ufc_onboarding_seen_${user.id}`, 'true');
+      localStorage.setItem(`fayaflex_onboarding_seen_${user.id}`, 'true');
     }
     setShowOnboarding(false);
   };
@@ -121,10 +121,12 @@ export default function Dashboard() {
 
       <header className="bg-gradient-to-br from-green-500 to-green-600 text-white px-4 pt-4 pb-6 rounded-b-3xl">
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-sm">UFC</span>
-          </div>
-          <h1 className="text-xl font-bold">UFC Dashboard</h1>
+          <img 
+            src="/fayaflex-logo.png" 
+            alt="FayaFlex" 
+            className="w-8 h-8 rounded"
+          />
+          <h1 className="text-xl font-bold">FayaFlex</h1>
         </div>
 
         <div className="grid grid-cols-3 gap-3">

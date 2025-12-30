@@ -95,7 +95,7 @@ export default function Teams() {
   const shareViaWhatsApp = () => {
     if (!selectedTeam?.inviteCode) return;
     const appUrl = window.location.origin;
-    const message = `Join my fitness team "${selectedTeam.name}" on Ultimate Fitness Challenge!\n\nInvite Code: ${selectedTeam.inviteCode}\n\nDownload the app: ${appUrl}`;
+    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nInvite Code: ${selectedTeam.inviteCode}\n\nDownload the app: ${appUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 

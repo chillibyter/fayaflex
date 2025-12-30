@@ -103,7 +103,7 @@ export function HealthDevices() {
         console.log('[HealthDevices] Android permission check:', hasPermissions);
         
         if (!hasPermissions) {
-          throw new Error('Health permissions were not granted. Please open Health Connect app and enable permissions for UFC, then try again.');
+          throw new Error('Health permissions were not granted. Please open Health Connect app and enable permissions for FayaFlex, then try again.');
         }
       } else {
         console.log('[HealthDevices] iOS - skipping permission check (Apple privacy restriction)');
@@ -277,7 +277,7 @@ export function HealthDevices() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Download the UFC mobile app to automatically sync your fitness data from Apple Health or Health Connect.
+            Download the FayaFlex mobile app to automatically sync your fitness data from Apple Health or Health Connect.
           </p>
         </CardContent>
       </Card>
@@ -430,7 +430,7 @@ export function HealthDevices() {
                 <div className="rounded-md bg-muted p-4 space-y-2">
                   <h4 className="font-medium text-sm">How it works:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>UFC reads your daily steps and calories from {displayName}</li>
+                    <li>FayaFlex reads your daily steps and calories from {displayName}</li>
                     <li>Your data stays on your device until you sync</li>
                     <li>Tap "Sync Now" whenever you want to update your activities</li>
                     <li>Data syncs for the last 30 days</li>

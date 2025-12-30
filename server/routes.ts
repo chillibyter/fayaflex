@@ -1839,7 +1839,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // WebAuthn/Passkey configuration
-  const RP_NAME = "Ultimate Fitness Challenge";
+  const RP_NAME = "FayaFlex";
   const RP_ID = process.env.REPLIT_DEV_DOMAIN ? 
     process.env.REPLIT_DEV_DOMAIN.split(':')[0] : 
     "localhost";

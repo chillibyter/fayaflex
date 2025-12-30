@@ -101,7 +101,7 @@ export default function TeamSelection() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Trophy className="w-10 h-10 text-primary" />
           </div>
-          <CardTitle className="text-3xl">Welcome to UFC!</CardTitle>
+          <CardTitle className="text-3xl">Welcome to FayaFlex!</CardTitle>
           <CardDescription className="text-base">
             To start your fitness journey, you need to join or create a team. Teams compete together and support each other in reaching fitness goals.
           </CardDescription>

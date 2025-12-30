@@ -1,6 +1,6 @@
 {
-  "name": "Ultimate Fitness Challenge",
-  "short_name": "UFC",
+  "name": "FayaFlex",
+  "short_name": "FayaFlex",
   "description": "Track calories, steps, and workouts with your team. Compete monthly and achieve your fitness goals together.",
   "start_url": "/",
   "display": "standalone",

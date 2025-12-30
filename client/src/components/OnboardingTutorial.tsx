@@ -26,7 +26,7 @@ interface OnboardingTutorialProps {
 const slides = [
   {
     id: "welcome",
-    title: "Welcome to Ultimate Fitness Challenge!",
+    title: "Welcome to FayaFlex!",
     description: "Ready to transform your fitness journey? Let's show you how to climb the leaderboards and achieve your goals.",
     icon: Trophy,
     color: "text-primary",
