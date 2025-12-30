@@ -1,35 +1,51 @@
-import { 
-  Bike, 
-  Dumbbell, 
-  Footprints, 
-  Flame, 
-  Heart, 
-  Trophy, 
-  Zap, 
-  Mountain,
-  Activity,
-  Target,
-  Timer,
-  Wind
-} from 'lucide-react';
+import avatarSprite from "@assets/FayaFlex_Avatar_Set_Complete_1767126826141.png";
+
+export const AVATAR_SPRITE_URL = avatarSprite;
 
 export const FITNESS_AVATARS = [
-  { id: 'runner', icon: Footprints, name: 'Runner', gradient: 'from-blue-500 to-cyan-500' },
-  { id: 'cyclist', icon: Bike, name: 'Cyclist', gradient: 'from-green-500 to-emerald-500' },
-  { id: 'swimmer', icon: Wind, name: 'Swimmer', gradient: 'from-blue-400 to-teal-500' },
-  { id: 'weightlifter', icon: Dumbbell, name: 'Weightlifter', gradient: 'from-orange-500 to-red-500' },
-  { id: 'energetic', icon: Zap, name: 'Energetic', gradient: 'from-pink-500 to-purple-500' },
-  { id: 'cardio', icon: Heart, name: 'Cardio', gradient: 'from-red-500 to-pink-500' },
-  { id: 'climber', icon: Mountain, name: 'Climber', gradient: 'from-amber-500 to-orange-500' },
-  { id: 'active', icon: Activity, name: 'Active', gradient: 'from-purple-500 to-indigo-500' },
-  { id: 'champion', icon: Trophy, name: 'Champion', gradient: 'from-green-600 to-lime-500' },
-  { id: 'burner', icon: Flame, name: 'Burner', gradient: 'from-orange-600 to-amber-500' },
-  { id: 'focused', icon: Target, name: 'Focused', gradient: 'from-lime-500 to-green-500' },
-  { id: 'endurance', icon: Timer, name: 'Endurance', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'runner', name: 'Runner', row: 0, col: 0, color: '#10B981' },
+  { id: 'weightlifter', name: 'Weightlifter', row: 0, col: 1, color: '#F97316' },
+  { id: 'yoga', name: 'Yoga', row: 0, col: 2, color: '#A855F7' },
+  { id: 'cyclist', name: 'Cyclist', row: 0, col: 3, color: '#3B82F6' },
+  { id: 'swimmer', name: 'Swimmer', row: 0, col: 4, color: '#14B8A6' },
+  { id: 'basketball', name: 'Basketball', row: 1, col: 0, color: '#10B981' },
+  { id: 'soccer', name: 'Soccer', row: 1, col: 1, color: '#F97316' },
+  { id: 'tennis', name: 'Tennis', row: 1, col: 2, color: '#EAB308' },
+  { id: 'stretching', name: 'Stretching', row: 1, col: 3, color: '#EC4899' },
+  { id: 'squats', name: 'Squats', row: 1, col: 4, color: '#3B82F6' },
+  { id: 'fayaflex', name: 'FayaFlex', row: 2, col: 0, color: '#F97316' },
+  { id: 'trophy', name: 'Trophy', row: 2, col: 1, color: '#22C55E' },
+  { id: 'lightning', name: 'Lightning', row: 2, col: 2, color: '#EAB308' },
+  { id: 'heartbeat', name: 'Heartbeat', row: 2, col: 3, color: '#EF4444' },
+  { id: 'target', name: 'Target', row: 2, col: 4, color: '#F5F5F5' },
+  { id: 'climber', name: 'Climber', row: 3, col: 0, color: '#92400E' },
+  { id: 'dumbbell', name: 'Dumbbell', row: 3, col: 1, color: '#F97316' },
+  { id: 'running-shoe', name: 'Running Shoe', row: 3, col: 2, color: '#22C55E' },
+  { id: 'water-bottle', name: 'Water Bottle', row: 3, col: 3, color: '#3B82F6' },
+  { id: 'medal', name: 'Medal', row: 3, col: 4, color: '#3B82F6' },
+  { id: 'boxer', name: 'Boxer', row: 4, col: 0, color: '#10B981' },
+  { id: 'martial-arts', name: 'Martial Arts', row: 4, col: 1, color: '#A855F7' },
+  { id: 'hydration', name: 'Hydration', row: 4, col: 2, color: '#3B82F6' },
+  { id: 'stopwatch', name: 'Stopwatch', row: 4, col: 3, color: '#F97316' },
+  { id: 'protein', name: 'Protein', row: 4, col: 4, color: '#A855F7' },
 ] as const;
 
 export type AvatarId = typeof FITNESS_AVATARS[number]['id'];
 
 export function getAvatarById(id: string | null | undefined) {
   return FITNESS_AVATARS.find(avatar => avatar.id === id) || FITNESS_AVATARS[0];
+}
+
+export function getAvatarSpriteStyle(avatarId: string, size: number = 48) {
+  const avatar = getAvatarById(avatarId);
+  const cellSize = 20; // percentage for 5x5 grid
+  
+  return {
+    backgroundImage: `url(${AVATAR_SPRITE_URL})`,
+    backgroundSize: '500%',
+    backgroundPosition: `${avatar.col * 25}% ${avatar.row * 25}%`,
+    width: size,
+    height: size,
+    borderRadius: '50%',
+  };
 }

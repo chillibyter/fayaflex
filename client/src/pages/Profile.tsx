@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
-import { FITNESS_AVATARS } from "@/lib/avatars";
+import { FITNESS_AVATARS, AVATAR_SPRITE_URL } from "@/lib/avatars";
 import { UserAvatar } from "@/components/UserAvatar";
 import BadgesDisplay from "@/components/BadgesDisplay";
 import { Link } from "wouter";
@@ -411,41 +411,53 @@ export default function Profile() {
       </Dialog>
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent data-testid="dialog-edit-profile">
-          <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>Update your profile information</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" data-testid="input-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" data-testid="input-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" />
-            </div>
-
-            <div className="space-y-3">
-              <Label>Profile Photo</Label>
-              <div className="flex items-center gap-4">
+        <DialogContent className="max-w-md p-0 overflow-hidden" data-testid="dialog-edit-profile">
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <Flame className="h-6 w-6 text-orange-500" />
+            <DialogTitle className="text-lg font-semibold">Edit Profile</DialogTitle>
+            <button onClick={() => setIsEditOpen(false)} className="p-1 rounded-full hover:bg-muted" data-testid="button-close-edit">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <div className="px-4 pb-4 max-h-[70vh] overflow-y-auto">
+            <p className="text-center text-sm text-muted-foreground mb-4">Update your profile information</p>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input id="firstName" data-testid="input-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input id="lastName" data-testid="input-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <Avatar className="h-20 w-20">
+                  <Input id="email" value={user?.email || ''} readOnly className="pl-9 bg-muted/50" />
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center py-4">
+                <div className="relative">
+                  <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
                     {useCustomPhoto && previewImage ? (
                       <AvatarImage src={previewImage} alt="Profile preview" className="object-cover" />
                     ) : selectedAvatar ? (
-                      <div className={`flex items-center justify-center w-full h-full bg-gradient-to-br ${FITNESS_AVATARS.find(a => a.id === selectedAvatar)?.gradient || 'from-blue-500 to-cyan-500'}`}>
-                        {(() => {
-                          const avatar = FITNESS_AVATARS.find(a => a.id === selectedAvatar);
-                          if (avatar) {
-                            const Icon = avatar.icon;
-                            return <Icon className="h-10 w-10 text-white" />;
-                          }
-                          return null;
-                        })()}
-                      </div>
+                      <div 
+                        className="w-full h-full"
+                        style={{
+                          backgroundImage: `url(${AVATAR_SPRITE_URL})`,
+                          backgroundSize: '500%',
+                          backgroundPosition: `${(FITNESS_AVATARS.find(a => a.id === selectedAvatar)?.col || 0) * 25}% ${(FITNESS_AVATARS.find(a => a.id === selectedAvatar)?.row || 0) * 25}%`,
+                        }}
+                      />
                     ) : (
-                      <AvatarFallback className="text-xl">
+                      <AvatarFallback className="text-2xl">
                         {firstName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     )}
@@ -455,87 +467,98 @@ export default function Profile() {
                       <Loader2 className="h-6 w-6 text-white animate-spin" />
                     </div>
                   )}
-                  {useCustomPhoto && previewImage && !uploadProfileImageMutation.isPending && (
-                    <button
-                      type="button"
-                      onClick={handleRemovePhoto}
-                      className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive flex items-center justify-center hover:bg-destructive/80"
-                      data-testid="button-remove-photo"
-                    >
-                      <X className="h-3 w-3 text-white" />
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadProfileImageMutation.isPending} data-testid="button-upload-photo">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => cameraInputRef.current?.click()} disabled={uploadProfileImageMutation.isPending} data-testid="button-take-selfie">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Selfie
-                    </Button>
+                  <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center border-2 border-background">
+                    <Flame className="h-4 w-4 text-white" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Or choose an avatar below</p>
                 </div>
+              </div>
+
+              <div className="flex justify-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadProfileImageMutation.isPending} data-testid="button-upload-photo">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => cameraInputRef.current?.click()} disabled={uploadProfileImageMutation.isPending} data-testid="button-take-selfie">
+                  <Camera className="h-4 w-4 mr-2" />
+                  Take Photo
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => {}} data-testid="button-choose-avatar">
+                  <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                  Choose Avatar
+                </Button>
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" data-testid="input-file-upload" />
               <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handleFileSelect} className="hidden" data-testid="input-camera-capture" />
-            </div>
 
-            <div className="space-y-2">
-              <Label>Choose Avatar</Label>
-              <div className="grid grid-cols-6 gap-2">
-                {FITNESS_AVATARS.map((avatar) => {
-                  const IconComponent = avatar.icon;
-                  const isSelected = !useCustomPhoto && selectedAvatar === avatar.id;
-                  return (
-                    <button
-                      key={avatar.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedAvatar(avatar.id);
-                        setUseCustomPhoto(false);
-                        setPreviewImage(null);
-                      }}
-                      className={`relative h-10 w-10 rounded-md bg-gradient-to-br ${avatar.gradient} flex items-center justify-center hover-elevate ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}
-                      data-testid={`button-avatar-${avatar.id}`}
-                    >
-                      <IconComponent className="h-5 w-5 text-white" />
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+              <div className="space-y-2">
+                <Label>Choose Your Avatar</Label>
+                <div className="grid grid-cols-6 gap-2">
+                  {FITNESS_AVATARS.map((avatar) => {
+                    const isSelected = !useCustomPhoto && selectedAvatar === avatar.id;
+                    return (
+                      <button
+                        key={avatar.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAvatar(avatar.id);
+                          setUseCustomPhoto(false);
+                          setPreviewImage(null);
+                        }}
+                        className={`relative h-10 w-10 rounded-full overflow-hidden hover-elevate ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                        style={{
+                          backgroundImage: `url(${AVATAR_SPRITE_URL})`,
+                          backgroundSize: '500%',
+                          backgroundPosition: `${avatar.col * 25}% ${avatar.row * 25}%`,
+                        }}
+                        data-testid={`button-avatar-${avatar.id}`}
+                      >
+                        {isSelected && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Check className="h-5 w-5 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            <CitySearch
-              onSelect={(location) => {
-                setContinentId(location.continentId);
-                setCountryId(location.countryId);
-                setRegionId(location.regionId);
-                setTownId(location.townId);
-              }}
-            />
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <textarea
+                  id="bio"
+                  className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Tell us about your fitness journey..."
+                  data-testid="input-bio"
+                />
+              </div>
 
-            <div className="flex gap-3 justify-end pt-2">
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSaveProfile}
-                disabled={updateProfileMutation.isPending || uploadProfileImageMutation.isPending}
-                data-testid="button-save-profile"
-              >
-                {updateProfileMutation.isPending ? "Saving..." : "Save"}
-              </Button>
+              <CitySearch
+                onSelect={(location) => {
+                  setContinentId(location.continentId);
+                  setCountryId(location.countryId);
+                  setRegionId(location.regionId);
+                  setTownId(location.townId);
+                }}
+              />
             </div>
+          </div>
+
+          <div className="flex gap-3 px-4 py-4 border-t bg-background">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="flex-1 bg-primary hover:bg-primary/90"
+              onClick={handleSaveProfile}
+              disabled={updateProfileMutation.isPending || uploadProfileImageMutation.isPending}
+              data-testid="button-save-profile"
+            >
+              {updateProfileMutation.isPending ? "Saving..." : "Save"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
