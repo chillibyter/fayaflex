@@ -11,6 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
 import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
+import { CitySearch } from "@/components/CitySearch";
 
 export default function AuthPage() {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -29,6 +30,12 @@ export default function AuthPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
+  
+  // Location state for registration
+  const [continentId, setContinentId] = useState<string | null>(null);
+  const [countryId, setCountryId] = useState<string | null>(null);
+  const [regionId, setRegionId] = useState<string | null>(null);
+  const [townId, setTownId] = useState<string | null>(null);
   
   // Forgot password state
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -123,6 +130,10 @@ export default function AuthPage() {
         email: email.trim(),
         firstName: firstName.trim() || undefined,
         lastName: lastName.trim() || undefined,
+        continentId: continentId || undefined,
+        countryId: countryId || undefined,
+        regionId: regionId || undefined,
+        townId: townId || undefined,
       });
     } catch (error: any) {
       const message = error.message || "Registration failed";
@@ -482,6 +493,15 @@ export default function AuthPage() {
                     />
                   </div>
                 </div>
+
+                <CitySearch
+                  onSelect={(location) => {
+                    setContinentId(location.continentId);
+                    setCountryId(location.countryId);
+                    setRegionId(location.regionId);
+                    setTownId(location.townId);
+                  }}
+                />
 
                 <Button
                   type="submit"
