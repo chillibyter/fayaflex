@@ -1,6 +1,4 @@
-import avatarSprite from "@assets/FayaFlex_Avatar_Set_Complete_1767126826141.png";
-
-export const AVATAR_SPRITE_URL = avatarSprite;
+export const AVATAR_SPRITE_URL = '/avatars-sprite.webp';
 
 export const FITNESS_AVATARS = [
   { id: 'runner', name: 'Runner', row: 0, col: 0, color: '#10B981' },
