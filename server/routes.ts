@@ -998,14 +998,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
               displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
             }
             
+            // Get location name for display
+            let locationDisplay = '';
+            if (user.townId) {
+              const town = await storage.getLocationById(user.townId);
+              locationDisplay = town?.name || '';
+            } else if (user.countryId) {
+              const country = await storage.getLocationById(user.countryId);
+              locationDisplay = country?.name || '';
+            }
+            
             userStatsMap.set(user.id, {
               userId: user.id,
               name: displayName || 'Unknown User',
               teamName: team.name,
               calories: totalCalories,
               avatarId: user.avatarId,
+              profileImageUrl: user.profileImageUrl,
               firstName: user.firstName,
               lastName: user.lastName,
+              location: locationDisplay,
             });
           }
         }
@@ -1250,6 +1262,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching category leaderboard:", error);
       res.status(500).json({ message: "Failed to fetch category leaderboard" });
+    }
+  });
+
+  // Global leaderboard with location filtering
+  app.get("/api/leaderboard/global", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
+      const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+      const locationScope = req.query.scope as string || 'global'; // 'global', 'continent', 'country', 'region', 'town'
+      const locationId = req.query.locationId as string | undefined;
+      
+      const aggregateByDate = (activities: any[]) => {
+        const byDate = new Map<string, { calories: number; steps: number; hasWorkout: boolean }>();
+        for (const act of activities) {
+          const existing = byDate.get(act.date);
+          if (existing) {
+            existing.calories = Math.max(existing.calories, act.calories);
+            existing.steps = Math.max(existing.steps, act.steps);
+            existing.hasWorkout = existing.hasWorkout || !!act.workoutType;
+          } else {
+            byDate.set(act.date, { calories: act.calories, steps: act.steps, hasWorkout: !!act.workoutType });
+          }
+        }
+        return byDate;
+      };
+      
+      const allUsers = await storage.getAllUsers();
+      const userStatsMap = new Map<string, any>();
+      
+      for (const user of allUsers) {
+        // Filter by location scope if specified
+        if (locationScope !== 'global' && locationId) {
+          let matchesLocation = false;
+          switch (locationScope) {
+            case 'continent':
+              matchesLocation = user.continentId === locationId;
+              break;
+            case 'country':
+              matchesLocation = user.countryId === locationId;
+              break;
+            case 'region':
+              matchesLocation = user.regionId === locationId;
+              break;
+            case 'town':
+              matchesLocation = user.townId === locationId;
+              break;
+          }
+          if (!matchesLocation) continue;
+        }
+        
+        const activities = await storage.getUserActivities(user.id, month, year);
+        const aggregated = aggregateByDate(activities);
+        
+        let displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        if (!displayName && user.email) {
+          const emailUsername = user.email.split('@')[0];
+          displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+        }
+        
+        let totalCalories = 0;
+        let totalSteps = 0;
+        let workoutDays = 0;
+        
+        Array.from(aggregated.values()).forEach(dayData => {
+          totalCalories += dayData.calories;
+          totalSteps += dayData.steps;
+          if (dayData.hasWorkout) workoutDays++;
+        });
+        
+        // Get location names for display
+        let locationDisplay = '';
+        if (user.townId) {
+          const town = await storage.getLocationById(user.townId);
+          locationDisplay = town?.name || '';
+        } else if (user.regionId) {
+          const region = await storage.getLocationById(user.regionId);
+          locationDisplay = region?.name || '';
+        } else if (user.countryId) {
+          const country = await storage.getLocationById(user.countryId);
+          locationDisplay = country?.name || '';
+        }
+        
+        userStatsMap.set(user.id, {
+          userId: user.id,
+          name: displayName || 'Unknown User',
+          calories: totalCalories,
+          steps: totalSteps,
+          workouts: workoutDays,
+          avatarId: user.avatarId,
+          profileImageUrl: user.profileImageUrl,
+          location: locationDisplay,
+          continentId: user.continentId,
+          countryId: user.countryId,
+          regionId: user.regionId,
+          townId: user.townId,
+        });
+      }
+      
+      const sorted = Array.from(userStatsMap.values())
+        .sort((a, b) => b.calories - a.calories)
+        .map((stat, index) => ({
+          ...stat,
+          rank: index + 1,
+          goalPercentage: Math.round((stat.calories / 30000) * 100),
+        }));
+      
+      res.json({
+        scope: locationScope,
+        locationId,
+        leaderboard: sorted,
+      });
+    } catch (error) {
+      console.error("Error fetching global leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch global leaderboard" });
     }
   });
 
