@@ -27,6 +27,7 @@ import BadgesDisplay from "@/components/BadgesDisplay";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LocationPicker } from "@/components/LocationPicker";
 
 type ChartData = {
   date: string;
@@ -48,6 +49,10 @@ export default function Profile() {
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [useCustomPhoto, setUseCustomPhoto] = useState(false);
+  const [continentId, setContinentId] = useState<string | null>(null);
+  const [countryId, setCountryId] = useState<string | null>(null);
+  const [regionId, setRegionId] = useState<string | null>(null);
+  const [townId, setTownId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -124,16 +129,33 @@ export default function Profile() {
       setSelectedAvatar(user.avatarId || "runner");
       setUseCustomPhoto(!!user.profileImageUrl);
       setPreviewImage(user.profileImageUrl || null);
+      setContinentId(user.continentId || null);
+      setCountryId(user.countryId || null);
+      setRegionId(user.regionId || null);
+      setTownId(user.townId || null);
     }
     setIsEditOpen(true);
   };
 
   const handleSaveProfile = () => {
-    // Build update payload - always include name and avatar
-    const updateData: { firstName: string; lastName: string; avatarId?: string; profileImageUrl?: string } = {
+    // Build update payload - always include name, avatar, and location
+    const updateData: { 
+      firstName: string; 
+      lastName: string; 
+      avatarId?: string; 
+      profileImageUrl?: string;
+      continentId?: string | null;
+      countryId?: string | null;
+      regionId?: string | null;
+      townId?: string | null;
+    } = {
       firstName,
       lastName,
       avatarId: selectedAvatar, // Always save avatar as fallback
+      continentId,
+      countryId,
+      regionId,
+      townId,
     };
     
     // If user is switching from custom photo to avatar, clear the profile image
@@ -463,6 +485,17 @@ export default function Profile() {
                 })}
               </div>
             </div>
+
+            <LocationPicker
+              continentId={continentId}
+              countryId={countryId}
+              regionId={regionId}
+              townId={townId}
+              onContinentChange={setContinentId}
+              onCountryChange={setCountryId}
+              onRegionChange={setRegionId}
+              onTownChange={setTownId}
+            />
 
             <div className="flex gap-3 justify-end pt-2">
               <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
