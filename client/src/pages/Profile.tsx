@@ -257,16 +257,16 @@ export default function Profile() {
           {isLoadingUser ? (
             <Skeleton className="h-24 w-24 rounded-full" />
           ) : (
-            <div className="relative">
-              <UserAvatar user={user} className="h-24 w-24 border-4 border-white/30" iconClassName="h-12 w-12" />
-              <button
-                onClick={handleEditClick}
-                className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white text-gray-700 shadow-md hover:bg-gray-100"
-                data-testid="button-edit-photo"
-              >
+            <button
+              onClick={handleEditClick}
+              className="relative cursor-pointer group"
+              data-testid="button-profile-photo"
+            >
+              <UserAvatar user={user} className="h-24 w-24 border-4 border-white/30 group-hover:border-white/50 transition-colors" iconClassName="h-12 w-12" />
+              <div className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white text-gray-700 shadow-md group-hover:bg-gray-100 transition-colors">
                 <User className="h-4 w-4" />
-              </button>
-            </div>
+              </div>
+            </button>
           )}
 
           <h2 className="text-2xl font-bold mt-4" data-testid="text-user-name">{getUserFullName()}</h2>

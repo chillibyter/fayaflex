@@ -49,7 +49,9 @@ export async function compressAndSaveImage(buffer: Buffer, originalName: string)
   const filepath = path.join(UPLOAD_DIR, filename);
 
   // Compress image to WebP format with quality optimization
+  // .rotate() auto-corrects image orientation based on EXIF data
   await sharp(buffer)
+    .rotate()
     .webp({
       quality: 80,
       effort: 6,
@@ -73,7 +75,9 @@ export async function compressAndSaveProfileImage(buffer: Buffer, userId: string
   const filepath = path.join(PROFILE_UPLOAD_DIR, filename);
 
   // Compress and resize profile image to reasonable size (500x500 max for avatars)
+  // .rotate() auto-corrects image orientation based on EXIF data
   await sharp(buffer)
+    .rotate()
     .resize(500, 500, {
       fit: 'cover',
       position: 'center',
