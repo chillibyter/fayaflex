@@ -108,7 +108,7 @@ export default function Profile() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       toast({ title: "Photo uploaded", description: "Your profile photo has been saved." });
-      setPreviewImage(data.path);
+      setPreviewImage(`${data.path}?t=${Date.now()}`);
       setUseCustomPhoto(true);
     },
     onError: (error: Error) => {

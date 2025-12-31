@@ -50,15 +50,17 @@ export async function compressAndSaveImage(buffer: Buffer, originalName: string)
 
   // Compress image to WebP format with quality optimization
   // .rotate() auto-corrects image orientation based on EXIF data
+  // .withMetadata({ orientation: undefined }) strips EXIF orientation to prevent double-rotation
   await sharp(buffer)
     .rotate()
-    .webp({
-      quality: 80,
-      effort: 6,
-    })
     .resize(1920, 1920, {
       fit: 'inside',
       withoutEnlargement: true,
+    })
+    .withMetadata({ orientation: undefined })
+    .webp({
+      quality: 80,
+      effort: 6,
     })
     .toFile(filepath);
 
@@ -76,12 +78,14 @@ export async function compressAndSaveProfileImage(buffer: Buffer, userId: string
 
   // Compress and resize profile image to reasonable size (500x500 max for avatars)
   // .rotate() auto-corrects image orientation based on EXIF data
+  // .withMetadata({ orientation: undefined }) strips EXIF orientation to prevent double-rotation
   await sharp(buffer)
     .rotate()
     .resize(500, 500, {
       fit: 'cover',
       position: 'center',
     })
+    .withMetadata({ orientation: undefined })
     .webp({
       quality: 85,
       effort: 6,
