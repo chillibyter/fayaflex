@@ -2697,6 +2697,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ END CHALLENGE ROUTES ============
 
+  // ============ MESSAGE ROUTES ============
+
+  // Get all conversations for the current user
+  app.get("/api/messages/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const conversations = await storage.getUserConversations(userId);
+      
+      // Sanitize partner data
+      const sanitized = conversations.map(conv => ({
+        ...conv,
+        partner: conv.partner ? sanitizeUserForDisplay(conv.partner, userId) : null,
+      }));
+      
+      res.json(sanitized);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  // Get unread message count
+  app.get("/api/messages/unread-count", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const count = await storage.getUnreadMessageCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
+    }
+  });
+
+  // Get conversation with a specific user
+  app.get("/api/messages/conversation/:partnerId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const partnerId = req.params.partnerId;
+      
+      // Check if they are teammates
+      const areTeammates = await storage.doUsersShareTeam(userId, partnerId);
+      if (!areTeammates) {
+        return res.status(403).json({ message: "You can only message teammates" });
+      }
+      
+      // Mark messages as read
+      await storage.markMessagesAsRead(userId, partnerId);
+      
+      const messages = await storage.getConversation(userId, partnerId);
+      
+      // Get partner info
+      const partner = await storage.getUser(partnerId);
+      
+      res.json({
+        messages: messages.reverse(), // Oldest first for chat display
+        partner: partner ? sanitizeUserForDisplay(partner, userId) : null,
+      });
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+  });
+
+  // Send a message
+  app.post("/api/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const senderId = req.user.id;
+      const { recipientId, content } = req.body;
+      
+      if (!recipientId || !content?.trim()) {
+        return res.status(400).json({ message: "Recipient and message content are required" });
+      }
+      
+      // Check if they are teammates
+      const areTeammates = await storage.doUsersShareTeam(senderId, recipientId);
+      if (!areTeammates) {
+        return res.status(403).json({ message: "You can only message teammates" });
+      }
+      
+      const message = await storage.sendMessage(senderId, recipientId, content.trim());
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // ============ END MESSAGE ROUTES ============
+
   const httpServer = createServer(app);
   
   // Start cleanup job for old evidence (runs every hour)

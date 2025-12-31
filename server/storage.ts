@@ -15,6 +15,7 @@ import {
   passwordResetTokens,
   locations,
   challenges,
+  messages,
   type User,
   type UpsertUser,
   type Team,
@@ -45,6 +46,8 @@ import {
   type Location,
   type Challenge,
   type InsertChallenge,
+  type Message,
+  type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
@@ -169,6 +172,13 @@ export interface IStorage {
   completeChallenge(challengeId: string, winnerId: string | null, challengerScore: number, opponentScore: number): Promise<Challenge>;
   getActiveChallengesRequiringCompletion(): Promise<Challenge[]>;
   getChallengeScores(challengeId: string): Promise<{ challengerScore: number; opponentScore: number }>;
+
+  // Message operations
+  sendMessage(senderId: string, recipientId: string, content: string): Promise<Message>;
+  getConversation(userId1: string, userId2: string, limit?: number): Promise<Message[]>;
+  getUserConversations(userId: string): Promise<{ partnerId: string; partner: User | null; lastMessage: Message; unreadCount: number }[]>;
+  markMessagesAsRead(userId: string, senderId: string): Promise<void>;
+  getUnreadMessageCount(userId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1283,6 +1293,74 @@ export class DatabaseStorage implements IStorage {
     const opponentScore = await getScore(challenge.opponentId);
 
     return { challengerScore, opponentScore };
+  }
+
+  // Message operations
+  async sendMessage(senderId: string, recipientId: string, content: string): Promise<Message> {
+    const [message] = await db.insert(messages)
+      .values({ senderId, recipientId, content })
+      .returning();
+    return message;
+  }
+
+  async getConversation(userId1: string, userId2: string, limit: number = 50): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(
+        sql`(${messages.senderId} = ${userId1} AND ${messages.recipientId} = ${userId2}) OR (${messages.senderId} = ${userId2} AND ${messages.recipientId} = ${userId1})`
+      )
+      .orderBy(desc(messages.createdAt))
+      .limit(limit);
+  }
+
+  async getUserConversations(userId: string): Promise<{ partnerId: string; partner: User | null; lastMessage: Message; unreadCount: number }[]> {
+    // Get distinct conversation partners
+    const allMessages = await db.select().from(messages)
+      .where(
+        sql`${messages.senderId} = ${userId} OR ${messages.recipientId} = ${userId}`
+      )
+      .orderBy(desc(messages.createdAt));
+
+    // Group by partner
+    const conversationsMap = new Map<string, { lastMessage: Message; unreadCount: number }>();
+    
+    for (const msg of allMessages) {
+      const partnerId = msg.senderId === userId ? msg.recipientId : msg.senderId;
+      if (!conversationsMap.has(partnerId)) {
+        const unreadCount = allMessages.filter(
+          m => m.senderId === partnerId && m.recipientId === userId && !m.isRead
+        ).length;
+        conversationsMap.set(partnerId, { lastMessage: msg, unreadCount });
+      }
+    }
+
+    // Fetch partner details
+    const results: { partnerId: string; partner: User | null; lastMessage: Message; unreadCount: number }[] = [];
+    for (const [partnerId, data] of conversationsMap) {
+      const partner = await this.getUser(partnerId);
+      results.push({ partnerId, partner: partner || null, ...data });
+    }
+
+    return results;
+  }
+
+  async markMessagesAsRead(userId: string, senderId: string): Promise<void> {
+    await db.update(messages)
+      .set({ isRead: true })
+      .where(and(
+        eq(messages.recipientId, userId),
+        eq(messages.senderId, senderId),
+        eq(messages.isRead, false)
+      ));
+  }
+
+  async getUnreadMessageCount(userId: string): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .where(and(
+        eq(messages.recipientId, userId),
+        eq(messages.isRead, false)
+      ));
+    return result[0]?.count || 0;
   }
 }
 

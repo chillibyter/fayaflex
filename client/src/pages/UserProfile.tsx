@@ -159,11 +159,12 @@ export default function UserProfile() {
             </div>
           )}
 
-          {!isOwnProfile && (
+          {!isOwnProfile && userId && (
             <div className="flex gap-3 mt-4">
               <Button 
                 variant="secondary" 
                 className="bg-white text-gray-800 hover:bg-gray-100"
+                onClick={() => setLocation(`/messages/${userId}`)}
                 data-testid="button-message"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
