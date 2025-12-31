@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { User as UserType, Team } from "@shared/schema";
+import type { User as UserType, Team, Challenge } from "@shared/schema";
+import { Trophy, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useRef } from "react";
 import {
@@ -69,6 +70,16 @@ export default function Profile() {
 
   const { data: teams = [] } = useQuery<EnrichedTeam[]>({
     queryKey: ['/api/teams'],
+  });
+
+  interface EnrichedChallenge extends Challenge {
+    challenger: UserType | null;
+    opponent: UserType | null;
+    currentScores: { challengerScore: number; opponentScore: number } | null;
+  }
+
+  const { data: challenges = [] } = useQuery<EnrichedChallenge[]>({
+    queryKey: ['/api/challenges'],
   });
 
   const { data: dailyGoals } = useQuery<DailyGoals>({
@@ -349,6 +360,73 @@ export default function Profile() {
         </div>
 
         <BadgesDisplay />
+
+        {challenges.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-semibold flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-orange-500" />
+                My Challenges
+              </h3>
+              <Link href="/challenges">
+                <Button variant="ghost" size="sm" className="text-xs">
+                  View All <ChevronRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {challenges.filter(c => c.status === 'active' || c.status === 'pending').slice(0, 3).map((challenge) => {
+                const isChallenger = challenge.challengerId === user?.id;
+                const opponent = isChallenger ? challenge.opponent : challenge.challenger;
+                const myScore = isChallenger ? challenge.currentScores?.challengerScore : challenge.currentScores?.opponentScore;
+                const opponentScore = isChallenger ? challenge.currentScores?.opponentScore : challenge.currentScores?.challengerScore;
+                
+                return (
+                  <Link key={challenge.id} href="/challenges">
+                    <Card className="hover-elevate cursor-pointer">
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                              challenge.metric === 'calories' ? 'bg-orange-100 dark:bg-orange-950' :
+                              challenge.metric === 'steps' ? 'bg-emerald-100 dark:bg-emerald-950' :
+                              'bg-purple-100 dark:bg-purple-950'
+                            }`}>
+                              {challenge.metric === 'calories' && <Flame className="h-4 w-4 text-orange-500" />}
+                              {challenge.metric === 'steps' && <Footprints className="h-4 w-4 text-emerald-500" />}
+                              {challenge.metric === 'workouts' && <Dumbbell className="h-4 w-4 text-purple-500" />}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">
+                                vs {opponent?.firstName || 'Teammate'}
+                              </p>
+                              <p className="text-xs text-muted-foreground capitalize">
+                                {challenge.status === 'pending' ? 'Pending' : `${challenge.durationDays} day ${challenge.metric}`}
+                              </p>
+                            </div>
+                          </div>
+                          {challenge.status === 'active' && challenge.currentScores && (
+                            <div className={`text-sm font-semibold ${
+                              (myScore || 0) > (opponentScore || 0) ? 'text-emerald-600' : 
+                              (myScore || 0) < (opponentScore || 0) ? 'text-red-500' : 'text-yellow-600'
+                            }`}>
+                              {myScore?.toLocaleString()} - {opponentScore?.toLocaleString()}
+                            </div>
+                          )}
+                          {challenge.status === 'pending' && !isChallenger && (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-2 py-1 rounded-full">
+                              Respond
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {teams.length > 0 && (
           <div className="mb-6">

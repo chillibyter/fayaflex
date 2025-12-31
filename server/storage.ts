@@ -14,6 +14,7 @@ import {
   userGoals,
   passwordResetTokens,
   locations,
+  challenges,
   type User,
   type UpsertUser,
   type Team,
@@ -42,6 +43,8 @@ import {
   type PasswordResetToken,
   type InsertPasswordResetToken,
   type Location,
+  type Challenge,
+  type InsertChallenge,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
@@ -155,6 +158,17 @@ export interface IStorage {
     continentCode: string;
     continentName: string;
   }): Promise<{ continentId: string; countryId: string; regionId: string; townId: string }>;
+
+  // Challenge operations
+  createChallenge(challenge: InsertChallenge): Promise<Challenge>;
+  getChallenge(id: string): Promise<Challenge | undefined>;
+  getUserChallenges(userId: string, status?: string): Promise<Challenge[]>;
+  getPendingChallengesForUser(userId: string): Promise<Challenge[]>;
+  respondToChallenge(challengeId: string, accept: boolean): Promise<Challenge>;
+  cancelChallenge(challengeId: string): Promise<Challenge>;
+  completeChallenge(challengeId: string, winnerId: string | null, challengerScore: number, opponentScore: number): Promise<Challenge>;
+  getActiveChallengesRequiringCompletion(): Promise<Challenge[]>;
+  getChallengeScores(challengeId: string): Promise<{ challengerScore: number; opponentScore: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1143,6 +1157,132 @@ export class DatabaseStorage implements IStorage {
       regionId: region?.id || country.id,
       townId: town.id,
     };
+  }
+
+  // Challenge operations
+  async createChallenge(challenge: InsertChallenge): Promise<Challenge> {
+    const [newChallenge] = await db.insert(challenges).values(challenge).returning();
+    return newChallenge;
+  }
+
+  async getChallenge(id: string): Promise<Challenge | undefined> {
+    const [challenge] = await db.select().from(challenges).where(eq(challenges.id, id));
+    return challenge;
+  }
+
+  async getUserChallenges(userId: string, status?: string): Promise<Challenge[]> {
+    const conditions = [
+      sql`(${challenges.challengerId} = ${userId} OR ${challenges.opponentId} = ${userId})`
+    ];
+    
+    if (status) {
+      conditions.push(eq(challenges.status, status));
+    }
+    
+    return await db.select().from(challenges)
+      .where(and(...conditions))
+      .orderBy(desc(challenges.createdAt));
+  }
+
+  async getPendingChallengesForUser(userId: string): Promise<Challenge[]> {
+    return await db.select().from(challenges)
+      .where(and(
+        eq(challenges.opponentId, userId),
+        eq(challenges.status, 'pending')
+      ))
+      .orderBy(desc(challenges.createdAt));
+  }
+
+  async respondToChallenge(challengeId: string, accept: boolean): Promise<Challenge> {
+    const now = new Date();
+    
+    if (accept) {
+      const [challenge] = await db.select().from(challenges).where(eq(challenges.id, challengeId));
+      if (!challenge) throw new Error('Challenge not found');
+      
+      const [updated] = await db.update(challenges)
+        .set({
+          status: 'active',
+          respondedAt: now,
+          startDate: now.toISOString().split('T')[0],
+          endDate: new Date(now.getTime() + challenge.durationDays * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        })
+        .where(eq(challenges.id, challengeId))
+        .returning();
+      return updated;
+    } else {
+      const [updated] = await db.update(challenges)
+        .set({
+          status: 'declined',
+          respondedAt: now,
+        })
+        .where(eq(challenges.id, challengeId))
+        .returning();
+      return updated;
+    }
+  }
+
+  async cancelChallenge(challengeId: string): Promise<Challenge> {
+    const [updated] = await db.update(challenges)
+      .set({ status: 'cancelled' })
+      .where(eq(challenges.id, challengeId))
+      .returning();
+    return updated;
+  }
+
+  async completeChallenge(challengeId: string, winnerId: string | null, challengerScore: number, opponentScore: number): Promise<Challenge> {
+    const [updated] = await db.update(challenges)
+      .set({
+        status: 'completed',
+        winnerId,
+        challengerScore,
+        opponentScore,
+        completedAt: new Date(),
+      })
+      .where(eq(challenges.id, challengeId))
+      .returning();
+    return updated;
+  }
+
+  async getActiveChallengesRequiringCompletion(): Promise<Challenge[]> {
+    const today = new Date().toISOString().split('T')[0];
+    return await db.select().from(challenges)
+      .where(and(
+        eq(challenges.status, 'active'),
+        lte(challenges.endDate, today)
+      ));
+  }
+
+  async getChallengeScores(challengeId: string): Promise<{ challengerScore: number; opponentScore: number }> {
+    const [challenge] = await db.select().from(challenges).where(eq(challenges.id, challengeId));
+    if (!challenge) throw new Error('Challenge not found');
+
+    const startDate = challenge.startDate;
+    const endDate = challenge.endDate;
+    const metric = challenge.metric;
+
+    const getScore = async (userId: string): Promise<number> => {
+      const userActivities = await db.select().from(activities)
+        .where(and(
+          eq(activities.userId, userId),
+          gte(activities.date, startDate),
+          lte(activities.date, endDate)
+        ));
+
+      if (metric === 'calories') {
+        return userActivities.reduce((sum, a) => sum + (a.calories || 0), 0);
+      } else if (metric === 'steps') {
+        return userActivities.reduce((sum, a) => sum + (a.steps || 0), 0);
+      } else if (metric === 'workouts') {
+        return userActivities.filter(a => a.workoutType).length;
+      }
+      return 0;
+    };
+
+    const challengerScore = await getScore(challenge.challengerId);
+    const opponentScore = await getScore(challenge.opponentId);
+
+    return { challengerScore, opponentScore };
   }
 }
 

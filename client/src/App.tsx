@@ -22,6 +22,7 @@ import Support from "@/pages/Support";
 import Privacy from "@/pages/Privacy";
 import DeleteAccount from "@/pages/DeleteAccount";
 import DailyChart from "@/pages/DailyChart";
+import Challenges from "@/pages/Challenges";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -93,6 +94,7 @@ function Router() {
       <Route path="/create-team" component={CreateTeam} />
       <Route path="/profile" component={Profile} />
       <Route path="/users/:userId/profile" component={UserProfile} />
+      <Route path="/challenges" component={Challenges} />
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/support" component={Support} />
       <Route path="/privacy" component={Privacy} />
