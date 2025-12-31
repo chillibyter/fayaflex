@@ -495,3 +495,71 @@ export const insertUserGoalSchema = createInsertSchema(userGoals).omit({
   createdAt: true,
 });
 export type InsertUserGoal = z.infer<typeof insertUserGoalSchema>;
+
+// Challenges table for 1v1 teammate competitions
+export const challenges = pgTable("challenges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  challengerId: varchar("challenger_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  opponentId: varchar("opponent_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  teamId: varchar("team_id")
+    .references(() => teams.id, { onDelete: "cascade" }),
+  metric: varchar("metric", { length: 20 }).notNull(), // 'calories', 'steps', 'workouts'
+  durationDays: integer("duration_days").notNull(), // 3, 7, 14, 30
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // 'pending', 'active', 'declined', 'cancelled', 'completed'
+  winnerId: varchar("winner_id").references(() => users.id),
+  challengerScore: integer("challenger_score").default(0),
+  opponentScore: integer("opponent_score").default(0),
+  message: text("message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  respondedAt: timestamp("responded_at"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const challengesRelations = relations(challenges, ({ one }) => ({
+  challenger: one(users, {
+    fields: [challenges.challengerId],
+    references: [users.id],
+    relationName: "challengerChallenges",
+  }),
+  opponent: one(users, {
+    fields: [challenges.opponentId],
+    references: [users.id],
+    relationName: "opponentChallenges",
+  }),
+  winner: one(users, {
+    fields: [challenges.winnerId],
+    references: [users.id],
+    relationName: "wonChallenges",
+  }),
+  team: one(teams, {
+    fields: [challenges.teamId],
+    references: [teams.id],
+  }),
+}));
+
+export type Challenge = typeof challenges.$inferSelect;
+export const insertChallengeSchema = createInsertSchema(challenges).omit({
+  id: true,
+  status: true,
+  winnerId: true,
+  challengerScore: true,
+  opponentScore: true,
+  createdAt: true,
+  respondedAt: true,
+  completedAt: true,
+});
+export type InsertChallenge = z.infer<typeof insertChallengeSchema>;
+
+export const createChallengeSchema = z.object({
+  opponentId: z.string().min(1, "Opponent is required"),
+  teamId: z.string().optional(),
+  metric: z.enum(["calories", "steps", "workouts"], { required_error: "Metric is required" }),
+  durationDays: z.number().int().min(1).max(30),
+  message: z.string().optional(),
+});
