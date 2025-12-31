@@ -29,7 +29,7 @@ Complete step-by-step instructions for deploying FayaFlex to iOS App Store and G
 
 ### For Huawei Deployment
 - Computer with Android Studio installed
-- Huawei Developer Account (free) - https://developer.huawei.com
+- Huawei Developer Account (free) - https://developer.huawei.comgit
 
 ---
 

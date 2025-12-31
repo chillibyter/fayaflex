@@ -20,6 +20,7 @@ import TeamSelection from "@/pages/TeamSelection";
 import HowItWorks from "@/pages/HowItWorks";
 import Support from "@/pages/Support";
 import Privacy from "@/pages/Privacy";
+import DeleteAccount from "@/pages/DeleteAccount";
 import DailyChart from "@/pages/DailyChart";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
@@ -52,6 +53,7 @@ function Router() {
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/support" component={Support} />
         <Route path="/privacy" component={Privacy} />
+        <Route path="/delete-account" component={DeleteAccount} />
         <Route path="/" component={AuthPage} />
         <Route component={AuthPage} />
       </Switch>
@@ -94,6 +96,7 @@ function Router() {
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/support" component={Support} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/delete-account" component={DeleteAccount} />
       <Route path="/team-selection">
         <Redirect to="/" />
       </Route>
