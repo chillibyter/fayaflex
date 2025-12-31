@@ -86,6 +86,7 @@ export interface IStorage {
   getUserActivities(userId: string, month?: number, year?: number): Promise<Activity[]>;
   getUserActivitiesForDate(userId: string, date: string): Promise<Activity[]>;
   getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]>;
+  getAllActivitiesForMonth(month: number, year: number): Promise<Activity[]>;
   syncHealthActivities(
     userId: string,
     provider: string,
@@ -354,13 +355,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTeamByInviteCode(code: string): Promise<Team | undefined> {
+    console.log(`[Storage] Looking for team with invite code: "${code}"`);
+    
     // Try exact match first (most common case - codes are lowercase hex)
     let [team] = await db.select().from(teams).where(eq(teams.inviteCode, code.toLowerCase()));
-    if (!team) {
-      // Fallback: try exact match with original case
-      [team] = await db.select().from(teams).where(eq(teams.inviteCode, code));
+    if (team) {
+      console.log(`[Storage] Found team with lowercase match: ${team.name}`);
+      return team;
     }
-    return team;
+    
+    // Fallback: try exact match with original case
+    [team] = await db.select().from(teams).where(eq(teams.inviteCode, code));
+    if (team) {
+      console.log(`[Storage] Found team with exact match: ${team.name}`);
+      return team;
+    }
+    
+    // Debug: list all teams and their invite codes
+    const allTeams = await db.select({ id: teams.id, name: teams.name, inviteCode: teams.inviteCode }).from(teams).limit(10);
+    console.log(`[Storage] No team found. Available teams:`, allTeams.map(t => ({ name: t.name, code: t.inviteCode })));
+    
+    return undefined;
   }
 
   async getUserTeams(userId: string): Promise<Team[]> {
@@ -527,6 +542,21 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(activities)
       .where(inArray(activities.userId, memberIds))
+      .orderBy(desc(activities.date));
+  }
+
+  async getAllActivitiesForMonth(month: number, year: number): Promise<Activity[]> {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+    return await db
+      .select()
+      .from(activities)
+      .where(
+        and(
+          sql`${activities.date} >= ${startDate.toISOString().split('T')[0]}`,
+          sql`${activities.date} <= ${endDate.toISOString().split('T')[0]}`
+        )
+      )
       .orderBy(desc(activities.date));
   }
 
