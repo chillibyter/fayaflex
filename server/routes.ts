@@ -733,12 +733,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { inviteCode } = validation.data;
       const cleanCode = inviteCode.trim().toLowerCase();
+      
+      console.log(`[Teams] Join attempt with code: "${cleanCode}" (original: "${inviteCode}")`);
 
       const team = await storage.getTeamByInviteCode(cleanCode);
       if (!team) {
-        console.log(`[Teams] Invalid invite code attempted: "${cleanCode}"`);
+        console.log(`[Teams] Team not found for code: "${cleanCode}"`);
         return res.status(404).json({ message: "Invalid invite code" });
       }
+      
+      console.log(`[Teams] Found team: ${team.name} (${team.id})`)
 
       const isAlreadyMember = await storage.isUserInTeam(userId, team.id);
       if (isAlreadyMember) {
