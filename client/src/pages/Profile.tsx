@@ -283,7 +283,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="px-4 -mt-8">
+      <div className="px-4 mt-4">
         <Card className="mb-6">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Daily Goals</CardTitle>
