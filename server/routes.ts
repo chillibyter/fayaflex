@@ -732,9 +732,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const { inviteCode } = validation.data;
+      const cleanCode = inviteCode.trim().toLowerCase();
 
-      const team = await storage.getTeamByInviteCode(inviteCode);
+      const team = await storage.getTeamByInviteCode(cleanCode);
       if (!team) {
+        console.log(`[Teams] Invalid invite code attempted: "${cleanCode}"`);
         return res.status(404).json({ message: "Invalid invite code" });
       }
 
