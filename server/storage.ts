@@ -354,9 +354,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTeamByInviteCode(code: string): Promise<Team | undefined> {
-    const [team] = await db.select().from(teams).where(
-      sql`LOWER(${teams.inviteCode}) = LOWER(${code})`
-    );
+    // Try exact match first (most common case - codes are lowercase hex)
+    let [team] = await db.select().from(teams).where(eq(teams.inviteCode, code.toLowerCase()));
+    if (!team) {
+      // Fallback: try exact match with original case
+      [team] = await db.select().from(teams).where(eq(teams.inviteCode, code));
+    }
     return team;
   }
 
