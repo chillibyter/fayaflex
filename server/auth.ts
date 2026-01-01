@@ -58,6 +58,10 @@ const registerSchema = z.object({
   email: z.string().email().optional().nullable(),
   firstName: z.string().optional().nullable(),
   lastName: z.string().optional().nullable(),
+  continentId: z.string().optional().nullable(),
+  countryId: z.string().optional().nullable(),
+  regionId: z.string().optional().nullable(),
+  townId: z.string().optional().nullable(),
 });
 
 const loginSchema = z.object({
@@ -198,7 +202,7 @@ export function setupAuth(app: Express) {
         });
       }
 
-      const { username, password, email, firstName, lastName } = validationResult.data;
+      const { username, password, email, firstName, lastName, continentId, countryId, regionId, townId } = validationResult.data;
 
       // Check if username already exists
       const existingUser = await storage.getUserByUsername(username);
@@ -206,13 +210,17 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      // Create user with hashed password
+      // Create user with hashed password and location data
       const user = await storage.createUser({
         username,
         password: await hashPassword(password),
         email: email ?? undefined,
         firstName: firstName ?? undefined,
         lastName: lastName ?? undefined,
+        continentId: continentId ?? undefined,
+        countryId: countryId ?? undefined,
+        regionId: regionId ?? undefined,
+        townId: townId ?? undefined,
       });
 
       // Log in the user and return sanitized user object with JWT token

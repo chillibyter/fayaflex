@@ -64,6 +64,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Registration Location Fix** (January 1, 2026)
+- Fixed bug where city/location data was captured in frontend but not saved to database during registration
+- Updated /api/register endpoint to include location fields (continentId, countryId, regionId, townId)
+- Users no longer need to manually update their location in Profile after registering
+
 **City Search for Registration** (December 30, 2025)
 - Added CitySearch component with autocomplete for finding cities during registration
 - Search API endpoint /api/locations/search/cities returns cities with full location hierarchy
