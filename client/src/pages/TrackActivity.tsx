@@ -132,7 +132,7 @@ export default function TrackActivity() {
       <div className="px-4 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-primary mb-2">Track Activity</h1>
         
-        <Tabs defaultValue="manual" className="w-full">
+        <Tabs defaultValue="devices" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="manual" className="data-[state=active]:bg-primary data-[state=active]:text-white" data-testid="tab-manual-entry">
               Manual Entry
