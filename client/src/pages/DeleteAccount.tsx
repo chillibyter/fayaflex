@@ -1,14 +1,68 @@
-import { Link } from "wouter";
-import { ArrowLeft, Trash2, Mail, Clock, Database, Shield, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { ArrowLeft, Trash2, Database, Shield, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function DeleteAccount() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== "DELETE") {
+      toast({
+        title: "Confirmation Required",
+        description: "Please type DELETE to confirm account deletion",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await apiRequest("DELETE", "/api/auth/user");
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+      });
+      setLocation("/");
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Deletion Failed",
+        description: error.message || "Failed to delete account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowConfirmDialog(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container flex h-14 items-center px-4">
-          <Link href="/">
+          <Link href="/profile">
             <Button variant="ghost" size="icon" data-testid="button-back">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -22,82 +76,37 @@ export default function DeleteAccount() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4">
             <Trash2 className="h-8 w-8 text-destructive" />
           </div>
-          <h1 className="text-2xl font-bold mb-2" data-testid="text-page-title">FayaFlex Account Deletion</h1>
+          <h1 className="text-2xl font-bold mb-2" data-testid="text-page-title">Delete Your Account</h1>
           <p className="text-muted-foreground">
-            Request deletion of your FayaFlex account and associated data
+            Permanently delete your FayaFlex account and all associated data
           </p>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Mail className="h-5 w-5 text-primary" />
-              How to Request Account Deletion
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              To delete your FayaFlex account and all associated data, please follow these steps:
-            </p>
-            
-            <ol className="space-y-4" data-testid="list-deletion-steps">
-              <li className="flex gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">1</span>
-                <div>
-                  <p className="font-medium">Send an email to our support team</p>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Email: <a href="mailto:support@fayaflex.com" className="text-primary hover:underline" data-testid="link-support-email">support@fayaflex.com</a>
-                  </p>
-                </div>
-              </li>
-              
-              <li className="flex gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">2</span>
-                <div>
-                  <p className="font-medium">Use the subject line</p>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Subject: <span className="font-mono bg-muted px-2 py-0.5 rounded">Account Deletion Request</span>
-                  </p>
-                </div>
-              </li>
-              
-              <li className="flex gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">3</span>
-                <div>
-                  <p className="font-medium">Include your account information</p>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Please include your FayaFlex username or the email address associated with your account
-                  </p>
-                </div>
-              </li>
-              
-              <li className="flex gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">4</span>
-                <div>
-                  <p className="font-medium">Wait for confirmation</p>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    We will send you a confirmation email once your account deletion request has been processed
-                  </p>
-                </div>
-              </li>
-            </ol>
-          </CardContent>
-        </Card>
-
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="h-5 w-5 text-primary" />
-              Processing Time
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Account deletion requests are processed within <strong>30 days</strong> of receiving your request. 
-              You will receive an email confirmation once your account and data have been permanently deleted.
-            </p>
-          </CardContent>
-        </Card>
+        {user && (
+          <Card className="mb-6 border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+                <Trash2 className="h-5 w-5" />
+                Delete Account Now
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                You are logged in as <strong>{user.username}</strong>. You can permanently delete your account by clicking the button below.
+              </p>
+              <Button
+                variant="destructive"
+                size="lg"
+                className="w-full"
+                onClick={() => setShowConfirmDialog(true)}
+                data-testid="button-delete-account"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete My Account
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="mb-6">
           <CardHeader>
@@ -108,7 +117,7 @@ export default function DeleteAccount() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-muted-foreground">
-              When you request account deletion, the following data will be <strong>permanently removed</strong>:
+              When you delete your account, the following data will be <strong>permanently removed</strong>:
             </p>
             <ul className="space-y-2 text-muted-foreground" data-testid="list-deleted-data">
               <li className="flex items-start gap-2">
@@ -139,6 +148,14 @@ export default function DeleteAccount() {
                 <Trash2 className="h-4 w-4 mt-0.5 text-destructive flex-shrink-0" />
                 <span><strong>Health Data:</strong> Any synced data from Apple Health, Android Health Connect, or Huawei Health</span>
               </li>
+              <li className="flex items-start gap-2">
+                <Trash2 className="h-4 w-4 mt-0.5 text-destructive flex-shrink-0" />
+                <span><strong>Messages:</strong> All direct messages sent and received</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Trash2 className="h-4 w-4 mt-0.5 text-destructive flex-shrink-0" />
+                <span><strong>Challenges:</strong> All teammate challenges you've created or participated in</span>
+              </li>
             </ul>
           </CardContent>
         </Card>
@@ -162,10 +179,6 @@ export default function DeleteAccount() {
               <li className="flex items-start gap-2">
                 <Shield className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                 <span><strong>Anonymized Analytics:</strong> Aggregated, non-identifiable usage statistics that cannot be linked back to you</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Shield className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                <span><strong>Backup Retention:</strong> Your data may temporarily remain in encrypted backups for up to 90 days after deletion before being permanently purged</span>
               </li>
             </ul>
           </CardContent>
@@ -192,13 +205,6 @@ export default function DeleteAccount() {
         </Card>
 
         <div className="text-center space-y-4">
-          <Button asChild size="lg" data-testid="button-send-email">
-            <a href="mailto:support@fayaflex.com?subject=Account%20Deletion%20Request">
-              <Mail className="h-4 w-4 mr-2" />
-              Send Deletion Request
-            </a>
-          </Button>
-          
           <p className="text-sm text-muted-foreground">
             Have questions? Visit our{" "}
             <Link href="/support" className="text-primary hover:underline" data-testid="link-support">
@@ -216,6 +222,55 @@ export default function DeleteAccount() {
           <p className="mt-1">© 2025 FayaFlex. All rights reserved.</p>
         </footer>
       </main>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Delete Your Account?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>
+                This action <strong>cannot be undone</strong>. This will permanently delete your account and remove all your data from our servers.
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-delete">
+                  Type <strong>DELETE</strong> to confirm:
+                </Label>
+                <Input
+                  id="confirm-delete"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+                  placeholder="Type DELETE"
+                  className="font-mono"
+                  data-testid="input-confirm-delete"
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting} data-testid="button-cancel-delete">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={confirmText !== "DELETE" || isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Account
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

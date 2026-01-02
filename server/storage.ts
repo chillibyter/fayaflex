@@ -64,6 +64,7 @@ export interface IStorage {
   createUser(user: Partial<UpsertUser> & { username: string; password: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
 
   // Team operations
   createTeam(team: InsertTeam): Promise<Team>;
@@ -271,6 +272,111 @@ export class DatabaseStorage implements IStorage {
     }
     
     return user;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    // Delete all user-related data in the correct order (child tables first)
+    // This ensures foreign key constraints are respected
+    
+    // Get user data first to clean up uploaded files
+    const user = await db.select().from(users).where(eq(users.id, id));
+    const userData = user[0];
+    
+    // Handle teams owned by this user - delete the team and all associated data
+    const ownedTeams = await db.select({ id: teams.id }).from(teams).where(eq(teams.ownerId, id));
+    const teamIds = ownedTeams.map(t => t.id);
+    
+    if (teamIds.length > 0) {
+      // Delete monthly winners for these teams
+      await db.delete(monthlyWinners).where(inArray(monthlyWinners.teamId, teamIds));
+      // Delete team members for these teams
+      await db.delete(teamMembers).where(inArray(teamMembers.teamId, teamIds));
+      // Delete challenges associated with these teams
+      await db.delete(challenges).where(inArray(challenges.teamId, teamIds));
+      // Delete the teams themselves
+      await db.delete(teams).where(inArray(teams.id, teamIds));
+    }
+    
+    // Delete user's activities first (needed before deleting reactions/comments on them)
+    const userActivities = await db.select({ id: activities.id, attachmentUrl: activities.attachmentUrl }).from(activities).where(eq(activities.userId, id));
+    const activityIds = userActivities.map(a => a.id);
+    
+    if (activityIds.length > 0) {
+      // Delete reactions on user's activities
+      await db.delete(activityReactions).where(inArray(activityReactions.activityId, activityIds));
+      // Delete comments on user's activities
+      await db.delete(activityComments).where(inArray(activityComments.activityId, activityIds));
+    }
+    
+    // Delete user's reactions on other activities
+    await db.delete(activityReactions).where(eq(activityReactions.userId, id));
+    // Delete user's comments on other activities
+    await db.delete(activityComments).where(eq(activityComments.userId, id));
+    // Delete user's activities
+    await db.delete(activities).where(eq(activities.userId, id));
+    // Delete user's team memberships
+    await db.delete(teamMembers).where(eq(teamMembers.userId, id));
+    // Delete user's passkeys
+    await db.delete(passkeys).where(eq(passkeys.userId, id));
+    // Delete user's notifications
+    await db.delete(notifications).where(eq(notifications.userId, id));
+    // Delete user's device connections
+    await db.delete(deviceConnections).where(eq(deviceConnections.userId, id));
+    // Delete user's badges
+    await db.delete(userBadges).where(eq(userBadges.userId, id));
+    // Delete user's personal bests
+    await db.delete(personalBests).where(eq(personalBests.userId, id));
+    // Delete user's goals
+    await db.delete(userGoals).where(eq(userGoals.userId, id));
+    // Delete user's password reset tokens
+    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, id));
+    // Delete user's messages (sent and received)
+    await db.delete(messages).where(eq(messages.senderId, id));
+    await db.delete(messages).where(eq(messages.recipientId, id));
+    // Delete user's challenges (as challenger or opponent)
+    await db.delete(challenges).where(eq(challenges.challengerId, id));
+    await db.delete(challenges).where(eq(challenges.opponentId, id));
+    // Delete user's monthly winner records
+    await db.delete(monthlyWinners).where(eq(monthlyWinners.userId, id));
+    
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, id));
+    
+    // Clean up uploaded files after database deletion
+    const fs = await import('fs').then(m => m.promises);
+    const path = await import('path');
+    
+    // Helper to normalize stored paths (strip leading slash for join)
+    const normalizeUploadPath = (url: string) => {
+      // Remove leading slash so path.join works correctly
+      return url.startsWith('/') ? url.substring(1) : url;
+    };
+    
+    // Delete profile image if exists
+    if (userData?.profileImageUrl && userData.profileImageUrl.startsWith('/uploads/')) {
+      try {
+        const filePath = path.join(process.cwd(), normalizeUploadPath(userData.profileImageUrl));
+        await fs.unlink(filePath);
+        console.log(`Deleted profile image: ${filePath}`);
+      } catch (err) {
+        // File may not exist, ignore error
+        console.log(`Could not delete profile image: ${userData.profileImageUrl}`);
+      }
+    }
+    
+    // Delete activity evidence images
+    for (const activity of userActivities) {
+      if (activity.attachmentUrl && activity.attachmentUrl.startsWith('/uploads/')) {
+        try {
+          const filePath = path.join(process.cwd(), normalizeUploadPath(activity.attachmentUrl));
+          await fs.unlink(filePath);
+          console.log(`Deleted evidence image: ${filePath}`);
+        } catch (err) {
+          // File may not exist, ignore error
+          console.log(`Could not delete evidence image: ${activity.attachmentUrl}`);
+        }
+      }
+    }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {

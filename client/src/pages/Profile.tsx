@@ -477,6 +477,12 @@ export default function Profile() {
                 <span className="font-medium">Privacy Policy</span>
               </button>
             </Link>
+            <div className="border-t my-2" />
+            <Link href="/delete-account" onClick={() => setIsSettingsOpen(false)}>
+              <button className="w-full flex items-center gap-3 py-3 px-2 hover:bg-destructive/10 rounded-md transition-colors text-destructive" data-testid="link-delete-account">
+                <span className="font-medium">Delete Account</span>
+              </button>
+            </Link>
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 py-3 px-2 hover:bg-destructive/10 rounded-md transition-colors text-destructive"

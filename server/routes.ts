@@ -66,6 +66,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete user account
+  app.delete("/api/auth/user", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Delete all user data
+      await storage.deleteUser(userId);
+      
+      // Destroy the session
+      req.logout((err: any) => {
+        if (err) {
+          console.error("Error logging out after account deletion:", err);
+        }
+        req.session.destroy((sessionErr: any) => {
+          if (sessionErr) {
+            console.error("Error destroying session after account deletion:", sessionErr);
+          }
+          res.json({ message: "Account deleted successfully" });
+        });
+      });
+    } catch (error: any) {
+      console.error("Error deleting user account:", error);
+      res.status(500).json({ message: error.message || "Failed to delete account" });
+    }
+  });
+
   // Device connection routes
   app.get("/api/devices", isAuthenticated, async (req: any, res) => {
     try {
