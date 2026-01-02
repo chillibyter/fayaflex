@@ -1326,17 +1326,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const teams = await storage.getAllTeams();
       const teamStats = [];
       
-      // Calculate days in month
+      // Calculate days elapsed in month (for current month use today's date, for past months use full month)
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
       const daysInMonth = new Date(year, month, 0).getDate();
+      
+      let daysElapsed: number;
+      if (year === currentYear && month === currentMonth) {
+        // Current month: use today's date as the divisor
+        daysElapsed = now.getDate();
+      } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
+        // Past month: use full days in month
+        daysElapsed = daysInMonth;
+      } else {
+        // Future month: use 1 to avoid division by zero
+        daysElapsed = 1;
+      }
       
       for (const team of teams) {
         const activities = await storage.getTeamActivities(team.id, month, year);
         const members = await storage.getTeamMembers(team.id);
         const totalCalories = aggregateTeamCalories(activities);
         
-        // Calculate average daily calories per user
+        // Calculate average daily calories per user (using days elapsed, not full month)
         const avgDailyCaloriesPerUser = members.length > 0 
-          ? totalCalories / (members.length * daysInMonth)
+          ? totalCalories / (members.length * daysElapsed)
           : 0;
         
         teamStats.push({
