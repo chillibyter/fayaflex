@@ -94,22 +94,13 @@ export function HealthDevices() {
       await healthService.requestPermissions();
       console.log('[HealthDevices] Permission dialog shown');
       
-      // iOS IMPORTANT: Apple HealthKit does NOT tell apps if permissions were granted
-      // We CANNOT check the result - we must just try to read data
-      // Android: We can check, but we'll verify by actually reading data
-      if (provider !== 'apple_health') {
-        // Only check permissions on Android - iOS always returns "not determined"
-        const hasPermissions = await healthService.checkPermissions();
-        console.log('[HealthDevices] Android permission check:', hasPermissions);
-        
-        if (!hasPermissions) {
-          throw new Error('Health permissions were not granted. Please open Health Connect app and enable permissions for FayaFlex, then try again.');
-        }
-      } else {
-        console.log('[HealthDevices] iOS - skipping permission check (Apple privacy restriction)');
-      }
+      // IMPORTANT: Skip permission check on ALL platforms and just try to read data
+      // - iOS: Apple HealthKit does NOT tell apps if permissions were granted
+      // - Android: Health Connect permission check has been unreliable
+      // The most reliable approach is to just try reading data - if it fails, permissions weren't granted
+      console.log('[HealthDevices] Skipping permission check - will verify by reading data');
 
-      // Step 4: Query health data (as per PDF flow)
+      // Step 3: Query health data (the real permission verification)
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);

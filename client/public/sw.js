@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fayaflex-v2';
+const CACHE_NAME = 'fayaflex-v3';
 const urlsToCache = [
   '/',
   '/index.html',
