@@ -1448,12 +1448,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Category leaderboard - separate rankings for calories, steps, and workouts
+  // Supports location-based filtering: global, continent, country, region, town
   app.get("/api/leaderboard/category/:category", isAuthenticated, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const category = req.params.category; // 'calories', 'steps', 'workouts'
       const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+      const locationScope = req.query.scope as string || 'global';
+      const locationId = req.query.locationId as string | undefined;
       
       if (!['calories', 'steps', 'workouts'].includes(category)) {
         return res.status(400).json({ message: "Invalid category. Use 'calories', 'steps', or 'workouts'" });
@@ -1479,47 +1482,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return byDate;
       };
       
-      // Get user's teams to show only teammates
-      const userTeams = await storage.getUserTeams(currentUserId);
+      // Get all users, then filter by location scope
+      const allUsers = await storage.getAllUsers();
+      let filteredUsers = allUsers;
+      
+      // Apply location filter based on scope
+      if (locationScope !== 'global' && locationId) {
+        filteredUsers = allUsers.filter(user => {
+          switch (locationScope) {
+            case 'continent':
+              return user.continentId === locationId;
+            case 'country':
+              return user.countryId === locationId;
+            case 'region':
+              return user.regionId === locationId;
+            case 'town':
+              return user.townId === locationId;
+            default:
+              return true;
+          }
+        });
+      }
+      
       const userStatsMap = new Map<string, any>();
       
-      for (const team of userTeams) {
-        const members = await storage.getTeamMembers(team.id);
+      for (const user of filteredUsers) {
+        const activities = await storage.getUserActivities(user.id, month, year);
+        const aggregated = aggregateByDate(activities);
         
-        for (const member of members) {
-          if (userStatsMap.has(member.userId)) continue;
+        let displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        if (!displayName && user.email) {
+          const emailUsername = user.email.split('@')[0];
+          displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+        }
+        
+        let totalCalories = 0;
+        let totalSteps = 0;
+        let workoutDays = 0;
+        
+        Array.from(aggregated.values()).forEach(dayData => {
+          totalCalories += dayData.calories;
+          totalSteps += dayData.steps;
+          if (dayData.hasWorkout) workoutDays++;
+        });
+        
+        // Only include users with activity
+        if (totalCalories > 0 || totalSteps > 0 || workoutDays > 0) {
+          // Get user's first team name for display
+          const userTeams = await storage.getUserTeams(user.id);
+          const teamName = userTeams.length > 0 ? userTeams[0].name : undefined;
           
-          const activities = await storage.getUserActivities(member.userId, month, year);
-          const aggregated = aggregateByDate(activities);
-          const user = await storage.getUser(member.userId);
-          
-          if (user) {
-            let displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-            if (!displayName && user.email) {
-              const emailUsername = user.email.split('@')[0];
-              displayName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
-            }
-            
-            let totalCalories = 0;
-            let totalSteps = 0;
-            let workoutDays = 0;
-            
-            Array.from(aggregated.values()).forEach(dayData => {
-              totalCalories += dayData.calories;
-              totalSteps += dayData.steps;
-              if (dayData.hasWorkout) workoutDays++;
-            });
-            
-            userStatsMap.set(user.id, {
-              userId: user.id,
-              name: displayName || 'Unknown User',
-              teamName: team.name,
-              calories: totalCalories,
-              steps: totalSteps,
-              workouts: workoutDays,
-              avatarId: user.avatarId,
-            });
-          }
+          userStatsMap.set(user.id, {
+            userId: user.id,
+            name: displayName || 'Unknown User',
+            teamName: teamName,
+            calories: totalCalories,
+            steps: totalSteps,
+            workouts: workoutDays,
+            avatarId: user.avatarId,
+            profileImageUrl: user.profileImageUrl,
+          });
         }
       }
       
