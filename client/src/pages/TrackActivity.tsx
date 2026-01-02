@@ -20,6 +20,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Activity } from "@shared/schema";
 import { HealthDevices } from "@/components/HealthDevices";
+import PageHeader from "@/components/PageHeader";
 
 export default function TrackActivity() {
   const [date, setDate] = useState<Date>(new Date());
@@ -129,9 +130,8 @@ export default function TrackActivity() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-4 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-primary mb-2">Track Activity</h1>
-        
+      <PageHeader title="Track Activity" backPath="/" />
+      <div className="px-4 pt-4 pb-4">
         <Tabs defaultValue="devices" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="manual" className="data-[state=active]:bg-primary data-[state=active]:text-white" data-testid="tab-manual-entry">

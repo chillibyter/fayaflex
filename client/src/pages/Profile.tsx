@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, Check } from "lucide-react";
+import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, Check, ArrowLeft } from "lucide-react";
+import { useLocation as useWouterLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { User as UserType, Team, Challenge } from "@shared/schema";
 import { Trophy, ChevronRight } from "lucide-react";
@@ -250,12 +251,21 @@ export default function Profile() {
     );
   }
 
+  const [, setWouterLocation] = useWouterLocation();
+
   return (
     <div className="min-h-screen bg-background">
       <div
-        className="relative px-4 pt-8 pb-16 text-white"
+        className="relative px-4 pt-4 pb-16 text-white"
         style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}
       >
+        <button
+          onClick={() => setWouterLocation("/")}
+          className="absolute top-4 left-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
         <button
           onClick={() => setIsSettingsOpen(true)}
           className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"

@@ -1765,6 +1765,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endDate = end.toISOString().split('T')[0];
       }
       
+      // Check for existing active goal with same type and category
+      const existingGoals = await storage.getActiveGoals(userId);
+      const duplicate = existingGoals.find(
+        g => g.goalType === goalType && g.category === category && !g.isCompleted
+      );
+      
+      if (duplicate) {
+        return res.status(400).json({ 
+          message: `You already have an active ${goalType} ${category} goal. Complete or wait for it to expire first.` 
+        });
+      }
+      
       const goal = await storage.createGoal({
         userId,
         goalType,

@@ -143,12 +143,18 @@ export default function DailyChart() {
                         formatter={(value: number) => [`${value.toLocaleString()} ${unit}`, title]}
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                        {formattedData.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={entry.fullDate === maxDay.fullDate ? color : `${color}80`} 
-                          />
-                        ))}
+                        {formattedData.map((entry, index) => {
+                          const isMaxDay = entry.fullDate === maxDay.fullDate;
+                          const barColor = isCalories 
+                            ? (isMaxDay ? 'hsl(24, 95%, 53%)' : 'hsl(24, 95%, 53%, 0.5)')
+                            : (isMaxDay ? 'hsl(142, 76%, 36%)' : 'hsl(142, 76%, 36%, 0.5)');
+                          return (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={barColor} 
+                            />
+                          );
+                        })}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>

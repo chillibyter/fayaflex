@@ -89,6 +89,10 @@ export default function GoalJourneys() {
   const createGoalMutation = useMutation({
     mutationFn: async (data: { goalType: string; category: string; targetValue: number }) => {
       const res = await apiRequest('POST', '/api/goals', data);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to create goal');
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -100,10 +104,10 @@ export default function GoalJourneys() {
         description: `Your ${goalType} ${category} goal has been set!`,
       });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: "Failed to create goal. Please try again.",
+        title: "Cannot Create Goal",
+        description: error.message || "Failed to create goal. Please try again.",
         variant: "destructive",
       });
     },

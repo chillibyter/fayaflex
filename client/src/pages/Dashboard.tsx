@@ -284,11 +284,13 @@ export default function Dashboard() {
                       <span className="text-xs text-muted-foreground">Ranking</span>
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {scopedRankData?.total 
-                        ? `Out of ${scopedRankData.total} active users`
-                        : stats?.totalActiveUsers 
-                          ? `Out of ${stats.totalActiveUsers} active users` 
-                          : 'View your position'}
+                      {(() => {
+                        const total = scopedRankData?.total || stats?.totalActiveUsers;
+                        if (!total) return 'View your position';
+                        if (total === 1) return "You're leading! Invite friends to compete";
+                        if (total <= 5) return `Competing with ${total} active users`;
+                        return `Out of ${total} active users`;
+                      })()}
                     </p>
                     {availableScopes.length > 1 && (
                       <div className="flex gap-1 mt-1">
