@@ -58,7 +58,9 @@ class HealthService {
       }
       
       // Android: Use capacitor-health plugin
-      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
+      // Permission names must match the CapHealthPermission enum in the plugin:
+      // READ_STEPS, READ_WORKOUTS, READ_HEART_RATE, READ_ROUTE, READ_ACTIVE_CALORIES, READ_TOTAL_CALORIES, READ_DISTANCE
+      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS'];
       console.log('[HealthService] Android - Requesting permissions:', permissions);
       
       const result = await Health.requestHealthPermissions({
@@ -68,11 +70,16 @@ class HealthService {
       console.log('[HealthService] Permission request result:', JSON.stringify(result));
       
       // Android: Check if permissions were actually granted
+      // The plugin returns: { permissions: { READ_STEPS: true, READ_ACTIVE_CALORIES: false, ... } }
+      console.log('[HealthService] Full permission result:', JSON.stringify(result));
+      
       if (result.permissions && typeof result.permissions === 'object') {
+        // Handle both object and array formats
         const permsObj = Array.isArray(result.permissions) ? result.permissions[0] : result.permissions;
-        if (permsObj) {
-          const hasAnyPermission = Object.values(permsObj).some(granted => granted === true);
-          console.log('[HealthService] Has any permission granted:', hasAnyPermission);
+        if (permsObj && typeof permsObj === 'object') {
+          const permValues = Object.values(permsObj);
+          const hasAnyPermission = permValues.some(granted => granted === true);
+          console.log('[HealthService] Permission values:', permValues, 'Has any granted:', hasAnyPermission);
           return hasAnyPermission;
         }
       }
@@ -101,15 +108,23 @@ class HealthService {
       }
       
       // Android only: check permissions
-      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_EXERCISE'];
+      // Permission names must match the CapHealthPermission enum in the plugin
+      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS'];
       const result = await Health.checkHealthPermissions({
         permissions: permissions as any
       });
       
-      // Check if at least one permission is granted
-      if (result.permissions && result.permissions.length > 0) {
-        const permsArray = result.permissions[0];
-        return Object.values(permsArray).some(granted => granted === true);
+      console.log('[HealthService] checkPermissions result:', JSON.stringify(result));
+      
+      // The plugin returns: { permissions: { READ_STEPS: true, READ_ACTIVE_CALORIES: false, ... } }
+      if (result.permissions && typeof result.permissions === 'object') {
+        // Handle both object and array formats
+        const permsObj = Array.isArray(result.permissions) ? result.permissions[0] : result.permissions;
+        if (permsObj && typeof permsObj === 'object') {
+          const hasAnyPermission = Object.values(permsObj).some(granted => granted === true);
+          console.log('[HealthService] checkPermissions has any granted:', hasAnyPermission);
+          return hasAnyPermission;
+        }
       }
       
       return false;
