@@ -103,6 +103,18 @@ export default function DailyChart() {
           <Card className="p-6 text-center">
             <p className="text-muted-foreground">Failed to load data</p>
           </Card>
+        ) : dailyData.length === 0 ? (
+          <Card className="p-6 text-center">
+            <div className="space-y-3">
+              <Icon className={`h-12 w-12 mx-auto ${isCalories ? 'text-orange-300' : 'text-green-300'}`} />
+              <p className="text-muted-foreground">No {isCalories ? 'calories' : 'steps'} logged this month yet</p>
+              <Link href="/track">
+                <Button variant="default" data-testid="button-log-activity">
+                  Log Your First Activity
+                </Button>
+              </Link>
+            </div>
+          </Card>
         ) : (
           <>
             <Card>

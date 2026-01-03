@@ -247,7 +247,8 @@ export default function TrackActivity() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Evidence (Optional)</Label>
+                  <Label>Evidence Photo (Optional)</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Upload a workout screenshot or photo to share with your team</p>
                   {!attachmentPreview ? (
                     <>
                       <Input id="attachment" type="file" accept="image/*" onChange={handleFileChange} className="hidden" data-testid="input-attachment" />

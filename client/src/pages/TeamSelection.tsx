@@ -195,7 +195,9 @@ export default function TeamSelection() {
                   ))
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    {searchQuery ? "No teams found matching your search." : "No teams available. Create one to get started!"}
+                    {searchQuery 
+                      ? "No teams found matching your search. Try a different name or create your own team!" 
+                      : "Be a pioneer! Create the first team and invite your friends to join your fitness journey."}
                   </div>
                 )}
               </div>

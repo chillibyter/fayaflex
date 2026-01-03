@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin } from "lucide-react";
+import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin, Users, ChevronRight } from "lucide-react";
 import { SiApple } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
 import type { Activity as ActivityType, User } from "@shared/schema";
@@ -13,6 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { useAuth } from "@/hooks/use-auth";
 import GoalJourneys from "@/components/GoalJourneys";
+import { UserAvatar } from "@/components/UserAvatar";
 
 type LocationScope = "global" | "continent" | "country" | "region" | "town";
 
@@ -157,6 +158,13 @@ export default function Dashboard() {
     queryKey: ['/api/notifications'],
   });
 
+  // Fetch user's teams for quick access
+  type TeamInfo = { id: number; name: string; memberCount: number; isMember: boolean };
+  const { data: userTeams = [] } = useQuery<TeamInfo[]>({
+    queryKey: ['/api/teams'],
+  });
+  const myTeams = userTeams.filter(t => t.isMember);
+
   useEffect(() => {
     if (user?.id && !isLoadingActivities) {
       const onboardingKey = `fayaflex_onboarding_seen_${user.id}`;
@@ -192,13 +200,29 @@ export default function Dashboard() {
       )}
 
       <header className="bg-gradient-to-br from-green-500 to-green-600 text-white px-4 pt-4 pb-6 rounded-b-3xl">
-        <div className="flex items-center gap-2 mb-6">
-          <img 
-            src="/fayaflex-logo.webp" 
-            alt="FayaFlex" 
-            className="w-8 h-8 rounded"
-          />
-          <h1 className="text-xl font-bold">FayaFlex</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <img 
+              src="/fayaflex-logo.webp" 
+              alt="FayaFlex" 
+              className="w-8 h-8 rounded"
+            />
+            <h1 className="text-xl font-bold">FayaFlex</h1>
+          </div>
+          {userData && (
+            <Link href="/profile">
+              <div className="flex items-center gap-2 cursor-pointer" data-testid="link-user-profile">
+                <span className="text-sm text-white/90 hidden sm:block">
+                  {userData.firstName || userData.username}
+                </span>
+                <UserAvatar 
+                  user={userData} 
+                  className="h-9 w-9 border-2 border-white/30" 
+                  iconClassName="h-4 w-4"
+                />
+              </div>
+            </Link>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-3">
@@ -322,6 +346,42 @@ export default function Dashboard() {
         </Link>
 
         <GoalJourneys />
+
+        {/* Team Quick Access */}
+        {myTeams.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="w-5 h-5 text-primary" />
+                My Teams
+              </CardTitle>
+              <Link href="/teams">
+                <Button variant="ghost" size="sm" data-testid="button-view-all-teams">
+                  View All
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {myTeams.slice(0, 2).map((team) => (
+                <Link key={team.id} href={`/teams/${team.id}`}>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover-elevate cursor-pointer" data-testid={`team-card-${team.id}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{team.name}</p>
+                        <p className="text-xs text-muted-foreground">{team.memberCount} members</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {!isLoadingActivities && recentActivities.length === 0 && (
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
