@@ -721,10 +721,11 @@ Respond with a JSON object containing exactly these fields:
   "greeting": "A short personalized greeting (1 sentence)",
   "workoutSuggestion": {
     "title": "Workout name (3-5 words)",
-    "description": "Brief description of the workout (2-3 sentences)",
-    "duration": "Estimated time (e.g., '20-30 min')",
+    "description": "Brief description of the workout (2-3 sentences). Include specific exercises or activities.",
+    "duration": "Workout duration between 30-45 min (e.g., '30 min', '35 min', '40 min', '45 min')",
     "intensity": "low" | "medium" | "high",
-    "calorieEstimate": number (estimated calories to burn)
+    "calorieEstimate": number (estimated calories to burn, typically 200-400 for 30-45 min),
+    "workoutType": "running" | "cycling" | "strength" | "yoga" | "hiit" | "swimming" | "walking"
   },
   "nutritionTip": {
     "title": "Nutrition tip title (3-5 words)",
@@ -734,7 +735,14 @@ Respond with a JSON object containing exactly these fields:
   "motivation": "A short motivational message (1-2 sentences)"
 }
 
-Make suggestions appropriate for their activity level. If they've been very active, suggest recovery. If less active, encourage getting started. Be encouraging but realistic.`;
+IMPORTANT: Suggest workouts between 30-45 minutes. Choose the workoutType based on the user's history:
+- If they've done running/walking recently, suggest running or cycling to build on cardio
+- If they do strength training, suggest strength or hiit
+- If they're very active, consider yoga for recovery
+- If they have low activity, suggest walking or easy cycling to get started
+- Vary suggestions based on what they haven't done recently
+
+Make suggestions appropriate for their activity level. Be encouraging but realistic.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",

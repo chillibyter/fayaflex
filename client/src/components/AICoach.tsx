@@ -16,6 +16,15 @@ import {
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import fayaIcon from "@assets/generated_images/faya_ai_coach_flame_face.png";
+import runningImg from "@assets/generated_images/running_workout_visual.png";
+import cyclingImg from "@assets/generated_images/cycling_workout_visual.png";
+import strengthImg from "@assets/generated_images/strength_workout_visual.png";
+import yogaImg from "@assets/generated_images/yoga_workout_visual.png";
+import hiitImg from "@assets/generated_images/hiit_workout_visual.png";
+import swimmingImg from "@assets/generated_images/swimming_workout_visual.png";
+import walkingImg from "@assets/generated_images/walking_workout_visual.png";
+
+type WorkoutType = "running" | "cycling" | "strength" | "yoga" | "hiit" | "swimming" | "walking";
 
 type AICoachSuggestions = {
   greeting: string;
@@ -25,6 +34,7 @@ type AICoachSuggestions = {
     duration: string;
     intensity: "low" | "medium" | "high";
     calorieEstimate: number;
+    workoutType?: WorkoutType;
   };
   nutritionTip: {
     title: string;
@@ -39,6 +49,26 @@ type AICoachSuggestions = {
     todayCalories: number;
     todaySteps: number;
   };
+};
+
+const workoutImages: Record<WorkoutType, string> = {
+  running: runningImg,
+  cycling: cyclingImg,
+  strength: strengthImg,
+  yoga: yogaImg,
+  hiit: hiitImg,
+  swimming: swimmingImg,
+  walking: walkingImg,
+};
+
+const workoutLabels: Record<WorkoutType, string> = {
+  running: "Running",
+  cycling: "Cycling",
+  strength: "Strength Training",
+  yoga: "Yoga & Flexibility",
+  hiit: "High Intensity",
+  swimming: "Swimming",
+  walking: "Walking",
 };
 
 const intensityColors = {
@@ -146,29 +176,48 @@ export default function AICoach() {
           <div className="flex items-center gap-2">
             <Dumbbell className="h-4 w-4 text-orange-500" />
             <span className="text-sm font-medium">Today's Workout</span>
+            <span className="text-xs text-muted-foreground">(30-45 min)</span>
           </div>
-          <div className="bg-muted/50 rounded-lg p-3 space-y-2" data-testid="card-workout-suggestion">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <h4 className="font-semibold">{data.workoutSuggestion.title}</h4>
-              <Badge 
-                variant="outline" 
-                className={intensityColors[data.workoutSuggestion.intensity]}
-              >
-                {data.workoutSuggestion.intensity}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {data.workoutSuggestion.description}
-            </p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {data.workoutSuggestion.duration}
-              </span>
-              <span className="flex items-center gap-1">
-                <Flame className="h-3 w-3 text-orange-500" />
-                ~{data.workoutSuggestion.calorieEstimate} kcal
-              </span>
+          <div className="bg-muted/50 rounded-lg overflow-hidden" data-testid="card-workout-suggestion">
+            {data.workoutSuggestion.workoutType && workoutImages[data.workoutSuggestion.workoutType] && (
+              <div className="relative h-32 w-full">
+                <img 
+                  src={workoutImages[data.workoutSuggestion.workoutType]} 
+                  alt={workoutLabels[data.workoutSuggestion.workoutType] || data.workoutSuggestion.title}
+                  className="w-full h-full object-cover"
+                  data-testid="img-workout-type"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-2 left-3 right-3">
+                  <Badge className="bg-white/90 text-foreground hover:bg-white/80">
+                    {workoutLabels[data.workoutSuggestion.workoutType]}
+                  </Badge>
+                </div>
+              </div>
+            )}
+            <div className="p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <h4 className="font-semibold">{data.workoutSuggestion.title}</h4>
+                <Badge 
+                  variant="outline" 
+                  className={intensityColors[data.workoutSuggestion.intensity]}
+                >
+                  {data.workoutSuggestion.intensity}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {data.workoutSuggestion.description}
+              </p>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {data.workoutSuggestion.duration}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Flame className="h-3 w-3 text-orange-500" />
+                  ~{data.workoutSuggestion.calorieEstimate} kcal
+                </span>
+              </div>
             </div>
           </div>
         </div>
