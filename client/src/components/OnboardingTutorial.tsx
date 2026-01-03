@@ -40,14 +40,14 @@ const slides = [
   {
     id: "scoring",
     title: "How Scoring Works",
-    description: "Every activity you log earns you points. Here's how your score is calculated:",
+    description: "Your score is based on calories burned. Here's what you can track:",
     icon: Target,
     color: "text-orange-500",
     bgColor: "bg-orange-500/10",
     scoreBreakdown: [
       { icon: Flame, label: "Calories Burned", value: "1 point per calorie", example: "500 cal = 500 pts" },
-      { icon: Footprints, label: "Steps Taken", value: "1 point per step", example: "10,000 steps = 10,000 pts" },
-      { icon: Dumbbell, label: "Workouts", value: "Calories burned during workout", example: "Log workout type + calories" },
+      { icon: Dumbbell, label: "Workouts", value: "Calories burned during workout", example: "Gym, running, cycling, etc." },
+      { icon: Footprints, label: "Steps Taken", value: "Track for personal goals", example: "Not counted in rankings" },
     ],
   },
   {
