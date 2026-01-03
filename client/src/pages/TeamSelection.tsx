@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Plus, Search, Trophy } from "lucide-react";
+import { Users, Plus, Search, Trophy, User } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
 
 type Team = {
   id: number;
@@ -24,10 +25,24 @@ type Team = {
 export default function TeamSelection() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Create team state
   const [teamName, setTeamName] = useState("");
   const [teamDescription, setTeamDescription] = useState("");
+  
+  const handleSkipTeam = () => {
+    if (user) {
+      localStorage.setItem(`fayaflex_skip_team_${user.id}`, 'true');
+      toast({
+        title: "Exploring solo",
+        description: "Visit the Teams page anytime to join or create a team.",
+      });
+      // Invalidate teams query to force Router to re-check
+      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
+      setLocation("/");
+    }
+  };
   
   // Join team state
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,9 +118,20 @@ export default function TeamSelection() {
           </div>
           <CardTitle className="text-3xl">Welcome to FayaFlex!</CardTitle>
           <CardDescription className="text-base">
-            To start your fitness journey, you need to join or create a team. Teams compete together and support each other in reaching fitness goals.
+            Teams compete together and support each other in reaching fitness goals. Join or create a team, or explore solo first.
           </CardDescription>
         </CardHeader>
+        <div className="px-6 pb-4 -mt-2">
+          <Button 
+            variant="ghost" 
+            onClick={handleSkipTeam}
+            className="w-full text-muted-foreground hover:text-foreground"
+            data-testid="button-skip-team"
+          >
+            <User className="w-4 h-4 mr-2" />
+            Try Solo First - Join a Team Later
+          </Button>
+        </div>
         <CardContent>
           <Tabs defaultValue="join" className="w-full">
             <TabsList className="grid w-full grid-cols-2">

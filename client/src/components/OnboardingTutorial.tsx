@@ -78,10 +78,10 @@ const slides = [
     color: "text-purple-500",
     bgColor: "bg-purple-500/10",
     timeline: [
-      { label: "1st of Month", description: "Leaderboard resets to zero" },
+      { label: "1st of Month", description: "New challenge begins - fresh start for everyone!" },
       { label: "Throughout Month", description: "Log activities daily to climb ranks" },
       { label: "End of Month", description: "Top performers are crowned champions" },
-      { label: "Victory Wall", description: "Monthly winners are immortalized" },
+      { label: "Victory Wall", description: "Monthly winners are immortalized forever" },
     ],
   },
   {

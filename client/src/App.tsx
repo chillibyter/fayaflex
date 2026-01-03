@@ -73,14 +73,21 @@ function Router() {
     );
   }
 
+  // Check if user has skipped team selection (allow solo exploration)
+  const skipKey = user ? `fayaflex_skip_team_${user.id}` : '';
+  const hasSkippedTeam = skipKey && localStorage.getItem(skipKey) === 'true';
+  
   if (!teams || teams.length === 0) {
-    return (
-      <Switch>
-        <Route path="/team-selection" component={TeamSelection} />
-        <Route path="/" component={TeamSelection} />
-        <Route component={TeamSelection} />
-      </Switch>
-    );
+    // Allow users who skipped team selection to explore the app
+    if (!hasSkippedTeam) {
+      return (
+        <Switch>
+          <Route path="/team-selection" component={TeamSelection} />
+          <Route path="/" component={TeamSelection} />
+          <Route component={TeamSelection} />
+        </Switch>
+      );
+    }
   }
 
   return (
@@ -102,9 +109,7 @@ function Router() {
       <Route path="/support" component={Support} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/delete-account" component={DeleteAccount} />
-      <Route path="/team-selection">
-        <Redirect to="/" />
-      </Route>
+      <Route path="/team-selection" component={TeamSelection} />
       <Route component={NotFound} />
     </Switch>
   );
