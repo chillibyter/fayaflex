@@ -7,6 +7,7 @@ import { z } from "zod";
 import { upload, compressAndSaveImage, compressAndSaveProfileImage, cleanupOldEvidence } from "./imageUpload";
 import express from "express";
 import path from "path";
+import OpenAI from "openai";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -641,6 +642,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching daily goals:", error);
       res.status(500).json({ message: "Failed to fetch daily goals" });
+    }
+  });
+
+  // AI Coach - Workout and Nutrition Suggestions
+  const openai = new OpenAI({
+    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  });
+
+  app.get("/api/ai-coach/suggestions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      // Get recent activity data (last 7 days)
+      const today = new Date();
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      // Fetch activities for current and previous month to handle cross-month boundaries
+      const currentMonth = today.getMonth() + 1;
+      const currentYear = today.getFullYear();
+      const prevMonth = weekAgo.getMonth() + 1;
+      const prevYear = weekAgo.getFullYear();
+      
+      let activities = await storage.getUserActivities(userId, currentMonth, currentYear);
+      
+      // If week spans two months, also fetch previous month
+      if (prevMonth !== currentMonth || prevYear !== currentYear) {
+        const prevActivities = await storage.getUserActivities(userId, prevMonth, prevYear);
+        activities = [...activities, ...prevActivities];
+      }
+      
+      // Calculate weekly stats
+      const weekStart = weekAgo.toISOString().split('T')[0];
+      const recentActivities = activities.filter(a => a.date >= weekStart);
+      
+      const weeklyCalories = recentActivities.reduce((sum, a) => sum + (a.calories || 0), 0);
+      const weeklySteps = recentActivities.reduce((sum, a) => sum + (a.steps || 0), 0);
+      const workoutDays = new Set(recentActivities.filter(a => (a.calories || 0) > 0 || (a.steps || 0) > 0).map(a => a.date)).size;
+      const workoutTypes = [...new Set(recentActivities.filter(a => a.workoutType).map(a => a.workoutType))];
+      
+      // Get today's activity
+      const todayStr = today.toISOString().split('T')[0];
+      const todayActivities = activities.filter(a => a.date === todayStr);
+      const todayCalories = todayActivities.reduce((sum, a) => sum + (a.calories || 0), 0);
+      const todaySteps = todayActivities.reduce((sum, a) => sum + (a.steps || 0), 0);
+      
+      // Build context for AI
+      const userContext = {
+        name: user?.firstName || user?.username || 'User',
+        weeklyCalories,
+        weeklySteps,
+        workoutDays,
+        workoutTypes: workoutTypes.length > 0 ? workoutTypes : ['general fitness'],
+        todayCalories,
+        todaySteps,
+        dailyCalorieGoal: 2200,
+        dailyStepsGoal: 10000,
+      };
+
+      const prompt = `You are FayaFlex AI Coach, a friendly and motivating fitness assistant. Based on the user's recent activity data, provide personalized suggestions.
+
+User: ${userContext.name}
+This Week's Stats:
+- Total calories burned: ${userContext.weeklyCalories.toLocaleString()} kcal
+- Total steps: ${userContext.weeklySteps.toLocaleString()}
+- Active workout days: ${userContext.workoutDays}/7
+- Workout types: ${userContext.workoutTypes.join(', ')}
+
+Today's Progress:
+- Calories: ${userContext.todayCalories.toLocaleString()} / ${userContext.dailyCalorieGoal.toLocaleString()} kcal
+- Steps: ${userContext.todaySteps.toLocaleString()} / ${userContext.dailyStepsGoal.toLocaleString()}
+
+Respond with a JSON object containing exactly these fields:
+{
+  "greeting": "A short personalized greeting (1 sentence)",
+  "workoutSuggestion": {
+    "title": "Workout name (3-5 words)",
+    "description": "Brief description of the workout (2-3 sentences)",
+    "duration": "Estimated time (e.g., '20-30 min')",
+    "intensity": "low" | "medium" | "high",
+    "calorieEstimate": number (estimated calories to burn)
+  },
+  "nutritionTip": {
+    "title": "Nutrition tip title (3-5 words)",
+    "description": "Practical nutrition advice based on their activity level (2-3 sentences)",
+    "focus": "hydration" | "protein" | "carbs" | "recovery" | "energy"
+  },
+  "motivation": "A short motivational message (1-2 sentences)"
+}
+
+Make suggestions appropriate for their activity level. If they've been very active, suggest recovery. If less active, encourage getting started. Be encouraging but realistic.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        max_tokens: 1024,
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("No response from AI");
+      }
+
+      const suggestions = JSON.parse(content);
+      
+      res.json({
+        ...suggestions,
+        stats: {
+          weeklyCalories: userContext.weeklyCalories,
+          weeklySteps: userContext.weeklySteps,
+          workoutDays: userContext.workoutDays,
+          todayCalories: userContext.todayCalories,
+          todaySteps: userContext.todaySteps,
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching AI suggestions:", error);
+      res.status(500).json({ message: "Failed to get AI suggestions" });
     }
   });
 

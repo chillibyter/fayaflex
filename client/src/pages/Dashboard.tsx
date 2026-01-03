@@ -13,6 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from 
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { useAuth } from "@/hooks/use-auth";
 import GoalJourneys from "@/components/GoalJourneys";
+import AICoach from "@/components/AICoach";
 import { UserAvatar } from "@/components/UserAvatar";
 
 type LocationScope = "global" | "continent" | "country" | "region" | "town";
@@ -346,6 +347,8 @@ export default function Dashboard() {
         </Link>
 
         <GoalJourneys />
+
+        <AICoach />
 
         {/* Team Quick Access */}
         {myTeams.length > 0 && (
