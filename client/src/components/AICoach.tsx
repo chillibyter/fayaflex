@@ -11,7 +11,9 @@ import {
   Flame,
   Zap,
   Droplets,
-  Target
+  Target,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
@@ -96,6 +98,7 @@ const focusIcons = {
 
 export default function AICoach() {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const { 
     data, 
@@ -159,145 +162,171 @@ export default function AICoach() {
 
   return (
     <Card className="overflow-hidden" data-testid="card-ai-coach">
-      <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
+      <CardHeader 
+        className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5 cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+        data-testid="button-toggle-faya"
+      >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <img src={fayaIcon} alt="Faya" className="h-6 w-6 rounded-full" />
             <CardTitle className="text-lg">Faya</CardTitle>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="h-8 w-8"
-            data-testid="button-refresh-ai"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={(e) => { e.stopPropagation(); handleRefresh(); }}
+              disabled={isRefreshing}
+              className="h-8 w-8"
+              data-testid="button-refresh-ai"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
         </div>
         <p className="text-sm text-muted-foreground mt-1" data-testid="text-ai-greeting">
           {data.greeting}
         </p>
-      </CardHeader>
-      <CardContent className="p-4 space-y-4">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Dumbbell className="h-4 w-4 text-orange-500" />
-            <span className="text-sm font-medium">Today's Workout</span>
-            <span className="text-xs text-muted-foreground">(30-45 min)</span>
+        {!isExpanded && (
+          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Dumbbell className="h-3 w-3 text-orange-500" />
+              {data.workoutSuggestion.title}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {data.workoutSuggestion.duration}
+            </span>
+            <span className="text-primary text-xs">Tap to expand</span>
           </div>
-          <div className="bg-muted/50 rounded-lg overflow-hidden" data-testid="card-workout-suggestion">
-            {data.workoutSuggestion.workoutType && workoutImages[data.workoutSuggestion.workoutType] && (
-              <div className="relative h-32 w-full">
-                <img 
-                  src={workoutImages[data.workoutSuggestion.workoutType]} 
-                  alt={workoutLabels[data.workoutSuggestion.workoutType] || data.workoutSuggestion.title}
-                  className="w-full h-full object-cover"
-                  data-testid="img-workout-type"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-2 left-3 right-3">
-                  <Badge className="bg-white/90 text-foreground hover:bg-white/80">
-                    {workoutLabels[data.workoutSuggestion.workoutType]}
-                  </Badge>
-                </div>
-              </div>
-            )}
-            <div className="p-3 space-y-3">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <h4 className="font-semibold">{data.workoutSuggestion.title}</h4>
-                <Badge 
-                  variant="outline" 
-                  className={intensityColors[data.workoutSuggestion.intensity]}
-                >
-                  {data.workoutSuggestion.intensity}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {data.workoutSuggestion.description}
-              </p>
-              
-              {data.workoutSuggestion.exercises && data.workoutSuggestion.exercises.length > 0 && (
-                <div className="space-y-2" data-testid="exercise-illustrations">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Exercise Guide
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {data.workoutSuggestion.exercises.map((exercise, index) => {
-                      const exerciseData = exerciseCatalog[exercise.key];
-                      if (!exerciseData) return null;
-                      
-                      return (
-                        <div 
-                          key={`${exercise.key}-${index}`}
-                          className="bg-background rounded-lg overflow-hidden border"
-                          data-testid={`exercise-card-${exercise.key}`}
-                        >
-                          <div className="aspect-square relative">
-                            <img 
-                              src={exerciseData.image} 
-                              alt={exerciseData.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="p-2 space-y-1">
-                            <p className="text-xs font-semibold truncate">{exerciseData.name}</p>
-                            <p className="text-[10px] text-muted-foreground line-clamp-2">
-                              {exerciseData.cues}
-                            </p>
-                            <div className="flex items-center gap-1 text-[10px] text-primary font-medium">
-                              {exercise.sets && exercise.reps && (
-                                <span>{exercise.sets} x {exercise.reps}</span>
-                              )}
-                              {exercise.duration && (
-                                <span>{exercise.duration}</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+        )}
+      </CardHeader>
+      {isExpanded && (
+        <CardContent className="p-4 space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Dumbbell className="h-4 w-4 text-orange-500" />
+              <span className="text-sm font-medium">Today's Workout</span>
+              <span className="text-xs text-muted-foreground">(30-45 min)</span>
+            </div>
+            <div className="bg-muted/50 rounded-lg overflow-hidden" data-testid="card-workout-suggestion">
+              {data.workoutSuggestion.workoutType && workoutImages[data.workoutSuggestion.workoutType] && (
+                <div className="relative h-32 w-full">
+                  <img 
+                    src={workoutImages[data.workoutSuggestion.workoutType]} 
+                    alt={workoutLabels[data.workoutSuggestion.workoutType] || data.workoutSuggestion.title}
+                    className="w-full h-full object-cover"
+                    data-testid="img-workout-type"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 left-3 right-3">
+                    <Badge className="bg-white/90 text-foreground hover:bg-white/80">
+                      {workoutLabels[data.workoutSuggestion.workoutType]}
+                    </Badge>
                   </div>
                 </div>
               )}
-              
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {data.workoutSuggestion.duration}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Flame className="h-3 w-3 text-orange-500" />
-                  ~{data.workoutSuggestion.calorieEstimate} kcal
-                </span>
+              <div className="p-3 space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <h4 className="font-semibold">{data.workoutSuggestion.title}</h4>
+                  <Badge 
+                    variant="outline" 
+                    className={intensityColors[data.workoutSuggestion.intensity]}
+                  >
+                    {data.workoutSuggestion.intensity}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {data.workoutSuggestion.description}
+                </p>
+                
+                {data.workoutSuggestion.exercises && data.workoutSuggestion.exercises.length > 0 && (
+                  <div className="space-y-2" data-testid="exercise-illustrations">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Exercise Guide
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {data.workoutSuggestion.exercises.map((exercise, index) => {
+                        const exerciseData = exerciseCatalog[exercise.key];
+                        if (!exerciseData) return null;
+                        
+                        return (
+                          <div 
+                            key={`${exercise.key}-${index}`}
+                            className="bg-background rounded-lg overflow-hidden border"
+                            data-testid={`exercise-card-${exercise.key}`}
+                          >
+                            <div className="aspect-square relative">
+                              <img 
+                                src={exerciseData.image} 
+                                alt={exerciseData.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="p-2 space-y-1">
+                              <p className="text-xs font-semibold truncate">{exerciseData.name}</p>
+                              <p className="text-[10px] text-muted-foreground line-clamp-2">
+                                {exerciseData.cues}
+                              </p>
+                              <div className="flex items-center gap-1 text-[10px] text-primary font-medium">
+                                {exercise.sets && exercise.reps && (
+                                  <span>{exercise.sets} x {exercise.reps}</span>
+                                )}
+                                {exercise.duration && (
+                                  <span>{exercise.duration}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {data.workoutSuggestion.duration}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Flame className="h-3 w-3 text-orange-500" />
+                    ~{data.workoutSuggestion.calorieEstimate} kcal
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Apple className="h-4 w-4 text-green-500" />
-            <span className="text-sm font-medium">Nutrition Tip</span>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-3 space-y-2" data-testid="card-nutrition-tip">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <FocusIcon className="h-4 w-4 text-primary" />
-              <h4 className="font-semibold">{data.nutritionTip.title}</h4>
+              <Apple className="h-4 w-4 text-green-500" />
+              <span className="text-sm font-medium">Nutrition Tip</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {data.nutritionTip.description}
+            <div className="bg-muted/50 rounded-lg p-3 space-y-2" data-testid="card-nutrition-tip">
+              <div className="flex items-center gap-2">
+                <FocusIcon className="h-4 w-4 text-primary" />
+                <h4 className="font-semibold">{data.nutritionTip.title}</h4>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {data.nutritionTip.description}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+            <p className="text-sm text-center italic" data-testid="text-motivation">
+              "{data.motivation}"
             </p>
           </div>
-        </div>
-
-        <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
-          <p className="text-sm text-center italic" data-testid="text-motivation">
-            "{data.motivation}"
-          </p>
-        </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
