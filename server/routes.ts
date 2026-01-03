@@ -725,7 +725,15 @@ Respond with a JSON object containing exactly these fields:
     "duration": "Workout duration between 30-45 min (e.g., '30 min', '35 min', '40 min', '45 min')",
     "intensity": "low" | "medium" | "high",
     "calorieEstimate": number (estimated calories to burn, typically 200-400 for 30-45 min),
-    "workoutType": "running" | "cycling" | "strength" | "yoga" | "hiit" | "swimming" | "walking"
+    "workoutType": "running" | "cycling" | "strength" | "yoga" | "hiit" | "swimming" | "walking",
+    "exercises": [
+      {
+        "key": "exercise_key from catalog below",
+        "sets": number or null (for strength exercises),
+        "reps": "rep range like '10-12' or null",
+        "duration": "time like '30 sec' or '1 min' or null (for holds/cardio)"
+      }
+    ]
   },
   "nutritionTip": {
     "title": "Nutrition tip title (3-5 words)",
@@ -735,14 +743,19 @@ Respond with a JSON object containing exactly these fields:
   "motivation": "A short motivational message (1-2 sentences)"
 }
 
-IMPORTANT: Suggest workouts between 30-45 minutes. Choose the workoutType based on the user's history:
-- If they've done running/walking recently, suggest running or cycling to build on cardio
-- If they do strength training, suggest strength or hiit
-- If they're very active, consider yoga for recovery
-- If they have low activity, suggest walking or easy cycling to get started
-- Vary suggestions based on what they haven't done recently
+EXERCISE CATALOG (use ONLY these exact keys):
+Strength exercises: squat, lunge, pushup, plank, row, bicep_curl
+Stretch exercises: hamstring_stretch, hip_flexor_stretch, shoulder_stretch, calf_stretch  
+Yoga poses: warrior_ii, downward_dog, childs_pose, tree_pose
 
-Make suggestions appropriate for their activity level. Be encouraging but realistic.`;
+IMPORTANT RULES:
+1. Suggest workouts between 30-45 minutes
+2. For strength/hiit workouts: include 3-5 exercises from the strength catalog with sets and reps
+3. For yoga workouts: include 3-4 poses from the yoga catalog with duration (e.g., "30 sec", "1 min")
+4. For stretch/recovery: include 3-4 stretches from the stretch catalog with duration
+5. For cardio (running/cycling/swimming/walking): exercises array can be empty or omit it
+6. Choose workoutType based on user's history - vary suggestions
+7. Be encouraging but realistic about their activity level`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",

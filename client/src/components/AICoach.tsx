@@ -23,8 +23,16 @@ import yogaImg from "@assets/generated_images/yoga_workout_visual.png";
 import hiitImg from "@assets/generated_images/hiit_workout_visual.png";
 import swimmingImg from "@assets/generated_images/swimming_workout_visual.png";
 import walkingImg from "@assets/generated_images/walking_workout_visual.png";
+import { exerciseCatalog, type ExerciseKey } from "@/lib/exerciseCatalog";
 
 type WorkoutType = "running" | "cycling" | "strength" | "yoga" | "hiit" | "swimming" | "walking";
+
+type ExerciseItem = {
+  key: ExerciseKey;
+  sets?: number | null;
+  reps?: string | null;
+  duration?: string | null;
+};
 
 type AICoachSuggestions = {
   greeting: string;
@@ -35,6 +43,7 @@ type AICoachSuggestions = {
     intensity: "low" | "medium" | "high";
     calorieEstimate: number;
     workoutType?: WorkoutType;
+    exercises?: ExerciseItem[];
   };
   nutritionTip: {
     title: string;
@@ -195,7 +204,7 @@ export default function AICoach() {
                 </div>
               </div>
             )}
-            <div className="p-3 space-y-2">
+            <div className="p-3 space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <h4 className="font-semibold">{data.workoutSuggestion.title}</h4>
                 <Badge 
@@ -208,6 +217,51 @@ export default function AICoach() {
               <p className="text-sm text-muted-foreground">
                 {data.workoutSuggestion.description}
               </p>
+              
+              {data.workoutSuggestion.exercises && data.workoutSuggestion.exercises.length > 0 && (
+                <div className="space-y-2" data-testid="exercise-illustrations">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Exercise Guide
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {data.workoutSuggestion.exercises.map((exercise, index) => {
+                      const exerciseData = exerciseCatalog[exercise.key];
+                      if (!exerciseData) return null;
+                      
+                      return (
+                        <div 
+                          key={`${exercise.key}-${index}`}
+                          className="bg-background rounded-lg overflow-hidden border"
+                          data-testid={`exercise-card-${exercise.key}`}
+                        >
+                          <div className="aspect-square relative">
+                            <img 
+                              src={exerciseData.image} 
+                              alt={exerciseData.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="p-2 space-y-1">
+                            <p className="text-xs font-semibold truncate">{exerciseData.name}</p>
+                            <p className="text-[10px] text-muted-foreground line-clamp-2">
+                              {exerciseData.cues}
+                            </p>
+                            <div className="flex items-center gap-1 text-[10px] text-primary font-medium">
+                              {exercise.sets && exercise.reps && (
+                                <span>{exercise.sets} x {exercise.reps}</span>
+                              )}
+                              {exercise.duration && (
+                                <span>{exercise.duration}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
