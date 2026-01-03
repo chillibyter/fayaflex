@@ -113,6 +113,8 @@ export interface IStorage {
   createMonthlyWinner(winner: InsertMonthlyWinner): Promise<MonthlyWinner>;
   getTeamMonthlyWinners(teamId: string): Promise<MonthlyWinner[]>;
   getMonthlyWinner(teamId: string, month: number, year: number): Promise<MonthlyWinner | undefined>;
+  getUserTeamsMonthlyWinners(userId: string): Promise<MonthlyWinner[]>;
+  getAllMonthlyWinners(): Promise<MonthlyWinner[]>;
 
   // Activity reactions operations (thumbs up/down)
   addReaction(reaction: InsertActivityReaction): Promise<ActivityReaction>;
@@ -849,6 +851,31 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return winner;
+  }
+
+  async getUserTeamsMonthlyWinners(userId: string): Promise<MonthlyWinner[]> {
+    // Get all teams user is a member of
+    const userTeams = await db
+      .select({ teamId: teamMembers.teamId })
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+    
+    if (userTeams.length === 0) return [];
+    
+    const teamIds = userTeams.map(t => t.teamId);
+    
+    return await db
+      .select()
+      .from(monthlyWinners)
+      .where(inArray(monthlyWinners.teamId, teamIds))
+      .orderBy(desc(monthlyWinners.year), desc(monthlyWinners.month));
+  }
+
+  async getAllMonthlyWinners(): Promise<MonthlyWinner[]> {
+    return await db
+      .select()
+      .from(monthlyWinners)
+      .orderBy(desc(monthlyWinners.year), desc(monthlyWinners.month));
   }
 
   // Activity reactions operations

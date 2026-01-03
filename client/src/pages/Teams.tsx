@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Search, Users, Share2, Flame, ArrowLeft } from "lucide-react";
+import { PlusCircle, Search, Users, Share2, Flame, ArrowLeft, Trophy } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
 import { SiWhatsapp } from "react-icons/si";
 import { Link } from "wouter";
@@ -138,16 +138,24 @@ export default function Teams() {
   return (
     <div className="min-h-screen bg-background">
       <div className="px-4 pt-4 pb-4">
-        <div className="flex items-center gap-3 mb-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setWouterLocation("/")}
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-5 w-5" />
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setWouterLocation("/")}
+              data-testid="button-back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">My Teams</h1>
+          </div>
+          <Button variant="outline" size="sm" asChild data-testid="button-challenge-archive">
+            <Link href="/challenge-archive">
+              <Trophy className="h-4 w-4 mr-2" />
+              Archive
+            </Link>
           </Button>
-          <h1 className="text-2xl font-bold">My Teams</h1>
         </div>
 
         <div className="flex gap-2 mb-4">

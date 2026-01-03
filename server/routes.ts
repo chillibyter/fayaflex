@@ -862,6 +862,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Challenge Archive endpoint - shows all past months' results for user's teams
+  app.get("/api/challenge-archive", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get all monthly winners for teams the user is a member of
+      const winners = await storage.getUserTeamsMonthlyWinners(userId);
+      
+      // Enrich with user and team details
+      const enrichedWinners = await Promise.all(
+        winners.map(async (winner) => {
+          const user = await storage.getUser(winner.userId);
+          const team = await storage.getTeam(winner.teamId);
+          return {
+            ...winner,
+            userName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown',
+            userAvatarId: user?.avatarId,
+            userProfileImageUrl: user?.profileImageUrl,
+            teamName: team?.name || 'Unknown Team',
+            isCurrentUser: winner.userId === userId,
+          };
+        })
+      );
+      
+      // Group by month/year for statistics
+      const monthlyStats = new Map<string, {
+        month: number;
+        year: number;
+        totalCalories: number;
+        winnersCount: number;
+        teams: string[];
+      }>();
+      
+      for (const winner of enrichedWinners) {
+        const key = `${winner.year}-${winner.month}`;
+        const existing = monthlyStats.get(key);
+        if (existing) {
+          existing.totalCalories += winner.totalCalories;
+          existing.winnersCount += 1;
+          if (!existing.teams.includes(winner.teamName)) {
+            existing.teams.push(winner.teamName);
+          }
+        } else {
+          monthlyStats.set(key, {
+            month: winner.month,
+            year: winner.year,
+            totalCalories: winner.totalCalories,
+            winnersCount: 1,
+            teams: [winner.teamName],
+          });
+        }
+      }
+      
+      res.json({
+        winners: enrichedWinners,
+        monthlyStats: Array.from(monthlyStats.values()).sort((a, b) => {
+          if (a.year !== b.year) return b.year - a.year;
+          return b.month - a.month;
+        }),
+      });
+    } catch (error) {
+      console.error("Error fetching challenge archive:", error);
+      res.status(500).json({ message: "Failed to fetch challenge archive" });
+    }
+  });
+
   // Victory Wall endpoints
   app.get("/api/teams/:id/victory-wall", isAuthenticated, async (req: any, res) => {
     try {
