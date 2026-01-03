@@ -598,17 +598,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get today's activities
       const todayActivities = await storage.getUserActivitiesForDate(userId, today);
       
-      // Calculate today's totals (take max per activity type to avoid double counting)
-      let todayCalories = 0;
-      let todaySteps = 0;
+      // Calculate today's totals
+      // For health syncs (apple_health, health_connect, etc): take max to avoid double-counting
+      // For manual entries: sum them up (user explicitly added each one)
+      const caloriesByHealthSource = new Map<string, number>();
+      const stepsByHealthSource = new Map<string, number>();
+      let manualCalories = 0;
+      let manualSteps = 0;
       let todayWorkouts = 0;
       
       for (const act of todayActivities) {
-        // Take max values (health syncs may create multiple entries per day)
-        todayCalories = Math.max(todayCalories, act.calories);
-        todaySteps = Math.max(todaySteps, act.steps || 0);
-        if (act.workoutCompleted) todayWorkouts = 1;
+        const source = act.source || 'manual';
+        const isManual = source === 'manual';
+        const actCalories = act.calories || 0;
+        const actSteps = act.steps || 0;
+        
+        if (isManual) {
+          // Sum manual entries
+          manualCalories += actCalories;
+          manualSteps += actSteps;
+        } else {
+          // Take max per health source to avoid double-counting from same health app
+          caloriesByHealthSource.set(source, Math.max(caloriesByHealthSource.get(source) || 0, actCalories));
+          stepsByHealthSource.set(source, Math.max(stepsByHealthSource.get(source) || 0, actSteps));
+        }
+        // Count as workout if it has any activity
+        if (actCalories > 0 || act.workoutCompleted || act.workoutType || actSteps > 0) todayWorkouts = 1;
       }
+      
+      // Sum across all health sources + manual
+      let todayCalories = manualCalories;
+      let todaySteps = manualSteps;
+      caloriesByHealthSource.forEach(cal => { todayCalories += cal; });
+      stepsByHealthSource.forEach(steps => { todaySteps += steps; });
       
       // Default goals (TODO: allow user-customizable goals in future)
       res.json({
@@ -1807,16 +1829,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const byDate = new Map<string, { calories: number; steps: number; hasWorkout: boolean }>();
         for (const act of activities) {
           const existing = byDate.get(act.date);
+          const actCalories = act.calories || 0;
+          const actSteps = act.steps || 0;
           if (existing) {
             // Take the maximum for each metric to avoid double-counting
-            existing.calories = Math.max(existing.calories, act.calories);
-            existing.steps = Math.max(existing.steps, act.steps);
-            existing.hasWorkout = existing.hasWorkout || !!act.workoutType;
+            existing.calories = Math.max(existing.calories, actCalories);
+            existing.steps = Math.max(existing.steps, actSteps);
+            // Any day with any activity counts as a workout day
+            existing.hasWorkout = existing.hasWorkout || !!act.workoutType || actCalories > 0 || actSteps > 0;
           } else {
             byDate.set(act.date, { 
-              calories: act.calories, 
-              steps: act.steps, 
-              hasWorkout: !!act.workoutType 
+              calories: actCalories, 
+              steps: actSteps, 
+              // Any day with any activity counts as a workout day
+              hasWorkout: !!act.workoutType || actCalories > 0 || actSteps > 0 
             });
           }
         }

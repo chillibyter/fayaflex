@@ -14,6 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -49,6 +59,7 @@ export default function Profile() {
   const { logoutMutation } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
@@ -261,14 +272,14 @@ export default function Profile() {
       >
         <button
           onClick={() => setWouterLocation("/")}
-          className="absolute top-4 left-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+          className="absolute top-3 left-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
           data-testid="button-back"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+          className="absolute top-3 right-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
           data-testid="button-settings"
         >
           <Settings className="h-5 w-5" />
@@ -284,7 +295,7 @@ export default function Profile() {
               data-testid="button-profile-photo"
             >
               <UserAvatar user={user} className="h-24 w-24 border-4 border-white/30 group-hover:border-white/50 transition-colors" iconClassName="h-12 w-12" />
-              <div className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white text-gray-700 shadow-md group-hover:bg-gray-100 transition-colors">
+              <div className="absolute -bottom-1 -right-1 p-2 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md group-hover:bg-gray-100 transition-colors">
                 <User className="h-4 w-4" />
               </div>
             </button>
@@ -494,7 +505,10 @@ export default function Profile() {
               </button>
             </Link>
             <button
-              onClick={handleLogout}
+              onClick={() => {
+                setIsSettingsOpen(false);
+                setIsLogoutConfirmOpen(true);
+              }}
               className="w-full flex items-center gap-3 py-3 px-2 hover:bg-destructive/10 rounded-md transition-colors text-destructive"
               data-testid="button-logout"
             >
@@ -503,6 +517,23 @@ export default function Profile() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Log Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log out? You'll need to sign in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-logout">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" data-testid="button-confirm-logout">
+              Log Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-md p-0 overflow-hidden" data-testid="dialog-edit-profile">
