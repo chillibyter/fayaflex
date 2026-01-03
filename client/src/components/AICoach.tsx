@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  Sparkles, 
   Dumbbell, 
   Apple, 
   RefreshCw,
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
+import fayaIcon from "@assets/generated_images/faya_ai_coach_flame_face.png";
 
 type AICoachSuggestions = {
   greeting: string;
@@ -81,8 +81,8 @@ export default function AICoach() {
       <Card className="overflow-hidden">
         <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">AI Coach</CardTitle>
+            <img src={fayaIcon} alt="Faya" className="h-6 w-6 rounded-full" />
+            <CardTitle className="text-lg">Faya</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="p-4 space-y-4">
@@ -99,8 +99,8 @@ export default function AICoach() {
       <Card className="overflow-hidden">
         <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">AI Coach</CardTitle>
+            <img src={fayaIcon} alt="Faya" className="h-6 w-6 rounded-full" />
+            <CardTitle className="text-lg">Faya</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="p-4">
@@ -123,8 +123,8 @@ export default function AICoach() {
       <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">AI Coach</CardTitle>
+            <img src={fayaIcon} alt="Faya" className="h-6 w-6 rounded-full" />
+            <CardTitle className="text-lg">Faya</CardTitle>
           </div>
           <Button 
             variant="ghost" 
