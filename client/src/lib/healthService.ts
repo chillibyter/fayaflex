@@ -169,7 +169,7 @@ class HealthService {
         console.warn('[HealthService] Failed to fetch steps, continuing:', stepsError);
       }
 
-      // Fetch calories data
+      // Fetch calories data from aggregated query
       let caloriesResult: any = { aggregatedData: [] };
       try {
         const rawCalories: any = await Health.queryAggregated({
@@ -179,12 +179,34 @@ class HealthService {
           bucket: 'day'
         });
         caloriesResult.aggregatedData = rawCalories?.aggregatedData || rawCalories?.data || rawCalories || [];
-        console.log('[HealthService] Calories processed:', caloriesResult.aggregatedData?.length || 0, 'records');
+        console.log('[HealthService] Calories from aggregated:', caloriesResult.aggregatedData?.length || 0, 'records');
+        if (caloriesResult.aggregatedData?.length > 0) {
+          console.log('[HealthService] Calories sample data:', JSON.stringify(caloriesResult.aggregatedData[0]));
+        }
       } catch (caloriesError) {
-        console.warn('[HealthService] Failed to fetch calories, continuing:', caloriesError);
+        console.warn('[HealthService] Failed to fetch aggregated calories:', caloriesError);
       }
 
-      // Fetch exercise/workout data
+      // Also fetch workouts which contain calorie data
+      let workoutsData: any[] = [];
+      try {
+        const workoutsResponse: any = await Health.queryWorkouts({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          includeHeartRate: false,
+          includeRoute: false,
+          includeSteps: false
+        });
+        workoutsData = workoutsResponse?.workouts || [];
+        console.log('[HealthService] Workouts with calories:', workoutsData?.length || 0, 'workouts');
+        if (workoutsData?.length > 0) {
+          console.log('[HealthService] First workout sample:', JSON.stringify(workoutsData[0]));
+        }
+      } catch (workoutError) {
+        console.log('[HealthService] queryWorkouts not available, trying aggregated exercise:', workoutError);
+      }
+
+      // Fetch exercise/workout count from aggregated data
       let workoutsResult: any = { aggregatedData: [] };
       try {
         workoutsResult = await (Health as any).queryAggregated({
@@ -226,18 +248,35 @@ class HealthService {
         getOrCreate(date).steps += getSampleValue(sample);
       }
 
-      // Process calories
+      // Process calories from aggregated data
       for (const sample of caloriesResult.aggregatedData || []) {
         const date = getSampleDate(sample);
         if (!date) continue;
-        getOrCreate(date).calories += getSampleValue(sample);
+        const calorieValue = getSampleValue(sample);
+        getOrCreate(date).calories += calorieValue;
+        console.log('[HealthService] Adding aggregated calories for', date, ':', calorieValue);
       }
 
-      // Process workouts
-      for (const sample of workoutsResult.aggregatedData || []) {
-        const date = getSampleDate(sample);
+      // Process calories from individual workouts (queryWorkouts returns calories per workout)
+      for (const workout of workoutsData || []) {
+        const date = getSampleDate(workout);
         if (!date) continue;
-        getOrCreate(date).workouts += getSampleValue(sample) || 1;
+        const workoutCalories = workout?.calories || 0;
+        if (workoutCalories > 0) {
+          getOrCreate(date).calories += Math.round(workoutCalories);
+          console.log('[HealthService] Adding workout calories for', date, ':', workoutCalories);
+        }
+        // Also count this as a workout
+        getOrCreate(date).workouts += 1;
+      }
+
+      // Process workouts from aggregated exercise data (if queryWorkouts didn't work)
+      if (workoutsData.length === 0) {
+        for (const sample of workoutsResult.aggregatedData || []) {
+          const date = getSampleDate(sample);
+          if (!date) continue;
+          getOrCreate(date).workouts += getSampleValue(sample) || 1;
+        }
       }
 
       const result = Array.from(dataByDate.values()).sort((a, b) => 
