@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.fayaflex.app',
   appName: 'FayaFlex',
-  webDir: 'dist/public',
+  webDir: 'empty-web-dir',
   server: {
     url: 'https://fayaflex.com',
     androidScheme: 'https',
