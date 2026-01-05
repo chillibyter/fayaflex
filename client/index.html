@@ -37,9 +37,19 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          // Unregister old service workers first
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(reg => {
+              if (reg.active && reg.active.scriptURL.includes('sw.js') && !reg.active.scriptURL.includes('sw-v6.js')) {
+                reg.unregister();
+              }
+            });
+          });
+          // Register the new versioned service worker
+          navigator.serviceWorker.register('/sw-v6.js')
             .then(registration => {
               console.log('Service Worker registered:', registration.scope);
+              registration.update();
             })
             .catch(error => {
               console.log('Service Worker registration failed:', error);
