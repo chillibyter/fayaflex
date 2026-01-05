@@ -6,6 +6,45 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Cache-busting endpoint to clear all service workers and caches
+// Users can visit /clear-cache to force-clear all cached data
+app.get('/clear-cache', (req, res) => {
+  res.set('Clear-Site-Data', '"cache", "cookies", "storage"');
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head><title>Cache Cleared</title></head>
+    <body style="font-family: sans-serif; text-align: center; padding: 50px;">
+      <h1>Cache Cleared!</h1>
+      <p>All cached data and service workers have been cleared.</p>
+      <p><a href="/">Go to FayaFlex</a></p>
+      <script>
+        // Also manually unregister all service workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(reg => reg.unregister());
+          });
+          // Clear all caches
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+          });
+        }
+      </script>
+    </body>
+    </html>
+  `);
+});
+
+// Temporary: Add Clear-Site-Data header to all navigation requests for a limited time
+// This forces all clients to clear their cached service workers
+app.use((req, res, next) => {
+  // Only add header for HTML page requests (not API or assets)
+  if (req.headers.accept?.includes('text/html') && !req.path.startsWith('/api')) {
+    res.set('Clear-Site-Data', '"cache", "storage"');
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
