@@ -169,7 +169,8 @@ class HealthService {
         console.warn('[HealthService] Failed to fetch steps, continuing:', stepsError);
       }
 
-      // Fetch calories data from aggregated query
+      // Fetch calories - use ONLY aggregated 'active-calories' (single source to avoid double-counting)
+      // Note: Aggregated totals already include workout calories, so don't add them separately
       let caloriesResult: any = { aggregatedData: [] };
       try {
         const rawCalories: any = await Health.queryAggregated({
@@ -181,13 +182,13 @@ class HealthService {
         caloriesResult.aggregatedData = rawCalories?.aggregatedData || rawCalories?.data || rawCalories || [];
         console.log('[HealthService] Calories from aggregated:', caloriesResult.aggregatedData?.length || 0, 'records');
         if (caloriesResult.aggregatedData?.length > 0) {
-          console.log('[HealthService] Calories sample data:', JSON.stringify(caloriesResult.aggregatedData[0]));
+          console.log('[HealthService] Calories sample:', JSON.stringify(caloriesResult.aggregatedData[0]));
         }
       } catch (caloriesError) {
-        console.warn('[HealthService] Failed to fetch aggregated calories:', caloriesError);
+        console.warn('[HealthService] Failed to fetch calories:', caloriesError);
       }
 
-      // Also fetch workouts which contain calorie data
+      // Fetch workout count only (not calories - those are in aggregated data)
       let workoutsData: any[] = [];
       try {
         const workoutsResponse: any = await Health.queryWorkouts({
@@ -198,26 +199,9 @@ class HealthService {
           includeSteps: false
         });
         workoutsData = workoutsResponse?.workouts || [];
-        console.log('[HealthService] Workouts with calories:', workoutsData?.length || 0, 'workouts');
-        if (workoutsData?.length > 0) {
-          console.log('[HealthService] First workout sample:', JSON.stringify(workoutsData[0]));
-        }
+        console.log('[HealthService] Workouts count:', workoutsData?.length || 0);
       } catch (workoutError) {
-        console.log('[HealthService] queryWorkouts not available, trying aggregated exercise:', workoutError);
-      }
-
-      // Fetch exercise/workout count from aggregated data
-      let workoutsResult: any = { aggregatedData: [] };
-      try {
-        workoutsResult = await (Health as any).queryAggregated({
-          startDate: startDateStr,
-          endDate: endDateStr,
-          dataType: 'exercise',
-          bucket: 'day'
-        });
-        console.log('[HealthService] Exercise/workouts result:', workoutsResult?.aggregatedData?.length || 0, 'records');
-      } catch (workoutError) {
-        console.log('[HealthService] Exercise query not supported, skipping:', workoutError);
+        console.log('[HealthService] queryWorkouts not available:', workoutError);
       }
 
       // Combine data by date
@@ -248,35 +232,19 @@ class HealthService {
         getOrCreate(date).steps += getSampleValue(sample);
       }
 
-      // Process calories from aggregated data
+      // Process calories from aggregated data ONLY (single source - no double counting)
       for (const sample of caloriesResult.aggregatedData || []) {
         const date = getSampleDate(sample);
         if (!date) continue;
         const calorieValue = getSampleValue(sample);
         getOrCreate(date).calories += calorieValue;
-        console.log('[HealthService] Adding aggregated calories for', date, ':', calorieValue);
       }
 
-      // Process calories from individual workouts (queryWorkouts returns calories per workout)
+      // Process workout count (not calories - those are already in aggregated data)
       for (const workout of workoutsData || []) {
         const date = getSampleDate(workout);
         if (!date) continue;
-        const workoutCalories = workout?.calories || 0;
-        if (workoutCalories > 0) {
-          getOrCreate(date).calories += Math.round(workoutCalories);
-          console.log('[HealthService] Adding workout calories for', date, ':', workoutCalories);
-        }
-        // Also count this as a workout
         getOrCreate(date).workouts += 1;
-      }
-
-      // Process workouts from aggregated exercise data (if queryWorkouts didn't work)
-      if (workoutsData.length === 0) {
-        for (const sample of workoutsResult.aggregatedData || []) {
-          const date = getSampleDate(sample);
-          if (!date) continue;
-          getOrCreate(date).workouts += getSampleValue(sample) || 1;
-        }
       }
 
       const result = Array.from(dataByDate.values()).sort((a, b) => 
