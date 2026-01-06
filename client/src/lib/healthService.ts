@@ -169,24 +169,75 @@ class HealthService {
         console.warn('[HealthService] Failed to fetch steps, continuing:', stepsError);
       }
 
-      // Fetch calories - use ONLY aggregated 'active-calories' (single source to avoid double-counting)
-      // Note: Aggregated totals already include workout calories, so don't add them separately
+      // Fetch calories - try multiple data types to capture all calories
+      // Android Health Connect has: ActiveCaloriesBurnedRecord, TotalCaloriesBurnedRecord, BasalMetabolicRateRecord
       let caloriesResult: any = { aggregatedData: [] };
-      try {
-        const rawCalories: any = await Health.queryAggregated({
-          startDate: startDateStr,
-          endDate: endDateStr,
-          dataType: 'active-calories',
-          bucket: 'day'
-        });
-        caloriesResult.aggregatedData = rawCalories?.aggregatedData || rawCalories?.data || rawCalories || [];
-        console.log('[HealthService] Calories from aggregated:', caloriesResult.aggregatedData?.length || 0, 'records');
-        if (caloriesResult.aggregatedData?.length > 0) {
-          console.log('[HealthService] Calories sample:', JSON.stringify(caloriesResult.aggregatedData[0]));
+      
+      // Try different calorie data types in order of preference
+      const calorieDataTypes = ['calories', 'total-calories', 'active-calories'];
+      
+      for (const dataType of calorieDataTypes) {
+        try {
+          console.log(`[HealthService] Trying calorie dataType: ${dataType}`);
+          const rawCalories: any = await Health.queryAggregated({
+            startDate: startDateStr,
+            endDate: endDateStr,
+            dataType: dataType,
+            bucket: 'day'
+          });
+          const data = rawCalories?.aggregatedData || rawCalories?.data || rawCalories || [];
+          const total = data.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
+          console.log(`[HealthService] ${dataType}: ${data.length} records, total=${Math.round(total)}`);
+          
+          if (data.length > 0) {
+            console.log(`[HealthService] ${dataType} sample:`, JSON.stringify(data[0]));
+          }
+          
+          // Use this data type if it has meaningful data
+          if (total > 0) {
+            caloriesResult.aggregatedData = data;
+            console.log(`[HealthService] Using ${dataType} for calories (total: ${Math.round(total)})`);
+            break;
+          }
+        } catch (err) {
+          console.log(`[HealthService] ${dataType} not available:`, err);
         }
-      } catch (caloriesError) {
-        console.warn('[HealthService] Failed to fetch calories:', caloriesError);
       }
+      
+      // If no aggregated calories, try querying individual records
+      if (caloriesResult.aggregatedData.length === 0) {
+        console.log('[HealthService] Trying individual calorie records query...');
+        try {
+          const individualCalories: any = await Health.query({
+            startDate: startDateStr,
+            endDate: endDateStr,
+            dataType: 'calories'
+          });
+          const records = individualCalories?.records || individualCalories?.data || [];
+          console.log(`[HealthService] Individual calorie records: ${records.length}`);
+          if (records.length > 0) {
+            console.log('[HealthService] Individual record sample:', JSON.stringify(records[0]));
+            // Group by date
+            const byDate = new Map<string, number>();
+            for (const record of records) {
+              const date = this.extractDate(record?.startDate || record?.start || record?.date);
+              if (date) {
+                const value = record?.value ?? record?.energy ?? record?.calories ?? 0;
+                byDate.set(date, (byDate.get(date) || 0) + value);
+              }
+            }
+            caloriesResult.aggregatedData = Array.from(byDate.entries()).map(([date, value]) => ({
+              startDate: date,
+              value: value
+            }));
+            console.log('[HealthService] Grouped individual records:', caloriesResult.aggregatedData.length);
+          }
+        } catch (queryErr) {
+          console.log('[HealthService] Individual query not available:', queryErr);
+        }
+      }
+      
+      console.log('[HealthService] Final calories result:', caloriesResult.aggregatedData?.length || 0, 'records');
 
       // Fetch workouts (contains calories per workout as fallback)
       let workoutsData: any[] = [];
