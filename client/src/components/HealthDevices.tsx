@@ -115,22 +115,52 @@ export function HealthDevices() {
         throw new Error(`Could not read health data from ${displayName}. The app may need to collect more data first.`);
       }
 
-      // Step 5: Send to backend (as per PDF flow)
-      console.log('[HealthDevices] Step 5: Syncing to server...');
+      // Step 5: Check for zero calories on Android and warn user
+      const isAndroid = provider === 'android_health';
+      const totalCalories = healthData.reduce((sum, day) => sum + (day.calories || 0), 0);
+      const hasZeroCalories = isAndroid && totalCalories === 0 && healthData.length > 0;
+      
+      if (hasZeroCalories) {
+        console.log('[HealthDevices] WARNING: Android returned 0 calories - may need permission fix');
+      }
+
+      // Step 6: Send to backend (as per PDF flow)
+      console.log('[HealthDevices] Step 6: Syncing to server...');
       await apiRequest('POST', '/api/devices/sync', {
         provider,
         activities: healthData
       });
 
-      return provider;
+      return { provider, hasZeroCalories };
     },
-    onSuccess: (provider) => {
+    onSuccess: (result) => {
+      const { provider, hasZeroCalories } = result;
       const displayName = provider === 'apple_health' ? 'Apple Health' : 
                          provider === 'huawei_health' ? 'Huawei Health' : 'Health Connect';
-      toast({
-        title: 'Connected!',
-        description: `Successfully connected to ${displayName} and synced your fitness data`,
-      });
+      
+      if (hasZeroCalories) {
+        // Show warning about zero calories on Android
+        toast({
+          title: 'Connected - Calorie Permission Needed',
+          description: 'Steps synced but calories show 0. Please enable "Active energy burned" in Health Connect permissions.',
+          variant: 'destructive',
+          duration: 10000,
+        });
+        // Also show how to fix it
+        setTimeout(() => {
+          toast({
+            title: 'How to fix:',
+            description: 'Go to Settings → Health Connect → App permissions → FayaFlex → Enable "Active energy burned"',
+            duration: 15000,
+          });
+        }, 1000);
+      } else {
+        toast({
+          title: 'Connected!',
+          description: `Successfully connected to ${displayName} and synced your fitness data`,
+        });
+      }
+      
       setNativePermissionsGranted(true);
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
@@ -173,18 +203,37 @@ export function HealthDevices() {
       const healthData = await healthService.getHealthData(startDate, endDate);
       console.log('[HealthDevices] Syncing', healthData.length, 'days of data');
 
-      return await apiRequest('POST', '/api/devices/sync', {
+      // Check for zero calories on Android
+      const isAndroid = provider === 'android_health';
+      const totalCalories = healthData.reduce((sum, day) => sum + (day.calories || 0), 0);
+      const hasZeroCalories = isAndroid && totalCalories === 0 && healthData.length > 0;
+
+      await apiRequest('POST', '/api/devices/sync', {
         provider,
         activities: healthData
       });
+
+      return { provider, hasZeroCalories };
     },
-    onSuccess: () => {
-      const displayName = providerName === 'apple_health' ? 'Apple Health' :
-                         providerName === 'huawei_health' ? 'Huawei Health' : 'Health Connect';
-      toast({
-        title: 'Synced!',
-        description: `Successfully synced data from ${displayName}`,
-      });
+    onSuccess: (result) => {
+      const { provider, hasZeroCalories } = result as { provider: string; hasZeroCalories: boolean };
+      const displayName = provider === 'apple_health' ? 'Apple Health' :
+                         provider === 'huawei_health' ? 'Huawei Health' : 'Health Connect';
+      
+      if (hasZeroCalories) {
+        toast({
+          title: 'Synced - Calorie Permission Needed',
+          description: 'Steps synced but calories show 0. Enable "Active energy burned" in Health Connect.',
+          variant: 'destructive',
+          duration: 10000,
+        });
+      } else {
+        toast({
+          title: 'Synced!',
+          description: `Successfully synced data from ${displayName}`,
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
