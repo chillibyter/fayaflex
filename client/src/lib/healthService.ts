@@ -188,7 +188,7 @@ class HealthService {
         console.warn('[HealthService] Failed to fetch calories:', caloriesError);
       }
 
-      // Fetch workout count only (not calories - those are in aggregated data)
+      // Fetch workouts (contains calories per workout as fallback)
       let workoutsData: any[] = [];
       try {
         const workoutsResponse: any = await Health.queryWorkouts({
@@ -199,9 +199,22 @@ class HealthService {
           includeSteps: false
         });
         workoutsData = workoutsResponse?.workouts || [];
-        console.log('[HealthService] Workouts count:', workoutsData?.length || 0);
+        console.log('[HealthService] Workouts fetched:', workoutsData?.length || 0);
+        if (workoutsData?.length > 0) {
+          const totalWorkoutCalories = workoutsData.reduce((sum, w) => sum + (w.calories || 0), 0);
+          console.log('[HealthService] Total workout calories:', totalWorkoutCalories);
+        }
       } catch (workoutError) {
         console.log('[HealthService] queryWorkouts not available:', workoutError);
+      }
+
+      // Check if aggregated calories returned nothing - use workout calories as fallback
+      const aggregatedCaloriesTotal = (caloriesResult.aggregatedData || []).reduce(
+        (sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0
+      );
+      const useWorkoutCaloriesFallback = aggregatedCaloriesTotal === 0 && workoutsData.length > 0;
+      if (useWorkoutCaloriesFallback) {
+        console.log('[HealthService] Using workout calories as fallback (aggregated returned 0)');
       }
 
       // Combine data by date
@@ -232,19 +245,30 @@ class HealthService {
         getOrCreate(date).steps += getSampleValue(sample);
       }
 
-      // Process calories from aggregated data ONLY (single source - no double counting)
-      for (const sample of caloriesResult.aggregatedData || []) {
-        const date = getSampleDate(sample);
-        if (!date) continue;
-        const calorieValue = getSampleValue(sample);
-        getOrCreate(date).calories += calorieValue;
+      // Process calories - use aggregated data, or workout calories as fallback
+      if (!useWorkoutCaloriesFallback) {
+        // Use aggregated active-calories (preferred)
+        for (const sample of caloriesResult.aggregatedData || []) {
+          const date = getSampleDate(sample);
+          if (!date) continue;
+          const calorieValue = getSampleValue(sample);
+          getOrCreate(date).calories += calorieValue;
+        }
       }
 
-      // Process workout count (not calories - those are already in aggregated data)
+      // Process workouts - count them, and use their calories if fallback is needed
       for (const workout of workoutsData || []) {
         const date = getSampleDate(workout);
         if (!date) continue;
         getOrCreate(date).workouts += 1;
+        
+        // Use workout calories as fallback when aggregated returns 0
+        if (useWorkoutCaloriesFallback) {
+          const workoutCalories = workout?.calories || 0;
+          if (workoutCalories > 0) {
+            getOrCreate(date).calories += Math.round(workoutCalories);
+          }
+        }
       }
 
       const result = Array.from(dataByDate.values()).sort((a, b) => 
