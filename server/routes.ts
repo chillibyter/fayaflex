@@ -161,6 +161,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = syncSchema.parse(req.body);
       
+      // Detailed logging of incoming health data
+      console.log(`\n========== HEALTH SYNC DEBUG ==========`);
+      console.log(`[Sync] User: ${userId} (${req.user.username})`);
+      console.log(`[Sync] Provider: ${validatedData.provider}`);
+      console.log(`[Sync] Activity count: ${validatedData.activities.length}`);
+      console.log(`[Sync] Raw activities received:`);
+      validatedData.activities.forEach((activity, index) => {
+        console.log(`  [${index + 1}] Date: ${activity.date}`);
+        console.log(`      Calories: ${activity.calories}`);
+        console.log(`      Steps: ${activity.steps}`);
+        console.log(`      Workouts: ${activity.workouts ?? 'undefined'}`);
+        console.log(`      WorkoutType: ${activity.workoutType ?? 'undefined'}`);
+      });
+      
+      // Calculate totals for summary
+      const totalCalories = validatedData.activities.reduce((sum, a) => sum + a.calories, 0);
+      const totalSteps = validatedData.activities.reduce((sum, a) => sum + a.steps, 0);
+      const totalWorkouts = validatedData.activities.reduce((sum, a) => sum + (a.workouts ?? 0), 0);
+      console.log(`[Sync] TOTALS: calories=${totalCalories}, steps=${totalSteps}, workouts=${totalWorkouts}`);
+      console.log(`========================================\n`);
+      
       // Transform activities: convert workouts count to workoutType if not already set
       const transformedActivities = validatedData.activities.map(activity => ({
         date: activity.date,
