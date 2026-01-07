@@ -58,10 +58,18 @@ class HealthService {
       }
       
       // Android: Use capacitor-health plugin
+      // Request ALL permissions at once so user sees a single dialog with all data types
       // Permission names must match the CapHealthPermission enum in the plugin:
       // READ_STEPS, READ_WORKOUTS, READ_HEART_RATE, READ_ROUTE, READ_ACTIVE_CALORIES, READ_TOTAL_CALORIES, READ_DISTANCE
-      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS'];
-      console.log('[HealthService] Android - Requesting permissions:', permissions);
+      const permissions = [
+        'READ_STEPS',
+        'READ_ACTIVE_CALORIES',
+        'READ_TOTAL_CALORIES',
+        'READ_DISTANCE',
+        'READ_HEART_RATE',
+        'READ_WORKOUTS'
+      ];
+      console.log('[HealthService] Android - Requesting ALL permissions in single dialog:', permissions);
       
       const result = await Health.requestHealthPermissions({
         permissions: permissions as any
@@ -109,7 +117,14 @@ class HealthService {
       
       // Android only: check permissions
       // Permission names must match the CapHealthPermission enum in the plugin
-      const permissions = ['READ_STEPS', 'READ_ACTIVE_CALORIES', 'READ_WORKOUTS'];
+      const permissions = [
+        'READ_STEPS',
+        'READ_ACTIVE_CALORIES',
+        'READ_TOTAL_CALORIES',
+        'READ_DISTANCE',
+        'READ_HEART_RATE',
+        'READ_WORKOUTS'
+      ];
       const result = await Health.checkHealthPermissions({
         permissions: permissions as any
       });
