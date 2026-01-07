@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, Lock, Users } from "lucide-react";
 import LeaderboardCard from "@/components/LeaderboardCard";
 import { Card, CardContent } from "@/components/ui/card";
+import { TeamChat } from "@/components/TeamChat";
 import { format } from "date-fns";
 
 type LeaderboardEntry = {
@@ -129,6 +130,10 @@ export default function TeamLeaderboard() {
           </div>
         )}
       </div>
+
+      {!isError && teamId && (
+        <TeamChat teamId={teamId} teamName={teamData?.name || 'Team'} />
+      )}
     </div>
   );
 }

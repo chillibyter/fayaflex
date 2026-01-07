@@ -16,6 +16,7 @@ import {
   locations,
   challenges,
   messages,
+  teamMessages,
   type User,
   type UpsertUser,
   type Team,
@@ -48,6 +49,7 @@ import {
   type InsertChallenge,
   type Message,
   type InsertMessage,
+  type TeamMessage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
@@ -183,6 +185,10 @@ export interface IStorage {
   getUserConversations(userId: string): Promise<{ partnerId: string; partner: User | null; lastMessage: Message; unreadCount: number }[]>;
   markMessagesAsRead(userId: string, senderId: string): Promise<void>;
   getUnreadMessageCount(userId: string): Promise<number>;
+
+  // Team chat operations
+  sendTeamMessage(teamId: string, userId: string, content: string): Promise<TeamMessage>;
+  getTeamMessages(teamId: string, limit?: number, before?: string): Promise<(TeamMessage & { user: User })[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1529,6 +1535,52 @@ export class DatabaseStorage implements IStorage {
         eq(messages.isRead, false)
       ));
     return result[0]?.count || 0;
+  }
+
+  // Team chat operations
+  async sendTeamMessage(teamId: string, userId: string, content: string): Promise<TeamMessage> {
+    const [message] = await db.insert(teamMessages)
+      .values({
+        teamId,
+        userId,
+        content,
+      })
+      .returning();
+    return message;
+  }
+
+  async getTeamMessages(teamId: string, limit: number = 50, before?: string): Promise<(TeamMessage & { user: User })[]> {
+    // Build conditions array
+    const conditions = [eq(teamMessages.teamId, teamId)];
+    
+    // Add cursor-based pagination if before is provided
+    if (before) {
+      const [beforeMessage] = await db.select({ createdAt: teamMessages.createdAt })
+        .from(teamMessages)
+        .where(eq(teamMessages.id, before));
+      
+      if (beforeMessage) {
+        conditions.push(sql`${teamMessages.createdAt} < ${beforeMessage.createdAt}`);
+      }
+    }
+
+    // Single query with join to get messages and users together (avoids N+1)
+    const results = await db
+      .select({
+        message: teamMessages,
+        user: users,
+      })
+      .from(teamMessages)
+      .innerJoin(users, eq(teamMessages.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(teamMessages.createdAt))
+      .limit(limit);
+
+    // Map results to expected format
+    return results.map(({ message, user }) => ({
+      ...message,
+      user,
+    }));
   }
 }
 

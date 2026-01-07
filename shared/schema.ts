@@ -598,3 +598,34 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   createdAt: true,
 });
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+// Team messages table for team chat wall
+export const teamMessages = pgTable("team_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const teamMessagesRelations = relations(teamMessages, ({ one }) => ({
+  team: one(teams, {
+    fields: [teamMessages.teamId],
+    references: [teams.id],
+  }),
+  user: one(users, {
+    fields: [teamMessages.userId],
+    references: [users.id],
+  }),
+}));
+
+export type TeamMessage = typeof teamMessages.$inferSelect;
+export const insertTeamMessageSchema = createInsertSchema(teamMessages).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertTeamMessage = z.infer<typeof insertTeamMessageSchema>;

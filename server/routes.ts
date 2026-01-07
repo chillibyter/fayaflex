@@ -1191,6 +1191,80 @@ IMPORTANT RULES:
     }
   });
 
+  // Team chat routes
+  app.get("/api/teams/:id/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = req.params.id;
+      const userId = req.user.id;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const before = req.query.before as string | undefined;
+
+      // Check if user is a member of this team
+      const isMember = await storage.isUserInTeam(userId, teamId);
+      if (!isMember) {
+        return res.status(403).json({ message: "Not authorized to view this team's messages" });
+      }
+
+      const messages = await storage.getTeamMessages(teamId, limit, before);
+      
+      // Sanitize user data (hide emails)
+      const sanitizedMessages = messages.map(msg => ({
+        ...msg,
+        user: {
+          id: msg.user.id,
+          username: msg.user.username,
+          firstName: msg.user.firstName,
+          lastName: msg.user.lastName,
+          avatarId: msg.user.avatarId,
+          profileImageUrl: msg.user.profileImageUrl,
+        }
+      }));
+
+      res.json(sanitizedMessages);
+    } catch (error) {
+      console.error("Error fetching team messages:", error);
+      res.status(500).json({ message: "Failed to fetch team messages" });
+    }
+  });
+
+  app.post("/api/teams/:id/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = req.params.id;
+      const userId = req.user.id;
+
+      // Check if user is a member of this team
+      const isMember = await storage.isUserInTeam(userId, teamId);
+      if (!isMember) {
+        return res.status(403).json({ message: "Not authorized to post in this team" });
+      }
+
+      const messageSchema = z.object({
+        content: z.string().min(1).max(1000),
+      });
+      const validatedData = messageSchema.parse(req.body);
+
+      const message = await storage.sendTeamMessage(teamId, userId, validatedData.content);
+      
+      // Get user details for response
+      const user = await storage.getUser(userId);
+      
+      res.json({
+        ...message,
+        user: user ? {
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarId: user.avatarId,
+          profileImageUrl: user.profileImageUrl,
+        } : null
+      });
+    } catch (error: any) {
+      console.error("Error sending team message:", error);
+      res.status(400).json({ message: error.message || "Failed to send message" });
+    }
+  });
+
   // Activity routes
   // Image upload endpoint for evidence
   app.post("/api/upload/evidence", isAuthenticated, upload.single('image'), async (req: any, res) => {
