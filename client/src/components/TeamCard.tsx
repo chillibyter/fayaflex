@@ -142,12 +142,12 @@ export default function TeamCard({
               e.stopPropagation();
               onInvite?.();
             }}
-            variant={isOwner ? "default" : "outline"}
+            variant="default"
             className="flex-1"
             data-testid="button-invite-members"
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            {isOwner ? "Invite Members" : "View Members"}
+            Invite Members
           </Button>
         </div>
       </CardContent>
