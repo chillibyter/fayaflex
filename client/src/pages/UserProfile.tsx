@@ -1,7 +1,7 @@
 import { useParams } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, Flame, Footprints, Dumbbell, Trophy, MessageCircle, ChevronRight } from "lucide-react";
+import { ArrowLeft, Flame, Footprints, Dumbbell, Trophy, MessageCircle, ChevronRight, AlertCircle } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -10,13 +10,20 @@ import { useLocation } from "wouter";
 import { UserAvatar } from "@/components/UserAvatar";
 import TeammateComparisonChart from "@/components/TeammateComparisonChart";
 import UserBadgesDisplay from "@/components/UserBadgesDisplay";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+
+type UserStats = {
+  totalWorkouts: number;
+  currentStreak: number;
+  totalCalories?: number;
+  totalSteps?: number;
+};
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -30,6 +37,11 @@ export default function UserProfile() {
 
   const { data: user, isLoading: isLoadingUser } = useQuery<UserType>({
     queryKey: [`/api/users/${userId}/profile`],
+  });
+
+  const { data: stats, isLoading: isLoadingStats } = useQuery<UserStats>({
+    queryKey: [`/api/users/${userId}/stats`],
+    enabled: !!userId,
   });
 
   const { data: activities = [], isLoading: isLoadingActivities } = useQuery<Activity[]>({
@@ -60,9 +72,8 @@ export default function UserProfile() {
     if (user.firstName || user.lastName) {
       return `${user.firstName || ""} ${user.lastName || ""}`.trim();
     }
-    if (user.email) {
-      const emailUsername = user.email.split('@')[0];
-      return emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+    if (user.username) {
+      return user.username;
     }
     return "User";
   };
@@ -70,24 +81,15 @@ export default function UserProfile() {
   const getFirstName = () => {
     if (!user) return "User";
     if (user.firstName) return user.firstName;
-    if (user.email) {
-      const emailUsername = user.email.split('@')[0];
-      return emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
-    }
+    if (user.username) return user.username;
     return "User";
   };
 
-  const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
-  const totalSteps = activities.reduce((sum, act) => sum + act.steps, 0);
-  const workoutDays = new Set(activities.filter(a => a.workoutType).map(a => a.date)).size;
-
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number): string => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(num >= 10000 ? 0 : 1)}k`;
-    return num.toLocaleString();
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}k`;
+    return num.toString();
   };
-
-  const currentStreak = activities.length > 0 ? Math.min(activities.length, 31) : 0;
 
   const recentActivities = activities
     .filter(a => a.workoutType)
@@ -105,28 +107,60 @@ export default function UserProfile() {
 
   const isOwnProfile = currentUser?.id === userId;
 
+  // Redirect to own profile page if viewing self
+  useEffect(() => {
+    if (currentUser && isOwnProfile) {
+      setLocation("/profile");
+    }
+  }, [currentUser, isOwnProfile, setLocation]);
+
+  // Show loading while checking if this is own profile
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  // Error state for unauthorized access
+  if (stats === undefined && !isLoadingStats && !isOwnProfile) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <button
+          onClick={() => setLocation("/leaderboard")}
+          className="flex items-center gap-2 text-muted-foreground mb-4"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          Back
+        </button>
+        <Card className="p-8">
+          <div className="text-center space-y-4">
+            <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground" />
+            <p className="text-muted-foreground">Unable to view this profile. You can only view profiles of teammates.</p>
+            <Button onClick={() => setLocation("/leaderboard")} variant="outline">
+              Back to Leaderboard
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white pb-16 pt-4 px-4 relative">
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setLocation("/leaderboard")}
-            className="text-white hover:bg-white/20"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="text-white hover:bg-white/20"
-            data-testid="button-settings"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
-        </div>
+      <div
+        className="relative px-4 pt-4 pb-16 text-white"
+        style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}
+      >
+        <button
+          onClick={() => setLocation("/leaderboard")}
+          className="absolute top-3 left-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
 
         <div className="flex flex-col items-center">
           {isLoadingUser ? (
@@ -152,10 +186,10 @@ export default function UserProfile() {
             Member since {user?.createdAt ? format(new Date(user.createdAt), 'MMMM yyyy') : 'Unknown'}
           </p>
 
-          {currentStreak > 0 && (
+          {!isLoadingStats && (stats?.currentStreak || 0) > 0 && (
             <div className="flex items-center gap-2 mt-3 px-4 py-2 bg-black/20 rounded-full">
               <Flame className="h-5 w-5 text-orange-400" />
-              <span className="font-semibold">{currentStreak} Day Streak</span>
+              <span className="font-semibold">{stats?.currentStreak} Day Streak</span>
             </div>
           )}
 
@@ -183,43 +217,39 @@ export default function UserProfile() {
         </div>
       </div>
 
-      <div className="px-4 -mt-8 space-y-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Monthly Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl p-3 text-center">
-                <div className="flex justify-center mb-1">
-                  <Flame className="h-5 w-5 text-orange-500" />
-                </div>
-                <p className="text-xl font-bold" data-testid="text-total-calories">
-                  {isLoadingActivities ? "..." : formatNumber(totalCalories)}
+      <div className="px-4 mt-4">
+        <div className="mb-6">
+          <h3 className="text-base font-semibold mb-3">Monthly Stats</h3>
+          <div className="grid grid-cols-3 gap-3">
+            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
+              <CardContent className="py-3 px-3 text-center">
+                <Flame className="h-6 w-6 text-orange-500 mx-auto mb-1" />
+                <p className="text-lg font-bold" data-testid="text-total-calories">
+                  {isLoadingStats ? "..." : formatNumber(stats?.totalCalories || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground">Total Calories</p>
-              </div>
-              <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-xl p-3 text-center">
-                <div className="flex justify-center mb-1">
-                  <Footprints className="h-5 w-5 text-emerald-500" />
-                </div>
-                <p className="text-xl font-bold" data-testid="text-total-steps">
-                  {isLoadingActivities ? "..." : formatNumber(totalSteps)}
+              </CardContent>
+            </Card>
+            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
+              <CardContent className="py-3 px-3 text-center">
+                <Footprints className="h-6 w-6 text-green-600 mx-auto mb-1" />
+                <p className="text-lg font-bold" data-testid="text-total-steps">
+                  {isLoadingStats ? "..." : formatNumber(stats?.totalSteps || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground">Total Steps</p>
-              </div>
-              <div className="bg-purple-50 dark:bg-purple-950/30 rounded-xl p-3 text-center">
-                <div className="flex justify-center mb-1">
-                  <Dumbbell className="h-5 w-5 text-purple-500" />
-                </div>
-                <p className="text-xl font-bold" data-testid="text-total-workouts">
-                  {isLoadingActivities ? "..." : workoutDays}
+              </CardContent>
+            </Card>
+            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
+              <CardContent className="py-3 px-3 text-center">
+                <Dumbbell className="h-6 w-6 text-green-600 mx-auto mb-1" />
+                <p className="text-lg font-bold" data-testid="text-total-workouts">
+                  {isLoadingStats ? "..." : stats?.totalWorkouts || 0}
                 </p>
-                <p className="text-xs text-muted-foreground">Workout Days</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                <p className="text-xs text-muted-foreground">Total Workouts</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {userId && (
           <TeammateComparisonChart userId={userId} userName={getUserFullName()} />
@@ -230,7 +260,7 @@ export default function UserProfile() {
         )}
 
         {recentActivities.length > 0 && (
-          <Card>
+          <Card className="mb-6">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Recent Activity</CardTitle>
             </CardHeader>
@@ -268,6 +298,8 @@ export default function UserProfile() {
             </CardContent>
           </Card>
         )}
+
+        <div className="pb-24" />
       </div>
 
       <Dialog open={isChallengeModalOpen} onOpenChange={setIsChallengeModalOpen}>

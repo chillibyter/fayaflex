@@ -513,6 +513,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get stats for a specific user (for teammate profile)
+  app.get("/api/users/:userId/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.userId;
+      
+      // Check if users share a team
+      const shareTeam = await storage.doUsersShareTeam(currentUserId, targetUserId);
+      if (!shareTeam && currentUserId !== targetUserId) {
+        return res.status(403).json({ message: "You can only view stats of teammates" });
+      }
+      
+      // Get all user activities
+      const activities = await storage.getUserActivities(targetUserId);
+      
+      // Helper function to parse date string as local date without timezone drift
+      const parseLocalDate = (dateStr: string): number => {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const d = new Date(year, month - 1, day);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+      };
+      
+      // Calculate total workouts (unique days with activities)
+      const uniqueDates = new Set(
+        activities.map(a => parseLocalDate(a.date))
+      );
+      const totalWorkouts = uniqueDates.size;
+      
+      // Calculate current streak
+      let currentStreak = 0;
+      if (activities.length > 0) {
+        const sortedActivities = [...activities].sort((a, b) => 
+          parseLocalDate(b.date) - parseLocalDate(a.date)
+        );
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        // Check if there's an activity today or yesterday
+        const latestActivityDate = parseLocalDate(sortedActivities[0].date);
+        
+        if (latestActivityDate >= yesterday.getTime()) {
+          // Start counting streak
+          let streakDate = new Date(latestActivityDate);
+          const activityDates = new Set(
+            activities.map(a => parseLocalDate(a.date))
+          );
+          
+          while (activityDates.has(streakDate.getTime())) {
+            currentStreak++;
+            streakDate.setDate(streakDate.getDate() - 1);
+          }
+        }
+      }
+      
+      // Calculate monthly totals
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const monthActivities = await storage.getUserActivities(targetUserId, currentMonth, currentYear);
+      
+      const calByDate = new Map<string, number>();
+      const stepsByDate = new Map<string, number>();
+      for (const act of monthActivities) {
+        calByDate.set(act.date, Math.max(calByDate.get(act.date) || 0, act.calories));
+        stepsByDate.set(act.date, Math.max(stepsByDate.get(act.date) || 0, act.steps || 0));
+      }
+      
+      let totalCalories = 0;
+      let totalSteps = 0;
+      calByDate.forEach(cal => { totalCalories += cal; });
+      stepsByDate.forEach(steps => { totalSteps += steps; });
+      
+      res.json({ totalWorkouts, currentStreak, totalCalories, totalSteps });
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
   // Get badges for a specific user (for teammate profile)
   app.get("/api/users/:userId/badges", isAuthenticated, async (req: any, res) => {
     try {

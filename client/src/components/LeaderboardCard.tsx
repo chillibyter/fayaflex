@@ -48,11 +48,15 @@ export default function LeaderboardCard({
     firstName: firstName || null,
     lastName: lastName || null,
     username: name,
-    email: null,
+    email: "",
     profileImageUrl: null,
     createdAt: new Date(),
-    updatedAt: new Date(),
+    updatedAt: null,
     password: null,
+    continentId: null,
+    countryId: null,
+    regionId: null,
+    townId: null,
   } : null;
 
   const href = userId ? `/users/${userId}/profile` : teamId ? `/teams/${teamId}` : undefined;
