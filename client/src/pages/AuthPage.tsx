@@ -93,10 +93,6 @@ export default function AuthPage() {
       errors.email = "Please enter a valid email address";
     }
     
-    if (!townId) {
-      errors.city = "Please select your city";
-    }
-    
     setRegisterErrors(errors);
     return Object.keys(errors).length === 0;
   };
