@@ -49,7 +49,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+        // Clear cache when returning from background to get fresh content
+        clearWebViewCache()
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
