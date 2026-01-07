@@ -120,11 +120,12 @@ export default function OnboardingTutorial({ onComplete, onSkip }: OnboardingTut
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4">
-      <Card className="w-full max-w-2xl overflow-hidden">
-        <CardContent className="p-0">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
+      <Card className="w-full max-w-2xl max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+        <CardContent className="p-0 flex flex-col flex-1 min-h-0">
+          {/* Fixed Header */}
+          <div className="p-4 pb-2 flex-shrink-0">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">
                 Step {currentSlide + 1} of {slides.length}
               </span>
@@ -139,7 +140,11 @@ export default function OnboardingTutorial({ onComplete, onSkip }: OnboardingTut
                 </Button>
               )}
             </div>
-            <Progress value={progress} className="h-1 mb-6" />
+            <Progress value={progress} className="h-1" />
+          </div>
+          
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-4 pb-2 min-h-0">
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -255,8 +260,11 @@ export default function OnboardingTutorial({ onComplete, onSkip }: OnboardingTut
                 )}
               </motion.div>
             </AnimatePresence>
+          </div>
 
-            <div className="flex items-center justify-between pt-4 border-t">
+          {/* Fixed Footer - Always Visible */}
+          <div className="flex-shrink-0 p-4 pt-3 border-t bg-card">
+            <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 onClick={handlePrev}

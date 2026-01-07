@@ -174,7 +174,10 @@ function AuthenticatedApp() {
           onSkip={handleOnboardingComplete}
         />
       )}
-      <div className="min-h-screen bg-background pb-20">
+      <div 
+        className="min-h-screen bg-background"
+        style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
+      >
         <main className="min-h-screen">
           <Router />
         </main>
