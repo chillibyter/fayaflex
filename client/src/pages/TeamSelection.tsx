@@ -122,15 +122,29 @@ export default function TeamSelection() {
           </CardDescription>
         </CardHeader>
         <div className="px-6 pb-4 -mt-2">
-          <Button 
-            variant="ghost" 
-            onClick={handleSkipTeam}
-            className="w-full text-muted-foreground hover:text-foreground"
-            data-testid="button-skip-team"
-          >
-            <User className="w-4 h-4 mr-2" />
-            Try Solo First - Join a Team Later
-          </Button>
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-3 text-center sm:text-left">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-full">
+                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">Want to explore first?</p>
+                    <p className="text-sm text-muted-foreground">You can join a team anytime later</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={handleSkipTeam}
+                  className="border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 whitespace-nowrap"
+                  data-testid="button-skip-team"
+                >
+                  Try Solo First
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <CardContent>
           <Tabs defaultValue="join" className="w-full">
