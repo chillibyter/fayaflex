@@ -13,6 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from 
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { useAuth } from "@/hooks/use-auth";
 import GoalJourneys from "@/components/GoalJourneys";
+import SmartGoals from "@/components/SmartGoals";
 import AICoach from "@/components/AICoach";
 import { UserAvatar } from "@/components/UserAvatar";
 
@@ -345,6 +346,8 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </Link>
+
+        <SmartGoals />
 
         <GoalJourneys />
 

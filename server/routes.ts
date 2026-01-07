@@ -2207,6 +2207,146 @@ IMPORTANT RULES:
     }
   });
 
+  // Get smart goal suggestions based on user's activity history
+  app.get("/api/goals/suggested", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get activities from the last 30 days
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      // Get all activities (we'll filter by date)
+      const allActivities = await storage.getUserActivities(userId);
+      
+      // Filter to last 30 days and aggregate by date
+      const recentActivities = allActivities.filter(a => {
+        const actDate = new Date(a.date);
+        return actDate >= thirtyDaysAgo && actDate <= now;
+      });
+      
+      // Aggregate by date to avoid double-counting
+      const byDate = new Map<string, { calories: number; steps: number; hasWorkout: boolean }>();
+      for (const act of recentActivities) {
+        const existing = byDate.get(act.date);
+        if (existing) {
+          existing.calories = Math.max(existing.calories, act.calories || 0);
+          existing.steps = Math.max(existing.steps, act.steps || 0);
+          existing.hasWorkout = existing.hasWorkout || !!act.workoutType;
+        } else {
+          byDate.set(act.date, {
+            calories: act.calories || 0,
+            steps: act.steps || 0,
+            hasWorkout: !!act.workoutType,
+          });
+        }
+      }
+      
+      const daysWithData = byDate.size;
+      
+      // Calculate averages - only use actual days with data
+      let totalCalories = 0;
+      let totalSteps = 0;
+      let workoutDays = 0;
+      
+      byDate.forEach(day => {
+        totalCalories += day.calories;
+        totalSteps += day.steps;
+        // Count workout day if has explicit workout OR any activity (calories/steps)
+        if (day.hasWorkout || day.calories > 0 || day.steps > 0) workoutDays++;
+      });
+      
+      // Only calculate averages if we have actual data
+      const avgCalories = daysWithData > 0 ? Math.round(totalCalories / daysWithData) : 0;
+      const avgSteps = daysWithData > 0 ? Math.round(totalSteps / daysWithData) : 0;
+      const avgWorkoutDays = daysWithData > 0 ? Math.round((workoutDays / daysWithData) * 7) : 0; // Weekly estimate
+      
+      // Classify activity level based on average calories
+      let activityLevel: 'beginner' | 'moderate' | 'active' | 'athlete';
+      let activityDescription: string;
+      
+      if (daysWithData < 3) {
+        // Not enough data to classify - use default
+        activityLevel = 'beginner';
+        activityDescription = 'Getting Started';
+      } else if (avgCalories < 300) {
+        activityLevel = 'beginner';
+        activityDescription = 'Getting Started';
+      } else if (avgCalories < 600) {
+        activityLevel = 'moderate';
+        activityDescription = 'Moderately Active';
+      } else if (avgCalories < 1000) {
+        activityLevel = 'active';
+        activityDescription = 'Very Active';
+      } else {
+        activityLevel = 'athlete';
+        activityDescription = 'Athlete Level';
+      }
+      
+      // Calculate suggested goals
+      let suggestedCalories: number;
+      let suggestedSteps: number;
+      let suggestedWorkouts: number;
+      
+      if (daysWithData < 3) {
+        // Not enough data - use baseline goals for moderate activity
+        suggestedCalories = 500;
+        suggestedSteps = 8000;
+        suggestedWorkouts = 3;
+      } else {
+        // Set goals 15% above current average to encourage growth
+        const growthFactor = 1.15;
+        suggestedCalories = Math.round((avgCalories * growthFactor) / 50) * 50; // Round to nearest 50
+        suggestedSteps = Math.round((avgSteps * growthFactor) / 500) * 500; // Round to nearest 500
+        suggestedWorkouts = Math.min(7, Math.max(1, avgWorkoutDays + 1));
+        
+        // Apply minimum thresholds based on activity level
+        if (activityLevel === 'beginner') {
+          suggestedCalories = Math.max(suggestedCalories, 300);
+          suggestedSteps = Math.max(suggestedSteps, 5000);
+        } else if (activityLevel === 'moderate') {
+          suggestedCalories = Math.max(suggestedCalories, 500);
+          suggestedSteps = Math.max(suggestedSteps, 8000);
+        } else if (activityLevel === 'active') {
+          suggestedCalories = Math.max(suggestedCalories, 700);
+          suggestedSteps = Math.max(suggestedSteps, 10000);
+        } else {
+          suggestedCalories = Math.max(suggestedCalories, 1000);
+          suggestedSteps = Math.max(suggestedSteps, 12000);
+        }
+      }
+      
+      // Get today's progress
+      const today = now.toISOString().split('T')[0];
+      const todayData = byDate.get(today) || { calories: 0, steps: 0, hasWorkout: false };
+      
+      res.json({
+        activityLevel,
+        activityDescription,
+        daysAnalyzed: daysWithData,
+        averages: {
+          calories: avgCalories,
+          steps: avgSteps,
+          workoutsPerWeek: avgWorkoutDays,
+        },
+        suggestedGoals: {
+          dailyCalories: suggestedCalories,
+          dailySteps: suggestedSteps,
+          weeklyWorkouts: suggestedWorkouts,
+        },
+        todayProgress: {
+          calories: todayData.calories,
+          steps: todayData.steps,
+          hasWorkout: todayData.hasWorkout,
+        },
+      });
+    } catch (error) {
+      console.error("Error calculating suggested goals:", error);
+      res.status(500).json({ message: "Failed to calculate suggested goals" });
+    }
+  });
+
   // Dashboard stats route - uses global ranking based on current month (resets on 1st)
   app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {
