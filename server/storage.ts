@@ -75,6 +75,7 @@ export interface IStorage {
   getUserTeams(userId: string): Promise<Team[]>;
   getAllTeams(): Promise<Team[]>;
   archiveTeam(teamId: string): Promise<Team>;
+  deleteTeam(teamId: string): Promise<void>;
   getTeamLastActivityDate(teamId: string): Promise<Date | null>;
 
   // Team member operations
@@ -526,6 +527,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(teams.id, teamId))
       .returning();
     return team;
+  }
+
+  async deleteTeam(teamId: string): Promise<void> {
+    // Delete team messages first
+    await db.delete(teamMessages).where(eq(teamMessages.teamId, teamId));
+    // Delete team members
+    await db.delete(teamMembers).where(eq(teamMembers.teamId, teamId));
+    // Delete the team
+    await db.delete(teams).where(eq(teams.id, teamId));
   }
 
   async getTeamLastActivityDate(teamId: string): Promise<Date | null> {

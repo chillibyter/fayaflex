@@ -1026,6 +1026,94 @@ IMPORTANT RULES:
     }
   });
 
+  // Leave team endpoint - any member can leave
+  app.post("/api/teams/:id/leave", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const teamId = req.params.id;
+
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      // Check if user is a member
+      const isMember = await storage.isUserInTeam(userId, teamId);
+      if (!isMember) {
+        return res.status(400).json({ message: "You are not a member of this team" });
+      }
+
+      // Owner cannot leave, they must delete or transfer ownership
+      if (team.ownerId === userId) {
+        return res.status(400).json({ message: "Team owner cannot leave. Delete the team instead." });
+      }
+
+      await storage.removeTeamMember(userId, teamId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error leaving team:", error);
+      res.status(500).json({ message: error.message || "Failed to leave team" });
+    }
+  });
+
+  // Delete team endpoint - only owner can delete
+  app.delete("/api/teams/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const teamId = req.params.id;
+
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      if (team.ownerId !== userId) {
+        return res.status(403).json({ message: "Only team owner can delete the team" });
+      }
+
+      await storage.deleteTeam(teamId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting team:", error);
+      res.status(500).json({ message: error.message || "Failed to delete team" });
+    }
+  });
+
+  // Kick member endpoint - only owner can kick
+  app.delete("/api/teams/:id/members/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const teamId = req.params.id;
+      const targetUserId = req.params.userId;
+
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      if (team.ownerId !== currentUserId) {
+        return res.status(403).json({ message: "Only team owner can remove members" });
+      }
+
+      // Owner cannot kick themselves
+      if (targetUserId === currentUserId) {
+        return res.status(400).json({ message: "Cannot remove yourself. Delete the team instead." });
+      }
+
+      // Check if target is a member
+      const isMember = await storage.isUserInTeam(targetUserId, teamId);
+      if (!isMember) {
+        return res.status(400).json({ message: "User is not a member of this team" });
+      }
+
+      await storage.removeTeamMember(targetUserId, teamId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error removing team member:", error);
+      res.status(500).json({ message: error.message || "Failed to remove team member" });
+    }
+  });
+
   // Challenge Archive endpoint - shows all past months' results for user's teams
   app.get("/api/challenge-archive", isAuthenticated, async (req: any, res) => {
     try {
