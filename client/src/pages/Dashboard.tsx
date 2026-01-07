@@ -12,7 +12,6 @@ import { Link } from "wouter";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { useAuth } from "@/hooks/use-auth";
-import GoalJourneys from "@/components/GoalJourneys";
 import SmartGoals from "@/components/SmartGoals";
 import AICoach from "@/components/AICoach";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -348,8 +347,6 @@ export default function Dashboard() {
         </Link>
 
         <SmartGoals />
-
-        <GoalJourneys />
 
         <AICoach />
 
