@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import WebKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,8 +8,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Clear WKWebView cache to ensure fresh content after updates
+        clearWebViewCache()
         return true
+    }
+    
+    private func clearWebViewCache() {
+        // Clear all website data types
+        let dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
+        let dateFrom = Date(timeIntervalSince1970: 0)
+        
+        WKWebsiteDataStore.default().removeData(
+            ofTypes: dataTypes,
+            modifiedSince: dateFrom
+        ) {
+            print("FayaFlex: WKWebView cache cleared successfully")
+        }
+        
+        // Also clear URL cache
+        URLCache.shared.removeAllCachedResponses()
+        
+        // Clear cookies
+        if let cookies = HTTPCookieStorage.shared.cookies {
+            for cookie in cookies {
+                HTTPCookieStorage.shared.deleteCookie(cookie)
+            }
+        }
+        
+        print("FayaFlex: All web caches cleared")
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
