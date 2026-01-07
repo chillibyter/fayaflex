@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, Check, ArrowLeft } from "lucide-react";
+import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { User as UserType, Team, Challenge } from "@shared/schema";
@@ -33,6 +33,7 @@ import { format } from "date-fns";
 import { FITNESS_AVATARS, AVATAR_SPRITE_URL } from "@/lib/avatars";
 import { UserAvatar } from "@/components/UserAvatar";
 import BadgesDisplay from "@/components/BadgesDisplay";
+import SmartGoals from "@/components/SmartGoals";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -43,12 +44,6 @@ type UserStats = {
   currentStreak: number;
   totalCalories?: number;
   totalSteps?: number;
-};
-
-type DailyGoals = {
-  calories: { current: number; goal: number };
-  steps: { current: number; goal: number };
-  workouts: { current: number; goal: number };
 };
 
 type EnrichedTeam = Team & { memberCount: number };
@@ -92,10 +87,6 @@ export default function Profile() {
 
   const { data: challenges = [] } = useQuery<EnrichedChallenge[]>({
     queryKey: ['/api/challenges'],
-  });
-
-  const { data: dailyGoals } = useQuery<DailyGoals>({
-    queryKey: ['/api/goals/daily'],
   });
 
   const updateProfileMutation = useMutation({
@@ -211,40 +202,6 @@ export default function Profile() {
     return num.toString();
   };
 
-  const CircularProgress = ({ current, goal, label, color, showCheck }: { current: number; goal: number; label: string; color: string; showCheck?: boolean }) => {
-    const percentage = Math.min((current / goal) * 100, 100);
-    const strokeWidth = 8;
-    const radius = 40;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (percentage / 100) * circumference;
-    const isComplete = current >= goal;
-
-    return (
-      <div className="flex flex-col items-center">
-        <div className="relative w-24 h-24">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r={radius} fill="none" stroke="currentColor" strokeWidth={strokeWidth} className="text-muted/30" />
-            <circle
-              cx="50" cy="50" r={radius} fill="none" stroke={color}
-              strokeWidth={strokeWidth} strokeLinecap="round"
-              strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-500"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            {showCheck && isComplete ? (
-              <Check className="h-6 w-6 text-green-500" />
-            ) : (
-              <span className="text-lg font-bold">{formatNumber(current)}</span>
-            )}
-            <span className="text-[10px] text-muted-foreground">of {formatNumber(goal)}</span>
-          </div>
-        </div>
-        <p className="text-sm font-medium mt-2">{label}</p>
-      </div>
-    );
-  };
-
   if (isErrorUser) {
     return (
       <div className="min-h-screen bg-background p-4">
@@ -316,42 +273,9 @@ export default function Profile() {
       </div>
 
       <div className="px-4 mt-4">
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Daily Goals</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingStats ? (
-              <div className="flex justify-around py-4">
-                <Skeleton className="h-24 w-24 rounded-full" />
-                <Skeleton className="h-24 w-24 rounded-full" />
-                <Skeleton className="h-24 w-24 rounded-full" />
-              </div>
-            ) : (
-              <div className="flex justify-around py-2">
-                <CircularProgress
-                  current={dailyGoals?.calories?.current || 0}
-                  goal={dailyGoals?.calories?.goal || 2200}
-                  label="Calories"
-                  color="#F97316"
-                />
-                <CircularProgress
-                  current={dailyGoals?.steps?.current || 0}
-                  goal={dailyGoals?.steps?.goal || 10000}
-                  label="Steps"
-                  color="#10B981"
-                />
-                <CircularProgress
-                  current={dailyGoals?.workouts?.current || 0}
-                  goal={dailyGoals?.workouts?.goal || 1}
-                  label="Workouts"
-                  color="#10B981"
-                  showCheck
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="mb-6">
+          <SmartGoals />
+        </div>
 
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-3">Monthly Stats</h3>
