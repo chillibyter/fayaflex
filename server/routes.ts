@@ -3326,6 +3326,111 @@ IMPORTANT RULES:
   // Run challenge completion immediately on startup
   console.log('[Challenges] Running initial challenge completion check...');
   completeChallenges().catch(err => console.error('[Challenges] Initial check failed:', err));
+
+  // ============ AUTO MONTHLY WINNER CALCULATION ============
+  // Runs every 5 minutes to check if it's time to calculate winners
+  // Winners are calculated at 12:00 PM on the 1st of each month
+  const WINNER_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
+  let lastWinnerCalculationMonth = -1; // Track to prevent duplicate calculations
+  
+  const autoCalculateMonthlyWinners = async () => {
+    try {
+      const now = new Date();
+      const dayOfMonth = now.getDate();
+      const currentHour = now.getHours();
+      const currentMonth = now.getMonth();
+      
+      // Only run on the 1st of the month between 12:00 and 12:59
+      if (dayOfMonth !== 1 || currentHour !== 12) {
+        return;
+      }
+      
+      // Prevent running multiple times in the same month
+      if (lastWinnerCalculationMonth === currentMonth) {
+        return;
+      }
+      
+      console.log('[VictoryWall] Starting automatic monthly winner calculation...');
+      
+      // Get previous month
+      const prevDate = new Date(now);
+      prevDate.setMonth(prevDate.getMonth() - 1);
+      const month = prevDate.getMonth() + 1; // 1-12
+      const year = prevDate.getFullYear();
+      
+      // Get all active teams
+      const allTeams = await storage.getAllTeams();
+      const activeTeams = allTeams.filter(t => t.status === 'active');
+      
+      console.log(`[VictoryWall] Calculating winners for ${activeTeams.length} active teams for ${month}/${year}`);
+      
+      let successCount = 0;
+      let skipCount = 0;
+      
+      for (const team of activeTeams) {
+        try {
+          // Check if winner already exists for this team/month
+          const existingWinner = await storage.getMonthlyWinner(team.id, month, year);
+          if (existingWinner) {
+            skipCount++;
+            continue;
+          }
+          
+          // Get all team members and calculate their totals
+          const members = await storage.getTeamMembers(team.id);
+          const memberStats = [];
+          
+          for (const member of members) {
+            const activities = await storage.getUserActivities(member.userId, month, year);
+            const totalCalories = activities.reduce((sum, act) => sum + act.calories, 0);
+            
+            if (totalCalories > 0) {
+              memberStats.push({
+                userId: member.userId,
+                totalCalories,
+              });
+            }
+          }
+          
+          if (memberStats.length === 0) {
+            console.log(`[VictoryWall] Team ${team.name}: No activities for ${month}/${year}`);
+            continue;
+          }
+          
+          // Sort by calories and get winner
+          memberStats.sort((a, b) => b.totalCalories - a.totalCalories);
+          const winner = memberStats[0];
+          
+          // Create monthly winner record
+          await storage.createMonthlyWinner({
+            teamId: team.id,
+            userId: winner.userId,
+            month,
+            year,
+            totalCalories: winner.totalCalories,
+          });
+          
+          const user = await storage.getUser(winner.userId);
+          const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown';
+          console.log(`[VictoryWall] Team ${team.name}: Winner is ${userName} with ${winner.totalCalories} calories`);
+          successCount++;
+        } catch (err) {
+          console.error(`[VictoryWall] Error calculating winner for team ${team.id}:`, err);
+        }
+      }
+      
+      lastWinnerCalculationMonth = currentMonth;
+      console.log(`[VictoryWall] Calculation complete: ${successCount} winners announced, ${skipCount} already calculated`);
+    } catch (err) {
+      console.error('[VictoryWall] Error in auto winner calculation:', err);
+    }
+  };
+  
+  console.log('[VictoryWall] Initializing automatic monthly winner calculation (12:00 PM on 1st of each month)');
+  setInterval(autoCalculateMonthlyWinners, WINNER_CHECK_INTERVAL);
+  
+  // Check immediately on startup (in case server restarts on the 1st at noon)
+  autoCalculateMonthlyWinners().catch(err => console.error('[VictoryWall] Initial check failed:', err));
   
   return httpServer;
 }
