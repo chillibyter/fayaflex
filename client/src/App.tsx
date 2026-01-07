@@ -29,6 +29,7 @@ import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useAutoHealthSync } from "@/hooks/use-auto-health-sync";
+import { useSwipeBack } from "@/hooks/use-swipe-back";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
@@ -123,6 +124,9 @@ function AuthenticatedApp() {
   
   // Auto-sync health data when app is in use (native platforms only)
   useAutoHealthSync();
+  
+  // Enable swipe-right from left edge to go back
+  useSwipeBack();
 
   useEffect(() => {
     if (user) {
