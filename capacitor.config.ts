@@ -3,12 +3,10 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.fayaflex.app',
   appName: 'FayaFlex',
-  webDir: 'empty-web-dir',
+  webDir: 'dist/public',
   server: {
-    url: 'https://fayaflex.com',
     androidScheme: 'https',
-    iosScheme: 'https',
-    cleartext: true,
+    iosScheme: 'capacitor',
   },
   ios: {
     contentInset: 'automatic',

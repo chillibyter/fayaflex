@@ -6,6 +6,23 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// CORS for native mobile apps (Capacitor)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  // Allow capacitor:// and https://localhost for native iOS/Android apps
+  const allowedOrigins = ['capacitor://localhost', 'https://localhost', 'http://localhost'];
+  if (origin && (allowedOrigins.includes(origin) || origin.includes('fayaflex.com'))) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Cache-busting endpoint to clear all service workers and caches
 // Users can visit /clear-cache to force-clear all cached data
 app.get('/clear-cache', (req, res) => {

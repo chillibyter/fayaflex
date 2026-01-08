@@ -1,6 +1,12 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { Capacitor } from "@capacitor/core";
 
 const AUTH_TOKEN_KEY = 'ufc_auth_token';
+const API_BASE_URL = Capacitor.isNativePlatform() ? 'https://www.fayaflex.com' : '';
+
+export function getApiUrl(path: string): string {
+  return `${API_BASE_URL}${path}`;
+}
 
 export function getAuthToken(): string | null {
   return localStorage.getItem(AUTH_TOKEN_KEY);
@@ -38,7 +44,8 @@ export async function apiRequest(
     headers['Content-Type'] = 'application/json';
   }
   
-  const res = await fetch(url, {
+  const fullUrl = getApiUrl(url);
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -55,7 +62,9 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const path = queryKey.join("/") as string;
+    const fullUrl = getApiUrl(path);
+    const res = await fetch(fullUrl, {
       credentials: "include",
       headers: getAuthHeaders(),
     });
