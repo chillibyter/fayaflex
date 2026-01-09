@@ -52,12 +52,15 @@ app.get('/clear-cache', (req, res) => {
   `);
 });
 
-// Temporary: Add Clear-Site-Data header to all navigation requests for a limited time
-// This forces all clients to clear their cached service workers
+// Cache control headers for optimal caching strategy
 app.use((req, res, next) => {
-  // Only add header for HTML page requests (not API or assets)
-  if (req.headers.accept?.includes('text/html') && !req.path.startsWith('/api')) {
-    res.set('Clear-Site-Data', '"cache", "storage"');
+  // Long-lived cache for hashed assets (Vite adds hash to filenames)
+  if (req.path.startsWith('/assets/')) {
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+  // No cache for HTML pages to ensure fresh content
+  else if (req.headers.accept?.includes('text/html') && !req.path.startsWith('/api')) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }
   next();
 });
