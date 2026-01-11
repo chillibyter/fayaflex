@@ -4,23 +4,15 @@ import Capacitor
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
-    private var bridgeViewController: CAPBridgeViewController?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Build bridge with custom plugins BEFORE JavaScript loads
-        // This ensures HealthKitPlugin is registered before JS bridge initializes
-        let descriptor = InstanceDescriptor()
-        bridgeViewController = CAPBridgeViewController(descriptor: descriptor)
+        // Create custom view controller that registers HealthKit plugin
+        let viewController = CustomViewController()
         
-        // Register HealthKit plugin before window appears
-        if let vc = bridgeViewController {
-            vc.bridge?.registerPluginInstance(HealthKitPlugin())
-            print("HealthKitPlugin: Registered via AppDelegate")
-        }
-
         window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = bridgeViewController
+        window?.rootViewController = viewController
         window?.makeKeyAndVisible()
+        
         return true
     }
 
