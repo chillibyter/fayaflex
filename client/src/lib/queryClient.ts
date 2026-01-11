@@ -1,28 +1,45 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
+import { 
+  getAuthToken as getStoredToken, 
+  setAuthToken as setStoredToken, 
+  clearAuthToken as clearStoredToken,
+  migrateFromLocalStorage
+} from "./authStorage";
 
-const AUTH_TOKEN_KEY = 'ufc_auth_token';
 const API_BASE_URL = Capacitor.isNativePlatform() ? 'https://www.fayaflex.com' : '';
+
+let cachedToken: string | null = null;
+let tokenInitialized = false;
 
 export function getApiUrl(path: string): string {
   return `${API_BASE_URL}${path}`;
 }
 
+export async function initializeAuth(): Promise<void> {
+  if (tokenInitialized) return;
+  await migrateFromLocalStorage();
+  cachedToken = await getStoredToken();
+  tokenInitialized = true;
+  console.log("[Auth] Token initialized:", cachedToken ? "present" : "none");
+}
+
 export function getAuthToken(): string | null {
-  return localStorage.getItem(AUTH_TOKEN_KEY);
+  return cachedToken;
 }
 
-export function setAuthToken(token: string): void {
-  localStorage.setItem(AUTH_TOKEN_KEY, token);
+export async function setAuthToken(token: string): Promise<void> {
+  cachedToken = token;
+  await setStoredToken(token);
 }
 
-export function clearAuthToken(): void {
-  localStorage.removeItem(AUTH_TOKEN_KEY);
+export async function clearAuthToken(): Promise<void> {
+  cachedToken = null;
+  await clearStoredToken();
 }
 
 function getAuthHeaders(): Record<string, string> {
-  const token = getAuthToken();
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  return cachedToken ? { 'Authorization': `Bearer ${cachedToken}` } : {};
 }
 
 async function throwIfResNotOk(res: Response) {
