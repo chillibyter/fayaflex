@@ -1,0 +1,88 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/093A04F7-805F-4D99-89CA-61CB92C56B8F/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at capacitor://localhost...
+Networking process (0x109054190) took 1.150858 seconds to launch
+WebContent[2421] Unable to hide query parameters from script (missing data)
+⚡️  [error] - [AuthStorage] Failed to get token from native storage: {"code":"UNIMPLEMENTED"}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 28765990
+⚡️  To Native ->  CapacitorHttp request 28765991
+⚡️  To Native ->  SplashScreen hide 28765992
+⚡️  WebView loaded
+⚡️  TO JS undefined
+⚡️  [log] - [AutoSync] No user logged in, skipping sync
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/auth\/user","headers":{"etag":"W\/\"1b5-\/wTbnJPqHZQ6bHzHmRw0rJBlOCA\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-cloud-trace-context":"388e8d1509eb9d628bbdc19dc5b4d963;o=1","server"
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/teams
+⚡️  To Native ->  CapacitorHttp request 28765993
+⚡️  To Native ->  App addListener 28765994
+⚡️  To Native ->  App removeListener 28765995
+⚡️  TO JS {"data":[{"name":"The Original UFC","memberCount":2,"inviteCode":"83136feee308","memberAvatars":[{"profileImageUrl":"\/uploads\/profiles\/daeefa3a-8fae-46d1-aea7-af609e5b27bd_1767812911394.webp","firstName":"Lanyard","id":"daeefa3a-8fae-46d1-aea7-af609e5b2
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  To Native ->  CapacitorHttp request 28765996
+⚡️  To Native ->  CapacitorHttp request 28765997
+⚡️  To Native ->  CapacitorHttp request 28765998
+⚡️  To Native ->  ⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+CapacitorHttp request 28765999
+⚡️  To Native ->  CapacitorHttp request 28766000
+⚡️  To Native ->  CapacitorHttp request 28766001
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications
+WebContent[2421] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  TO JS {"headers":{"etag":"W\/\"120-AYBRRkEowR+hjc2Kev3Q2XdVzCA\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-cloud-trace-context":"2ea206af9c7175a404095e448bac764c","server":"Google Frontend","strict-transport-security":"max-age=63072000; 
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","content-type":"application\/json; charset=utf-8","x-powered-by":"Express","content-length":"69","etag":"W\/\"45-3jM4NifSUst2jv+2dr0DD0pwDao\"","x-cloud-trace-context":"e49f7855d224
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[{"workoutType":"Health Sync (1 workout)","id":"c9f40355-0aca-4593-830f-a809db7ef0fd","createdAt":"2026-01-11T18:24:49.281Z","steps":6698,"userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","date":"2026-01-11","calories":842,"attachmentUrl":null,"sourc
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[],"status":200,"url":"https:\/\/fayaflex.com\/api\/notifications","headers":{"alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","content-type":"application\/json; charset=utf-8","x-powered-by":"Express","content-length":"2","etag":"W\/
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [AutoSync] Starting automatic health sync...
+⚡️  To Native ->  HealthKit isAvailable 28766002
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [AutoSync] Provider: apple_health
+⚡️  [log] - [AutoSync] Fetching health data from 2026-01-04T19:07:03.264Z to 2026-01-11T19:07:03.264Z
+⚡️  To Native ->  HealthKit getHealthData 28766003
+⚡️  [log] - [HealthService] Fetching health data from 2026-01-04T19:07:03.264Z to 2026-01-11T19:07:03.264Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[{"steps":997,"date":"2026-01-04","calories":98,"workouts":0},{"workouts":1,"calories":1466,"steps":14598,"date":"2026-01-05"},{"calories":1148,"steps":19454,"workouts":1,"date":"2026-01-06"},{"steps":14366,"calories":1329,"workouts":2,"date":"2026
+⚡️  [log] - [HealthService] iOS HealthKit data: 8 days
+⚡️  [log] - [AutoSync] Syncing 8 days of health data
+⚡️  [log] - [API] POST https://fayaflex.com/api/devices/sync (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/devices/sync
+⚡️  To Native ->  CapacitorHttp request 28766004
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","headers":{"x-powered-by":"Express","content-length":"261","content-type":"application\/json; charset=utf-8","server":"Google Frontend","etag":"W\/\"105-E0c2DZyZ9kvh1Y0KoaqzfjaMksw\"","x-cloud-trace-co
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"success":true,"synced":2,"updated":2,"skipped":6,"created":0},"url":"https:\/\/fayaflex.com\/api\/devices\/sync","headers":{"etag":"W\/\"3f-Yu3Bhmv\/GI\/LeA71hxEVE+6wR+Y\"","via":"1.1 google","strict-transport-security":"max-age=63072000; include
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [AutoSync] Health data synced successfully
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  To Native ->  CapacitorHttp request 28766005
+⚡️  To Native ->  CapacitorHttp request 28766006
+⚡️  To Native ->  CapacitorHttp request 28766007
+⚡️  TO JS {"data":[{"date":"Week 2","calories":4536},{"date":"Week 1","calories":7522}],"url":"https:\/\/fayaflex.com\/api\/progress\/chart","headers":{"etag":"W\/\"45-3jM4NifSUst2jv+2dr0DD0pwDao\"","via":"1.1 google","strict-transport-security":"max-age=63072000; i
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/activities","headers":{"etag":"W\/\"478f-7vyo38XB0d0CWOvv7MKJ1jmLzlQ\"","x-cloud-trace-context":"16bf0a9d462ecf3a04095e448bac760c","via":"1.1 google","strict-transport-security":"max-age=63072000; includeSubDomains","al
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"totalActiveUsers":6,"stepsTrend":-57,"currentYear":2026,"percentile":33,"badgeCount":7,"steps":142041,"caloriesTrend":-49,"rank":2,"currentMonth":1,"personalBests":{"daily_calories":1926,"daily_score":27658,"daily_steps":25922},"workouts":11,"cal
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"workoutSuggestion":{"exercises":[{"key":"squat","sets":4,"reps":"10-12","duration":null},{"key":"pushup","sets":3,"reps":"10-12","duration":null},{"key":"row","sets":3,"reps":"12-15","duration":null},{"key":"lunge","sets":3,"reps":"10-12","durati
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  To Native ->  CapacitorHttp request 28766008
+⚡️  To Native ->  HealthKit isAvailable 28766009
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  TO JS {"headers":{"via":"1.1 google","strict-transport-security":"max-age=63072000; includeSubDomains","server":"Google Frontend","date":"Sun, 11 Jan 2026 19:07:26 GMT","etag":"W\/\"278-Yl0OFTxuPmlePd6hP+AbMDfftVo\"","x-cloud-trace-context":"d80c574976fddd77c37d
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 28766010
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
