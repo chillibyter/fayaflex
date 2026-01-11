@@ -33,9 +33,13 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration (web only, not native apps) -->
     <script>
-      if ('serviceWorker' in navigator) {
+      // Skip service worker for native Capacitor apps
+      const isNativeApp = window.location.protocol === 'capacitor:' || 
+                          window.location.href.includes('localhost') && window.Capacitor;
+      
+      if ('serviceWorker' in navigator && !isNativeApp) {
         window.addEventListener('load', () => {
           // Unregister old service workers first
           navigator.serviceWorker.getRegistrations().then(registrations => {
