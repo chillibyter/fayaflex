@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, Trophy, Flame, Footprints, Dumbbell, ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 type LeaderboardEntry = {
   rank: number;
@@ -35,8 +36,7 @@ export default function Leaderboard() {
   } = useQuery<LeaderboardEntry[]>({
     queryKey: ['/api/leaderboard/teams', { month: currentMonth, year: currentYear }],
     queryFn: async () => {
-      const res = await fetch(`/api/leaderboard/teams?month=${currentMonth}&year=${currentYear}`);
-      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      const res = await apiRequest("GET", `/api/leaderboard/teams?month=${currentMonth}&year=${currentYear}`);
       return res.json();
     },
   });
@@ -49,8 +49,7 @@ export default function Leaderboard() {
   } = useQuery<LeaderboardEntry[]>({
     queryKey: ['/api/leaderboard/category', 'calories', { month: currentMonth, year: currentYear }],
     queryFn: async () => {
-      const res = await fetch(`/api/leaderboard/category/calories?month=${currentMonth}&year=${currentYear}`);
-      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      const res = await apiRequest("GET", `/api/leaderboard/category/calories?month=${currentMonth}&year=${currentYear}`);
       return res.json();
     },
   });
@@ -63,8 +62,7 @@ export default function Leaderboard() {
   } = useQuery<LeaderboardEntry[]>({
     queryKey: ['/api/leaderboard/category', 'steps', { month: currentMonth, year: currentYear }],
     queryFn: async () => {
-      const res = await fetch(`/api/leaderboard/category/steps?month=${currentMonth}&year=${currentYear}`);
-      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      const res = await apiRequest("GET", `/api/leaderboard/category/steps?month=${currentMonth}&year=${currentYear}`);
       return res.json();
     },
   });
@@ -77,8 +75,7 @@ export default function Leaderboard() {
   } = useQuery<LeaderboardEntry[]>({
     queryKey: ['/api/leaderboard/category', 'workouts', { month: currentMonth, year: currentYear }],
     queryFn: async () => {
-      const res = await fetch(`/api/leaderboard/category/workouts?month=${currentMonth}&year=${currentYear}`);
-      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      const res = await apiRequest("GET", `/api/leaderboard/category/workouts?month=${currentMonth}&year=${currentYear}`);
       return res.json();
     },
   });

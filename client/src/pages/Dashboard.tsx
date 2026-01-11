@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import SmartGoals from "@/components/SmartGoals";
 import AICoach from "@/components/AICoach";
 import { UserAvatar } from "@/components/UserAvatar";
+import { apiRequest } from "@/lib/queryClient";
 
 type LocationScope = "global" | "continent" | "country" | "region" | "town";
 
@@ -94,7 +95,7 @@ export default function Dashboard() {
     queryKey: ['/api/locations', currentScope.locationId],
     queryFn: async () => {
       if (!currentScope.locationId) return null;
-      const res = await fetch(`/api/locations/${currentScope.locationId}`);
+      const res = await apiRequest("GET", `/api/locations/${currentScope.locationId}`);
       if (!res.ok) return null;
       return res.json();
     },
@@ -115,7 +116,7 @@ export default function Dashboard() {
   const { data: scopedRankData } = useQuery<{ rank: number; total: number }>({
     queryKey: ['/api/leaderboard/user-rank', currentScope.scope, currentScope.locationId],
     queryFn: async () => {
-      const res = await fetch(`/api/leaderboard/user-rank?month=${currentMonth}&year=${currentYear}${getScopeParams()}`);
+      const res = await apiRequest("GET", `/api/leaderboard/user-rank?month=${currentMonth}&year=${currentYear}${getScopeParams()}`);
       if (!res.ok) return { rank: 0, total: 0 };
       return res.json();
     },

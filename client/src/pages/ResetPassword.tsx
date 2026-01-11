@@ -22,7 +22,7 @@ export default function ResetPassword() {
     queryKey: ['/api/auth/validate-reset-token', token],
     queryFn: async () => {
       if (!token) return { valid: false, message: "No token provided" };
-      const res = await fetch(`/api/auth/validate-reset-token?token=${token}`);
+      const res = await apiRequest("GET", `/api/auth/validate-reset-token?token=${token}`);
       return res.json();
     },
     enabled: !!token,

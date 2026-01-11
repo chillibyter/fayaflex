@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Flame, Footprints, TrendingUp, TrendingDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import { format } from "date-fns";
+import { apiRequest } from "@/lib/queryClient";
 
 type DailyData = {
   date: string;
@@ -31,8 +32,7 @@ export default function DailyChart() {
   } = useQuery<DailyData[]>({
     queryKey: ['/api/stats/daily-breakdown', metric],
     queryFn: async () => {
-      const res = await fetch(`/api/stats/daily-breakdown?metric=${metric}`);
-      if (!res.ok) throw new Error('Failed to fetch');
+      const res = await apiRequest("GET", `/api/stats/daily-breakdown?metric=${metric}`);
       return res.json();
     }
   });

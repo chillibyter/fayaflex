@@ -62,12 +62,7 @@ export default function TeamLeaderboard() {
   } = useQuery<LeaderboardEntry[]>({
     queryKey: ['/api/leaderboard/team', teamId, { month: currentMonth, year: currentYear }],
     queryFn: async () => {
-      const res = await fetch(`/api/leaderboard/team/${teamId}?month=${currentMonth}&year=${currentYear}`);
-      if (!res.ok) {
-        const errorText = await res.text();
-        const errorData = { status: res.status, message: errorText };
-        throw errorData;
-      }
+      const res = await apiRequest("GET", `/api/leaderboard/team/${teamId}?month=${currentMonth}&year=${currentYear}`);
       return res.json();
     },
   });
