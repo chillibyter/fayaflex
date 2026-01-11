@@ -1,13 +1,22 @@
 import UIKit
 import Capacitor
 
+// Custom view controller that registers HealthKit plugin
+class FayaFlexViewController: CAPBridgeViewController {
+    override open func capacitorDidLoad() {
+        // Register plugin BEFORE calling super (which triggers JS init)
+        bridge?.registerPluginInstance(HealthKitPlugin())
+        print("HealthKitPlugin: Registered in capacitorDidLoad")
+        super.capacitorDidLoad()
+    }
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Create custom view controller that registers HealthKit plugin
-        let viewController = CustomViewController()
+        let viewController = FayaFlexViewController()
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.rootViewController = viewController
