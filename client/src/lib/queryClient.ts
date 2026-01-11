@@ -62,11 +62,13 @@ export async function apiRequest(
   }
   
   const fullUrl = getApiUrl(url);
+  const isNative = Capacitor.isNativePlatform();
   const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    // Native apps use Bearer token auth, web uses session cookies
+    credentials: isNative ? "omit" : "include",
   });
 
   await throwIfResNotOk(res);
@@ -81,8 +83,10 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const path = queryKey.join("/") as string;
     const fullUrl = getApiUrl(path);
+    const isNative = Capacitor.isNativePlatform();
     const res = await fetch(fullUrl, {
-      credentials: "include",
+      // Native apps use Bearer token auth, web uses session cookies
+      credentials: isNative ? "omit" : "include",
       headers: getAuthHeaders(),
     });
 
