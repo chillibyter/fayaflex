@@ -66,5 +66,9 @@
         <string>FayaFlex needs access to read your health data (steps, calories, workouts) to track your fitness progress and compete with your team.</string>
         <key>NSHealthUpdateUsageDescription</key>
         <string>FayaFlex needs access to save workout data to Apple Health.</string>
+        <key>NSPhotoLibraryUsageDescription</key>
+        <string>FayaFlex needs access to your photo library to let you choose a profile picture.</string>
+        <key>NSCameraUsageDescription</key>
+        <string>FayaFlex needs access to your camera to take a profile photo or capture workout evidence.</string>
 </dict>
 </plist>
