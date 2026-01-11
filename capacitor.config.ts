@@ -7,14 +7,22 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     iosScheme: 'capacitor',
+    // Allow requests to fayaflex.com from native apps
+    allowNavigation: ['*.fayaflex.com'],
   },
   ios: {
     contentInset: 'automatic',
+    // Enable native HTTP to bypass WebView CORS issues
+    limitsNavigationsToAppBoundDomains: false,
   },
   android: {
     backgroundColor: '#0f172a',
   },
   plugins: {
+    CapacitorHttp: {
+      // Route fetch/XHR through native code to bypass CORS
+      enabled: true,
+    },
     SplashScreen: {
       launchShowDuration: 0,
       launchAutoHide: false,
