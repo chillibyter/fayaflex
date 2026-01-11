@@ -63,16 +63,25 @@ export async function apiRequest(
   
   const fullUrl = getApiUrl(url);
   const isNative = Capacitor.isNativePlatform();
-  const res = await fetch(fullUrl, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    // Native apps use Bearer token auth, web uses session cookies
-    credentials: isNative ? "omit" : "include",
-  });
+  
+  console.log(`[API] ${method} ${fullUrl} (native: ${isNative})`);
+  
+  try {
+    const res = await fetch(fullUrl, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+      // Native apps use Bearer token auth, web uses session cookies
+      credentials: isNative ? "omit" : "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    console.log(`[API] Response: ${res.status} ${res.statusText}`);
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error: any) {
+    console.error(`[API] Fetch error for ${fullUrl}:`, error.message || error);
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
