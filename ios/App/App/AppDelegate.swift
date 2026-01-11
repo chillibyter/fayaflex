@@ -3,17 +3,24 @@ import Capacitor
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     var window: UIWindow?
+    private var bridgeViewController: CAPBridgeViewController?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Register HealthKitPlugin when Capacitor bridge loads
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.capacitorDidLoad, object: nil, queue: nil) { notification in
-            if let bridge = notification.object as? CAPBridge {
-                bridge.registerPluginInstance(HealthKitPlugin())
-                print("HealthKitPlugin registered")
-            }
+        // Build bridge with custom plugins BEFORE JavaScript loads
+        // This ensures HealthKitPlugin is registered before JS bridge initializes
+        let descriptor = InstanceDescriptor()
+        bridgeViewController = CAPBridgeViewController(descriptor: descriptor)
+        
+        // Register HealthKit plugin before window appears
+        if let vc = bridgeViewController {
+            vc.bridge?.registerPluginInstance(HealthKitPlugin())
+            print("HealthKitPlugin: Registered via AppDelegate")
         }
+
+        window = UIWindow(frame: UIScreen.main.bounds)
+        window?.rootViewController = bridgeViewController
+        window?.makeKeyAndVisible()
         return true
     }
 
@@ -30,20 +37,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        // Called when the app was launched with a url. Feel free to add additional processing here,
-        // but if you want the App API to support tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        // Called when the app was launched with an activity, including Universal Links.
-        // Feel free to add additional processing here, but if you want the App API to support
-        // tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
-
 }
