@@ -8,7 +8,7 @@ import {
   migrateFromLocalStorage
 } from "./authStorage";
 
-const API_BASE_URL = Capacitor.isNativePlatform() ? 'https://www.fayaflex.com' : '';
+const API_BASE_URL = Capacitor.isNativePlatform() ? 'https://fayaflex.com' : '';
 const isNative = Capacitor.isNativePlatform();
 
 let cachedToken: string | null = null;
