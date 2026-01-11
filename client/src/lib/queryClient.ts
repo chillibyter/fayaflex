@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
+import { CapacitorHttp, HttpResponse } from "@capacitor/core";
 import { 
   getAuthToken as getStoredToken, 
   setAuthToken as setStoredToken, 
@@ -8,6 +9,7 @@ import {
 } from "./authStorage";
 
 const API_BASE_URL = Capacitor.isNativePlatform() ? 'https://www.fayaflex.com' : '';
+const isNative = Capacitor.isNativePlatform();
 
 let cachedToken: string | null = null;
 let tokenInitialized = false;
@@ -49,6 +51,44 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+async function nativeRequest(
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  data?: unknown
+): Promise<Response> {
+  console.log(`[API] Native ${method} ${url}`);
+  
+  try {
+    const options: any = {
+      url,
+      headers,
+      method: method.toUpperCase(),
+    };
+    
+    if (data) {
+      options.data = data;
+    }
+    
+    const response: HttpResponse = await CapacitorHttp.request(options);
+    
+    console.log(`[API] Native response: ${response.status}`);
+    
+    // Convert CapacitorHttp response to fetch-like Response
+    const body = typeof response.data === 'string' 
+      ? response.data 
+      : JSON.stringify(response.data);
+    
+    return new Response(body, {
+      status: response.status,
+      headers: response.headers,
+    });
+  } catch (error: any) {
+    console.error(`[API] Native request error:`, error.message || error);
+    throw error;
+  }
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -62,17 +102,23 @@ export async function apiRequest(
   }
   
   const fullUrl = getApiUrl(url);
-  const isNative = Capacitor.isNativePlatform();
   
   console.log(`[API] ${method} ${fullUrl} (native: ${isNative})`);
   
+  // Use native HTTP for iOS/Android to bypass WebView CORS restrictions
+  if (isNative) {
+    const res = await nativeRequest(method, fullUrl, headers, data);
+    await throwIfResNotOk(res);
+    return res;
+  }
+  
+  // Web uses standard fetch with session cookies
   try {
     const res = await fetch(fullUrl, {
       method,
       headers,
       body: data ? JSON.stringify(data) : undefined,
-      // Native apps use Bearer token auth, web uses session cookies
-      credentials: isNative ? "omit" : "include",
+      credentials: "include",
     });
 
     console.log(`[API] Response: ${res.status} ${res.statusText}`);
@@ -92,12 +138,19 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const path = queryKey.join("/") as string;
     const fullUrl = getApiUrl(path);
-    const isNative = Capacitor.isNativePlatform();
-    const res = await fetch(fullUrl, {
-      // Native apps use Bearer token auth, web uses session cookies
-      credentials: isNative ? "omit" : "include",
-      headers: getAuthHeaders(),
-    });
+    const headers = getAuthHeaders();
+    
+    let res: Response;
+    
+    // Use native HTTP for iOS/Android to bypass WebView CORS restrictions
+    if (isNative) {
+      res = await nativeRequest("GET", fullUrl, headers);
+    } else {
+      res = await fetch(fullUrl, {
+        credentials: "include",
+        headers,
+      });
+    }
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
