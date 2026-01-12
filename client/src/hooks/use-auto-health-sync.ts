@@ -72,18 +72,23 @@ export function useAutoHealthSync() {
 
       console.log('[AutoSync] Syncing', healthData.length, 'days of health data');
 
-      // Send to backend
-      await apiRequest('POST', '/api/devices/sync', {
+      // Send to backend and wait for it to complete
+      const syncResponse = await apiRequest('POST', '/api/devices/sync', {
         provider,
         activities: healthData
       });
-
-      console.log('[AutoSync] Health data synced successfully');
+      
+      // Ensure the sync is committed before we invalidate caches
+      if (syncResponse.ok) {
+        console.log('[AutoSync] Health data synced successfully');
+      } else {
+        console.warn('[AutoSync] Sync response not ok:', syncResponse.status);
+      }
 
       // Update last sync time
       localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
 
-      // Invalidate relevant queries to refresh UI
+      // Invalidate and refetch relevant queries to refresh UI with latest data
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });

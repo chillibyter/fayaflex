@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getApiUrl, getAuthToken } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { FITNESS_AVATARS, AVATAR_SPRITE_URL } from "@/lib/avatars";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -38,6 +38,8 @@ import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CitySearch } from "@/components/CitySearch";
+import { Capacitor } from "@capacitor/core";
+import { CapacitorHttp } from "@capacitor/core";
 
 type UserStats = {
   totalWorkouts: number;
@@ -106,18 +108,60 @@ export default function Profile() {
 
   const uploadProfileImageMutation = useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append('image', file);
-      const response = await fetch('/api/upload/profile-image', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to upload image');
+      const url = getApiUrl('/api/upload/profile-image');
+      
+      if (Capacitor.isNativePlatform()) {
+        // Convert File to base64 for native upload
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Remove data URL prefix to get pure base64
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        const token = getAuthToken();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await CapacitorHttp.request({
+          url,
+          method: 'POST',
+          headers,
+          data: {
+            image: base64Data,
+            filename: file.name,
+            mimeType: file.type,
+          },
+        });
+        
+        if (response.status >= 400) {
+          throw new Error(response.data?.message || 'Failed to upload image');
+        }
+        return response.data;
+      } else {
+        // Web upload using FormData
+        const formData = new FormData();
+        formData.append('image', file);
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to upload image');
+        }
+        return response.json();
       }
-      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });

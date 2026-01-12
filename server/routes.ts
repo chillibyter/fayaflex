@@ -1458,17 +1458,27 @@ IMPORTANT RULES:
     }
   });
 
-  // Profile image upload endpoint
+  // Profile image upload endpoint - handles both multipart (web) and base64 (native) uploads
   app.post("/api/upload/profile-image", isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
-      if (!req.file) {
+      const userId = req.user.id;
+      let imageBuffer: Buffer;
+
+      // Check for base64 upload from native apps
+      if (req.body && req.body.image && typeof req.body.image === 'string') {
+        // Native app sends base64 encoded image
+        imageBuffer = Buffer.from(req.body.image, 'base64');
+        console.log('[Upload] Received base64 image upload from native app');
+      } else if (req.file) {
+        // Web upload via multipart form
+        imageBuffer = req.file.buffer;
+        console.log('[Upload] Received multipart form upload from web');
+      } else {
         return res.status(400).json({ message: "No image file provided" });
       }
 
-      const userId = req.user.id;
-
       // Compress and save profile image
-      const imagePath = await compressAndSaveProfileImage(req.file.buffer, userId);
+      const imagePath = await compressAndSaveProfileImage(imageBuffer, userId);
       
       // Update user's profile image URL
       const updatedUser = await storage.updateUser(userId, { profileImageUrl: imagePath });

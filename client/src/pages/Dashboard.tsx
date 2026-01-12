@@ -137,6 +137,8 @@ export default function Dashboard() {
     refetch: refetchStats 
   } = useQuery<DashboardStats>({
     queryKey: ['/api/dashboard/stats'],
+    staleTime: 30 * 1000, // 30 seconds - refetch when invalidated after health sync
+    refetchOnMount: 'always',
   });
 
   const { 
@@ -144,6 +146,8 @@ export default function Dashboard() {
     isLoading: isLoadingChart,
   } = useQuery<ChartData[]>({
     queryKey: ['/api/progress/chart'],
+    staleTime: 30 * 1000,
+    refetchOnMount: 'always',
   });
 
   const { 
@@ -151,6 +155,8 @@ export default function Dashboard() {
     isLoading: isLoadingActivities,
   } = useQuery<ActivityType[]>({
     queryKey: ['/api/activities'],
+    staleTime: 30 * 1000,
+    refetchOnMount: 'always',
   });
 
   const { 

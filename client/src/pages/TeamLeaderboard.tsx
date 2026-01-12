@@ -63,8 +63,14 @@ export default function TeamLeaderboard() {
     queryKey: ['/api/leaderboard/team', teamId, { month: currentMonth, year: currentYear }],
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/leaderboard/team/${teamId}?month=${currentMonth}&year=${currentYear}`);
+      if (!res.ok) {
+        const err = new Error(res.status === 403 ? "Not a team member" : "Failed to load team leaderboard") as any;
+        err.status = res.status;
+        throw err;
+      }
       return res.json();
     },
+    retry: false,
   });
 
   const { data: teamData } = useQuery({
