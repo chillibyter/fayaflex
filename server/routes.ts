@@ -2654,7 +2654,7 @@ IMPORTANT RULES:
       const endDate = new Date(firstDayOfMonth);
       endDate.setDate(endDate.getDate() + 29); // 30 days total (0-29)
       
-      // Group activities by date
+      // Group activities by date - take MAX per day to avoid double-counting from multiple sources
       const dailyData: { [key: string]: number } = {};
       
       // Initialize all days with 0
@@ -2663,12 +2663,13 @@ IMPORTANT RULES:
         dailyData[dateKey] = 0;
       }
       
-      // Sum up the metric for each day
+      // Take the maximum value for each day (avoids double-counting if multiple sources exist)
       activities.forEach(activity => {
         const activityDate = new Date(activity.date);
         if (activityDate >= startDate && activityDate <= endDate) {
           const dateKey = activity.date;
-          dailyData[dateKey] = (dailyData[dateKey] || 0) + (metric === 'calories' ? activity.calories : activity.steps);
+          const value = metric === 'calories' ? activity.calories : activity.steps;
+          dailyData[dateKey] = Math.max(dailyData[dateKey] || 0, value);
         }
       });
       
