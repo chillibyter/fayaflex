@@ -106,24 +106,59 @@ export default function Profile() {
     },
   });
 
+  // Compress image on client before upload to reduce bandwidth and speed up uploads
+  const compressImage = async (file: File, maxSize = 1024, quality = 0.8): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        img.onload = () => {
+          // Calculate new dimensions while maintaining aspect ratio
+          let { width, height } = img;
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = Math.round((height * maxSize) / width);
+              width = maxSize;
+            } else {
+              width = Math.round((width * maxSize) / height);
+              height = maxSize;
+            }
+          }
+          
+          // Draw to canvas and compress
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to base64 JPEG (good compression for photos)
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          const base64 = dataUrl.split(',')[1];
+          console.log(`[Upload] Compressed image: ${file.size} bytes -> ~${Math.round(base64.length * 0.75)} bytes`);
+          resolve(base64);
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const uploadProfileImageMutation = useMutation({
     mutationFn: async (file: File) => {
       const url = getApiUrl('/api/upload/profile-image');
       
+      // Compress image on client before upload (reduces 10MB photo to ~100KB)
+      const base64Data = await compressImage(file, 1024, 0.85);
+      
       if (Capacitor.isNativePlatform()) {
-        // Convert File to base64 for native upload
-        const base64Data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            // Remove data URL prefix to get pure base64
-            const base64 = result.split(',')[1];
-            resolve(base64);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         };
@@ -139,7 +174,7 @@ export default function Profile() {
           data: {
             image: base64Data,
             filename: file.name,
-            mimeType: file.type,
+            mimeType: 'image/jpeg',
           },
         });
         
@@ -148,9 +183,17 @@ export default function Profile() {
         }
         return response.data;
       } else {
-        // Web upload using FormData
+        // Web: convert base64 back to blob for FormData upload
+        const byteString = atob(base64Data);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: 'image/jpeg' });
+        
         const formData = new FormData();
-        formData.append('image', file);
+        formData.append('image', blob, 'profile.jpg');
         const response = await fetch(url, {
           method: 'POST',
           body: formData,
