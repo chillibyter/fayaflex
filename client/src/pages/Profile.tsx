@@ -54,6 +54,8 @@ export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logoutMutation } = useAuth();
+  // Get absolute URL for avatar sprite on native platforms
+  const avatarSpriteUrl = Capacitor.isNativePlatform() ? getApiUrl(AVATAR_SPRITE_URL) : AVATAR_SPRITE_URL;
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
@@ -478,14 +480,6 @@ export default function Profile() {
           </div>
         )}
 
-        <Button
-          onClick={handleEditClick}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white mb-6"
-          size="lg"
-          data-testid="button-edit-profile"
-        >
-          Edit Profile
-        </Button>
       </div>
 
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
@@ -587,7 +581,7 @@ export default function Profile() {
                       <div 
                         className="w-full h-full"
                         style={{
-                          backgroundImage: `url(${AVATAR_SPRITE_URL})`,
+                          backgroundImage: `url(${avatarSpriteUrl})`,
                           backgroundSize: '500%',
                           backgroundPosition: `${(FITNESS_AVATARS.find(a => a.id === selectedAvatar)?.col || 0) * 25}% ${(FITNESS_AVATARS.find(a => a.id === selectedAvatar)?.row || 0) * 25}%`,
                         }}
@@ -650,7 +644,7 @@ export default function Profile() {
                         }}
                         className={`relative h-10 w-10 rounded-full overflow-hidden hover-elevate ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                         style={{
-                          backgroundImage: `url(${AVATAR_SPRITE_URL})`,
+                          backgroundImage: `url(${avatarSpriteUrl})`,
                           backgroundSize: '500%',
                           backgroundPosition: `${avatar.col * 25}% ${avatar.row * 25}%`,
                         }}

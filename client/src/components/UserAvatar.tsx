@@ -1,5 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById, AVATAR_SPRITE_URL } from "@/lib/avatars";
+import { getApiUrl } from "@/lib/queryClient";
+import { Capacitor } from "@capacitor/core";
 import type { User } from "@shared/schema";
 
 interface UserAvatarProps {
@@ -7,6 +9,21 @@ interface UserAvatarProps {
   className?: string;
   iconClassName?: string;
   fallbackClassName?: string;
+}
+
+// Convert relative paths to absolute URLs for native apps
+function getImageUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  // If already absolute URL, return as-is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  // For native apps, prepend the API base URL
+  if (Capacitor.isNativePlatform()) {
+    return getApiUrl(path);
+  }
+  // For web, relative paths work fine
+  return path;
 }
 
 export function UserAvatar({ user, className, iconClassName, fallbackClassName }: UserAvatarProps) {
@@ -19,13 +36,14 @@ export function UserAvatar({ user, className, iconClassName, fallbackClassName }
     : user?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U';
 
   const selectedAvatar = user?.avatarId ? getAvatarById(user.avatarId) : null;
-  const hasProfileImage = user?.profileImageUrl;
+  const profileImageUrl = getImageUrl(user?.profileImageUrl);
+  const spriteUrl = Capacitor.isNativePlatform() ? getApiUrl(AVATAR_SPRITE_URL) : AVATAR_SPRITE_URL;
 
   return (
     <Avatar className={className}>
-      {hasProfileImage ? (
+      {profileImageUrl ? (
         <AvatarImage 
-          src={user.profileImageUrl!} 
+          src={profileImageUrl} 
           alt={userName}
           className="object-cover"
         />
@@ -33,7 +51,7 @@ export function UserAvatar({ user, className, iconClassName, fallbackClassName }
         <div 
           className="w-full h-full"
           style={{
-            backgroundImage: `url(${AVATAR_SPRITE_URL})`,
+            backgroundImage: `url(${spriteUrl})`,
             backgroundSize: '500%',
             backgroundPosition: `${selectedAvatar.col * 25}% ${selectedAvatar.row * 25}%`,
           }}
@@ -56,12 +74,13 @@ interface AvatarSpriteProps {
 
 export function AvatarSprite({ avatarId, size = 48, className = '', selected = false }: AvatarSpriteProps) {
   const avatar = getAvatarById(avatarId);
+  const spriteUrl = Capacitor.isNativePlatform() ? getApiUrl(AVATAR_SPRITE_URL) : AVATAR_SPRITE_URL;
   
   return (
     <div 
       className={`rounded-full ${selected ? 'ring-2 ring-primary ring-offset-2' : ''} ${className}`}
       style={{
-        backgroundImage: `url(${AVATAR_SPRITE_URL})`,
+        backgroundImage: `url(${spriteUrl})`,
         backgroundSize: '500%',
         backgroundPosition: `${avatar.col * 25}% ${avatar.row * 25}%`,
         width: size,
