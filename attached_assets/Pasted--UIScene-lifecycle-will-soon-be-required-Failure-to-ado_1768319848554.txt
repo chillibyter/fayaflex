@@ -1,0 +1,255 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/167DF5A1-C159-4041-94C0-C6C4FD6E9228/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at capacitor://localhost...
+Updated list with error: DownloadFailed
+Networking process (0x115060190) took 1.470682 seconds to launch
+WebContent process (0x1150ec100) took 1.126586 seconds to launch
+Updated list with error: DownloadFailed
+⚡️  JS Eval error A JavaScript exception occurred
+⚡️  JS Eval error A JavaScript exception occurred
+WebContent[2473] Unable to hide query parameters from script (missing data)
+SplashScreen.hideSplash: SplashScreen was automatically hidden after default timeout. You should call `SplashScreen.hide()` as soon as your web app is loaded (or increase the timeout). Read more at https://capacitorjs.com/docs/apis/splash-screen#hiding-the-splash-screen
+⚡️  [error] - [AuthStorage] Failed to get token from native storage: {"code":"UNIMPLEMENTED"}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 114914675
+⚡️  To Native ->  CapacitorHttp request 114914676
+⚡️  To Native ->  SplashScreen hide 114914677
+⚡️  TO JS undefined
+Updated list with error: DownloadFailed
+⚡️  WebView loaded
+Updated list with error: DownloadFailed
+Updated list with error: DownloadFailed
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","via":"1.1 google","set-cookie":"GAESA=CpwBMDA1ZWI2OTc0Y2Y2NGQ1MDIzY2IyZjkyYTYzMDJjYmI5ZWYzOTdmMzE0YmE4ZTI5ZmYzZmMwNzRkMTg0YjY0Z
+⚡️  [log] - [API] Native response: 401
+WebContent[2473] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [AutoSync] No user logged in, skipping sync
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Reporter disconnected. { function=sendMessage, reporterID=10582799417345 }
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x1351ca620 h=-&- v=-&- _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515ea00.minX == 0   (active, names: '|':_TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505db80 )>",
+    "<NSAutoresizingMaskLayoutConstraint:0x1351ca670 h=-&- v=-&- H:[_TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515ea00]-(0)-|   (active, names: '|':_TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505db80 )>",
+    "<NSLayoutConstraint:0x1351c9e00 _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515ea00.width == _UIButtonBarButton:0x13505de00.width   (active)>",
+    "<NSLayoutConstraint:0x1351ca4e0 '_UITemporaryLayoutWidth' _TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505db80.width == 0   (active)>",
+    "<NSLayoutConstraint:0x1351c9f40 'IB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x135259180]   (active, names: '|':_UIButtonBarButton:0x13505de00 )>",
+    "<NSLayoutConstraint:0x1351c9f90 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x135259180]-(8)-|   (active, names: '|':_UIButtonBarButton:0x13505de00 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x1351c9f90 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x135259180]-(8)-|   (active, names: '|':_UIButtonBarButton:0x13505de00 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x1351cb930 h=-&- v=-&- _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515ee00.minX == 0   (active, names: '|':_TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505d680 )>",
+    "<NSAutoresizingMaskLayoutConstraint:0x1351cb980 h=-&- v=-&- H:[_TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515ee00]-(0)-|   (active, names: '|':_TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505d680 )>",
+    "<NSLayoutConstraint:0x1351cb1b0 _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515ee00.width == _UIButtonBarButton:0x13505d900.width   (active)>",
+    "<NSLayoutConstraint:0x1351cb7f0 '_UITemporaryLayoutWidth' _TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505d680.width == 0   (active)>",
+    "<NSLayoutConstraint:0x1351cb2f0 'IB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x135259500]   (active, names: '|':_UIButtonBarButton:0x13505d900 )>",
+    "<NSLayoutConstraint:0x1351cb340 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x135259500]-(8)-|   (active, names: '|':_UIButtonBarButton:0x13505d900 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x1351cb340 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x135259500]-(8)-|   (active, names: '|':_UIButtonBarButton:0x13505d900 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x135318500 h=-&- v=-&- _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515f200.minX == 0   (active, names: '|':_TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505f200 )>",
+    "<NSAutoresizingMaskLayoutConstraint:0x135318550 h=-&- v=-&- H:[_TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515f200]-(0)-|   (active, names: '|':_TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505f200 )>",
+    "<NSLayoutConstraint:0x134d208c0 _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x13515f200.width == _UIButtonBarButton:0x13505d400.width   (active)>",
+    "<NSLayoutConstraint:0x1353183c0 '_UITemporaryLayoutWidth' _TtGC5UIKit22UICorePlatformViewHostGVS_32PlatformViewRepresentableAdaptorVS_P10$18f41c20020ButtonRepresentation__:0x13505f200.width == 0   (active)>",
+    "<NSLayoutConstraint:0x134d22e90 'IB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x135259880]   (active, names: '|':_UIButtonBarButton:0x13505d400 )>",
+    "<NSLayoutConstraint:0x134d22a30 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x135259880]-(8)-|   (active, names: '|':_UIButtonBarButton:0x13505d400 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x134d22a30 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x135259880]-(8)-|   (active, names: '|':_UIButtonBarButton:0x13505d400 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 53A267C3-83FE-46B4-83C8-B88C80D4271D
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 53A267C3-83FE-46B4-83C8-B88C80D4271D
+⚡️  To Native ->  CapacitorHttp request 114914678
+⚡️  [log] - [API] POST https://fayaflex.com/api/login (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/login
+⚡️  TO JS {"status":200,"headers":{"alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","strict-transport-security":"max-age=63072000; includeSubDomains","etag":"W\/\"280-fXi\/zCU91wsBxooQHdeoS5pHfR0\"","content-length":"640","server":"Google Frontend","co
+⚡️  [log] - [API] Native response: 200
+⚡️  [error] - [AuthStorage] Failed to set token in native storage: {"code":"UNIMPLEMENTED"}
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  CapacitorHttp request 114914679
+⚡️  TO JS {"status":200,"headers":{"date":"Tue, 13 Jan 2026 15:53:42 GMT","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"1b5-i0LfPWIvTUpDy+Sd6VPbreqPbBc\"","conte
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/teams
+⚡️  To Native ->  CapacitorHttp request 114914680
+⚡️  To Native ->  App addListener 114914681
+⚡️  To Native ->  App removeListener 114914682
+⚡️  TO JS {"status":200,"headers":{"x-cloud-trace-context":"59a3017f17de4ee6d4be596c0f463b46","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","content-length":"1401","etag":"W\/\"579-0mvjjgx2jt6HEoO0J4kcznOI7bs\"","alt-svc":"h3=\":443\"; m
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+⚡️  To Native ->  CapacitorHttp request 114914683
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/town_8030233 (native: true)
+⚡️  To Native ->  ⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/town_8030233
+CapacitorHttp request 114914684
+⚡️  To Native ->  CapacitorHttp request 114914685
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=1&year=2026&scope=town&locationId=town_8030233 (native: true)
+⚡️  To Native ->  CapacitorHttp request 114914686
+⚡️  To Native ->  CapacitorHttp request 114914687
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=1&year=2026&scope=town&locationId=town_8030233
+⚡️  To Native ->  CapacitorHttp request 114914688
+⚡️  To Native ->  CapacitorHttp request 114914689
+⚡️  To Native ->  CapacitorHttp request 114914690
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications
+⚡️  TO JS {"headers":{"date":"Tue, 13 Jan 2026 15:53:43 GMT","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"524f-JDdUobh9pg7I2FfwS7awXLyAc0Q\"","content-length":"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"x-cloud-trace-context":"29e0b5d1d918ba0b1b8dd0d2e1244855","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","content-length":"70","etag":"W\/\"46-hzBdnvMoMPVFeWkil6FrLEeqUAw\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"headers":{"x-cloud-trace-context":"ea4166ad9445307e1b8dd0d2e1244087","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","content-length":"2","etag":"W\/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\"","alt-svc":"h3=\":443\"; ma=259
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"headers":{"date":"Tue, 13 Jan 2026 15:53:44 GMT","x-powered-by":"Express","etag":"W\/\"120-dwLpf4kNSDKlHgM6M6ZrYTX5tko\"","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","conte
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"headers":{"content-type":"application\/json; charset=utf-8","etag":"W\/\"14-Wch7iYZeEKyWFEciwo84C0RboW8\"","via":"1.1 google","content-length":"20","date":"Tue, 13 Jan 2026 15:53:44 GMT","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 114914691
+⚡️  [log] - [AutoSync] Starting automatic health sync...
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [AutoSync] Provider: apple_health
+⚡️  [log] - [AutoSync] Fetching health data from 2026-01-06T15:53:44.208Z to 2026-01-13T15:53:44.208Z
+⚡️  To Native ->  HealthKit getHealthData 114914692
+⚡️  [log] - [HealthService] Fetching health data from 2026-01-06T15:53:44.208Z to 2026-01-13T15:53:44.208Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [AutoSync] No health data to sync
+⚡️  TO JS {"status":200,"headers":{"content-type":"application\/json; charset=utf-8","etag":"W\/\"72-v7sznRRupx5Kyr++FacGXAj10ek\"","via":"1.1 google","date":"Tue, 13 Jan 2026 15:53:44 GMT","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","content-leng
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"data":{"badgeCount":7,"calories":19597,"caloriesTrend":-41,"steps":152834,"percentile":17,"workouts":13,"rank":1,"personalBests":{"daily_score":27658,"daily_steps":25922,"daily_calories":1926},"totalActiveUsers":6,"currentYear":2026,"stepsTr
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","via":"1.1 google","x-cloud-trace-context":"8eba279762aef7081b8dd0d2e124482d","x-powered-by":"Express","content-len
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/region_za_gauteng (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/region_za_gauteng
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=1&year=2026&scope=region&locationId=region_za_gauteng (native: true)
+⚡️  To Native ->  CapacitorHttp request 114914693
+⚡️  To Native ->  ⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=1&year=2026&scope=region&locationId=region_za_gauteng
+CapacitorHttp request 114914694
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/region_za_gauteng","status":200,"data":{"type":"region","name":"Gauteng","id":"region_za_gauteng","sortOrder":0,"isoCode":null,"parentId":"country_za"},"headers":{"strict-transport-security":"max-age=63072000
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=1&year=2026&scope=region&locationId=region_za_gauteng","status":200,"data":{"rank":1,"total":1},"headers":{"strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  To Native ->  CapacitorHttp request 114914695
+⚡️  To Native ->  HealthKit isAvailable 114914696
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/devices","status":200,"data":[{"lastSyncAt":"2026-01-13T15:49:41.276Z","accessToken":null,"provider":"apple_health","userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","id":"94da883b-bf43-479b-b92e-0e24d6e7a6b3","createdAt"
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  To Native ->  CapacitorHttp request 114914697
+⚡️  To Native ->  CapacitorHttp request 114914698
+⚡️  To Native ->  CapacitorHttp request 114914699
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/activities","status":200,"data":[{"workoutType":"Health Sync (1 workout)","source":"apple_health","attachmentUrl":null,"userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","id":"6cb5b7b9-8585-4787-888a-ef803a505d11","created
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories (native: true)
+⚡️  To Native ->  CapacitorHttp request 114914700
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/progress\/chart","status":200,"data":[{"date":"Week 2","calories":8642},{"date":"Week 1","calories":10955}],"headers":{"strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/stats\/daily-breakdown?metric=calories","status":200,"data":[{"value":2767,"fullDate":"2026-01-01","date":"1"},{"value":2443,"fullDate":"2026-01-02","date":"2"},{"value":2966,"fullDate":"2026-01-03","date":"3"},{"value"
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","status":200,"data":{"rank":1,"percentile":17,"personalBests":{"daily_calories":1926,"daily_score":27658,"daily_steps":25922},"workouts":13,"badgeCount":7,"currentMonth":1,"stepsTrend":-51,"caloriesTre
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges/check
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/profile/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/challenges
+⚡️  To Native ->  CapacitorHttp request 114914701
+⚡️  To Native ->  CapacitorHttp request 114914702
+⚡️  To Native ->  CapacitorHttp request 114914703
+⚡️  To Native ->  CapacitorHttp request 114914704
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/badges","status":200,"data":[{"metadata":{"workouts":17},"userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","id":"1fa881cf-4df5-45bd-9731-e4f4e79c6d55","badgeType":"workouts_10","earnedAt":"2025-12-31T19:49:45.749Z"},{"met
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"totalCalories":19597,"totalSteps":152834,"currentStreak":44,"totalWorkouts":44},"headers":{"strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","via":"1.1 google","x-clou
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[{"createdAt":"2026-01-01T19:18:28.967Z","opponent":{"continentId":"continent_af","lastName":"Myakayaka","password":"b40d0744fbbf8a7ef1ff902b4a3f60e0d716213f13ee5fe9246f47590ab938c4b019700600eb447865ed2c805b0c43da9245c4aa90119fad1d552ec40174a401.bd
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"newBadges":[],"totalBadges":7},"headers":{"strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","via":"1.1 google","x-cloud-trace-context":"71e1a408ef725f4197c2af255d299bb
+⚡️  [log] - [API] Native response: 200
+⚡️  [warn] - Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+59638328 Plugin query method called
+(501) Invalidation handler invoked, clearing connection
+(501) personaAttributesForPersonaType for type:0 failed with error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process." UserInfo={NSDebugDescription=The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process.}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=72, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=72, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  [log] - [Upload] Compressed image: 9075095 bytes -> ~407172 bytes
+⚡️  To Native ->  CapacitorHttp request 114914705
+⚡️  TO JS {"status":413,"headers":{"date":"Tue, 13 Jan 2026 15:54:37 GMT","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"26-9OXe+kVecYqf1YxXhLh+N9hDIoY\"","conten
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=72, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=72, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+<<<< CMPhotoDecompressionContainer+JFIF >>>> signalled err=-16990 at <>:4622
+createImageBlock:3029: *** ERROR: CGImageBlockCreate {0, 0, 160, 120} - data is NULL
+callDecodeImage:2411: *** ERROR: decodeImageImp failed - NULL _blockArray
+<<<< CMPhotoDecompressionContainer+JFIF >>>> signalled err=-16990 at <>:4622
+createImageBlock:3029: *** ERROR: CGImageBlockCreate {0, 0, 160, 120} - data is NULL
+callDecodeImage:2411: *** ERROR: decodeImageImp failed - NULL _blockArray
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+WebContent[2473] The sandbox in this process does not allow access to RunningBoard.
+WebContent[2473] Handshake aborted as the connection has been invalidated
+WebContent[2473] makeImagePlus:3798: *** ERROR: 'HJPG'-_reader->initImage[0] failed err=-39
+⚡️  [log] - [Upload] Compressed image: 2889661 bytes -> ~198462 bytes
+⚡️  To Native ->  CapacitorHttp request 114914706
+⚡️  TO JS {"headers":{"date":"Tue, 13 Jan 2026 15:55:11 GMT","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","content-length":"38","etag":"W\/\"26-9OXe+kVecYqf1YxXhLh+N9hDIoY\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000
