@@ -18,13 +18,19 @@ interface DeviceConnection {
 export function HealthDevices() {
   const { toast } = useToast();
   const [nativeAvailable, setNativeAvailable] = useState(false);
-  const [nativePermissionsGranted, setNativePermissionsGranted] = useState(false);
   const [isNativePlatform, setIsNativePlatform] = useState(false);
   const [providerName, setProviderName] = useState<'apple_health' | 'android_health' | 'huawei_health'>('android_health');
 
   const { data: devices, isLoading } = useQuery<DeviceConnection[]>({
     queryKey: ['/api/devices']
   });
+
+  // Derive connection state from server data - this persists across page visits
+  const getDeviceConnection = () => {
+    return devices?.find(d => d.provider === providerName);
+  };
+  
+  const isConnected = getDeviceConnection()?.isConnected ?? false;
 
   useEffect(() => {
     checkNativeHealth();
@@ -49,19 +55,7 @@ export function HealthDevices() {
 
     const available = await healthService.isAvailable();
     setNativeAvailable(available);
-
-    if (available) {
-      // iOS: Skip permission check - Apple doesn't allow checking authorization status
-      // Android: Can check permissions
-      if (provider !== 'apple_health') {
-        const hasPermissions = await healthService.checkPermissions();
-        setNativePermissionsGranted(hasPermissions);
-      } else {
-        // On iOS, we don't know if permissions are granted until we try to read data
-        // Assume false (not connected) until user explicitly connects
-        setNativePermissionsGranted(false);
-      }
-    }
+    // Connection status is now determined by server data (devices query), not local state
   }
 
   const connectNativeMutation = useMutation({
@@ -161,7 +155,7 @@ export function HealthDevices() {
         });
       }
       
-      setNativePermissionsGranted(true);
+      // Refresh devices to update isConnected state from server
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
@@ -263,7 +257,7 @@ export function HealthDevices() {
         title: 'Disconnected',
         description: `Disconnected from ${displayName}`,
       });
-      setNativePermissionsGranted(false);
+      // Refresh devices to update isConnected state from server
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
     },
     onError: (error) => {
@@ -285,10 +279,6 @@ export function HealthDevices() {
         variant: 'destructive'
       });
     }
-  };
-
-  const getDeviceConnection = () => {
-    return devices?.find(d => d.provider === providerName);
   };
 
   const formatLastSync = (lastSyncAt: Date | null) => {
@@ -362,7 +352,7 @@ export function HealthDevices() {
                 <CardDescription>{description}</CardDescription>
               </div>
             </div>
-            {nativePermissionsGranted ? (
+            {isConnected ? (
               <Badge className="gap-1" data-testid="badge-native-connected">
                 <CheckCircle className="h-3 w-3" />
                 Connected
@@ -412,7 +402,7 @@ export function HealthDevices() {
             </div>
           ) : (
             <>
-              {nativePermissionsGranted && getDeviceConnection()?.lastSyncAt && (
+              {isConnected && getDeviceConnection()?.lastSyncAt && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <RefreshCw className="h-4 w-4" />
                   <span data-testid="text-native-last-sync">
@@ -422,7 +412,7 @@ export function HealthDevices() {
               )}
               
               <div className="flex gap-2 flex-wrap">
-                {!nativePermissionsGranted ? (
+                {!isConnected ? (
                   <Button
                     onClick={() => connectNativeMutation.mutate()}
                     disabled={connectNativeMutation.isPending}
@@ -466,7 +456,7 @@ export function HealthDevices() {
                 )}
               </div>
 
-              {nativePermissionsGranted && (
+              {isConnected && (
                 <div className="rounded-md bg-muted p-4 space-y-2">
                   <h4 className="font-medium text-sm">How it works:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
