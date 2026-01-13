@@ -34,8 +34,7 @@ export function TeamChat({ teamId, teamName }: TeamChatProps) {
   const { data: messages = [], isLoading, refetch } = useQuery<TeamMessageWithUser[]>({
     queryKey: ["/api/teams", teamId, "messages"],
     queryFn: async () => {
-      const res = await fetch(`/api/teams/${teamId}/messages`);
-      if (!res.ok) throw new Error("Failed to fetch messages");
+      const res = await apiRequest("GET", `/api/teams/${teamId}/messages`);
       return res.json();
     },
     refetchInterval: 10000,
