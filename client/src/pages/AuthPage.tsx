@@ -12,6 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
 import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
 import { CitySearch } from "@/components/CitySearch";
+import { SiGoogle, SiApple } from "react-icons/si";
+import { signInWithGoogle, signInWithApple, isSocialLoginAvailable } from "@/lib/socialAuth";
+import { Capacitor } from "@capacitor/core";
 
 export default function AuthPage() {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -218,6 +221,55 @@ export default function AuthPage() {
     });
   };
 
+  // Social login handlers
+  const [socialLoginPending, setSocialLoginPending] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    setSocialLoginPending(true);
+    setLoginError("");
+    try {
+      const result = await signInWithGoogle();
+      queryClient.setQueryData(["/api/auth/user"], result.user);
+      // Store token for mobile apps
+      if (result.token && Capacitor.isNativePlatform()) {
+        const { Preferences } = await import("@capacitor/preferences");
+        await Preferences.set({ key: "auth_token", value: result.token });
+      }
+      toast({
+        title: "Login successful!",
+        description: "Welcome to FayaFlex!",
+      });
+      setLocation("/");
+    } catch (error: any) {
+      setLoginError(error.message || "Google Sign-In failed");
+    } finally {
+      setSocialLoginPending(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setSocialLoginPending(true);
+    setLoginError("");
+    try {
+      const result = await signInWithApple();
+      queryClient.setQueryData(["/api/auth/user"], result.user);
+      // Store token for mobile apps
+      if (result.token && Capacitor.isNativePlatform()) {
+        const { Preferences } = await import("@capacitor/preferences");
+        await Preferences.set({ key: "auth_token", value: result.token });
+      }
+      toast({
+        title: "Login successful!",
+        description: "Welcome to FayaFlex!",
+      });
+      setLocation("/");
+    } catch (error: any) {
+      setLoginError(error.message || "Apple Sign-In failed");
+    } finally {
+      setSocialLoginPending(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-green-50/50 dark:bg-green-950/20 pt-8 pb-12 px-4">
       <div className="w-full max-w-md mb-6">
@@ -373,6 +425,49 @@ export default function AuthPage() {
                   <Fingerprint className="w-4 h-4" />
                   {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
                 </Button>
+
+                {/* Social Login Buttons - Only shown when properly configured */}
+                {(isSocialLoginAvailable().google || isSocialLoginAvailable().apple) && (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-300 dark:border-gray-700" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {isSocialLoginAvailable().apple && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          data-testid="button-apple-login"
+                          className="flex-1 gap-2 rounded-[10px] border-gray-300 dark:border-gray-700"
+                          onClick={handleAppleLogin}
+                          disabled={socialLoginPending}
+                        >
+                          <SiApple className="w-4 h-4" />
+                          Apple
+                        </Button>
+                      )}
+                      {isSocialLoginAvailable().google && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          data-testid="button-google-login"
+                          className="flex-1 gap-2 rounded-[10px] border-gray-300 dark:border-gray-700"
+                          onClick={handleGoogleLogin}
+                          disabled={socialLoginPending}
+                        >
+                          <SiGoogle className="w-4 h-4" />
+                          Google
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <p className="text-center text-sm text-muted-foreground">
                   Don't have an account?{" "}

@@ -63,7 +63,7 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   getLegacyUserByFirstName(firstName: string): Promise<User | undefined>;
   getLegacyUserByFullName(firstName: string, lastName: string): Promise<User | undefined>;
-  createUser(user: Partial<UpsertUser> & { username: string; password: string }): Promise<User>;
+  createUser(user: Partial<UpsertUser> & { username: string; password?: string | null }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
   deleteUser(id: string): Promise<void>;
@@ -438,17 +438,21 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(userData: Partial<UpsertUser> & { username: string; password: string }): Promise<User> {
+  async createUser(userData: Partial<UpsertUser> & { username: string; password?: string | null }): Promise<User> {
     const [user] = await db
       .insert(users)
       .values({
         username: userData.username,
-        password: userData.password,
+        password: userData.password || null, // Allow null for OAuth users
         email: userData.email || `${userData.username}@temp.local`, // Email is required, use temp if not provided
         firstName: userData.firstName,
         lastName: userData.lastName,
         profileImageUrl: userData.profileImageUrl,
         avatarId: userData.avatarId,
+        continentId: userData.continentId,
+        countryId: userData.countryId,
+        regionId: userData.regionId,
+        townId: userData.townId,
       })
       .returning();
     return user;

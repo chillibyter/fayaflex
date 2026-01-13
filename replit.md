@@ -120,6 +120,17 @@ Preferred communication style: Simple, everyday language.
 - Uses 5-minute cooldown between syncs to prevent excessive API calls
 - Works with Apple Health, Android Health Connect, and Huawei Health Kit
 
+**Social Login Backend** (January 13, 2026)
+- Backend endpoints created for Google and Apple OAuth verification
+- POST /api/auth/google - Verifies Google ID token using google-auth-library
+- POST /api/auth/apple - Verifies Apple ID token using apple-signin-auth
+- Modified user storage to allow null passwords for OAuth-authenticated users
+- Passport deserializeUser updated to allow OAuth users without passwords
+- Frontend social login buttons conditionally shown when properly configured
+- Requires VITE_GOOGLE_CLIENT_ID for web-based Google Sign-In
+- Apple Sign-In requires native SDK setup in Xcode (Sign in with Apple capability)
+- Note: Full social login requires additional native SDK integration for mobile apps
+
 ## Branding
 
 - **App Name**: FayaFlex

@@ -10,6 +10,8 @@ import { User, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import connectPg from "connect-pg-simple";
 import { sendPasswordResetEmail } from "./emailService";
+import { OAuth2Client } from "google-auth-library";
+import appleSignin from "apple-signin-auth";
 
 declare global {
   namespace Express {
@@ -195,9 +197,10 @@ export function setupAuth(app: Express) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await storage.getUser(id);
-      if (!user || !user.username || !user.password) {
+      if (!user || !user.username) {
         return done(null, false);
       }
+      // Allow OAuth users (password can be null for social login users)
       done(null, user);
     } catch (error) {
       done(null, false);
@@ -534,6 +537,151 @@ export function setupAuth(app: Express) {
     } catch (error) {
       console.error("Error validating reset token:", error);
       res.status(500).json({ valid: false, message: "An error occurred" });
+    }
+  });
+
+  // Google OAuth endpoint - verifies Google ID token and creates/logs in user
+  app.post("/api/auth/google", async (req, res, next) => {
+    try {
+      const { idToken } = req.body;
+      
+      if (!idToken) {
+        return res.status(400).json({ message: "ID token is required" });
+      }
+
+      const googleClientId = process.env.GOOGLE_CLIENT_ID;
+      if (!googleClientId) {
+        console.error("[Google Auth] GOOGLE_CLIENT_ID not configured");
+        return res.status(500).json({ message: "Google Sign-In is not configured" });
+      }
+
+      // Verify the Google ID token
+      const client = new OAuth2Client(googleClientId);
+      let payload;
+      try {
+        const ticket = await client.verifyIdToken({
+          idToken,
+          audience: googleClientId,
+        });
+        payload = ticket.getPayload();
+      } catch (error) {
+        console.error("[Google Auth] Token verification failed:", error);
+        return res.status(401).json({ message: "Invalid Google token" });
+      }
+
+      if (!payload || !payload.email) {
+        return res.status(401).json({ message: "Could not get user info from Google" });
+      }
+
+      const { email, given_name, family_name, picture, sub: googleId } = payload;
+      console.log(`[Google Auth] Verified user: ${email}`);
+
+      // Find or create user
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Create new user with Google info
+        const username = email.split("@")[0] + "_" + randomBytes(4).toString("hex");
+        user = await storage.createUser({
+          username,
+          email,
+          firstName: given_name || undefined,
+          lastName: family_name || undefined,
+          profileImageUrl: picture || undefined,
+          // OAuth users don't have passwords - they authenticate via social provider
+        });
+        console.log(`[Google Auth] Created new user: ${user.id}`);
+      } else {
+        // Update user profile with latest Google info if needed
+        if (!user.profileImageUrl && picture) {
+          await storage.updateUser(user.id, { profileImageUrl: picture });
+        }
+        console.log(`[Google Auth] Existing user found: ${user.id}`);
+      }
+
+      // Create session and return JWT token
+      req.login(user, (err) => {
+        if (err) {
+          console.error("[Google Auth] Session error:", err);
+          return next(err);
+        }
+        const token = generateAuthToken(user.id);
+        res.status(200).json({ ...sanitizeUser(user), token });
+      });
+    } catch (error) {
+      console.error("[Google Auth] Error:", error);
+      res.status(500).json({ message: "Authentication failed" });
+    }
+  });
+
+  // Apple Sign In endpoint - verifies Apple ID token and creates/logs in user
+  app.post("/api/auth/apple", async (req, res, next) => {
+    try {
+      const { idToken, user: appleUserData } = req.body;
+      
+      if (!idToken) {
+        return res.status(400).json({ message: "ID token is required" });
+      }
+
+      // Verify the Apple ID token
+      let payload;
+      try {
+        payload = await appleSignin.verifyIdToken(idToken, {
+          audience: "com.fayaflex.app", // Your app bundle ID
+          ignoreExpiration: false,
+        });
+      } catch (error) {
+        console.error("[Apple Auth] Token verification failed:", error);
+        return res.status(401).json({ message: "Invalid Apple token" });
+      }
+
+      if (!payload || !payload.sub) {
+        return res.status(401).json({ message: "Could not get user info from Apple" });
+      }
+
+      const { email, sub: appleUserId } = payload;
+      console.log(`[Apple Auth] Verified user: ${email || appleUserId}`);
+
+      // Apple only sends user info (name, email) on first sign-in
+      // After that, only sub (user ID) is available
+      const firstName = appleUserData?.name?.firstName || null;
+      const lastName = appleUserData?.name?.lastName || null;
+
+      // Find user by Apple ID (stored in email field as fallback) or email
+      let user = email ? await storage.getUserByEmail(email) : null;
+      
+      if (!user) {
+        // Try to find by Apple user ID stored in a special field
+        // For now, create a new user
+        const username = (email?.split("@")[0] || "apple_user") + "_" + randomBytes(4).toString("hex");
+        user = await storage.createUser({
+          username,
+          email: email || `${appleUserId}@privaterelay.appleid.com`,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
+          // OAuth users don't have passwords - they authenticate via Apple
+        });
+        console.log(`[Apple Auth] Created new user: ${user.id}`);
+      } else {
+        // Update user profile with name if provided and not already set
+        if (firstName && !user.firstName) {
+          await storage.updateUser(user.id, { firstName, lastName });
+        }
+        console.log(`[Apple Auth] Existing user found: ${user.id}`);
+      }
+
+      // Create session and return JWT token
+      req.login(user, (err) => {
+        if (err) {
+          console.error("[Apple Auth] Session error:", err);
+          return next(err);
+        }
+        const token = generateAuthToken(user.id);
+        res.status(200).json({ ...sanitizeUser(user), token });
+      });
+    } catch (error) {
+      console.error("[Apple Auth] Error:", error);
+      res.status(500).json({ message: "Authentication failed" });
     }
   });
 }
