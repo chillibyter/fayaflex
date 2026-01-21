@@ -110,14 +110,14 @@ export default function Teams() {
 
   const shareViaWhatsApp = () => {
     if (!selectedTeam?.inviteCode) return;
-    const appUrl = window.location.origin;
+    const appUrl = "https://www.fayaflex.com";
     const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nInvite Code: ${selectedTeam.inviteCode}\n\nDownload the app: ${appUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const shareViaGeneric = async () => {
     if (!selectedTeam?.inviteCode) return;
-    const appUrl = window.location.origin;
+    const appUrl = "https://www.fayaflex.com";
     const message = `Join my fitness team "${selectedTeam.name}"!\n\nInvite Code: ${selectedTeam.inviteCode}\n\n${appUrl}`;
     if (navigator.share) {
       try {
