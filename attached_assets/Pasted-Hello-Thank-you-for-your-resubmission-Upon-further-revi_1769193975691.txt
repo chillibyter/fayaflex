@@ -1,0 +1,60 @@
+Hello,
+
+Thank you for your resubmission. Upon further review, we identified additional issues that need your attention. See below for more information.
+
+If you have any questions, we are here to help. Reply to this message in App Store Connect and let us know.
+
+
+Review Environment
+
+Submission ID: e5ea8a35-e44d-4fb2-b722-9fc8fd7465c7
+Review date: January 22, 2026
+Version reviewed: 1.0
+
+
+Guideline 4.3(a) - Design - Spam
+
+
+We noticed your app shares a similar binary, metadata, and/or concept as other apps you already submitted to the App Store, with only minor differences. 
+
+Submitting similar or repackaged apps is a form of spam that creates clutter and makes it difficult for users to discover new apps.
+
+Next Steps
+
+Since we do not accept spam apps on the App Store, we encourage you to review your app concept and submit a unique app with distinct content and functionality. 
+
+Resources
+
+Some factors that contribute to a spam rejection may include:
+
+- Submitting an app with the same source code or assets as other apps already submitted to the App Store
+- Creating and submitting multiple similar apps using a repackaged app template 
+- Purchasing an app template with problematic code from a third party 
+- Submitting several similar apps across multiple accounts
+
+Learn more about our requirements to prevent spam in App Review Guideline 4.3(a).
+
+
+Guideline 2.5.1 - Performance - Software Requirements
+
+
+The app uses the HealthKit or CareKit APIs but does not clearly identify the HealthKit and CareKit functionality in the app's user interface.
+
+Apps using these APIs should be clearly indicated to provide transparency and valuable information to users. 
+
+Next Steps
+
+To resolve this issue, it would appropriate to clearly identify the HealthKit and CareKit functionality in the app's user interface.
+
+Note that Motion & Fitness Activity tracking through the Core Motion framework is not a part of the HealthKit framework. If the app only uses Core Motion framework functionality, it would be appropriate to remove references to the HealthKit framework from the binary.
+
+Resources
+
+Learn more about software requirements in guideline 2.5.1.
+
+Support
+
+- Reply to this message in your preferred language if you need assistance. If you need additional support, use the Contact Us module.
+- Consult with fellow developers and Apple engineers on the Apple Developer Forums.
+- Request an App Review Appointment at Meet with Apple to discuss your app's review. Appointments subject to availability during your local business hours on Tuesdays and Thursdays.
+- Provide feedback on this message and your review experience by completing a short survey.

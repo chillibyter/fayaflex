@@ -328,7 +328,7 @@ export function HealthDevices() {
   const displayName = isIOS ? 'Apple Health' : isHuawei ? 'Huawei Health' : 'Health Connect';
   const Icon = isIOS ? Smartphone : Activity;
   const description = isIOS 
-    ? 'Connect to Apple Health to automatically sync your fitness data'
+    ? 'Powered by HealthKit - Sync steps, calories, and workouts from Apple Health'
     : isHuawei 
       ? 'Connect to Huawei Health to automatically sync your fitness data'
       : 'Connect to Health Connect to automatically sync your fitness data';
@@ -350,6 +350,11 @@ export function HealthDevices() {
               <div>
                 <CardTitle>{displayName}</CardTitle>
                 <CardDescription>{description}</CardDescription>
+                {isIOS && (
+                  <Badge variant="secondary" className="mt-1 text-xs" data-testid="badge-healthkit">
+                    HealthKit Integration
+                  </Badge>
+                )}
               </div>
             </div>
             {isConnected ? (
@@ -460,10 +465,21 @@ export function HealthDevices() {
                 <div className="rounded-md bg-muted p-4 space-y-2">
                   <h4 className="font-medium text-sm">How it works:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>FayaFlex reads your daily steps and calories from {displayName}</li>
-                    <li>Your data stays on your device until you sync</li>
-                    <li>Tap "Sync Now" whenever you want to update your activities</li>
-                    <li>Data syncs for the last 30 days</li>
+                    {isIOS ? (
+                      <>
+                        <li>FayaFlex uses Apple HealthKit to read your daily steps and calories</li>
+                        <li>Your HealthKit data stays on your device until you sync</li>
+                        <li>Tap "Sync Now" to upload your HealthKit data to FayaFlex</li>
+                        <li>HealthKit data syncs for the last 30 days</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>FayaFlex reads your daily steps and calories from {displayName}</li>
+                        <li>Your data stays on your device until you sync</li>
+                        <li>Tap "Sync Now" whenever you want to update your activities</li>
+                        <li>Data syncs for the last 30 days</li>
+                      </>
+                    )}
                   </ul>
                 </div>
               )}
