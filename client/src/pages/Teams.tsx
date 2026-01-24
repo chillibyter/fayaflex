@@ -60,9 +60,14 @@ export default function Teams() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const { data: teams = [], isLoading } = useQuery<EnrichedTeam[]>({
+  const { data: teams = [], isLoading, isError, error } = useQuery<EnrichedTeam[]>({
     queryKey: ["/api/teams"],
   });
+
+  // Show error state if query failed
+  if (isError) {
+    console.error('[Teams] Query error:', error);
+  }
 
   const joinTeamMutation = useMutation({
     mutationFn: async (code: string) => {
@@ -217,6 +222,17 @@ export default function Teams() {
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
+        ) : isError ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Unable to load teams</h3>
+              <p className="text-muted-foreground mb-6">Please try refreshing the page or check your connection.</p>
+              <Button onClick={() => window.location.reload()}>
+                Refresh Page
+              </Button>
+            </CardContent>
+          </Card>
         ) : teams.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">

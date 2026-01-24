@@ -60,7 +60,7 @@ export default function TeamCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
-                {memberAvatars.map((member, idx) => (
+                {memberAvatars.slice(0, 3).map((member) => (
                   <Avatar key={member.id} className="h-8 w-8 border-2 border-white/30">
                     {member.profileImageUrl ? (
                       <AvatarImage src={member.profileImageUrl} alt="" />
@@ -68,11 +68,17 @@ export default function TeamCard({
                       (() => {
                         const avatar = FITNESS_AVATARS.find(a => a.id === member.avatarId);
                         if (avatar) {
-                          const Icon = avatar.icon;
+                          const spriteSize = 96;
                           return (
-                            <div className={`flex items-center justify-center w-full h-full bg-gradient-to-br ${avatar.gradient}`}>
-                              <Icon className="h-4 w-4 text-white" />
-                            </div>
+                            <div 
+                              className="w-full h-full"
+                              style={{
+                                backgroundImage: `url(/avatars-sprite.webp)`,
+                                backgroundPosition: `-${avatar.col * spriteSize}px -${avatar.row * spriteSize}px`,
+                                backgroundSize: `${spriteSize * 5}px ${spriteSize * 5}px`,
+                                backgroundColor: avatar.color,
+                              }}
+                            />
                           );
                         }
                         return <AvatarFallback className="text-xs bg-white/20 text-white">{member.firstName?.[0] || '?'}</AvatarFallback>;
