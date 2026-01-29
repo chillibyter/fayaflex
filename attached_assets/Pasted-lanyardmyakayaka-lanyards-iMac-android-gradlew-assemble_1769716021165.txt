@@ -1,0 +1,52 @@
+lanyardmyakayaka@lanyards-iMac android % ./gradlew assembleDebug
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:parseDebugLocalResources FAILED
+[Fatal Error] network_security_config.xml:1:1: Content is not allowed in prolog.
+
+> Task :app:mergeDebugResources FAILED
+
+[Incubating] Problems report is available at: file:///Users/lanyardmyakayaka/FitScoreSync-2/android/build/reports/problems/problems-report.html
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:parseDebugLocalResources'.
+> A failure occurred while executing com.android.build.gradle.internal.res.ParseLibraryResourcesTask$ParseResourcesRunnable
+   > Failed to parse XML file '/Users/lanyardmyakayaka/FitScoreSync-2/android/app/build/intermediates/packaged_res/debug/packageDebugResources/xml/network_security_config.xml'
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:mergeDebugResources'.
+> A failure occurred while executing com.android.build.gradle.internal.res.ResourceCompilerRunnable
+   > Resource compilation failed (Failed to compile resource file: /Users/lanyardmyakayaka/FitScoreSync-2/android/app/src/main/res/xml/network_security_config.xml: . Cause: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[1,1]
+     Message: Content is not allowed in prolog.). Check logs for more details.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 3s
+61 actionable tasks: 61 executed
+lanyardmyakayaka@lanyards-iMac andr
