@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.fayaflex.app',
+  appId: 'com.FayaFlex.app',
   appName: 'FayaFlex',
   webDir: 'empty-web-dir',
   server: {
