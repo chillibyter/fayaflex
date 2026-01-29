@@ -1,0 +1,943 @@
+2026-01-12 17:13:43.913  2159-2399  Finsky                  com.android.vending                  E  [70] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-12 17:13:43.960  2159-2376  Finsky                  com.android.vending                  E  [55] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-12 17:14:34.484 30634-30676 cr_AnrCollector         pid-30634                            E  Unable to write to the ANR variations file: java.nio.file.NoSuchFileException: /data/user/0/com.FayaFlex.App/cache/Crash Reports/ANR Variations/77b99359f7d41b5259312e79683a1ed2
+2026-01-12 17:14:34.496 30634-30675 chromium                pid-30634                            E  [ERROR:net/disk_cache/simple/simple_file_enumerator.cc:21] opendir /data/user/0/com.FayaFlex.App/cache/WebView/Default/HTTP Cache/Code Cache/js: No such file or directory (2)
+2026-01-12 17:14:34.497 30634-30675 chromium                pid-30634                            E  [ERROR:net/disk_cache/simple/simple_file_enumerator.cc:21] opendir /data/user/0/com.FayaFlex.App/cache/WebView/Default/HTTP Cache/Code Cache/wasm: No such file or directory (2)
+2026-01-12 17:21:06.573   688-829   InputDispatcher         system_server                        E  channel 'd775d53 com.FayaFlex.App/com.fayaflex.app.MainActivity' ~ Channel is unrecoverably broken and will be disposed!
+2026-01-12 17:37:51.083  2159-2376  Finsky                  com.android.vending                  E  [55] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-12 17:37:51.087  2159-2417  Finsky                  com.android.vending                  E  [83] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-12 17:39:18.990   688-829   InputDispatcher         system_server                        E  channel 'df6e11 com.FayaFlex.App/com.fayaflex.app.MainActivity' ~ Channel is unrecoverably broken and will be disposed!
+2026-01-27 00:27:06.184 32381-32381 nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+---------------------------- PROCESS STARTED (32381) for package com.FayaFlex.App ----------------------------
+2026-01-27 00:27:06.595 32381-32381 nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~yFndAAZM4xSu9DvuD9NbeA==/com.FayaFlex.App-R-CjNEW_BwJAFhN9d_X_JA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~yFndAAZM4xSu9DvuD9NbeA==/com.FayaFlex.App-R-CjNEW_BwJAFhN9d_X_JA==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-27 00:27:06.637 32381-32381 GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-27 00:27:06.637 32381-32381 GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-27 00:27:06.637 32381-32381 GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-27 00:27:06.637 32381-32381 GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-27 00:27:06.637 32381-32381 GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-27 00:27:06.637 32381-32381 GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-27 00:27:06.637 32381-32381 GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-27 00:27:06.706 32381-32403 DisplayManager          com.FayaFlex.App                     I  Choreographer implicitly registered for the refresh rate.
+2026-01-27 00:27:06.710  2159-2399  Finsky                  com.android.vending                  E  [70] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-27 00:27:06.725  2159-2399  Finsky                  com.android.vending                  E  [70] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-27 00:27:06.769 32381-32381 DesktopExperienceFlags  com.FayaFlex.App                     D  Toggle override initialized to: false
+2026-01-27 00:27:06.803 32381-32403 GFXSTREAM               com.FayaFlex.App                     I  [eglDisplay.cpp(297)] Opening libGLESv1_CM_emulation.so
+2026-01-27 00:27:06.803 32381-32403 GFXSTREAM               com.FayaFlex.App                     I  [eglDisplay.cpp(297)] Opening libGLESv2_emulation.so
+2026-01-27 00:27:06.807 32381-32381 AppCompatDelegate       com.FayaFlex.App                     D  Checking for metadata for AppLocalesMetadataHolderService : Service not found
+2026-01-27 00:27:06.818 32381-32403 HWUI                    com.FayaFlex.App                     W  Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+2026-01-27 00:27:06.818 32381-32403 HWUI                    com.FayaFlex.App                     W  Failed to initialize 101010-2 format, error = EGL_SUCCESS
+2026-01-27 00:27:06.826 32381-32381 ashmem                  com.FayaFlex.App                     E  Pinning is deprecated since Android Q. Please use trim or other methods.
+2026-01-27 00:27:07.365 32381-32381 CompatChangeReporter    com.FayaFlex.App                     D  Compat change id reported: 377864165; UID 10230; state: ENABLED
+2026-01-27 00:27:07.366 32381-32381 DesktopModeFlags        com.FayaFlex.App                     D  Toggle override initialized to: OVERRIDE_UNSET
+2026-01-27 00:27:07.386 32381-32381 om.FayaFlex.App         com.FayaFlex.App                     I  hiddenapi: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (runtime_flags=0, domain=platform, api=unsupported) from Landroidx/appcompat/widget/ViewUtils; (domain=app, TargetSdkVersion=36) using reflection: allowed
+2026-01-27 00:27:07.416 32381-32381 WebViewFactory          com.FayaFlex.App                     I  Loading com.google.android.webview version 143.0.7499.146 (code 749914633)
+2026-01-27 00:27:07.430 32381-32381 ResourcesManager        com.FayaFlex.App                     V  The following library key has been added: ResourcesKey{ mHash=7797d2f9 mResDir=null mSplitDirs=[] mOverlayDirs=[] mLibDirs=[/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk,/data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v36 mCompatInfo={420dpi always-compat} mLoaders=[]}
+2026-01-27 00:27:07.441 32381-32381 om.FayaFlex.App         com.FayaFlex.App                     W  Failed to find entry 'classes.dex': Entry not found
+2026-01-27 00:27:07.443 32381-32381 nativeloader            com.FayaFlex.App                     D  Configuring clns-10 for other apk /data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk. target_sdk_version=36, uses_libraries=ALL, library_path=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/lib/arm64:/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk!/lib/arm64-v8a:/data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand
+2026-01-27 00:27:07.448 32381-32381 ApplicationLoaders      com.FayaFlex.App                     D  Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+2026-01-27 00:27:07.463 32381-32381 om.FayaFlex.App         com.FayaFlex.App                     W  Loading /data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/oat/arm64/base.odex non-executable as it requires an image which we failed to load
+2026-01-27 00:27:07.471 32381-32381 nativeloader            com.FayaFlex.App                     D  Configuring clns-11 for other apk /data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/lib/arm64:/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk!/lib/arm64-v8a:/data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand
+2026-01-27 00:27:07.571 32381-32381 cr_WVCFactoryProvider   com.FayaFlex.App                     I  version=143.0.7499.146 (749914633) minSdkVersion=29 multiprocess=true packageId=2 splits=<none>
+2026-01-27 00:27:07.599 32381-32381 nativeloader            com.FayaFlex.App                     D  Load /data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk!/lib/arm64-v8a/libmonochrome_64.so using class loader ns clns-11 (caller=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk): ok
+2026-01-27 00:27:07.610 32381-32381 nativeloader            com.FayaFlex.App                     D  Load /system/lib64/libwebviewchromium_plat_support.so using class loader ns clns-11 (caller=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk): ok
+2026-01-27 00:27:07.678 32381-32433 chromium                com.FayaFlex.App                     E  [0127/002707.678759:ERROR:android_webview/browser/variations/variations_seed_loader.cc:39] Seed missing signature.
+2026-01-27 00:27:07.685 32381-32433 chromium                com.FayaFlex.App                     I  [INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+2026-01-27 00:27:07.694 32381-32381 cr_LibraryLoader        com.FayaFlex.App                     I  Successfully loaded native library
+2026-01-27 00:27:07.699 32381-32381 cr_CachingUmaRecorder   com.FayaFlex.App                     I  Flushed 20 samples from 20 histograms, 0 samples were dropped.
+2026-01-27 00:27:07.710 32381-32381 cr_CombinedPProvider    com.FayaFlex.App                     I  #registerProvider() provider:WV.jk@94c397d isPolicyCacheEnabled:false policyProvidersSize:0
+2026-01-27 00:27:07.871 32381-32381 cr_PolicyProvider       com.FayaFlex.App                     I  #setManagerAndSource() 0
+2026-01-27 00:27:07.872 32381-32381 cr_DisplayManager       com.FayaFlex.App                     I  Is Display Topology available: false
+2026-01-27 00:27:07.962 32381-32381 cr_CombinedPProvider    com.FayaFlex.App                     I  #linkNativeInternal() 1
+2026-01-27 00:27:07.972 32381-32381 cr_AppResProvider       com.FayaFlex.App                     I  #getApplicationRestrictionsFromUserManager() Bundle[EMPTY_PARCEL]
+2026-01-27 00:27:07.972 32381-32381 cr_PolicyProvider       com.FayaFlex.App                     I  #notifySettingsAvailable() 0
+2026-01-27 00:27:07.972 32381-32381 cr_CombinedPProvider    com.FayaFlex.App                     I  #onSettingsAvailable() 0
+2026-01-27 00:27:07.972 32381-32381 cr_CombinedPProvider    com.FayaFlex.App                     I  #flushPolicies()
+2026-01-27 00:27:08.048 32381-32466 chromium                com.FayaFlex.App                     W  [WARNING:net/dns/dns_config_service_android.cc:69] Failed to read DnsConfig.
+2026-01-27 00:27:08.078 32381-32381 chromium                com.FayaFlex.App                     W  [WARNING:android_webview/browser/network_service/net_helpers.cc:143] HTTP Cache size is: 20971520
+2026-01-27 00:27:08.236 32381-32381 Capacitor               com.FayaFlex.App                     D  Starting BridgeActivity
+2026-01-27 00:27:08.254 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: CapacitorCookies
+2026-01-27 00:27:08.261 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: WebView
+2026-01-27 00:27:08.262 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: CapacitorHttp
+2026-01-27 00:27:08.263 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: App
+2026-01-27 00:27:08.263 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: Camera
+2026-01-27 00:27:08.264 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: SplashScreen
+2026-01-27 00:27:08.267 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: StatusBar
+2026-01-27 00:27:08.273 32381-32381 Capacitor/...sBarPlugin com.FayaFlex.App                     V  Notifying listeners for event statusBarOverlayChanged
+2026-01-27 00:27:08.275 32381-32381 Capacitor/...sBarPlugin com.FayaFlex.App                     D  No listeners found for event statusBarOverlayChanged
+2026-01-27 00:27:08.276 32381-32381 Capacitor/...sBarPlugin com.FayaFlex.App                     V  Notifying listeners for event statusBarOverlayChanged
+2026-01-27 00:27:08.277 32381-32381 Capacitor/...sBarPlugin com.FayaFlex.App                     D  No listeners found for event statusBarOverlayChanged
+2026-01-27 00:27:08.277 32381-32381 Capacitor               com.FayaFlex.App                     D  Registering plugin instance: HealthPlugin
+2026-01-27 00:27:08.287 32381-32381 Capacitor               com.FayaFlex.App                     W  Unable to read file at path public/plugins
+2026-01-27 00:27:08.302 32381-32381 Capacitor               com.FayaFlex.App                     D  Loading app at https://localhost
+2026-01-27 00:27:08.342 32381-32472 cr_media                com.FayaFlex.App                     W  BLUETOOTH_CONNECT permission is missing.
+2026-01-27 00:27:08.353 32381-32472 cr_media                com.FayaFlex.App                     W  getBluetoothAdapter() requires BLUETOOTH permission
+2026-01-27 00:27:08.353 32381-32472 cr_media                com.FayaFlex.App                     W  registerBluetoothIntentsIfNeeded: Requires BLUETOOTH permission
+2026-01-27 00:27:08.355 32381-32492 libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.log"
+2026-01-27 00:27:08.355 32381-32492 libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.log.file"
+2026-01-27 00:27:08.355 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.355 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.366 32381-32381 FayaFlex                com.FayaFlex.App                     D  MainActivity created - loading bundled web assets
+2026-01-27 00:27:08.368 32381-32466 Capacitor               com.FayaFlex.App                     D  Handling local request: https://localhost/
+2026-01-27 00:27:08.382 32381-32381 Capacitor               com.FayaFlex.App                     D  App started
+2026-01-27 00:27:08.385 32381-32381 Capacitor/AppPlugin     com.FayaFlex.App                     D  Firing change: true
+2026-01-27 00:27:08.385 32381-32381 Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event appStateChange
+2026-01-27 00:27:08.385 32381-32381 Capacitor/AppPlugin     com.FayaFlex.App                     D  No listeners found for event appStateChange
+2026-01-27 00:27:08.386 32381-32381 Capacitor               com.FayaFlex.App                     D  App resumed
+2026-01-27 00:27:08.396 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.396 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.402 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.402 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.405 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.405 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.405 32381-32492 libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.vk.trace.per.submit"
+2026-01-27 00:27:08.405 32381-32492 libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.gallium.print.optio"
+2026-01-27 00:27:08.406 32381-32492 libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.vk.trace.frame"
+2026-01-27 00:27:08.434 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.435 32381-32492 libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.vk.wsi.headless.swa"
+2026-01-27 00:27:08.435 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.435 32381-32492 MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:27:08.447 32381-32381 HWUI                    com.FayaFlex.App                     W  Unknown dataspace 0
+2026-01-27 00:27:08.569 32381-32505 CameraManagerGlobal     com.FayaFlex.App                     I  Connecting to camera service
+2026-01-27 00:27:08.617 32381-32381 WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@2f982ed
+2026-01-27 00:27:08.617 32381-32381 WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@a6f2522
+2026-01-27 00:27:08.628 32381-32381 VRI[MainActivity]       com.FayaFlex.App                     D  WindowInsets changed: 1080x2400 statusBars:[0,63,0,0] navigationBars:[0,0,0,63] mandatorySystemGestures:[0,63,0,84] 
+2026-01-27 00:27:08.900 32381-32471 Capacitor               com.FayaFlex.App                     D  Handling local request: https://localhost/assets/index-kliU5-tl.js
+2026-01-27 00:27:08.902 32381-32468 Capacitor               com.FayaFlex.App                     D  Handling local request: https://localhost/assets/index-DX1R5i4w.css
+2026-01-27 00:27:08.941 32381-32517 HWUI                    com.FayaFlex.App                     I  Using FreeType backend (prop=Auto)
+2026-01-27 00:27:09.605 32381-32466 Capacitor               com.FayaFlex.App                     D  Handling local request: https://localhost/api/auth/user
+2026-01-27 00:27:09.606 32381-32466 Capacitor               com.FayaFlex.App                     D  Handling local request: https://localhost/fayaflex-logo.png
+2026-01-27 00:27:09.644 32381-32466 Capacitor               com.FayaFlex.App                     D  Handling local request: https://localhost/fayaflex-logo.png
+2026-01-27 00:27:09.644 32381-32466 Capacitor               com.FayaFlex.App                     D  Handling local request: https://localhost/icon.svg
+2026-01-27 00:27:09.993 32381-32390 om.FayaFlex.App         com.FayaFlex.App                     I  Compiler allocated 5145KB to compile void android.view.ViewRootImpl.performTraversals()
+2026-01-27 00:27:10.641  2627-2768  .apps.wellbeing         com.google.android.apps.wellbeing    E  Failed to open APK '/data/app/~~Bv2NY9oQ4CPlscCJ_PKfPg==/com.FayaFlex.App--mUFF390K0ZLwYWBYtC3sg==/base.apk': I/O error
+2026-01-27 00:27:10.644  2627-2768  .apps.wellbeing         com.google.android.apps.wellbeing    E  Failed to open APK '/data/app/~~Bv2NY9oQ4CPlscCJ_PKfPg==/com.FayaFlex.App--mUFF390K0ZLwYWBYtC3sg==/base.apk': I/O error
+2026-01-27 00:27:10.646  2627-2768  ResourcesManager        com.google.android.apps.wellbeing    E  failed to add asset path '/data/app/~~Bv2NY9oQ4CPlscCJ_PKfPg==/com.FayaFlex.App--mUFF390K0ZLwYWBYtC3sg==/base.apk' (Explain with AI)
+                                                                                                    java.io.IOException: Failed to load asset path /data/app/~~Bv2NY9oQ4CPlscCJ_PKfPg==/com.FayaFlex.App--mUFF390K0ZLwYWBYtC3sg==/base.apk
+                                                                                                    	at android.content.res.ApkAssets.nativeLoad(Native Method)
+                                                                                                    	at android.content.res.ApkAssets.<init>(ApkAssets.java:321)
+                                                                                                    	at android.content.res.ApkAssets.loadFromPath(ApkAssets.java:170)
+                                                                                                    	at android.app.ResourcesManager.loadApkAssets(ResourcesManager.java:596)
+                                                                                                    	at android.app.ResourcesManager$ApkAssetsSupplier.load(ResourcesManager.java:262)
+                                                                                                    	at android.app.ResourcesManager.createAssetManager(ResourcesManager.java:692)
+                                                                                                    	at android.app.ResourcesManager.createResourcesImpl(ResourcesManager.java:766)
+                                                                                                    	at android.app.ResourcesManager.findOrCreateResourcesImplPairForKeyLocked(ResourcesManager.java:847)
+                                                                                                    	at android.app.ResourcesManager.findOrCreateResourcesImplForKeyLocked(ResourcesManager.java:832)
+                                                                                                    	at android.app.ResourcesManager.createResources(ResourcesManager.java:1200)
+                                                                                                    	at android.app.ResourcesManager.getResources(ResourcesManager.java:1303)
+                                                                                                    	at android.app.ActivityThread.getTopLevelResources(ActivityThread.java:3153)
+                                                                                                    	at android.app.ApplicationPackageManager.getResourcesForApplication(ApplicationPackageManager.java:2188)
+                                                                                                    	at android.app.ApplicationPackageManager.getResourcesForApplication(ApplicationPackageManager.java:2171)
+                                                                                                    	at android.app.ApplicationPackageManager.getText(ApplicationPackageManager.java:2514)
+                                                                                                    	at android.content.pm.PackageItemInfo.loadUnsafeLabel(PackageItemInfo.java:237)
+                                                                                                    	at android.content.pm.PackageItemInfo.loadLabel(PackageItemInfo.java:226)
+                                                                                                    	at android.app.ApplicationPackageManager.getApplicationLabel(ApplicationPackageManager.java:2559)
+                                                                                                    	at etg.a(PG:38)
+                                                                                                    	at eel.apply(PG:391)
+                                                                                                    	at a$$ExternalSyntheticApiModelOutline0.m(D8$$SyntheticClass:46)
+                                                                                                    	at nfo.accept(PG:44)
+                                                                                                    	at j$.util.stream.d2.accept(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:3)
+                                                                                                    	at j$.desugar.sun.nio.fs.c.z(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:24)
+                                                                                                    	at j$.util.o0.forEachRemaining(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:24)
+                                                                                                    	at j$.util.stream.a.a(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:21)
+                                                                                                    	at j$.util.stream.a.p(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:8)
+                                                                                                    	at j$.util.stream.x1.a(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:5)
+                                                                                                    	at j$.util.stream.a.d(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:35)
+                                                                                                    	at j$.util.stream.s2.collect(r8-map-id-c51a02224ec0f34dd9a056fd47fc96fb2d78d7428f5037cd4d93dbf6c6e41aaf:88)
+                                                                                                    	at dto.a(PG:96)
+                                                                                                    	at mdk.a(PG:297)
+                                                                                                    	at mdk.a(PG:38)
+                                                                                                    	at nwk.a(PG:3)
+                                                                                                    	at nvp.run(PG:19)
+                                                                                                    	at nwm.run(PG:5)
+                                                                                                    	at nut.run(PG:17)
+                                                                                                    	at keu.run(PG:7)
+                                                                                                    	at nrq.run(PG:44)
+                                                                                                    	at bl.run(PG:349)
+                                                                                                    	at java.lang.Thread.run(Thread.java:1563)
+                                                                                                    	at kgg.run(PG:61)
+2026-01-27 00:27:11.307 32381-32381 InsetsController        com.FayaFlex.App                     D  hide(ime())
+2026-01-27 00:27:11.307 32381-32381 ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:dc7848f6: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+2026-01-27 00:27:11.790 32381-32584 ProfileInstaller        com.FayaFlex.App                     D  Installing profile for com.FayaFlex.App
+2026-01-27 00:27:29.671 32381-32391 om.FayaFlex.App         com.FayaFlex.App                     W  userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+2026-01-27 00:30:00.565 32381-32381 AutofillManager         com.FayaFlex.App                     I  showAutofillDialog() return false due to improve fill dialog
+2026-01-27 00:30:00.607 32381-32381 ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:566907cf: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-01-27 00:30:00.616 32381-32381 InsetsController        com.FayaFlex.App                     D  show(ime())
+2026-01-27 00:30:00.617 32381-32381 InsetsController        com.FayaFlex.App                     D  Setting requestedVisibleTypes to 511 (was 503)
+2026-01-27 00:30:00.650 32381-32381 AssistStructure         com.FayaFlex.App                     I  Flattened final assist data: 3048 bytes, containing 1 windows, 6 views
+2026-01-27 00:30:01.572 32381-32381 WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): android.view.ImeBackAnimationController@c2065c0
+2026-01-27 00:30:02.090 32381-32765 InteractionJankMonitor  com.FayaFlex.App                     W  Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.FayaFlex.App
+2026-01-27 00:30:02.311 32381-32381 ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:566907cf: onShown
+---------------------------- PROCESS ENDED (32381) for package com.FayaFlex.App ----------------------------
+---------------------------- PROCESS STARTED (666) for package com.FayaFlex.App ----------------------------
+2026-01-27 00:31:49.765   666-666   nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-27 00:31:50.373   666-666   nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~qI9AR1Kv-9aVg8zI1ya0YA==/com.FayaFlex.App-LEe4RvxXNWtavtkHdffR7w==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~qI9AR1Kv-9aVg8zI1ya0YA==/com.FayaFlex.App-LEe4RvxXNWtavtkHdffR7w==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-27 00:31:50.391   666-666   GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-27 00:31:50.393   666-666   GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-27 00:31:50.393   666-666   GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-27 00:31:50.393   666-666   GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-27 00:31:50.396   666-666   GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-27 00:31:50.396   666-666   GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-27 00:31:50.396   666-666   GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-27 00:31:50.479   666-708   DisplayManager          com.FayaFlex.App                     I  Choreographer implicitly registered for the refresh rate.
+2026-01-27 00:31:50.512   666-666   DesktopExperienceFlags  com.FayaFlex.App                     D  Toggle override initialized to: false
+2026-01-27 00:31:50.526   666-666   AppCompatDelegate       com.FayaFlex.App                     D  Checking for metadata for AppLocalesMetadataHolderService : Service not found
+2026-01-27 00:31:50.546   666-666   ashmem                  com.FayaFlex.App                     E  Pinning is deprecated since Android Q. Please use trim or other methods.
+2026-01-27 00:31:50.626   666-708   GFXSTREAM               com.FayaFlex.App                     I  [eglDisplay.cpp(297)] Opening libGLESv1_CM_emulation.so
+2026-01-27 00:31:50.626   666-708   GFXSTREAM               com.FayaFlex.App                     I  [eglDisplay.cpp(297)] Opening libGLESv2_emulation.so
+2026-01-27 00:31:50.627   666-708   HWUI                    com.FayaFlex.App                     W  Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+2026-01-27 00:31:50.627   666-708   HWUI                    com.FayaFlex.App                     W  Failed to initialize 101010-2 format, error = EGL_SUCCESS
+2026-01-27 00:31:50.655   666-666   CompatChangeReporter    com.FayaFlex.App                     D  Compat change id reported: 377864165; UID 10230; state: ENABLED
+2026-01-27 00:31:50.656   666-666   DesktopModeFlags        com.FayaFlex.App                     D  Toggle override initialized to: OVERRIDE_UNSET
+2026-01-27 00:31:50.672   666-666   om.FayaFlex.App         com.FayaFlex.App                     I  hiddenapi: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (runtime_flags=0, domain=platform, api=unsupported) from Landroidx/appcompat/widget/ViewUtils; (domain=app, TargetSdkVersion=36) using reflection: allowed
+2026-01-27 00:31:50.698   666-666   WebViewFactory          com.FayaFlex.App                     I  Loading com.google.android.webview version 143.0.7499.146 (code 749914633)
+2026-01-27 00:31:50.707   666-666   ResourcesManager        com.FayaFlex.App                     V  The following library key has been added: ResourcesKey{ mHash=7797d2f9 mResDir=null mSplitDirs=[] mOverlayDirs=[] mLibDirs=[/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk,/data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v36 mCompatInfo={420dpi always-compat} mLoaders=[]}
+2026-01-27 00:31:50.725   666-666   om.FayaFlex.App         com.FayaFlex.App                     W  Failed to find entry 'classes.dex': Entry not found
+2026-01-27 00:31:50.727   666-666   nativeloader            com.FayaFlex.App                     D  Configuring clns-10 for other apk /data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk. target_sdk_version=36, uses_libraries=ALL, library_path=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/lib/arm64:/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk!/lib/arm64-v8a:/data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand
+2026-01-27 00:31:50.730   666-666   ApplicationLoaders      com.FayaFlex.App                     D  Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+2026-01-27 00:31:50.736   666-666   om.FayaFlex.App         com.FayaFlex.App                     W  Loading /data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/oat/arm64/base.odex non-executable as it requires an image which we failed to load
+2026-01-27 00:31:50.740   666-666   nativeloader            com.FayaFlex.App                     D  Configuring clns-11 for other apk /data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/lib/arm64:/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk!/lib/arm64-v8a:/data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand
+2026-01-27 00:31:50.803  2159-2348  Finsky                  com.android.vending                  E  [52] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-27 00:31:50.803  2159-2376  Finsky                  com.android.vending                  E  [55] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-27 00:31:50.836   666-666   cr_WVCFactoryProvider   com.FayaFlex.App                     I  version=143.0.7499.146 (749914633) minSdkVersion=29 multiprocess=true packageId=2 splits=<none>
+2026-01-27 00:31:50.856   666-666   nativeloader            com.FayaFlex.App                     D  Load /data/app/~~GFKKxCZugRW9pvhr5DBZ9A==/com.google.android.trichromelibrary_749914633-CTyRCc_Ial8mPmhF9YP9KA==/base.apk!/lib/arm64-v8a/libmonochrome_64.so using class loader ns clns-11 (caller=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk): ok
+2026-01-27 00:31:50.864   666-666   nativeloader            com.FayaFlex.App                     D  Load /system/lib64/libwebviewchromium_plat_support.so using class loader ns clns-11 (caller=/data/app/~~ZUSjMVDNEN_CeRghsxl-RQ==/com.google.android.webview-XHtZjhPG6nxEr0l5jUnemA==/base.apk): ok
+2026-01-27 00:31:50.882   666-714   chromium                com.FayaFlex.App                     E  [0127/003150.872733:ERROR:android_webview/browser/variations/variations_seed_loader.cc:39] Seed missing signature.
+2026-01-27 00:31:50.885   666-714   chromium                com.FayaFlex.App                     I  [0127/003150.884705:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+2026-01-27 00:31:50.895   666-666   cr_LibraryLoader        com.FayaFlex.App                     I  Successfully loaded native library
+2026-01-27 00:31:50.903   666-666   cr_CachingUmaRecorder   com.FayaFlex.App                     I  Flushed 20 samples from 20 histograms, 0 samples were dropped.
+2026-01-27 00:31:50.917   666-666   cr_CombinedPProvider    com.FayaFlex.App                     I  #registerProvider() provider:WV.jk@1a513d4 isPolicyCacheEnabled:false policyProvidersSize:0
+2026-01-27 00:31:50.929   666-666   cr_PolicyProvider       com.FayaFlex.App                     I  #setManagerAndSource() 0
+2026-01-27 00:31:50.956   666-666   cr_DisplayManager       com.FayaFlex.App                     I  Is Display Topology available: false
+2026-01-27 00:31:51.045   666-666   cr_CombinedPProvider    com.FayaFlex.App                     I  #linkNativeInternal() 1
+2026-01-27 00:31:51.047   666-666   cr_AppResProvider       com.FayaFlex.App                     I  #getApplicationRestrictionsFromUserManager() Bundle[EMPTY_PARCEL]
+2026-01-27 00:31:51.048   666-666   cr_PolicyProvider       com.FayaFlex.App                     I  #notifySettingsAvailable() 0
+2026-01-27 00:31:51.048   666-666   cr_CombinedPProvider    com.FayaFlex.App                     I  #onSettingsAvailable() 0
+2026-01-27 00:31:51.048   666-666   cr_CombinedPProvider    com.FayaFlex.App                     I  #flushPolicies()
+2026-01-27 00:31:51.138   666-741   chromium                com.FayaFlex.App                     W  [WARNING:net/dns/dns_config_service_android.cc:69] Failed to read DnsConfig.
+2026-01-27 00:31:51.156   666-666   chromium                com.FayaFlex.App                     W  [WARNING:android_webview/browser/network_service/net_helpers.cc:143] HTTP Cache size is: 20971520
+2026-01-27 00:31:51.269   666-666   Capacitor               com.FayaFlex.App                     D  Starting BridgeActivity
+2026-01-27 00:31:51.289   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: CapacitorCookies
+2026-01-27 00:31:51.291   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: WebView
+2026-01-27 00:31:51.293   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: CapacitorHttp
+2026-01-27 00:31:51.298   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: App
+2026-01-27 00:31:51.299   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: Camera
+2026-01-27 00:31:51.299   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: SplashScreen
+2026-01-27 00:31:51.305   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: StatusBar
+2026-01-27 00:31:51.317   666-666   Capacitor/...sBarPlugin com.FayaFlex.App                     V  Notifying listeners for event statusBarOverlayChanged
+2026-01-27 00:31:51.318   666-666   Capacitor/...sBarPlugin com.FayaFlex.App                     D  No listeners found for event statusBarOverlayChanged
+2026-01-27 00:31:51.320   666-666   Capacitor/...sBarPlugin com.FayaFlex.App                     V  Notifying listeners for event statusBarOverlayChanged
+2026-01-27 00:31:51.320   666-666   Capacitor/...sBarPlugin com.FayaFlex.App                     D  No listeners found for event statusBarOverlayChanged
+2026-01-27 00:31:51.321   666-666   Capacitor               com.FayaFlex.App                     D  Registering plugin instance: HealthPlugin
+2026-01-27 00:31:51.343   666-666   Capacitor               com.FayaFlex.App                     W  Unable to read file at path public/plugins
+2026-01-27 00:31:51.348   666-666   Capacitor               com.FayaFlex.App                     D  Loading app at https://fayaflex.com
+2026-01-27 00:31:51.387   666-785   cr_media                com.FayaFlex.App                     W  BLUETOOTH_CONNECT permission is missing.
+2026-01-27 00:31:51.392   666-785   cr_media                com.FayaFlex.App                     W  getBluetoothAdapter() requires BLUETOOTH permission
+2026-01-27 00:31:51.393   666-785   cr_media                com.FayaFlex.App                     W  registerBluetoothIntentsIfNeeded: Requires BLUETOOTH permission
+2026-01-27 00:31:51.403   666-848   libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.log"
+2026-01-27 00:31:51.404   666-848   libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.log.file"
+2026-01-27 00:31:51.404   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.404   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.424   666-666   FayaFlex                com.FayaFlex.App                     D  MainActivity created - loading bundled web assets
+2026-01-27 00:31:51.437   666-666   Capacitor               com.FayaFlex.App                     D  App started
+2026-01-27 00:31:51.443   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  Firing change: true
+2026-01-27 00:31:51.444   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event appStateChange
+2026-01-27 00:31:51.445   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  No listeners found for event appStateChange
+2026-01-27 00:31:51.445   666-666   Capacitor               com.FayaFlex.App                     D  App resumed
+2026-01-27 00:31:51.446   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.446   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.448   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.448   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.450   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.452   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.452   666-848   libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.vk.trace.per.submit"
+2026-01-27 00:31:51.452   666-848   libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.gallium.print.optio"
+2026-01-27 00:31:51.452   666-848   libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.vk.trace.frame"
+2026-01-27 00:31:51.463   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.482   666-848   libc                    com.FayaFlex.App                     W  Access denied finding property "vendor.mesa.vk.wsi.headless.swa"
+2026-01-27 00:31:51.491   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.492   666-848   MESA                    com.FayaFlex.App                     E  Failed to open rendernode: No such file or directory
+2026-01-27 00:31:51.494   666-666   HWUI                    com.FayaFlex.App                     W  Unknown dataspace 0
+2026-01-27 00:31:51.579   666-898   CameraManagerGlobal     com.FayaFlex.App                     I  Connecting to camera service
+2026-01-27 00:31:51.584   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@43c4596
+2026-01-27 00:31:51.591   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@2e18517
+2026-01-27 00:31:51.603   666-666   VRI[MainActivity]       com.FayaFlex.App                     D  WindowInsets changed: 1080x2400 statusBars:[0,63,0,0] navigationBars:[0,0,0,63] mandatorySystemGestures:[0,63,0,84] 
+2026-01-27 00:31:51.979   666-961   HWUI                    com.FayaFlex.App                     I  Using FreeType backend (prop=Auto)
+2026-01-27 00:31:52.857   666-689   om.FayaFlex.App         com.FayaFlex.App                     I  Compiler allocated 5145KB to compile void android.view.ViewRootImpl.performTraversals()
+2026-01-27 00:31:53.804   666-666   InsetsController        com.FayaFlex.App                     D  hide(ime())
+2026-01-27 00:31:53.804   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:68fc12d4: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+2026-01-27 00:31:54.284   666-666   Capacitor/Console       com.FayaFlex.App                     E  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [AuthStorage] Failed to get token from native storage: Error: "Preferences" plugin is not implemented on android
+2026-01-27 00:31:54.285   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [Auth] Token initialized: none
+2026-01-27 00:31:54.310   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/auth/user
+2026-01-27 00:31:54.323   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059275, pluginId: App, methodName: addListener
+2026-01-27 00:31:54.323   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059275, pluginId: App, methodName: addListener, methodData: {"eventName":"appStateChange"}
+2026-01-27 00:31:54.325   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059276, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:31:54.325   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059276, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/auth\/user","headers":{},"method":"GET"}
+2026-01-27 00:31:54.325   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059277, pluginId: SplashScreen, methodName: hide
+2026-01-27 00:31:54.325   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059277, pluginId: SplashScreen, methodName: hide, methodData: {}
+2026-01-27 00:31:54.339   666-666   Capacitor/Console       com.FayaFlex.App                     I  File:  - Line 333 - Msg: undefined
+2026-01-27 00:31:54.355   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/auth/user'
+2026-01-27 00:31:54.603   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/ - Line 56 - Msg: Service Worker registered: https://fayaflex.com/
+2026-01-27 00:31:54.902   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 401
+2026-01-27 00:31:56.193   666-1014  ProfileInstaller        com.FayaFlex.App                     D  Installing profile for com.FayaFlex.App
+2026-01-27 00:31:56.308   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] No user logged in, skipping sync
+2026-01-27 00:32:01.162   666-666   AutofillManager         com.FayaFlex.App                     I  showAutofillDialog() return false due to improve fill dialog
+2026-01-27 00:32:01.181   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:a2ed946c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-01-27 00:32:01.185   666-666   InsetsController        com.FayaFlex.App                     D  show(ime())
+2026-01-27 00:32:01.185   666-666   InsetsController        com.FayaFlex.App                     D  Setting requestedVisibleTypes to 511 (was 503)
+2026-01-27 00:32:01.204   666-666   AssistStructure         com.FayaFlex.App                     I  Flattened final assist data: 3056 bytes, containing 1 windows, 6 views
+2026-01-27 00:32:01.534   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): android.view.ImeBackAnimationController@e42da1c
+2026-01-27 00:32:01.654   666-1023  InteractionJankMonitor  com.FayaFlex.App                     W  Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.FayaFlex.App
+2026-01-27 00:32:01.886   666-690   om.FayaFlex.App         com.FayaFlex.App                     W  userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+2026-01-27 00:32:01.886   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:ad5a0d86: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-01-27 00:32:01.887   666-666   InsetsController        com.FayaFlex.App                     D  show(ime())
+2026-01-27 00:32:01.887   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:ad5a0d86: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+2026-01-27 00:32:01.905   666-690   om.FayaFlex.App         com.FayaFlex.App                     I  Background concurrent mark compact GC freed 6303KB AllocSpace bytes, 35(1404KB) LOS objects, 49% free, 4312KB/8624KB, paused 4.081ms,1.110ms total 722.629ms
+2026-01-27 00:32:01.942   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:a2ed946c: onShown
+2026-01-27 00:32:02.649   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:8c363bc3: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-01-27 00:32:02.650   666-666   InsetsController        com.FayaFlex.App                     D  show(ime())
+2026-01-27 00:32:02.651   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:8c363bc3: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+2026-01-27 00:32:04.380   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:d5615dcd: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+2026-01-27 00:32:04.381   666-666   InsetsController        com.FayaFlex.App                     D  hide(ime())
+2026-01-27 00:32:04.382   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@2e18517
+2026-01-27 00:32:04.383   666-666   InsetsController        com.FayaFlex.App                     D  Setting requestedVisibleTypes to 503 (was 511)
+2026-01-27 00:32:04.385   666-666   CompatChangeReporter    com.FayaFlex.App                     D  Compat change id reported: 395521150; UID 10230; state: ENABLED
+2026-01-27 00:32:04.434   666-666   ImeTracker              com.FayaFlex.App                     I  system_server:fe96a76f: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+2026-01-27 00:32:05.725   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:396c261c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-01-27 00:32:05.727   666-666   InsetsController        com.FayaFlex.App                     D  show(ime())
+2026-01-27 00:32:05.728   666-666   InsetsController        com.FayaFlex.App                     D  Setting requestedVisibleTypes to 511 (was 503)
+2026-01-27 00:32:05.804   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): android.view.ImeBackAnimationController@e42da1c
+2026-01-27 00:32:06.081   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:396c261c: onShown
+2026-01-27 00:32:18.626   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:dab486e1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-01-27 00:32:18.627   666-666   InsetsController        com.FayaFlex.App                     D  show(ime())
+2026-01-27 00:32:18.627   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:dab486e1: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+2026-01-27 00:32:18.635   666-666   AssistStructure         com.FayaFlex.App                     I  Flattened final assist data: 3064 bytes, containing 1 windows, 6 views
+2026-01-27 00:32:23.915   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] POST https://fayaflex.com/api/login (native: true)
+2026-01-27 00:32:23.915   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native POST https://fayaflex.com/api/login
+2026-01-27 00:32:23.918   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059278, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:23.918   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059278, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/login","headers":{"Content-Type":"application\/json"},"method":"POST","data":{"username":"Jackblack","password":"Jackblack"}}
+2026-01-27 00:32:23.922   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/login'
+2026-01-27 00:32:25.282   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Setting cookie 'connect.sid=s%3AyMY_GazE6SHy5LiV-p3F5UqVfGbqxs5E.nc3EmkyvNxRPAhNz8ZsF5FlXA7cqGdpR0E5XF1NIfKA; Path=/; Expires=Mon, 02 Feb 2026 22:32:27 GMT; HttpOnly; Secure; SameSite=None' at: 'https://fayaflex.com/api/login'
+2026-01-27 00:32:25.288   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Setting cookie 'connect.sid=s%3AyMY_GazE6SHy5LiV-p3F5UqVfGbqxs5E.nc3EmkyvNxRPAhNz8ZsF5FlXA7cqGdpR0E5XF1NIfKA; Path=/; Expires=Mon, 02 Feb 2026 22:32:27 GMT; HttpOnly; Secure; SameSite=None' at: 'https://fayaflex.com'
+2026-01-27 00:32:25.321   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:25.322   666-666   Capacitor/Console       com.FayaFlex.App                     E  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [AuthStorage] Failed to set token in native storage: Error: "Preferences" plugin is not implemented on android
+2026-01-27 00:32:25.323   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/auth/user
+2026-01-27 00:32:25.330   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059279, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:25.330   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059279, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/auth\/user","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:25.334   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/auth/user'
+2026-01-27 00:32:25.717   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:25.720   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/teams
+2026-01-27 00:32:25.734   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059280, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:25.735   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059280, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/teams","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:25.735   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059281, pluginId: App, methodName: addListener
+2026-01-27 00:32:25.735   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059281, pluginId: App, methodName: addListener, methodData: {"eventName":"appStateChange"}
+2026-01-27 00:32:25.735   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059282, pluginId: App, methodName: removeListener
+2026-01-27 00:32:25.735   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059282, pluginId: App, methodName: removeListener, methodData: {"eventName":"appStateChange","callbackId":"61059275"}
+2026-01-27 00:32:25.736   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/teams'
+2026-01-27 00:32:25.756   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:4149a239: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+2026-01-27 00:32:25.756   666-666   InsetsController        com.FayaFlex.App                     D  hide(ime())
+2026-01-27 00:32:25.757   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@2e18517
+2026-01-27 00:32:25.759   666-666   InsetsController        com.FayaFlex.App                     D  Setting requestedVisibleTypes to 503 (was 511)
+2026-01-27 00:32:25.868   666-666   ImeTracker              com.FayaFlex.App                     I  system_server:ddf8a2c9: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+2026-01-27 00:32:26.539   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:27.722   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Starting automatic health sync...
+2026-01-27 00:32:27.723   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059283, pluginId: HealthPlugin, methodName: isHealthAvailable
+2026-01-27 00:32:27.723   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059283, pluginId: HealthPlugin, methodName: isHealthAvailable, methodData: {}
+2026-01-27 00:32:27.772   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Provider: android_health
+2026-01-27 00:32:27.773   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Fetching health data from 2026-01-19T22:32:27.771Z to 2026-01-26T22:32:27.771Z
+2026-01-27 00:32:27.773   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Fetching health data from 2026-01-19T22:32:27.771Z to 2026-01-26T22:32:27.771Z
+2026-01-27 00:32:27.785   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Android - Using capacitor-health plugin
+2026-01-27 00:32:27.790   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059284, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:32:27.791   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059284, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:32:27.771Z","endDate":"2026-01-26T22:32:27.771Z","dataType":"steps","bucket":"day"}
+2026-01-27 00:32:27.942   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Steps processed: 7 records
+2026-01-27 00:32:27.943   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Trying calorie dataType: active-calories
+2026-01-27 00:32:27.959   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059285, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:32:27.959   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059285, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:32:27.771Z","endDate":"2026-01-26T22:32:27.771Z","dataType":"active-calories","bucket":"day"}
+2026-01-27 00:32:28.009   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] active-calories: 7 records, total=0
+2026-01-27 00:32:28.009   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] active-calories sample: {"startDate":"2026-01-20T00:32:27.771","endDate":"2026-01-21T00:32:27.771"}
+2026-01-27 00:32:28.010   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Trying calorie dataType: calories
+2026-01-27 00:32:28.011   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059286, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:32:28.012   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059286, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:32:27.771Z","endDate":"2026-01-26T22:32:27.771Z","dataType":"calories","bucket":"day"}
+2026-01-27 00:32:28.015   666-846   Capacitor               com.FayaFlex.App                     D  Sending plugin error: {"save":false,"callbackId":"61059286","pluginId":"HealthPlugin","methodName":"queryAggregated","success":false,"error":{"message":"Unsupported dataType: calories"}}
+2026-01-27 00:32:28.018   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] calories not available: Error: Unsupported dataType: calories
+2026-01-27 00:32:28.019   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Trying calorie dataType: total-calories
+2026-01-27 00:32:28.019   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059287, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:32:28.019   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059287, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:32:27.771Z","endDate":"2026-01-26T22:32:27.771Z","dataType":"total-calories","bucket":"day"}
+2026-01-27 00:32:28.044   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] total-calories: 7 records, total=10952
+2026-01-27 00:32:28.045   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] total-calories sample: {"startDate":"2026-01-20T00:32:27.771","endDate":"2026-01-21T00:32:27.771","value":1564.5}
+2026-01-27 00:32:28.046   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Using total-calories for calories (total: 10952)
+2026-01-27 00:32:28.046   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Final calories result: 7 records
+2026-01-27 00:32:28.047   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059288, pluginId: HealthPlugin, methodName: queryWorkouts
+2026-01-27 00:32:28.047   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059288, pluginId: HealthPlugin, methodName: queryWorkouts, methodData: {"startDate":"2026-01-19T22:32:27.771Z","endDate":"2026-01-26T22:32:27.771Z","includeHeartRate":false,"includeRoute":false,"includeSteps":false}
+2026-01-27 00:32:28.085   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Workouts fetched: 0
+2026-01-27 00:32:28.088   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Total health data points: 7
+2026-01-27 00:32:28.090   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Syncing 7 days of health data
+2026-01-27 00:32:28.099   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] POST https://fayaflex.com/api/devices/sync (native: true)
+2026-01-27 00:32:28.100   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native POST https://fayaflex.com/api/devices/sync
+2026-01-27 00:32:28.101   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059289, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:28.102   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059289, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/devices\/sync","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c","Content-Type":"application\/json"},"method":"POST","data":{"provider":"android_health","activities":[{"date":"2026-01-20","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-21","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-22","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-23","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-24","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-25","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-26","calories":1565,"steps":0,"workouts":0}]}}
+2026-01-27 00:32:28.103   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/devices/sync'
+2026-01-27 00:32:28.998   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:28.998   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Health data synced successfully
+2026-01-27 00:32:36.205   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/teams
+2026-01-27 00:32:36.216   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/goals/suggested
+2026-01-27 00:32:36.217   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+2026-01-27 00:32:36.218   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=1&year=2026 (native: true)
+2026-01-27 00:32:36.218   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=1&year=2026
+2026-01-27 00:32:36.220   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/dashboard/stats
+2026-01-27 00:32:36.221   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/progress/chart
+2026-01-27 00:32:36.222   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/activities
+2026-01-27 00:32:36.222   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/notifications
+2026-01-27 00:32:36.237   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059290, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.237   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059290, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/teams","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.238   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059291, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.238   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059291, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/goals\/suggested","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.238   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059292, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.238   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059292, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/ai-coach\/suggestions","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.238   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059293, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.238   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059293, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=1&year=2026","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.238   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059294, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.238   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059294, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.238   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059295, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.238   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059295, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/progress\/chart","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.238   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059296, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.238   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059296, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/activities","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.238   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059297, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:36.238   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059297, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/notifications","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:36.245   666-1049  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/goals/suggested'
+2026-01-27 00:32:36.256   666-1050  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/ai-coach/suggestions'
+2026-01-27 00:32:36.259   666-1051  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/leaderboard/user-rank?month=1&year=2026'
+2026-01-27 00:32:36.260   666-1052  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/dashboard/stats'
+2026-01-27 00:32:36.261   666-1053  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/progress/chart'
+2026-01-27 00:32:36.261   666-1054  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/activities'
+2026-01-27 00:32:36.261   666-1055  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/notifications'
+2026-01-27 00:32:36.262   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/teams'
+2026-01-27 00:32:36.698   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:37.218   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:37.220   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:37.220   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:37.386   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:37.543   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:37.544   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:37.627   666-690   om.FayaFlex.App         com.FayaFlex.App                     I  Background young concurrent mark compact GC freed 3171KB AllocSpace bytes, 14(280KB) LOS objects, 39% free, 5191KB/8624KB, paused 136us,9.036ms total 353.786ms
+2026-01-27 00:32:39.253   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/devices
+2026-01-27 00:32:39.257   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059298, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:39.258   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059298, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/devices","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:39.259   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059299, pluginId: HealthPlugin, methodName: isHealthAvailable
+2026-01-27 00:32:39.260   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059299, pluginId: HealthPlugin, methodName: isHealthAvailable, methodData: {}
+2026-01-27 00:32:39.268   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/devices'
+2026-01-27 00:32:39.684   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:40.991   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:48.531   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/leaderboard/teams?month=1&year=2026 (native: true)
+2026-01-27 00:32:48.532   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/leaderboard/teams?month=1&year=2026
+2026-01-27 00:32:48.535   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/leaderboard/category/calories?month=1&year=2026 (native: true)
+2026-01-27 00:32:48.535   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/leaderboard/category/calories?month=1&year=2026
+2026-01-27 00:32:48.536   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/leaderboard/category/steps?month=1&year=2026 (native: true)
+2026-01-27 00:32:48.536   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/leaderboard/category/steps?month=1&year=2026
+2026-01-27 00:32:48.536   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/leaderboard/category/workouts?month=1&year=2026 (native: true)
+2026-01-27 00:32:48.536   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/leaderboard/category/workouts?month=1&year=2026
+2026-01-27 00:32:48.538   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059300, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:48.539   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059300, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/teams?month=1&year=2026","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:48.539   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059301, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:48.539   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059301, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/category\/calories?month=1&year=2026","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:48.539   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059302, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:48.539   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059302, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/category\/steps?month=1&year=2026","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:48.540   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059303, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:48.540   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059303, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/category\/workouts?month=1&year=2026","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:48.550   666-1054  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/leaderboard/category/workouts?month=1&year=2026'
+2026-01-27 00:32:48.555   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/leaderboard/category/calories?month=1&year=2026'
+2026-01-27 00:32:48.555   666-1052  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/leaderboard/category/steps?month=1&year=2026'
+2026-01-27 00:32:48.556   666-1050  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/leaderboard/teams?month=1&year=2026'
+2026-01-27 00:32:49.009   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:49.184   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:49.199   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:49.684   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:53.272   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/badges
+2026-01-27 00:32:53.279   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/badges/check
+2026-01-27 00:32:53.282   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/profile/stats
+2026-01-27 00:32:53.283   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/challenges
+2026-01-27 00:32:53.286   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059304, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:53.286   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059304, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/badges","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:53.288   666-1050  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/badges'
+2026-01-27 00:32:53.289   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059305, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:53.289   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059305, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/badges\/check","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:53.290   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059306, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:53.291   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059306, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/profile\/stats","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:53.291   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059307, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:53.291   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059307, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/challenges","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:53.294   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/badges/check'
+2026-01-27 00:32:53.303   666-1052  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/profile/stats'
+2026-01-27 00:32:53.303   666-1054  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/challenges'
+2026-01-27 00:32:53.742   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:53.743   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:53.899   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:53.989   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:32:58.085   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059308, pluginId: HealthPlugin, methodName: isHealthAvailable
+2026-01-27 00:32:58.087   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059308, pluginId: HealthPlugin, methodName: isHealthAvailable, methodData: {}
+2026-01-27 00:32:59.870   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/dashboard/stats
+2026-01-27 00:32:59.871   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/progress/chart
+2026-01-27 00:32:59.872   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/activities
+2026-01-27 00:32:59.874   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059309, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:59.874   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059309, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:59.877   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/dashboard/stats'
+2026-01-27 00:32:59.885   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059310, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:59.885   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059310, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/progress\/chart","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:59.886   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059311, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:32:59.886   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059311, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/activities","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:32:59.888   666-1052  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/progress/chart'
+2026-01-27 00:32:59.890   666-1050  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/activities'
+2026-01-27 00:33:00.439   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:00.440   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:00.816   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:03.311   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059312, pluginId: HealthPlugin, methodName: isHealthAvailable
+2026-01-27 00:33:03.311   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059312, pluginId: HealthPlugin, methodName: isHealthAvailable, methodData: {}
+2026-01-27 00:33:15.336   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/dashboard/stats
+2026-01-27 00:33:15.338   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/progress/chart
+2026-01-27 00:33:15.338   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/activities
+2026-01-27 00:33:15.340   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059313, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:33:15.340   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059313, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:33:15.341   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/dashboard/stats'
+2026-01-27 00:33:15.344   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059314, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:33:15.344   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059314, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/progress\/chart","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:33:15.346   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059315, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:33:15.346   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059315, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/activities","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:33:15.346   666-1052  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/activities'
+2026-01-27 00:33:15.348   666-1050  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/progress/chart'
+2026-01-27 00:33:16.070   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:16.070   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:16.616   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:17.130   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories (native: true)
+2026-01-27 00:33:17.135   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories
+2026-01-27 00:33:17.135   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059316, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:33:17.135   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059316, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/stats\/daily-breakdown?metric=calories","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:33:17.148   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/stats/daily-breakdown?metric=calories'
+2026-01-27 00:33:17.625   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:21.723   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/dashboard/stats
+2026-01-27 00:33:21.733   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/progress/chart
+2026-01-27 00:33:21.734   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/activities
+2026-01-27 00:33:21.735   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059317, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:33:21.736   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059317, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:33:21.737   666-1003  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/dashboard/stats'
+2026-01-27 00:33:21.739   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059318, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:33:21.740   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059318, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/progress\/chart","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:33:21.741   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059319, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:33:21.741   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059319, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/activities","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:33:21.750   666-1052  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/progress/chart'
+2026-01-27 00:33:21.753   666-1050  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/activities'
+2026-01-27 00:33:22.253   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:22.255   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:33:22.666   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:42:36.447   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories (native: true)
+2026-01-27 00:42:36.448   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories
+2026-01-27 00:42:36.454   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059320, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:42:36.454   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059320, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/stats\/daily-breakdown?metric=calories","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:42:36.468   666-1642  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/stats/daily-breakdown?metric=calories'
+2026-01-27 00:42:38.305   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:43:40.080   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event pause
+2026-01-27 00:43:40.080   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  No listeners found for event pause
+2026-01-27 00:43:40.086   666-666   Capacitor               com.FayaFlex.App                     D  App paused
+2026-01-27 00:43:40.135   666-666   VRI[MainActivity]       com.FayaFlex.App                     D  visibilityChanged oldVisibility=true newVisibility=false
+2026-01-27 00:43:40.136   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@43c4596
+2026-01-27 00:43:40.189   666-666   AutofillManager         com.FayaFlex.App                     I  onInvisibleForAutofill(): expiringResponse
+2026-01-27 00:43:40.190   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  Firing change: false
+2026-01-27 00:43:40.191   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event appStateChange
+2026-01-27 00:43:40.198   666-666   Capacitor               com.FayaFlex.App                     D  App stopped
+2026-01-27 00:43:40.200   666-666   Capacitor               com.FayaFlex.App                     D  Saving instance state!
+2026-01-27 00:43:40.204   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] App state changed: background
+2026-01-27 00:43:41.494   666-666   Capacitor               com.FayaFlex.App                     D  App restarted
+2026-01-27 00:43:41.494   666-666   Capacitor               com.FayaFlex.App                     D  App started
+2026-01-27 00:43:41.497   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@2e18517
+2026-01-27 00:43:41.498   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  Firing change: true
+2026-01-27 00:43:41.498   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event appStateChange
+2026-01-27 00:43:41.502   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event resume
+2026-01-27 00:43:41.502   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  No listeners found for event resume
+2026-01-27 00:43:41.502   666-666   Capacitor               com.FayaFlex.App                     D  App resumed
+2026-01-27 00:43:41.506   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] App state changed: active
+2026-01-27 00:43:41.506   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Starting automatic health sync...
+2026-01-27 00:43:41.732   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059321, pluginId: HealthPlugin, methodName: isHealthAvailable
+2026-01-27 00:43:41.738   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059321, pluginId: HealthPlugin, methodName: isHealthAvailable, methodData: {}
+2026-01-27 00:43:41.804   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Provider: android_health
+2026-01-27 00:43:41.805   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Fetching health data from 2026-01-19T22:43:41.799Z to 2026-01-26T22:43:41.799Z
+2026-01-27 00:43:41.805   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Fetching health data from 2026-01-19T22:43:41.799Z to 2026-01-26T22:43:41.799Z
+2026-01-27 00:43:41.805   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Android - Using capacitor-health plugin
+2026-01-27 00:43:41.808   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059322, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:43:41.808   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059322, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:43:41.799Z","endDate":"2026-01-26T22:43:41.799Z","dataType":"steps","bucket":"day"}
+2026-01-27 00:43:41.863   666-666   InsetsController        com.FayaFlex.App                     D  hide(ime())
+2026-01-27 00:43:41.864   666-666   ImeTracker              com.FayaFlex.App                     I  com.FayaFlex.App:acd5abe5: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+2026-01-27 00:43:42.082   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Steps processed: 7 records
+2026-01-27 00:43:42.083   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Trying calorie dataType: active-calories
+2026-01-27 00:43:42.084   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059323, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:43:42.084   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059323, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:43:41.799Z","endDate":"2026-01-26T22:43:41.799Z","dataType":"active-calories","bucket":"day"}
+2026-01-27 00:43:42.098   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] active-calories: 7 records, total=0
+2026-01-27 00:43:42.098   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] active-calories sample: {"startDate":"2026-01-20T00:43:41.799","endDate":"2026-01-21T00:43:41.799"}
+2026-01-27 00:43:42.098   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Trying calorie dataType: calories
+2026-01-27 00:43:42.098   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059324, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:43:42.098   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059324, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:43:41.799Z","endDate":"2026-01-26T22:43:41.799Z","dataType":"calories","bucket":"day"}
+2026-01-27 00:43:42.099   666-846   Capacitor               com.FayaFlex.App                     D  Sending plugin error: {"save":false,"callbackId":"61059324","pluginId":"HealthPlugin","methodName":"queryAggregated","success":false,"error":{"message":"Unsupported dataType: calories"}}
+2026-01-27 00:43:42.101   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] calories not available: Error: Unsupported dataType: calories
+2026-01-27 00:43:42.101   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Trying calorie dataType: total-calories
+2026-01-27 00:43:42.102   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059325, pluginId: HealthPlugin, methodName: queryAggregated
+2026-01-27 00:43:42.102   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059325, pluginId: HealthPlugin, methodName: queryAggregated, methodData: {"startDate":"2026-01-19T22:43:41.799Z","endDate":"2026-01-26T22:43:41.799Z","dataType":"total-calories","bucket":"day"}
+2026-01-27 00:43:42.144   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] total-calories: 7 records, total=10952
+2026-01-27 00:43:42.145   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] total-calories sample: {"startDate":"2026-01-20T00:43:41.799","endDate":"2026-01-21T00:43:41.799","value":1564.5}
+2026-01-27 00:43:42.146   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Using total-calories for calories (total: 10952)
+2026-01-27 00:43:42.147   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Final calories result: 7 records
+2026-01-27 00:43:42.148   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059326, pluginId: HealthPlugin, methodName: queryWorkouts
+2026-01-27 00:43:42.149   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059326, pluginId: HealthPlugin, methodName: queryWorkouts, methodData: {"startDate":"2026-01-19T22:43:41.799Z","endDate":"2026-01-26T22:43:41.799Z","includeHeartRate":false,"includeRoute":false,"includeSteps":false}
+2026-01-27 00:43:42.183   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Workouts fetched: 0
+2026-01-27 00:43:42.184   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 535 - Msg: [HealthService] Total health data points: 7
+2026-01-27 00:43:42.186   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Syncing 7 days of health data
+2026-01-27 00:43:42.186   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] POST https://fayaflex.com/api/devices/sync (native: true)
+2026-01-27 00:43:42.186   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native POST https://fayaflex.com/api/devices/sync
+2026-01-27 00:43:42.186   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059327, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:43:42.186   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059327, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/devices\/sync","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c","Content-Type":"application\/json"},"method":"POST","data":{"provider":"android_health","activities":[{"date":"2026-01-20","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-21","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-22","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-23","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-24","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-25","calories":1565,"steps":0,"workouts":0},{"date":"2026-01-26","calories":1565,"steps":0,"workouts":0}]}}
+2026-01-27 00:43:42.188   666-1741  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/devices/sync'
+2026-01-27 00:43:43.148   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:43:43.150   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] Health data synced successfully
+2026-01-27 00:43:43.154   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories (native: true)
+2026-01-27 00:43:43.156   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native GET https://fayaflex.com/api/stats/daily-breakdown?metric=calories
+2026-01-27 00:43:43.177   666-666   Capacitor/Plugin        com.FayaFlex.App                     V  To native (Capacitor plugin): callbackId: 61059328, pluginId: CapacitorHttp, methodName: request
+2026-01-27 00:43:43.179   666-666   Capacitor               com.FayaFlex.App                     V  callback: 61059328, pluginId: CapacitorHttp, methodName: request, methodData: {"url":"https:\/\/fayaflex.com\/api\/stats\/daily-breakdown?metric=calories","headers":{"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2E2MmI0MS02ZTUxLTQ5YjYtODE0ZS0yZDBjZjk0YTdiZjEiLCJpYXQiOjE3Njk0NjY3NDcsImV4cCI6MTc3MjA1ODc0N30.4pEl1v0BwpGBom8PQbSl4JSp6_HR4qZeIqAq669715c"},"method":"GET"}
+2026-01-27 00:43:43.186   666-1741  CapacitorCookies        com.FayaFlex.App                     I  Getting cookies at: 'https://fayaflex.com/api/stats/daily-breakdown?metric=calories'
+2026-01-27 00:43:43.625   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 48 - Msg: [API] Native response: 200
+2026-01-27 00:44:49.405   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event pause
+2026-01-27 00:44:49.406   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  No listeners found for event pause
+2026-01-27 00:44:49.406   666-666   Capacitor               com.FayaFlex.App                     D  App paused
+2026-01-27 00:44:49.408   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@43c4596
+2026-01-27 00:44:49.418   666-666   AutofillManager         com.FayaFlex.App                     I  onInvisibleForAutofill(): expiringResponse
+2026-01-27 00:44:49.419   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     D  Firing change: false
+2026-01-27 00:44:49.419   666-666   Capacitor/AppPlugin     com.FayaFlex.App                     V  Notifying listeners for event appStateChange
+2026-01-27 00:44:49.436   666-666   Capacitor               com.FayaFlex.App                     D  App stopped
+2026-01-27 00:44:49.437   666-666   Capacitor               com.FayaFlex.App                     D  Saving instance state!
+2026-01-27 00:44:49.440   666-666   Capacitor/Console       com.FayaFlex.App                     I  File: https://fayaflex.com/assets/index-De7flV7c.js - Line 553 - Msg: [AutoSync] App state changed: background
+2026-01-27 00:44:49.454   666-666   WindowOnBackDispatcher  com.FayaFlex.App                     D  setTopOnBackInvokedCallback (unwrapped): null
+2026-01-27 00:44:49.484   666-666   Capacitor               com.FayaFlex.App                     D  App destroyed
+2026-01-27 00:44:49.601   666-666   ViewRootImpl            com.FayaFlex.App                     D  Skipping stats log for color mode
+---------------------------- PROCESS ENDED (666) for package com.FayaFlex.App ----------------------------
+2026-01-27 00:45:16.002  2159-2417  Finsky                  com.android.vending                  E  [83] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-28 00:09:47.083   666-666   libbinder....iceManager com.FayaFlex.App                     W  Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: package
+2026-01-29 17:17:30.072 32381-32381 libbinder....iceManager com.FayaFlex.App                     W  Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: package
+---------------------------- PROCESS STARTED (5342) for package com.FayaFlex.App ----------------------------
+2026-01-29 20:46:51.482  5342-5342  nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-29 20:46:52.907  5342-5342  nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-29 20:46:52.996  5342-5342  GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-29 20:46:52.998  5342-5342  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-29 20:46:52.999  5342-5342  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-29 20:46:52.999  5342-5342  GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-29 20:46:52.999  5342-5342  GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-29 20:46:52.999  5342-5342  GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-29 20:46:52.999  5342-5342  GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-29 20:46:53.023  5342-5342  AndroidRuntime          com.FayaFlex.App                     D  Shutting down VM
+2026-01-29 20:46:53.061  5342-5342  AndroidRuntime          com.FayaFlex.App                     E  FATAL EXCEPTION: main (Explain with AI)
+                                                                                                    Process: com.FayaFlex.App, PID: 5342
+                                                                                                    java.lang.RuntimeException: Unable to instantiate application android.app.Application package com.FayaFlex.App
+                                                                                                    	at android.app.LoadedApk.throwForNewApplicationFailure(LoadedApk.java:1599)
+                                                                                                    	at android.app.LoadedApk.onNewApplicationFailed(LoadedApk.java:1589)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1554)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1482)
+                                                                                                    	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:8091)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2690)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+                                                                                                    Caused by: java.lang.RuntimeException: Failed to parse XML configuration from network_security_config
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:100)
+                                                                                                    	at android.security.net.config.XmlConfigSource.getPerDomainConfigs(XmlConfigSource.java:59)
+                                                                                                    	at android.security.net.config.ManifestConfigSource.getPerDomainConfigs(ManifestConfigSource.java:47)
+                                                                                                    	at android.security.net.config.ApplicationConfig.ensureInitialized(ApplicationConfig.java:219)
+                                                                                                    	at android.security.net.config.ApplicationConfig.isCleartextTrafficPermitted(ApplicationConfig.java:147)
+                                                                                                    	at android.security.net.config.NetworkSecurityConfigProvider.handleNewApplication(NetworkSecurityConfigProvider.java:60)
+                                                                                                    	at android.app.LoadedApk.callNetworkSecurityConfigProviderHandleNewApplication(LoadedApk.java:1583)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1549)
+                                                                                                    	... 12 more
+                                                                                                    Caused by: org.xmlpull.v1.XmlPullParserException: Unexpected start tag: found wordDocument, expected network-security-config
+                                                                                                    	at com.android.internal.util.XmlUtils.beginDocument(XmlUtils.java:1698)
+                                                                                                    	at android.security.net.config.XmlConfigSource.parseNetworkSecurityConfig(XmlConfigSource.java:342)
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:94)
+                                                                                                    	... 19 more
+2026-01-29 20:46:53.419  5342-5342  Process                 com.FayaFlex.App                     I  Sending signal. PID: 5342 SIG: 9
+---------------------------- PROCESS ENDED (5342) for package com.FayaFlex.App ----------------------------
+2026-01-29 20:46:55.675 15124-15229 Finsky                  com.android.vending                  E  [102] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-29 20:46:55.693 15124-15221 Finsky                  com.android.vending                  E  [95] ItemStore: getItems RPC failed for item com.FayaFlex.App
+---------------------------- PROCESS STARTED (5442) for package com.FayaFlex.App ----------------------------
+2026-01-29 20:47:07.666  5442-5442  nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-29 20:47:08.386  5442-5442  nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-29 20:47:08.396  5442-5442  GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-29 20:47:08.396  5442-5442  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-29 20:47:08.396  5442-5442  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-29 20:47:08.396  5442-5442  GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-29 20:47:08.396  5442-5442  GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-29 20:47:08.396  5442-5442  GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-29 20:47:08.396  5442-5442  GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-29 20:47:08.401  5442-5442  AndroidRuntime          com.FayaFlex.App                     D  Shutting down VM
+2026-01-29 20:47:08.410  5442-5442  AndroidRuntime          com.FayaFlex.App                     E  FATAL EXCEPTION: main (Explain with AI)
+                                                                                                    Process: com.FayaFlex.App, PID: 5442
+                                                                                                    java.lang.RuntimeException: Unable to instantiate application android.app.Application package com.FayaFlex.App
+                                                                                                    	at android.app.LoadedApk.throwForNewApplicationFailure(LoadedApk.java:1599)
+                                                                                                    	at android.app.LoadedApk.onNewApplicationFailed(LoadedApk.java:1589)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1554)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1482)
+                                                                                                    	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:8091)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2690)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+                                                                                                    Caused by: java.lang.RuntimeException: Failed to parse XML configuration from network_security_config
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:100)
+                                                                                                    	at android.security.net.config.XmlConfigSource.getPerDomainConfigs(XmlConfigSource.java:59)
+                                                                                                    	at android.security.net.config.ManifestConfigSource.getPerDomainConfigs(ManifestConfigSource.java:47)
+                                                                                                    	at android.security.net.config.ApplicationConfig.ensureInitialized(ApplicationConfig.java:219)
+                                                                                                    	at android.security.net.config.ApplicationConfig.isCleartextTrafficPermitted(ApplicationConfig.java:147)
+                                                                                                    	at android.security.net.config.NetworkSecurityConfigProvider.handleNewApplication(NetworkSecurityConfigProvider.java:60)
+                                                                                                    	at android.app.LoadedApk.callNetworkSecurityConfigProviderHandleNewApplication(LoadedApk.java:1583)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1549)
+                                                                                                    	... 12 more
+                                                                                                    Caused by: org.xmlpull.v1.XmlPullParserException: Unexpected start tag: found wordDocument, expected network-security-config
+                                                                                                    	at com.android.internal.util.XmlUtils.beginDocument(XmlUtils.java:1698)
+                                                                                                    	at android.security.net.config.XmlConfigSource.parseNetworkSecurityConfig(XmlConfigSource.java:342)
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:94)
+                                                                                                    	... 19 more
+2026-01-29 20:47:14.199  5442-5442  Process                 com.FayaFlex.App                     I  Sending signal. PID: 5442 SIG: 9
+---------------------------- PROCESS ENDED (5442) for package com.FayaFlex.App ----------------------------
+2026-01-29 20:47:27.719  5325-5325  ackageinstaller         com.google.android.packageinstaller  E  Failed to open APK '/data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/base.apk': I/O error
+2026-01-29 20:47:27.733  5325-5325  ackageinstaller         com.google.android.packageinstaller  E  Failed to open APK '/data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/base.apk': I/O error
+2026-01-29 20:47:27.733  5325-5325  ResourcesManager        com.google.android.packageinstaller  E  failed to add asset path '/data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/base.apk' (Explain with AI)
+                                                                                                    java.io.IOException: Failed to load asset path /data/app/~~4__Ah0SSHCDsyCtEFapIww==/com.FayaFlex.App-zm-MddGtHopahui-509hGA==/base.apk
+                                                                                                    	at android.content.res.ApkAssets.nativeLoad(Native Method)
+                                                                                                    	at android.content.res.ApkAssets.<init>(ApkAssets.java:321)
+                                                                                                    	at android.content.res.ApkAssets.loadFromPath(ApkAssets.java:170)
+                                                                                                    	at android.app.ResourcesManager.loadApkAssets(ResourcesManager.java:596)
+                                                                                                    	at android.app.ResourcesManager$ApkAssetsSupplier.load(ResourcesManager.java:262)
+                                                                                                    	at android.app.ResourcesManager.createAssetManager(ResourcesManager.java:692)
+                                                                                                    	at android.app.ResourcesManager.createResourcesImpl(ResourcesManager.java:766)
+                                                                                                    	at android.app.ResourcesManager.findOrCreateResourcesImplPairForKeyLocked(ResourcesManager.java:847)
+                                                                                                    	at android.app.ResourcesManager.findOrCreateResourcesImplForKeyLocked(ResourcesManager.java:832)
+                                                                                                    	at android.app.ResourcesManager.createResources(ResourcesManager.java:1200)
+                                                                                                    	at android.app.ResourcesManager.getResources(ResourcesManager.java:1303)
+                                                                                                    	at android.app.ActivityThread.getTopLevelResources(ActivityThread.java:3153)
+                                                                                                    	at android.app.ApplicationPackageManager.getResourcesForApplication(ApplicationPackageManager.java:2188)
+                                                                                                    	at android.app.ApplicationPackageManager.getResourcesForApplication(ApplicationPackageManager.java:2171)
+                                                                                                    	at android.app.ApplicationPackageManager.getText(ApplicationPackageManager.java:2514)
+                                                                                                    	at android.content.pm.PackageItemInfo.loadUnsafeLabel(PackageItemInfo.java:237)
+                                                                                                    	at android.content.pm.PackageItemInfo.loadSafeLabel(PackageItemInfo.java:273)
+                                                                                                    	at android.content.pm.PackageItemInfo.loadSafeLabel(PackageItemInfo.java:256)
+                                                                                                    	at com.android.packageinstaller.v2.ui.UninstallLaunch$onCreate$1.onChanged(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:104)
+                                                                                                    	at androidx.lifecycle.MutableLiveData.considerNotify(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:30)
+                                                                                                    	at androidx.lifecycle.MutableLiveData.dispatchingValue(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:63)
+                                                                                                    	at androidx.lifecycle.MutableLiveData.setValue(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:15)
+                                                                                                    	at com.android.packageinstaller.v2.viewmodel.UninstallViewModel$initiateUninstall$1.onChanged(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:9)
+                                                                                                    	at androidx.lifecycle.MediatorLiveData$Source.onChanged(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:13)
+                                                                                                    	at androidx.lifecycle.MutableLiveData.considerNotify(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:30)
+                                                                                                    	at androidx.lifecycle.MutableLiveData.dispatchingValue(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:63)
+                                                                                                    	at androidx.lifecycle.MutableLiveData.setValue(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:15)
+                                                                                                    	at com.android.packageinstaller.v2.model.UninstallRepository.handleUninstallResult$default(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:76)
+                                                                                                    	at com.android.packageinstaller.v2.model.UninstallRepository$initiateUninstall$1.onResult(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:3)
+                                                                                                    	at com.android.packageinstaller.common.EventResultPersister.onEventReceived(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:144)
+                                                                                                    	at com.android.packageinstaller.common.UninstallEventReceiver.onReceive(go/retraceme 0c832715e423de7fd59596384e74cd406eacb3d9ea8972ada3c24f5397f86cea:5)
+                                                                                                    	at android.app.ActivityThread.handleReceiver(ActivityThread.java:5301)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleReceiver(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2715)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+2026-01-29 20:47:30.541 15124-15212 Finsky                  com.android.vending                  E  [90] ItemStore: getItems RPC failed for item com.FayaFlex.App
+---------------------------- PROCESS STARTED (5688) for package com.FayaFlex.App ----------------------------
+2026-01-29 20:47:38.346  5688-5688  nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-29 20:47:38.442 15124-15229 Finsky                  com.android.vending                  E  [102] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-29 20:47:38.442 15124-15229 Finsky                  com.android.vending                  E  [102] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-29 20:47:38.896  5688-5688  nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-29 20:47:38.911  5688-5688  GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-29 20:47:38.911  5688-5688  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-29 20:47:38.911  5688-5688  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-29 20:47:38.911  5688-5688  GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-29 20:47:38.911  5688-5688  GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-29 20:47:38.911  5688-5688  GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-29 20:47:38.911  5688-5688  GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-29 20:47:38.918  5688-5688  AndroidRuntime          com.FayaFlex.App                     D  Shutting down VM
+2026-01-29 20:47:38.923  5688-5688  AndroidRuntime          com.FayaFlex.App                     E  FATAL EXCEPTION: main (Explain with AI)
+                                                                                                    Process: com.FayaFlex.App, PID: 5688
+                                                                                                    java.lang.RuntimeException: Unable to instantiate application android.app.Application package com.FayaFlex.App
+                                                                                                    	at android.app.LoadedApk.throwForNewApplicationFailure(LoadedApk.java:1599)
+                                                                                                    	at android.app.LoadedApk.onNewApplicationFailed(LoadedApk.java:1589)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1554)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1482)
+                                                                                                    	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:8091)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2690)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+                                                                                                    Caused by: java.lang.RuntimeException: Failed to parse XML configuration from network_security_config
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:100)
+                                                                                                    	at android.security.net.config.XmlConfigSource.getPerDomainConfigs(XmlConfigSource.java:59)
+                                                                                                    	at android.security.net.config.ManifestConfigSource.getPerDomainConfigs(ManifestConfigSource.java:47)
+                                                                                                    	at android.security.net.config.ApplicationConfig.ensureInitialized(ApplicationConfig.java:219)
+                                                                                                    	at android.security.net.config.ApplicationConfig.isCleartextTrafficPermitted(ApplicationConfig.java:147)
+                                                                                                    	at android.security.net.config.NetworkSecurityConfigProvider.handleNewApplication(NetworkSecurityConfigProvider.java:60)
+                                                                                                    	at android.app.LoadedApk.callNetworkSecurityConfigProviderHandleNewApplication(LoadedApk.java:1583)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1549)
+                                                                                                    	... 12 more
+                                                                                                    Caused by: org.xmlpull.v1.XmlPullParserException: Unexpected start tag: found wordDocument, expected network-security-config
+                                                                                                    	at com.android.internal.util.XmlUtils.beginDocument(XmlUtils.java:1698)
+                                                                                                    	at android.security.net.config.XmlConfigSource.parseNetworkSecurityConfig(XmlConfigSource.java:342)
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:94)
+                                                                                                    	... 19 more
+2026-01-29 20:47:38.948  5688-5688  Process                 com.FayaFlex.App                     I  Sending signal. PID: 5688 SIG: 9
+---------------------------- PROCESS ENDED (5688) for package com.FayaFlex.App ----------------------------
+---------------------------- PROCESS STARTED (5729) for package com.FayaFlex.App ----------------------------
+2026-01-29 20:47:41.302  5729-5729  nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-29 20:47:41.941  5729-5729  nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-29 20:47:41.962  5729-5729  GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-29 20:47:41.963  5729-5729  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-29 20:47:41.963  5729-5729  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-29 20:47:41.963  5729-5729  GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-29 20:47:41.964  5729-5729  GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-29 20:47:41.964  5729-5729  GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-29 20:47:41.964  5729-5729  GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-29 20:47:41.968  5729-5729  AndroidRuntime          com.FayaFlex.App                     D  Shutting down VM
+2026-01-29 20:47:41.976  5729-5729  AndroidRuntime          com.FayaFlex.App                     E  FATAL EXCEPTION: main (Explain with AI)
+                                                                                                    Process: com.FayaFlex.App, PID: 5729
+                                                                                                    java.lang.RuntimeException: Unable to instantiate application android.app.Application package com.FayaFlex.App
+                                                                                                    	at android.app.LoadedApk.throwForNewApplicationFailure(LoadedApk.java:1599)
+                                                                                                    	at android.app.LoadedApk.onNewApplicationFailed(LoadedApk.java:1589)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1554)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1482)
+                                                                                                    	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:8091)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2690)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+                                                                                                    Caused by: java.lang.RuntimeException: Failed to parse XML configuration from network_security_config
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:100)
+                                                                                                    	at android.security.net.config.XmlConfigSource.getPerDomainConfigs(XmlConfigSource.java:59)
+                                                                                                    	at android.security.net.config.ManifestConfigSource.getPerDomainConfigs(ManifestConfigSource.java:47)
+                                                                                                    	at android.security.net.config.ApplicationConfig.ensureInitialized(ApplicationConfig.java:219)
+                                                                                                    	at android.security.net.config.ApplicationConfig.isCleartextTrafficPermitted(ApplicationConfig.java:147)
+                                                                                                    	at android.security.net.config.NetworkSecurityConfigProvider.handleNewApplication(NetworkSecurityConfigProvider.java:60)
+                                                                                                    	at android.app.LoadedApk.callNetworkSecurityConfigProviderHandleNewApplication(LoadedApk.java:1583)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1549)
+                                                                                                    	... 12 more
+                                                                                                    Caused by: org.xmlpull.v1.XmlPullParserException: Unexpected start tag: found wordDocument, expected network-security-config
+                                                                                                    	at com.android.internal.util.XmlUtils.beginDocument(XmlUtils.java:1698)
+                                                                                                    	at android.security.net.config.XmlConfigSource.parseNetworkSecurityConfig(XmlConfigSource.java:342)
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:94)
+                                                                                                    	... 19 more
+2026-01-29 20:47:56.820  5729-5730  om.FayaFlex.App         com.FayaFlex.App                     I  Thread[2,tid=5730,WaitingInMainSignalCatcherLoop,Thread*=0xb4000073abc0b380,peer=0x2178020,"Signal Catcher"]: reacting to signal 3
+2026-01-29 20:47:56.821  5729-5730  om.FayaFlex.App         com.FayaFlex.App                     I  
+2026-01-29 20:47:57.014  5729-5730  om.FayaFlex.App         com.FayaFlex.App                     I  Wrote stack traces to tombstoned
+2026-01-29 20:48:16.694  5729-5734  om.FayaFlex.App         com.FayaFlex.App                     W  userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+---------------------------- PROCESS ENDED (5729) for package com.FayaFlex.App ----------------------------
+---------------------------- PROCESS STARTED (6540) for package com.FayaFlex.App ----------------------------
+2026-01-29 21:24:53.033  6540-6540  nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-29 21:24:53.682  6540-6540  nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-29 21:24:53.712  6540-6540  GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-29 21:24:53.713  6540-6540  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-29 21:24:53.713  6540-6540  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-29 21:24:53.713  6540-6540  GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-29 21:24:53.714  6540-6540  GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-29 21:24:53.715  6540-6540  GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-29 21:24:53.715  6540-6540  GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-29 21:24:53.726  6540-6540  AndroidRuntime          com.FayaFlex.App                     D  Shutting down VM
+2026-01-29 21:24:53.732  6540-6540  AndroidRuntime          com.FayaFlex.App                     E  FATAL EXCEPTION: main (Explain with AI)
+                                                                                                    Process: com.FayaFlex.App, PID: 6540
+                                                                                                    java.lang.RuntimeException: Unable to instantiate application android.app.Application package com.FayaFlex.App
+                                                                                                    	at android.app.LoadedApk.throwForNewApplicationFailure(LoadedApk.java:1599)
+                                                                                                    	at android.app.LoadedApk.onNewApplicationFailed(LoadedApk.java:1589)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1554)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1482)
+                                                                                                    	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:8091)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2690)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+                                                                                                    Caused by: java.lang.RuntimeException: Failed to parse XML configuration from network_security_config
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:100)
+                                                                                                    	at android.security.net.config.XmlConfigSource.getPerDomainConfigs(XmlConfigSource.java:59)
+                                                                                                    	at android.security.net.config.ManifestConfigSource.getPerDomainConfigs(ManifestConfigSource.java:47)
+                                                                                                    	at android.security.net.config.ApplicationConfig.ensureInitialized(ApplicationConfig.java:219)
+                                                                                                    	at android.security.net.config.ApplicationConfig.isCleartextTrafficPermitted(ApplicationConfig.java:147)
+                                                                                                    	at android.security.net.config.NetworkSecurityConfigProvider.handleNewApplication(NetworkSecurityConfigProvider.java:60)
+                                                                                                    	at android.app.LoadedApk.callNetworkSecurityConfigProviderHandleNewApplication(LoadedApk.java:1583)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1549)
+                                                                                                    	... 12 more
+                                                                                                    Caused by: org.xmlpull.v1.XmlPullParserException: Unexpected start tag: found wordDocument, expected network-security-config
+                                                                                                    	at com.android.internal.util.XmlUtils.beginDocument(XmlUtils.java:1698)
+                                                                                                    	at android.security.net.config.XmlConfigSource.parseNetworkSecurityConfig(XmlConfigSource.java:342)
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:94)
+                                                                                                    	... 19 more
+2026-01-29 21:24:53.758  6540-6540  Process                 com.FayaFlex.App                     I  Sending signal. PID: 6540 SIG: 9
+---------------------------- PROCESS ENDED (6540) for package com.FayaFlex.App ----------------------------
+---------------------------- PROCESS STARTED (6564) for package com.FayaFlex.App ----------------------------
+2026-01-29 21:24:56.764  6564-6564  nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-29 21:24:57.247  6564-6564  nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~XKO1hUbvMzIqfExZ-DCPaA==/com.FayaFlex.App-jszGzaaIYizl_KgpLUDEEg==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-29 21:24:57.315  6564-6564  GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-29 21:24:57.315  6564-6564  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-29 21:24:57.316  6564-6564  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-29 21:24:57.317  6564-6564  GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-29 21:24:57.317  6564-6564  GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-29 21:24:57.317  6564-6564  GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-29 21:24:57.317  6564-6564  GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-29 21:24:57.345  6564-6564  AndroidRuntime          com.FayaFlex.App                     D  Shutting down VM
+2026-01-29 21:24:57.360  6564-6564  AndroidRuntime          com.FayaFlex.App                     E  FATAL EXCEPTION: main (Explain with AI)
+                                                                                                    Process: com.FayaFlex.App, PID: 6564
+                                                                                                    java.lang.RuntimeException: Unable to instantiate application android.app.Application package com.FayaFlex.App
+                                                                                                    	at android.app.LoadedApk.throwForNewApplicationFailure(LoadedApk.java:1599)
+                                                                                                    	at android.app.LoadedApk.onNewApplicationFailed(LoadedApk.java:1589)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1554)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1482)
+                                                                                                    	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:8091)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2690)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+                                                                                                    Caused by: java.lang.RuntimeException: Failed to parse XML configuration from network_security_config
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:100)
+                                                                                                    	at android.security.net.config.XmlConfigSource.getPerDomainConfigs(XmlConfigSource.java:59)
+                                                                                                    	at android.security.net.config.ManifestConfigSource.getPerDomainConfigs(ManifestConfigSource.java:47)
+                                                                                                    	at android.security.net.config.ApplicationConfig.ensureInitialized(ApplicationConfig.java:219)
+                                                                                                    	at android.security.net.config.ApplicationConfig.isCleartextTrafficPermitted(ApplicationConfig.java:147)
+                                                                                                    	at android.security.net.config.NetworkSecurityConfigProvider.handleNewApplication(NetworkSecurityConfigProvider.java:60)
+                                                                                                    	at android.app.LoadedApk.callNetworkSecurityConfigProviderHandleNewApplication(LoadedApk.java:1583)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1549)
+                                                                                                    	... 12 more
+                                                                                                    Caused by: org.xmlpull.v1.XmlPullParserException: Unexpected start tag: found wordDocument, expected network-security-config
+                                                                                                    	at com.android.internal.util.XmlUtils.beginDocument(XmlUtils.java:1698)
+                                                                                                    	at android.security.net.config.XmlConfigSource.parseNetworkSecurityConfig(XmlConfigSource.java:342)
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:94)
+                                                                                                    	... 19 more
+2026-01-29 21:25:12.273  6564-6565  om.FayaFlex.App         com.FayaFlex.App                     I  Thread[2,tid=6565,WaitingInMainSignalCatcherLoop,Thread*=0xb4000073abc0b380,peer=0x2178020,"Signal Catcher"]: reacting to signal 3
+2026-01-29 21:25:12.273  6564-6565  om.FayaFlex.App         com.FayaFlex.App                     I  
+2026-01-29 21:25:12.514  6564-6565  om.FayaFlex.App         com.FayaFlex.App                     I  Wrote stack traces to tombstoned
