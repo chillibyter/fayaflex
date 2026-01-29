@@ -1,0 +1,48 @@
+PROCESS STARTED (7433) for package com.FayaFlex.App ----------------------------
+2026-01-29 21:40:59.515  7433-7433  nativeloader            com.FayaFlex.App                     D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-01-29 21:41:00.713  7433-7433  nativeloader            com.FayaFlex.App                     D  Configuring clns-9 for other apk /data/app/~~DVLiy5oAYm2Rjc_XE1QNxg==/com.FayaFlex.App-NP79WHIiu8O59IqN3y_pjw==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~DVLiy5oAYm2Rjc_XE1QNxg==/com.FayaFlex.App-NP79WHIiu8O59IqN3y_pjw==/lib/arm64, permitted_path=/data:/mnt/expand:/data/user/0/com.FayaFlex.App
+2026-01-29 21:41:00.813  7433-7433  GraphicsEnvironment     com.FayaFlex.App                     V  Currently set values for:
+2026-01-29 21:41:00.816  7433-7433  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_pkgs=[]
+2026-01-29 21:41:00.816  7433-7433  GraphicsEnvironment     com.FayaFlex.App                     V    angle_gl_driver_selection_values=[]
+2026-01-29 21:41:00.816  7433-7433  GraphicsEnvironment     com.FayaFlex.App                     V  com.FayaFlex.App is not listed in per-application setting
+2026-01-29 21:41:00.819  7433-7433  GraphicsEnvironment     com.FayaFlex.App                     V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-01-29 21:41:00.820  7433-7433  GraphicsEnvironment     com.FayaFlex.App                     V  No special selections for ANGLE, returning default driver choice
+2026-01-29 21:41:00.820  7433-7433  GraphicsEnvironment     com.FayaFlex.App                     V  Neither updatable production driver nor prerelease driver is supported.
+2026-01-29 21:41:01.019  7433-7433  AndroidRuntime          com.FayaFlex.App                     D  Shutting down VM
+2026-01-29 21:41:01.034  7433-7433  AndroidRuntime          com.FayaFlex.App                     E  FATAL EXCEPTION: main (Explain with AI)
+                                                                                                    Process: com.FayaFlex.App, PID: 7433
+                                                                                                    java.lang.RuntimeException: Unable to instantiate application android.app.Application package com.FayaFlex.App
+                                                                                                    	at android.app.LoadedApk.throwForNewApplicationFailure(LoadedApk.java:1599)
+                                                                                                    	at android.app.LoadedApk.onNewApplicationFailed(LoadedApk.java:1589)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1554)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1482)
+                                                                                                    	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:8091)
+                                                                                                    	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2690)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:132)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+                                                                                                    Caused by: java.lang.RuntimeException: Failed to parse XML configuration from network_security_config
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:100)
+                                                                                                    	at android.security.net.config.XmlConfigSource.getPerDomainConfigs(XmlConfigSource.java:59)
+                                                                                                    	at android.security.net.config.ManifestConfigSource.getPerDomainConfigs(ManifestConfigSource.java:47)
+                                                                                                    	at android.security.net.config.ApplicationConfig.ensureInitialized(ApplicationConfig.java:219)
+                                                                                                    	at android.security.net.config.ApplicationConfig.isCleartextTrafficPermitted(ApplicationConfig.java:147)
+                                                                                                    	at android.security.net.config.NetworkSecurityConfigProvider.handleNewApplication(NetworkSecurityConfigProvider.java:60)
+                                                                                                    	at android.app.LoadedApk.callNetworkSecurityConfigProviderHandleNewApplication(LoadedApk.java:1583)
+                                                                                                    	at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1549)
+                                                                                                    	... 12 more
+                                                                                                    Caused by: org.xmlpull.v1.XmlPullParserException: Unexpected start tag: found wordDocument, expected network-security-config
+                                                                                                    	at com.android.internal.util.XmlUtils.beginDocument(XmlUtils.java:1698)
+                                                                                                    	at android.security.net.config.XmlConfigSource.parseNetworkSecurityConfig(XmlConfigSource.java:342)
+                                                                                                    	at android.security.net.config.XmlConfigSource.ensureInitialized(XmlConfigSource.java:94)
+                                                                                                    	... 19 more
+2026-01-29 21:41:01.106  7433-7433  Process                 com.FayaFlex.App                     I  Sending signal. PID: 7433 SIG: 9
+---------------------------- PROCESS ENDED (7433) for package com.FayaFlex.App ----------------------------
+2026-01-29 21:41:02.652 15124-15221 Finsky                  com.android.vending                  E  [95] ItemStore: getItems RPC failed for item com.FayaFlex.App
+2026-01-29 21:41:02.652 15124-15229 Finsky                  com.android.vending                  E  [102] ItemStore: getItems RPC failed for item com.FayaFlex.App
