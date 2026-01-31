@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -480,6 +480,12 @@ export default function AuthPage() {
                     Sign up
                   </button>
                 </p>
+
+                <p className="text-center text-xs text-muted-foreground">
+                  <Link href="/privacy" className="hover:underline" data-testid="link-privacy-login">
+                    Privacy Policy
+                  </Link>
+                </p>
               </>
             )
           ) : (
@@ -627,6 +633,13 @@ export default function AuthPage() {
                 >
                   Sign in
                 </button>
+              </p>
+
+              <p className="text-center text-xs text-muted-foreground">
+                By creating an account, you agree to our{" "}
+                <Link href="/privacy" className="hover:underline text-primary" data-testid="link-privacy-register">
+                  Privacy Policy
+                </Link>
               </p>
             </>
           )}
