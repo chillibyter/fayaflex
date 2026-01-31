@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Smartphone, Activity, RefreshCw, CheckCircle, XCircle, Loader2, Settings } from 'lucide-react';
+import { Smartphone, Activity, RefreshCw, CheckCircle, XCircle, Loader2, Settings, Footprints, Flame, Dumbbell, Heart, MapPin, Shield, Info } from 'lucide-react';
 import { healthService } from '@/lib/healthService';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Capacitor } from '@capacitor/core';
+import { Link } from 'wouter';
 
 interface DeviceConnection {
   provider: string;
@@ -341,6 +342,83 @@ export function HealthDevices() {
           Automatically sync your fitness data from your device
         </p>
       </div>
+
+      {/* HealthKit/Health Data Disclosure - Required by Apple App Store Guidelines 2.5.1 */}
+      <Card data-testid="card-health-data-disclosure">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">Health Data We Access</CardTitle>
+          </div>
+          <CardDescription>
+            {isIOS 
+              ? 'FayaFlex uses Apple HealthKit to read the following health data types:'
+              : 'FayaFlex reads the following health data from your device:'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+              <Footprints className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-sm">Step Count</p>
+                <p className="text-xs text-muted-foreground">Daily steps to track your movement and compete on leaderboards</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+              <Flame className="h-5 w-5 text-orange-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-sm">Active Calories Burned</p>
+                <p className="text-xs text-muted-foreground">Calories burned through activity to calculate your fitness score</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+              <Dumbbell className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-sm">Workouts</p>
+                <p className="text-xs text-muted-foreground">Exercise sessions including type, duration, and calories burned</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+              <MapPin className="h-5 w-5 text-purple-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-sm">Distance</p>
+                <p className="text-xs text-muted-foreground">Walking and running distance for activity tracking</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+              <Heart className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-sm">Heart Rate</p>
+                <p className="text-xs text-muted-foreground">Heart rate data during workouts for fitness insights</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5">
+            <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="text-xs text-muted-foreground">
+              <p className="font-medium text-foreground mb-1">How We Use Your Health Data</p>
+              <ul className="space-y-1">
+                <li>• Calculate your daily fitness scores for team competitions</li>
+                <li>• Display your progress on personal and team leaderboards</li>
+                <li>• Track your workout history and achievements</li>
+                <li>• Your health data is never sold or shared with third parties</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="flex justify-center gap-4">
+            <Link href="/health-data" className="text-xs text-primary hover:underline" data-testid="link-health-data-details">
+              Learn more about Health Data
+            </Link>
+            <span className="text-xs text-muted-foreground">•</span>
+            <Link href="/privacy" className="text-xs text-primary hover:underline" data-testid="link-health-privacy">
+              Privacy Policy
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card data-testid="card-native-health">
         <CardHeader>

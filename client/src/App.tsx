@@ -20,6 +20,7 @@ import TeamSelection from "@/pages/TeamSelection";
 import HowItWorks from "@/pages/HowItWorks";
 import Support from "@/pages/Support";
 import Privacy from "@/pages/Privacy";
+import HealthData from "@/pages/HealthData";
 import DeleteAccount from "@/pages/DeleteAccount";
 import DailyChart from "@/pages/DailyChart";
 import Challenges from "@/pages/Challenges";
@@ -57,6 +58,7 @@ function Router() {
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/support" component={Support} />
         <Route path="/privacy" component={Privacy} />
+        <Route path="/health-data" component={HealthData} />
         <Route path="/delete-account" component={DeleteAccount} />
         <Route path="/" component={AuthPage} />
         <Route component={AuthPage} />
@@ -111,6 +113,7 @@ function Router() {
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/support" component={Support} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/health-data" component={HealthData} />
       <Route path="/delete-account" component={DeleteAccount} />
       <Route path="/team-selection" component={TeamSelection} />
       <Route component={NotFound} />
