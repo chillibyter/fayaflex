@@ -343,83 +343,7 @@ export function HealthDevices() {
         </p>
       </div>
 
-      {/* HealthKit/Health Data Disclosure - Required by Apple App Store Guidelines 2.5.1 */}
-      <Card data-testid="card-health-data-disclosure">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">Health Data We Access</CardTitle>
-          </div>
-          <CardDescription>
-            {isIOS 
-              ? 'FayaFlex uses Apple HealthKit to read the following health data types:'
-              : 'FayaFlex reads the following health data from your device:'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <Footprints className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-sm">Step Count</p>
-                <p className="text-xs text-muted-foreground">Daily steps to track your movement and compete on leaderboards</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <Flame className="h-5 w-5 text-orange-500 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-sm">Active Calories Burned</p>
-                <p className="text-xs text-muted-foreground">Calories burned through activity to calculate your fitness score</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <Dumbbell className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-sm">Workouts</p>
-                <p className="text-xs text-muted-foreground">Exercise sessions including type, duration, and calories burned</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <MapPin className="h-5 w-5 text-purple-500 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-sm">Distance</p>
-                <p className="text-xs text-muted-foreground">Walking and running distance for activity tracking</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <Heart className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-sm">Heart Rate</p>
-                <p className="text-xs text-muted-foreground">Heart rate data during workouts for fitness insights</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5">
-            <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-            <div className="text-xs text-muted-foreground">
-              <p className="font-medium text-foreground mb-1">How We Use Your Health Data</p>
-              <ul className="space-y-1">
-                <li>• Calculate your daily fitness scores for team competitions</li>
-                <li>• Display your progress on personal and team leaderboards</li>
-                <li>• Track your workout history and achievements</li>
-                <li>• Your health data is never sold or shared with third parties</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="flex justify-center gap-4">
-            <Link href="/health-data" className="text-xs text-primary hover:underline" data-testid="link-health-data-details">
-              Learn more about Health Data
-            </Link>
-            <span className="text-xs text-muted-foreground">•</span>
-            <Link href="/privacy" className="text-xs text-primary hover:underline" data-testid="link-health-privacy">
-              Privacy Policy
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* Main Connect Card - Primary CTA at top */}
       <Card data-testid="card-native-health">
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -563,6 +487,46 @@ export function HealthDevices() {
               )}
             </>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Compact Health Data Disclosure - Below the action */}
+      <Card data-testid="card-health-data-disclosure" className="bg-muted/30">
+        <CardHeader className="pb-2 pt-4">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-medium">Health Data We Access</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 pb-4">
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Footprints className="h-3 w-3" /> Steps
+            </Badge>
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Flame className="h-3 w-3" /> Calories
+            </Badge>
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Dumbbell className="h-3 w-3" /> Workouts
+            </Badge>
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <MapPin className="h-3 w-3" /> Distance
+            </Badge>
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Heart className="h-3 w-3" /> Heart Rate
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2">
+            Your health data is used to calculate fitness scores and display on leaderboards. We never sell or share your data.
+          </p>
+          <div className="flex gap-3">
+            <Link href="/health-data" className="text-xs text-primary hover:underline" data-testid="link-health-data-details">
+              Learn more
+            </Link>
+            <Link href="/privacy" className="text-xs text-primary hover:underline" data-testid="link-health-privacy">
+              Privacy Policy
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
