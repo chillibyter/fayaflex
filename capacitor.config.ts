@@ -44,6 +44,13 @@ const config: CapacitorConfig = {
     Camera: {
       permissions: ['camera', 'photos'],
     },
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      // Client IDs will be configured per-platform in native project settings
+      // Android: google-services.json
+      // iOS: Info.plist with GIDClientID
+      grantOfflineAccess: true,
+    },
   },
 };
 

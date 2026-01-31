@@ -120,16 +120,17 @@ Preferred communication style: Simple, everyday language.
 - Uses 5-minute cooldown between syncs to prevent excessive API calls
 - Works with Apple Health, Android Health Connect, and Huawei Health Kit
 
-**Social Login Backend** (January 13, 2026)
-- Backend endpoints created for Google and Apple OAuth verification
-- POST /api/auth/google - Verifies Google ID token using google-auth-library
-- POST /api/auth/apple - Verifies Apple ID token using apple-signin-auth
-- Modified user storage to allow null passwords for OAuth-authenticated users
-- Passport deserializeUser updated to allow OAuth users without passwords
-- Frontend social login buttons conditionally shown when properly configured
-- Requires VITE_GOOGLE_CLIENT_ID for web-based Google Sign-In
-- Apple Sign-In requires native SDK setup in Xcode (Sign in with Apple capability)
-- Note: Full social login requires additional native SDK integration for mobile apps
+**Social Login Full Implementation** (January 31, 2026)
+- Complete Sign in with Google and Apple implementation for web and native
+- Backend: POST /api/auth/google (google-auth-library) and POST /api/auth/apple (apple-signin-auth)
+- Native plugins: @southdevs/capacitor-google-auth (v7) and @capacitor-community/apple-sign-in (v7.1)
+- Web: Google Identity Services script loaded for web-based Google Sign-In
+- Frontend socialAuth.ts handles both native and web authentication flows
+- Native Setup Required:
+  - iOS: Add "Sign in with Apple" capability in Xcode, configure GoogleService-Info.plist
+  - Android: Add google-services.json with OAuth client ID, add SHA-1 fingerprint to Firebase/Google Console
+- Environment Variables: VITE_GOOGLE_CLIENT_ID (for web), GOOGLE_CLIENT_ID/SECRET (for backend verification)
+- Apple Sign-In only available on iOS (Apple's requirement)
 
 ## Branding
 

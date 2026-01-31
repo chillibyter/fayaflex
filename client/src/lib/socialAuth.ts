@@ -11,26 +11,53 @@ export interface SocialLoginResult {
 
 /**
  * Handle Google Sign-In
+ * On native: Uses @southdevs/capacitor-google-auth plugin
  * On web: Uses Google Identity Services
- * On native: Uses native SDK (requires additional setup)
  */
 export async function signInWithGoogle(): Promise<SocialLoginResult> {
   if (Capacitor.isNativePlatform()) {
-    // Native Google Sign-In requires platform-specific SDK integration
-    // This is a placeholder - actual implementation requires native plugins
-    throw new Error("Google Sign-In on native requires additional setup. Please configure the native Google SDK in your Xcode/Android Studio project.");
+    // Native Google Sign-In using Capacitor plugin
+    try {
+      const { GoogleAuth } = await import("@southdevs/capacitor-google-auth");
+      
+      // Initialize if not already done
+      await GoogleAuth.initialize({
+        clientId: GOOGLE_CLIENT_ID || "",
+        scopes: ["profile", "email"],
+        grantOfflineAccess: true,
+      });
+      
+      const result = await GoogleAuth.signIn({
+        clientId: GOOGLE_CLIENT_ID || undefined,
+        scopes: ["profile", "email"],
+      });
+      
+      if (!result.authentication?.idToken) {
+        throw new Error("Failed to get ID token from Google Sign-In");
+      }
+      
+      // Send ID token to backend for verification
+      const res = await apiRequest("POST", "/api/auth/google", {
+        idToken: result.authentication.idToken,
+      });
+      const data = await res.json();
+      return data;
+    } catch (error: any) {
+      console.error("Native Google Sign-In error:", error);
+      throw new Error(error.message || "Google Sign-In failed");
+    }
   }
 
   // Web-based Google Sign-In using Google Identity Services
   return new Promise((resolve, reject) => {
     if (!GOOGLE_CLIENT_ID) {
-      reject(new Error("Google Sign-In is not configured"));
+      reject(new Error("Google Sign-In is not configured. Please set up VITE_GOOGLE_CLIENT_ID."));
       return;
     }
 
     // Check if Google Identity Services is loaded
     if (typeof google === "undefined" || !google.accounts) {
-      reject(new Error("Google Sign-In is not available"));
+      reject(new Error("Google Sign-In is not available. Please ensure the Google Identity Services script is loaded."));
       return;
     }
 
@@ -63,38 +90,69 @@ export async function signInWithGoogle(): Promise<SocialLoginResult> {
 
 /**
  * Handle Apple Sign-In
- * On iOS: Uses native Sign in with Apple
- * On web/Android: Uses Apple JS SDK (limited support)
+ * On iOS: Uses @capacitor-community/apple-sign-in native plugin
+ * On web/Android: Not supported (Apple requires native iOS for best experience)
  */
 export async function signInWithApple(): Promise<SocialLoginResult> {
   if (Capacitor.getPlatform() === "ios") {
-    // Native Apple Sign-In on iOS requires platform-specific SDK integration
-    // This is a placeholder - actual implementation requires native plugins
-    throw new Error("Apple Sign-In on iOS requires native SDK setup in Xcode.");
+    try {
+      const { SignInWithApple } = await import("@capacitor-community/apple-sign-in");
+      
+      const result = await SignInWithApple.authorize({
+        clientId: "com.fayaflex.app",
+        redirectURI: "https://www.fayaflex.com/api/auth/apple/callback",
+        scopes: "email name",
+        state: crypto.randomUUID(),
+        nonce: crypto.randomUUID(),
+      });
+      
+      if (!result.response?.identityToken) {
+        throw new Error("Failed to get identity token from Apple Sign-In");
+      }
+      
+      // Send identity token to backend for verification
+      const res = await apiRequest("POST", "/api/auth/apple", {
+        idToken: result.response.identityToken,
+        authorizationCode: result.response.authorizationCode,
+        user: result.response.user ? {
+          email: result.response.email,
+          givenName: result.response.givenName,
+          familyName: result.response.familyName,
+        } : undefined,
+      });
+      const data = await res.json();
+      return data;
+    } catch (error: any) {
+      console.error("Native Apple Sign-In error:", error);
+      if (error.message?.includes("cancelled") || error.code === "1001") {
+        throw new Error("Sign in with Apple was cancelled");
+      }
+      throw new Error(error.message || "Apple Sign-In failed");
+    }
   }
 
-  // Web-based Apple Sign-In (limited - Apple prefers native)
-  throw new Error("Apple Sign-In is only available on iOS devices.");
+  // Apple Sign-In is only fully supported on iOS
+  // On web, you could implement Sign in with Apple JS but it requires domain verification
+  throw new Error("Sign in with Apple is only available on iOS devices. Please use another sign-in method.");
 }
 
 /**
  * Check if social login is available
- * Note: Native social login requires additional SDK setup in Xcode/Android Studio
- * Currently only web-based Google Sign-In is supported when VITE_GOOGLE_CLIENT_ID is configured
+ * Returns availability based on platform and configuration
  */
 export function isSocialLoginAvailable(): { google: boolean; apple: boolean } {
+  const platform = Capacitor.getPlatform();
   const isNative = Capacitor.isNativePlatform();
 
   return {
-    // Google is available on web if configured (native requires SDK setup)
-    google: !isNative && !!GOOGLE_CLIENT_ID && typeof google !== "undefined",
-    // Apple Sign-In disabled until native SDK is integrated
-    // (Native iOS requires Sign in with Apple capability in Xcode)
-    apple: false,
+    // Google is available on native (with plugin) and on web (if configured and GIS loaded)
+    google: isNative || (!!GOOGLE_CLIENT_ID && typeof google !== "undefined"),
+    // Apple Sign-In is only available on iOS
+    apple: platform === "ios",
   };
 }
 
-// Declare Google Identity Services types
+// Declare Google Identity Services types for web
 declare global {
   const google: {
     accounts: {
