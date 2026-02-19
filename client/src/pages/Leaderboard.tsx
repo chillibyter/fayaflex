@@ -118,7 +118,7 @@ export default function Leaderboard() {
     }
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {data.map((entry) => (
           <LeaderboardCard 
             key={`${entry.rank}-${entry.userId || entry.teamId}`} 
@@ -135,50 +135,52 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 pt-3 sm:pt-4 pb-6 sm:pb-8 rounded-b-3xl">
-        <div className="flex items-center gap-3 mb-1 sm:mb-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setLocation("/")}
-            className="text-white hover:bg-white/20"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl sm:text-2xl font-bold">Leaderboard</h1>
+      <header className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 md:px-6 pt-3 sm:pt-4 pb-6 sm:pb-8 rounded-b-3xl">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-1 sm:mb-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setLocation("/")}
+              className="text-white"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Leaderboard</h1>
+          </div>
+          <p className="text-center text-orange-100 text-base sm:text-lg">{monthName}</p>
+          <p className="text-center text-orange-200 text-xs sm:text-sm mt-1">Rankings reset on the 1st of each month</p>
         </div>
-        <p className="text-center text-orange-100 text-base sm:text-lg">{monthName}</p>
-        <p className="text-center text-orange-200 text-xs sm:text-sm mt-1">Rankings reset on the 1st of each month</p>
       </header>
 
-      <div className="px-3 sm:px-4 -mt-4 max-w-2xl mx-auto">
+      <div className="px-3 sm:px-4 md:px-6 -mt-4 max-w-3xl mx-auto">
         <Tabs defaultValue="teams" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-card shadow-md rounded-xl p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-4 bg-card shadow-md rounded-xl p-1 gap-1">
             <TabsTrigger 
               value="teams" 
-              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
+              className="rounded-lg text-[11px] sm:text-xs md:text-sm data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-teams"
             >
               Teams
             </TabsTrigger>
             <TabsTrigger 
               value="calories" 
-              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
+              className="rounded-lg text-[11px] sm:text-xs md:text-sm data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-calories"
             >
               Calories
             </TabsTrigger>
             <TabsTrigger 
               value="steps" 
-              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
+              className="rounded-lg text-[11px] sm:text-xs md:text-sm data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-steps"
             >
               Steps
             </TabsTrigger>
             <TabsTrigger 
               value="workouts" 
-              className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
+              className="rounded-lg text-[11px] sm:text-xs md:text-sm data-[state=active]:bg-primary data-[state=active]:text-white" 
               data-testid="tab-workouts"
             >
               Workouts
