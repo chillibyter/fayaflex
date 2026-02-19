@@ -52,6 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         countryId: z.string().nullable().optional(),
         regionId: z.string().nullable().optional(),
         townId: z.string().nullable().optional(),
+        bmr: z.number().int().min(500).max(5000).nullable().optional(),
       });
       
       const validatedData = updateUserSchema.parse(req.body);

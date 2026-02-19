@@ -68,6 +68,7 @@ export default function Profile() {
   const [countryId, setCountryId] = useState<string | null>(null);
   const [regionId, setRegionId] = useState<string | null>(null);
   const [townId, setTownId] = useState<string | null>(null);
+  const [bmr, setBmr] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,7 +95,7 @@ export default function Profile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string; avatarId?: string; profileImageUrl?: string }) => {
+    mutationFn: async (data: { firstName: string; lastName: string; avatarId?: string; profileImageUrl?: string; bmr?: number | null }) => {
       return await apiRequest('PATCH', '/api/auth/user', data);
     },
     onSuccess: () => {
@@ -230,6 +231,7 @@ export default function Profile() {
       setCountryId(user.countryId || null);
       setRegionId(user.regionId || null);
       setTownId(user.townId || null);
+      setBmr((user as any).bmr || null);
     }
     setIsEditOpen(true);
   };
@@ -243,6 +245,7 @@ export default function Profile() {
       countryId,
       regionId,
       townId,
+      bmr: bmr || null,
     };
     if (!useCustomPhoto && user?.profileImageUrl) {
       updateData.profileImageUrl = "";
@@ -679,6 +682,23 @@ export default function Profile() {
                   setTownId(location.townId);
                 }}
               />
+
+              <div className="space-y-2">
+                <Label htmlFor="bmr">BMR (Basal Metabolic Rate)</Label>
+                <Input
+                  id="bmr"
+                  type="number"
+                  min={500}
+                  max={5000}
+                  value={bmr || ""}
+                  onChange={(e) => setBmr(e.target.value ? parseInt(e.target.value) : null)}
+                  placeholder="e.g. 1800"
+                  data-testid="input-bmr"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used by Android devices to calculate active calories from total calories burned. Typical range: 1200-2500 kcal.
+                </p>
+              </div>
             </div>
           </div>
 

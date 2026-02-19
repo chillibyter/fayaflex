@@ -41,6 +41,7 @@ export const users = pgTable("users", {
   countryId: varchar("country_id"),
   regionId: varchar("region_id"),
   townId: varchar("town_id"),
+  bmr: integer("bmr"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
