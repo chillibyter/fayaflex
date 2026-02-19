@@ -145,26 +145,26 @@ export default function TeamLeaderboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button variant="ghost" size="icon" asChild data-testid="button-back-to-teams">
               <Link href="/teams">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight" data-testid="text-team-name">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-3xl font-bold tracking-tight truncate" data-testid="text-team-name">
                 {teamData?.name || 'Team'} Leaderboard
               </h1>
-              <p className="text-muted-foreground">
-                Individual rankings for this team. Scores reset on the 1st of each month.
+              <p className="text-muted-foreground text-xs sm:text-base">
+                Scores reset on the 1st of each month.
               </p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-base px-4 py-2" data-testid="badge-month">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Badge variant="outline" className="text-xs sm:text-base px-2 sm:px-4 py-1 sm:py-2" data-testid="badge-month">
             {monthName}
           </Badge>
           {teamData && (
@@ -259,7 +259,7 @@ export default function TeamLeaderboard() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowKickDialog({ userId: entry.userId!, name: entry.name })}
-                  className="text-muted-foreground hover:text-destructive flex-shrink-0"
+                  className="text-destructive flex-shrink-0"
                   data-testid={`button-kick-${entry.userId}`}
                 >
                   <UserMinus className="h-4 w-4" />

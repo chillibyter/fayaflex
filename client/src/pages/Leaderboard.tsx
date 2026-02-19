@@ -135,8 +135,8 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 pt-4 pb-8 rounded-b-3xl">
-        <div className="flex items-center gap-3 mb-2">
+      <header className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 pt-3 sm:pt-4 pb-6 sm:pb-8 rounded-b-3xl">
+        <div className="flex items-center gap-3 mb-1 sm:mb-2">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -146,15 +146,15 @@ export default function Leaderboard() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold">Leaderboard</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Leaderboard</h1>
         </div>
-        <p className="text-center text-orange-100 text-lg">{monthName}</p>
-        <p className="text-center text-orange-200 text-sm mt-1">Rankings reset on the 1st of each month</p>
+        <p className="text-center text-orange-100 text-base sm:text-lg">{monthName}</p>
+        <p className="text-center text-orange-200 text-xs sm:text-sm mt-1">Rankings reset on the 1st of each month</p>
       </header>
 
-      <div className="px-4 -mt-4">
+      <div className="px-3 sm:px-4 -mt-4 max-w-2xl mx-auto">
         <Tabs defaultValue="teams" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-card shadow-md rounded-xl p-1">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-card shadow-md rounded-xl p-1 gap-1">
             <TabsTrigger 
               value="teams" 
               className="rounded-lg text-xs data-[state=active]:bg-primary data-[state=active]:text-white" 
@@ -185,13 +185,13 @@ export default function Leaderboard() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <TabsContent value="teams" className="mt-0">
-              <div className="flex items-center gap-2 mb-4">
-                <Trophy className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <h2 className="text-base sm:text-lg font-semibold">
                   Team Rankings
-                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                  <span className="text-muted-foreground font-normal text-xs sm:text-sm ml-1">
                     (Global)
                   </span>
                 </h2>
@@ -200,11 +200,11 @@ export default function Leaderboard() {
             </TabsContent>
 
             <TabsContent value="calories" className="mt-0">
-              <div className="flex items-center gap-2 mb-4">
-                <Flame className="w-5 h-5 text-orange-500" />
-                <h2 className="text-lg font-semibold">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                <h2 className="text-base sm:text-lg font-semibold">
                   Calories Burned
-                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                  <span className="text-muted-foreground font-normal text-xs sm:text-sm ml-1">
                     (Teammates)
                   </span>
                 </h2>
@@ -213,11 +213,11 @@ export default function Leaderboard() {
             </TabsContent>
 
             <TabsContent value="steps" className="mt-0">
-              <div className="flex items-center gap-2 mb-4">
-                <Footprints className="w-5 h-5 text-blue-500" />
-                <h2 className="text-lg font-semibold">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <Footprints className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                <h2 className="text-base sm:text-lg font-semibold">
                   Steps Taken
-                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                  <span className="text-muted-foreground font-normal text-xs sm:text-sm ml-1">
                     (Teammates)
                   </span>
                 </h2>
@@ -226,11 +226,11 @@ export default function Leaderboard() {
             </TabsContent>
 
             <TabsContent value="workouts" className="mt-0">
-              <div className="flex items-center gap-2 mb-4">
-                <Dumbbell className="w-5 h-5 text-purple-500" />
-                <h2 className="text-lg font-semibold">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                <h2 className="text-base sm:text-lg font-semibold">
                   Workout Days
-                  <span className="text-muted-foreground font-normal text-sm ml-1">
+                  <span className="text-muted-foreground font-normal text-xs sm:text-sm ml-1">
                     (Teammates)
                   </span>
                 </h2>

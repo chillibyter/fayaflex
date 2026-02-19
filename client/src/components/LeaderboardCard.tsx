@@ -62,37 +62,37 @@ export default function LeaderboardCard({
   const href = userId ? `/users/${userId}/profile` : teamId ? `/teams/${teamId}` : undefined;
 
   const content = (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Badge variant={getRankBadgeVariant()} className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
+    <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+        <Badge variant={getRankBadgeVariant()} className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm">
           {rank}
         </Badge>
         {userForAvatar ? (
           <UserAvatar 
             user={userForAvatar} 
-            className="h-10 w-10 flex-shrink-0"
-            iconClassName="h-5 w-5"
+            className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0"
+            iconClassName="h-4 w-4 sm:h-5 sm:w-5"
           />
         ) : (
-          <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-medium">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-xs sm:text-sm font-medium">
               {name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
             </span>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className="font-semibold truncate" data-testid={`text-name-${rank}`}>{name}</h4>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <h4 className="font-semibold truncate text-sm sm:text-base" data-testid={`text-name-${rank}`}>{name}</h4>
             {getMedalIcon()}
           </div>
-          {teamName && <p className="text-sm text-muted-foreground truncate">{teamName}</p>}
+          {teamName && <p className="text-xs sm:text-sm text-muted-foreground truncate">{teamName}</p>}
         </div>
       </div>
       <div className="text-right flex-shrink-0">
-        <p className="text-2xl font-bold" data-testid={`text-calories-${rank}`}>
+        <p className="text-lg sm:text-2xl font-bold" data-testid={`text-calories-${rank}`}>
           {calories.toLocaleString()}
         </p>
-        <p className="text-sm text-muted-foreground">{goalPercentage}% of goal</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">{goalPercentage}% of goal</p>
       </div>
     </div>
   );
@@ -100,7 +100,7 @@ export default function LeaderboardCard({
   if (href) {
     return (
       <Link href={href}>
-        <Card className="p-4 hover-elevate cursor-pointer transition-all" data-testid={`card-leaderboard-${rank}`}>
+        <Card className="p-3 sm:p-4 hover-elevate cursor-pointer transition-all" data-testid={`card-leaderboard-${rank}`}>
           {content}
         </Card>
       </Link>
@@ -108,7 +108,7 @@ export default function LeaderboardCard({
   }
 
   return (
-    <Card className="p-4" data-testid={`card-leaderboard-${rank}`}>
+    <Card className="p-3 sm:p-4" data-testid={`card-leaderboard-${rank}`}>
       {content}
     </Card>
   );
