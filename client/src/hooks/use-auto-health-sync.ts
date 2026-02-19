@@ -62,7 +62,7 @@ export function useAutoHealthSync() {
 
       console.log('[AutoSync] Fetching health data from', startDate.toISOString(), 'to', endDate.toISOString());
       
-      const healthData = await healthService.getHealthData(startDate, endDate);
+      const healthData = await healthService.getHealthData(startDate, endDate, (user as any)?.bmr);
       
       if (healthData.length === 0) {
         console.log('[AutoSync] No health data to sync');

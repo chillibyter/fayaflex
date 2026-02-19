@@ -21,6 +21,10 @@ export function HealthDevices() {
   const [nativeAvailable, setNativeAvailable] = useState(false);
   const [isNativePlatform, setIsNativePlatform] = useState(false);
   const [providerName, setProviderName] = useState<'apple_health' | 'android_health' | 'huawei_health'>('android_health');
+  
+  const { data: currentUser } = useQuery<any>({
+    queryKey: ['/api/auth/user']
+  });
 
   const { data: devices, isLoading } = useQuery<DeviceConnection[]>({
     queryKey: ['/api/devices']
@@ -103,7 +107,7 @@ export function HealthDevices() {
       console.log('[HealthDevices] Step 4: Querying health data...');
       let healthData;
       try {
-        healthData = await healthService.getHealthData(startDate, endDate);
+        healthData = await healthService.getHealthData(startDate, endDate, currentUser?.bmr);
         console.log('[HealthDevices] Health data retrieved:', healthData.length, 'days');
       } catch (dataError) {
         console.error('[HealthDevices] Failed to fetch health data:', dataError);
@@ -195,7 +199,7 @@ export function HealthDevices() {
         console.log('[HealthDevices] Initial sync for 30 days');
       }
 
-      const healthData = await healthService.getHealthData(startDate, endDate);
+      const healthData = await healthService.getHealthData(startDate, endDate, currentUser?.bmr);
       console.log('[HealthDevices] Syncing', healthData.length, 'days of data');
 
       // Check for zero calories on Android

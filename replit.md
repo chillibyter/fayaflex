@@ -86,6 +86,15 @@ Preferred communication style: Simple, everyday language.
 - Comprehensive geographic seed data covering 6 continents with countries, regions, and towns
 - LocationPicker component for cascading selection, CitySearch for autocomplete selection
 
+**Android Active Calorie Conversion** (February 19, 2026)
+- Added BMR (Basal Metabolic Rate) field to user profile (integer, range 500-5000)
+- BMR input added to Edit Profile dialog with helper text
+- Android health service applies formula: Active Cal = Total Burned Cal × 1.2 - BMR
+- Formula only applied when: Android platform + total-calories data type + user has BMR set
+- If BMR not set, raw calorie values are used (no conversion)
+- Default BMR is NOT applied - users must explicitly set their BMR in Profile
+- All getHealthData call sites updated to pass user's BMR (HealthDevices, auto-sync hook)
+
 **Profile Photo Upload** (December 30, 2025)
 - Users can now upload a photo or take a selfie as their profile picture
 - Added POST /api/upload/profile-image endpoint with Sharp image compression

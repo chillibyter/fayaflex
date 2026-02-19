@@ -149,7 +149,11 @@ class HealthService {
     }
   }
 
-  async getHealthData(startDate: Date, endDate: Date): Promise<HealthDataPoint[]> {
+  private isAndroid(): boolean {
+    return Capacitor.getPlatform() === 'android';
+  }
+
+  async getHealthData(startDate: Date, endDate: Date, userBmr?: number | null): Promise<HealthDataPoint[]> {
     try {
       console.log('[HealthService] Fetching health data from', startDate.toISOString(), 'to', endDate.toISOString());
       const startDateStr = startDate.toISOString();
@@ -188,6 +192,7 @@ class HealthService {
       // Android Health Connect has: ActiveCaloriesBurnedRecord, TotalCaloriesBurnedRecord, BasalMetabolicRateRecord
       // IMPORTANT: Prioritize active-calories for fitness tracking (exercise calories, not total/basal)
       let caloriesResult: any = { aggregatedData: [] };
+      let usedCalorieDataType = '';
       
       // Try different calorie data types in order of preference (active first!)
       const calorieDataTypes = ['active-calories', 'calories', 'total-calories'];
@@ -212,6 +217,7 @@ class HealthService {
           // Use this data type if it has meaningful data
           if (total > 0) {
             caloriesResult.aggregatedData = data;
+            usedCalorieDataType = dataType;
             console.log(`[HealthService] Using ${dataType} for calories (total: ${Math.round(total)})`);
             break;
           }
@@ -312,13 +318,29 @@ class HealthService {
         getOrCreate(date).steps += getSampleValue(sample);
       }
 
+      // Android: Apply active calorie formula ONLY when total-calories are returned (not active-calories)
+      // Formula: Active Cal = Total Burned Cal × 1.2 - BMR
+      // Only convert when: 1) Android platform, 2) data came from 'total-calories' specifically, 3) user has set their BMR
+      const needsAndroidConversion = this.isAndroid() && usedCalorieDataType === 'total-calories' && !!userBmr;
+      if (needsAndroidConversion) {
+        console.log(`[HealthService] Android: Will convert total calories to active using formula (BMR: ${userBmr})`);
+      } else if (this.isAndroid() && usedCalorieDataType === 'total-calories' && !userBmr) {
+        console.log('[HealthService] Android: Total calories detected but no BMR set - using raw values. Set BMR in Profile for accurate active calories.');
+      }
+
       // Process calories - use aggregated data, or workout calories as fallback
       if (!useWorkoutCaloriesFallback) {
-        // Use aggregated active-calories (preferred)
         for (const sample of caloriesResult.aggregatedData || []) {
           const date = getSampleDate(sample);
           if (!date) continue;
-          const calorieValue = getSampleValue(sample);
+          let calorieValue = getSampleValue(sample);
+          
+          if (needsAndroidConversion && calorieValue > 0 && userBmr) {
+            const originalValue = calorieValue;
+            calorieValue = Math.max(0, Math.round(calorieValue * 1.2 - userBmr));
+            console.log(`[HealthService] Android calorie conversion: ${originalValue} total -> ${calorieValue} active (BMR: ${userBmr})`);
+          }
+          
           getOrCreate(date).calories += calorieValue;
         }
       }
