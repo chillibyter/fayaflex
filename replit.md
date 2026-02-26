@@ -95,6 +95,16 @@ Preferred communication style: Simple, everyday language.
 - Default BMR is NOT applied - users must explicitly set their BMR in Profile
 - All getHealthData call sites updated to pass user's BMR (HealthDevices, auto-sync hook)
 
+**Health Plugin Patch Script** (February 26, 2026)
+- Created scripts/patch-health-plugin.cjs to fix @capgo/capacitor-health Android plugin bugs
+- Fixes CALORIES mapping: TotalCaloriesBurnedRecord instead of ActiveCaloriesBurnedRecord (Samsung Health fix)
+- Adds ACTIVE_CALORIES type mapped to ActiveCaloriesBurnedRecord
+- Adds EXERCISE type mapped to ExerciseSessionRecord (duration in minutes from start/end times)
+- Adds BMR type mapped to BasalMetabolicRateRecord (instantaneous record, uses record.time)
+- Patches both HealthDataType.kt and HealthManager.kt (read, write, and aggregation blocks)
+- Android manifest updated with READ_BASAL_METABOLIC_RATE permission
+- Run manually with: node scripts/patch-health-plugin.cjs (add as postinstall in package.json for automation)
+
 **Profile Photo Upload** (December 30, 2025)
 - Users can now upload a photo or take a selfie as their profile picture
 - Added POST /api/upload/profile-image endpoint with Sharp image compression
