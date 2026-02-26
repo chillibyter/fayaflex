@@ -5,276 +5,185 @@ const PLUGIN_DIR = path.join(
   __dirname,
   '..',
   'node_modules',
-  '@capgo',
   'capacitor-health',
   'android',
   'src',
   'main',
   'java',
-  'app',
-  'capgo',
-  'plugin',
-  'health'
+  'com',
+  'fit_up',
+  'health',
+  'capacitor'
 );
 
-function patchHealthDataType() {
-  const filePath = path.join(PLUGIN_DIR, 'HealthDataType.kt');
+function patchHealthPlugin() {
+  const filePath = path.join(PLUGIN_DIR, 'HealthPlugin.kt');
   if (!fs.existsSync(filePath)) {
-    console.log('[patch] HealthDataType.kt not found, skipping');
-    return false;
-  }
-
-  const patched = `package app.capgo.plugin.health
-
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
-import androidx.health.connect.client.records.BasalMetabolicRateRecord
-import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.ExerciseSessionRecord
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
-import androidx.health.connect.client.records.OxygenSaturationRecord
-import androidx.health.connect.client.records.Record
-import androidx.health.connect.client.records.RespiratoryRateRecord
-import androidx.health.connect.client.records.RestingHeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
-import androidx.health.connect.client.records.WeightRecord
-import kotlin.reflect.KClass
-
-enum class HealthDataType(
-    val identifier: String,
-    val recordClass: KClass<out Record>,
-    val unit: String
-) {
-    STEPS("steps", StepsRecord::class, "count"),
-    DISTANCE("distance", DistanceRecord::class, "meter"),
-    CALORIES("calories", TotalCaloriesBurnedRecord::class, "kilocalorie"),
-    ACTIVE_CALORIES("active-calories", ActiveCaloriesBurnedRecord::class, "kilocalorie"),
-    EXERCISE("exercise", ExerciseSessionRecord::class, "minute"),
-    BMR("bmr", BasalMetabolicRateRecord::class, "kilocalorie"),
-    HEART_RATE("heartRate", HeartRateRecord::class, "bpm"),
-    WEIGHT("weight", WeightRecord::class, "kilogram"),
-    SLEEP("sleep", SleepSessionRecord::class, "minute"),
-    RESPIRATORY_RATE("respiratoryRate", RespiratoryRateRecord::class, "bpm"),
-    OXYGEN_SATURATION("oxygenSaturation", OxygenSaturationRecord::class, "percent"),
-    RESTING_HEART_RATE("restingHeartRate", RestingHeartRateRecord::class, "bpm"),
-    HEART_RATE_VARIABILITY("heartRateVariability", HeartRateVariabilityRmssdRecord::class, "millisecond");
-
-    val readPermission: String
-        get() = HealthPermission.getReadPermission(recordClass)
-
-    val writePermission: String
-        get() = HealthPermission.getWritePermission(recordClass)
-
-    companion object {
-        fun from(identifier: String): HealthDataType? {
-            return entries.firstOrNull { it.identifier == identifier }
-        }
-    }
-}
-`;
-
-  fs.writeFileSync(filePath, patched, 'utf8');
-  console.log('[patch] HealthDataType.kt patched successfully');
-  return true;
-}
-
-function patchHealthManager() {
-  const filePath = path.join(PLUGIN_DIR, 'HealthManager.kt');
-  if (!fs.existsSync(filePath)) {
-    console.log('[patch] HealthManager.kt not found, skipping');
+    console.log('[patch] HealthPlugin.kt not found, skipping');
     return false;
   }
 
   let content = fs.readFileSync(filePath, 'utf8');
+  let changed = false;
 
-  const importsNeeded = [
-    'import androidx.health.connect.client.records.TotalCaloriesBurnedRecord',
-    'import androidx.health.connect.client.records.BasalMetabolicRateRecord',
-  ];
-  for (const imp of importsNeeded) {
-    if (!content.includes(imp)) {
-      content = content.replace(
-        'import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord',
-        'import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord\n' + imp
-      );
-    }
-  }
-  if (!content.includes('import androidx.health.connect.client.records.ExerciseSessionRecord')) {
+  if (!content.includes('import androidx.health.connect.client.records.BasalMetabolicRateRecord')) {
     content = content.replace(
       'import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord',
-      'import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord\nimport androidx.health.connect.client.records.ExerciseSessionRecord'
+      'import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord\nimport androidx.health.connect.client.records.BasalMetabolicRateRecord'
     );
+    changed = true;
+    console.log('[patch]   + Added BasalMetabolicRateRecord import');
   }
 
-  content = content.replace(
-    /HealthDataType\.CALORIES\s*->\s*readRecords\(client,\s*ActiveCaloriesBurnedRecord::class/g,
-    'HealthDataType.CALORIES -> readRecords(client, TotalCaloriesBurnedRecord::class'
-  );
-  content = content.replace(
-    /record\.energy\.inKilocalories,\s*\n(\s*)record\.metadata\s*\n(\s*)\)\s*\n(\s*)samples\.add\(record\.startTime to payload\)\s*\n(\s*)\}\s*\n(\s*)HealthDataType\.WEIGHT/,
-    `record.energy.inKilocalories,
-$1record.metadata
-$2)
-$3samples.add(record.startTime to payload)
-$4}
-$5HealthDataType.ACTIVE_CALORIES -> readRecords(client, ActiveCaloriesBurnedRecord::class, startTime, endTime, limit) { record ->
-$5    val payload = createSamplePayload(
-$5        dataType,
-$5        record.startTime,
-$5        record.endTime,
-$5        record.energy.inKilocalories,
-$5        record.metadata
-$5    )
-$5    samples.add(record.startTime to payload)
-$5}
-$5HealthDataType.EXERCISE -> readRecords(client, ExerciseSessionRecord::class, startTime, endTime, limit) { record ->
-$5    val durationMinutes = Duration.between(record.startTime, record.endTime).toMinutes().toDouble()
-$5    val payload = createSamplePayload(
-$5        dataType,
-$5        record.startTime,
-$5        record.endTime,
-$5        durationMinutes,
-$5        record.metadata
-$5    )
-$5    samples.add(record.startTime to payload)
-$5}
-$5HealthDataType.BMR -> readRecords(client, BasalMetabolicRateRecord::class, startTime, endTime, limit) { record ->
-$5    val payload = createSamplePayload(
-$5        dataType,
-$5        record.time,
-$5        record.time,
-$5        record.basalMetabolicRate.inKilocaloriesPerDay,
-$5        record.metadata
-$5    )
-$5    samples.add(record.time to payload)
-$5}
-$5HealthDataType.WEIGHT`
-  );
+  if (!content.includes('import androidx.health.connect.client.units.Power')) {
+    content = content.replace(
+      'import androidx.health.connect.client.time.TimeRangeFilter',
+      'import androidx.health.connect.client.time.TimeRangeFilter\nimport androidx.health.connect.client.units.Power'
+    );
+    changed = true;
+    console.log('[patch]   + Added Power import');
+  }
 
-  content = content.replace(
-    /HealthDataType\.CALORIES\s*->\s*\{\s*\n\s*val record = ActiveCaloriesBurnedRecord\(/g,
-    'HealthDataType.CALORIES -> {\n                val record = TotalCaloriesBurnedRecord('
-  );
+  if (!content.includes('READ_BMR')) {
+    content = content.replace(
+      'READ_STEPS, READ_WORKOUTS, READ_HEART_RATE, READ_ROUTE, READ_ACTIVE_CALORIES, READ_TOTAL_CALORIES, READ_DISTANCE;',
+      'READ_STEPS, READ_WORKOUTS, READ_HEART_RATE, READ_ROUTE, READ_ACTIVE_CALORIES, READ_TOTAL_CALORIES, READ_DISTANCE, READ_BMR;'
+    );
+    changed = true;
+    console.log('[patch]   + Added READ_BMR to CapHealthPermission enum');
+  }
 
-  const saveCaloriesEndPattern = /(\s*)(HealthDataType\.CALORIES\s*->\s*\{[\s\S]*?client\.insertRecords\(listOf\(record\)\)\s*\n\s*\})/;
-  const saveCaloriesMatch = content.match(saveCaloriesEndPattern);
-  if (saveCaloriesMatch) {
-    const indent = saveCaloriesMatch[1];
-    const afterCalories = saveCaloriesMatch[0];
+  if (!content.includes('alias = "READ_BMR"')) {
+    content = content.replace(
+      `Permission(
+            alias = "READ_ROUTE",
+            strings = ["android.permission.health.READ_EXERCISE_ROUTE"]
+        )
+    ]`,
+      `Permission(
+            alias = "READ_ROUTE",
+            strings = ["android.permission.health.READ_EXERCISE_ROUTE"]
+        ),
+        Permission(
+            alias = "READ_BMR",
+            strings = ["android.permission.health.READ_BASAL_METABOLIC_RATE"]
+        )
+    ]`
+    );
+    changed = true;
+    console.log('[patch]   + Added READ_BMR permission annotation');
+  }
 
-    const activeCaloriesSave = `${indent}HealthDataType.ACTIVE_CALORIES -> {
-${indent}    val record = ActiveCaloriesBurnedRecord(
-${indent}        startTime = startTime,
-${indent}        startZoneOffset = zoneOffset(startTime),
-${indent}        endTime = endTime,
-${indent}        endZoneOffset = zoneOffset(endTime),
-${indent}        energy = Energy.kilocalories(value)
-${indent}    )
-${indent}    client.insertRecords(listOf(record))
-${indent}}`;
+  if (!content.includes('CapHealthPermission.READ_BMR')) {
+    content = content.replace(
+      'Pair(CapHealthPermission.READ_STEPS, "android.permission.health.READ_STEPS")',
+      'Pair(CapHealthPermission.READ_STEPS, "android.permission.health.READ_STEPS"),\n        Pair(CapHealthPermission.READ_BMR, "android.permission.health.READ_BASAL_METABOLIC_RATE")'
+    );
+    changed = true;
+    console.log('[patch]   + Added READ_BMR to permissionMapping');
+  }
 
-    const exerciseSave = `${indent}HealthDataType.EXERCISE -> {
-${indent}    val record = ExerciseSessionRecord(
-${indent}        startTime = startTime,
-${indent}        startZoneOffset = zoneOffset(startTime),
-${indent}        endTime = endTime,
-${indent}        endZoneOffset = zoneOffset(endTime),
-${indent}        exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT
-${indent}    )
-${indent}    client.insertRecords(listOf(record))
-${indent}}`;
+  if (!content.includes('"bmr"')) {
+    content = content.replace(
+      `"distance" -> metricAndMapper("distance", CapHealthPermission.READ_DISTANCE, DistanceRecord.DISTANCE_TOTAL) { it?.inMeters }
+            else -> throw RuntimeException("Unsupported dataType: $dataType")`,
+      `"distance" -> metricAndMapper("distance", CapHealthPermission.READ_DISTANCE, DistanceRecord.DISTANCE_TOTAL) { it?.inMeters }
+            "bmr" -> metricAndMapper("bmr", CapHealthPermission.READ_BMR, BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL) { it?.inKilocalories }
+            else -> throw RuntimeException("Unsupported dataType: $dataType")`
+    );
+    changed = true;
+    console.log('[patch]   + Added "bmr" data type to getMetricAndMapper');
+  }
 
-    const bmrSave = `${indent}HealthDataType.BMR -> {
-${indent}    val record = BasalMetabolicRateRecord(
-${indent}        time = startTime,
-${indent}        zoneOffset = zoneOffset(startTime),
-${indent}        basalMetabolicRate = Power.kilocaloriesPerDay(value)
-${indent}    )
-${indent}    client.insertRecords(listOf(record))
-${indent}}`;
+  if (!content.includes('queryBmr')) {
+    const queryBmrMethod = `
+
+    @PluginMethod
+    fun queryBmr(call: PluginCall) {
+        val startDate = call.getString("startDate")
+        val endDate = call.getString("endDate")
+        if (startDate == null || endDate == null) {
+            call.reject("Missing required parameters: startDate or endDate")
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                if (!hasPermission(CapHealthPermission.READ_BMR)) {
+                    call.reject("BMR permission not granted")
+                    return@launch
+                }
+
+                val startInstant = Instant.parse(startDate)
+                val endInstant = Instant.parse(endDate)
+                val timeRange = TimeRangeFilter.between(
+                    startInstant.atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                    endInstant.atZone(ZoneId.systemDefault()).toLocalDateTime()
+                )
+                val request = ReadRecordsRequest(BasalMetabolicRateRecord::class, timeRange)
+                val response = healthConnectClient.readRecords(request)
+
+                val bmrArray = JSArray()
+                for (record in response.records) {
+                    val bmrObject = JSObject()
+                    bmrObject.put("time", record.time.toString())
+                    bmrObject.put("value", record.basalMetabolicRate.inKilocaloriesPerDay)
+                    bmrObject.put("sourceBundleId", record.metadata.dataOrigin.packageName)
+                    bmrArray.put(bmrObject)
+                }
+
+                val result = JSObject()
+                result.put("records", bmrArray)
+                call.resolve(result)
+            } catch (e: Exception) {
+                call.reject("Error querying BMR: \${e.message}")
+            }
+        }
+    }`;
 
     content = content.replace(
-      afterCalories,
-      afterCalories + '\n' + activeCaloriesSave + '\n' + exerciseSave + '\n' + bmrSave
+      '    private val exerciseTypeMapping = mapOf(',
+      queryBmrMethod + '\n\n    private val exerciseTypeMapping = mapOf('
     );
+    changed = true;
+    console.log('[patch]   + Added queryBmr method');
   }
 
-  content = content.replace(
-    /HealthDataType\.CALORIES\s*->\s*setOf\(ActiveCaloriesBurnedRecord\.ACTIVE_CALORIES_TOTAL\)/g,
-    'HealthDataType.CALORIES -> setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL)'
-  );
+  if (changed) {
+    fs.writeFileSync(filePath, content, 'utf8');
 
-  content = content.replace(
-    /result\[ActiveCaloriesBurnedRecord\.ACTIVE_CALORIES_TOTAL\]\?\.inKilocalories/g,
-    'result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories'
-  );
+    const requiredPatterns = [
+      { pattern: 'BasalMetabolicRateRecord', desc: 'BMR import' },
+      { pattern: 'READ_BMR', desc: 'READ_BMR permission enum' },
+      { pattern: 'READ_BASAL_METABOLIC_RATE', desc: 'BMR Android permission' },
+      { pattern: '"bmr"', desc: 'BMR data type in getMetricAndMapper' },
+      { pattern: 'queryBmr', desc: 'queryBmr method' },
+    ];
 
-  const aggregationElsePattern = /else\s*->\s*throw\s*IllegalArgumentException\("Unsupported data type for aggregation: \$\{dataType\.identifier\}"\)/;
-  if (aggregationElsePattern.test(content)) {
-    content = content.replace(
-      aggregationElsePattern,
-      `HealthDataType.ACTIVE_CALORIES -> setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
-                    else -> throw IllegalArgumentException("Unsupported data type for aggregation: \${dataType.identifier}")`
-    );
-  }
-
-  const aggregationValueElsePattern = /(\s*)else\s*->\s*null\s*\n(\s*)\}/;
-  const aggValueMatch = content.match(aggregationValueElsePattern);
-  if (aggValueMatch) {
-    const indent = aggValueMatch[1];
-    content = content.replace(
-      aggregationValueElsePattern,
-      `${indent}HealthDataType.ACTIVE_CALORIES -> when (aggregation) {
-${indent}    "sum" -> result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories
-${indent}    else -> result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories
-${indent}}
-${indent}else -> null
-$2}`
-    );
-  }
-
-  const sleepAggCheck = content.match(/if\s*\(dataType\s*==\s*HealthDataType\.SLEEP\)/);
-  if (sleepAggCheck) {
-    content = content.replace(
-      /if\s*\(dataType\s*==\s*HealthDataType\.SLEEP\)\s*\{/,
-      'if (dataType == HealthDataType.SLEEP || dataType == HealthDataType.EXERCISE || dataType == HealthDataType.BMR) {'
-    );
-  }
-
-  fs.writeFileSync(filePath, content, 'utf8');
-
-  const requiredPatterns = [
-    { pattern: 'TotalCaloriesBurnedRecord::class', desc: 'CALORIES -> TotalCaloriesBurnedRecord read' },
-    { pattern: 'HealthDataType.ACTIVE_CALORIES ->', desc: 'ACTIVE_CALORIES read/write block' },
-    { pattern: 'HealthDataType.EXERCISE ->', desc: 'EXERCISE read/write block' },
-    { pattern: 'HealthDataType.BMR ->', desc: 'BMR read/write block' },
-    { pattern: 'TotalCaloriesBurnedRecord.ENERGY_TOTAL', desc: 'CALORIES aggregation fix' },
-    { pattern: 'BasalMetabolicRateRecord', desc: 'BMR import' },
-  ];
-
-  let allOk = true;
-  for (const { pattern, desc } of requiredPatterns) {
-    if (!content.includes(pattern)) {
-      console.error(`[patch] VALIDATION FAILED: Missing "${desc}" (pattern: ${pattern})`);
-      allOk = false;
+    let allOk = true;
+    for (const { pattern, desc } of requiredPatterns) {
+      if (!content.includes(pattern)) {
+        console.error(`[patch] VALIDATION FAILED: Missing "${desc}" (pattern: ${pattern})`);
+        allOk = false;
+      }
     }
-  }
 
-  if (!allOk) {
-    console.error('[patch] WARNING: Some patches may not have applied correctly!');
-    console.error('[patch] The plugin source may have changed. Please review manually.');
-    return false;
-  }
+    if (!allOk) {
+      console.error('[patch] WARNING: Some patches may not have applied correctly!');
+      console.error('[patch] The plugin source may have changed. Please review manually.');
+      return false;
+    }
 
-  console.log('[patch] HealthManager.kt patched and validated successfully');
-  return true;
+    console.log('[patch] HealthPlugin.kt patched and validated successfully');
+    return true;
+  } else {
+    console.log('[patch] HealthPlugin.kt already patched, no changes needed');
+    return true;
+  }
 }
 
 function main() {
-  console.log('[patch] Patching @capgo/capacitor-health Android plugin...');
+  console.log('[patch] Patching capacitor-health Android plugin...');
 
   if (!fs.existsSync(PLUGIN_DIR)) {
     console.log('[patch] Plugin directory not found, skipping patch');
@@ -282,18 +191,15 @@ function main() {
     return;
   }
 
-  const dt = patchHealthDataType();
-  const hm = patchHealthManager();
+  const result = patchHealthPlugin();
 
-  if (dt || hm) {
+  if (result) {
     console.log('[patch] Health plugin patch complete!');
     console.log('[patch] Changes:');
-    console.log('[patch]   - CALORIES now maps to TotalCaloriesBurnedRecord');
-    console.log('[patch]   - Added ACTIVE_CALORIES (ActiveCaloriesBurnedRecord)');
-    console.log('[patch]   - Added EXERCISE (ExerciseSessionRecord, duration in minutes)');
-    console.log('[patch]   - Added BMR (BasalMetabolicRateRecord, kcal/day)');
-  } else {
-    console.log('[patch] No files were patched');
+    console.log('[patch]   - Added BMR (BasalMetabolicRateRecord) support');
+    console.log('[patch]   - Added READ_BMR permission');
+    console.log('[patch]   - Added queryBmr method for reading BMR records');
+    console.log('[patch]   - Added "bmr" as aggregatable data type');
   }
 }
 

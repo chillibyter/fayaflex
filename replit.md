@@ -96,12 +96,16 @@ Preferred communication style: Simple, everyday language.
 - All getHealthData call sites updated to pass user's BMR (HealthDevices, auto-sync hook)
 
 **Health Plugin Patch Script** (February 26, 2026)
-- Created scripts/patch-health-plugin.cjs to fix @capgo/capacitor-health Android plugin bugs
-- Fixes CALORIES mapping: TotalCaloriesBurnedRecord instead of ActiveCaloriesBurnedRecord (Samsung Health fix)
-- Adds ACTIVE_CALORIES type mapped to ActiveCaloriesBurnedRecord
-- Adds EXERCISE type mapped to ExerciseSessionRecord (duration in minutes from start/end times)
-- Adds BMR type mapped to BasalMetabolicRateRecord (instantaneous record, uses record.time)
-- Patches both HealthDataType.kt and HealthManager.kt (read, write, and aggregation blocks)
+- Created scripts/patch-health-plugin.cjs to patch capacitor-health (com.fit_up.health.capacitor) Android plugin
+- Targets HealthPlugin.kt in node_modules/capacitor-health/android/src/main/java/com/fit_up/health/capacitor/
+- Plugin already supports: active-calories, total-calories, steps, distance, workouts, heart rate
+- Patch adds BMR (BasalMetabolicRateRecord) support:
+  - Adds BasalMetabolicRateRecord and Power imports
+  - Adds READ_BMR to CapHealthPermission enum and permission annotations
+  - Adds READ_BMR to permissionMapping (maps to android.permission.health.READ_BASAL_METABOLIC_RATE)
+  - Adds "bmr" data type to getMetricAndMapper for aggregated queries
+  - Adds queryBmr() method for reading individual BMR records
+- Script is idempotent (safe to run multiple times) and includes post-patch validation
 - Android manifest updated with READ_BASAL_METABOLIC_RATE permission
 - Run manually with: node scripts/patch-health-plugin.cjs (add as postinstall in package.json for automation)
 
