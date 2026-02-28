@@ -1,0 +1,57 @@
+fitscoresync-2 % git stash
+git pull origin main --no-rebase
+git stash pop
+Saved working directory and index state WIP on main: 8abfe95 Fix Android crash - ProGuard and splash screen fixes
+From https://github.com/chillibyter/fayaflex
+ * branch            main       -> FETCH_HEAD
+Auto-merging capacitor.config.ts
+CONFLICT (content): Merge conflict in capacitor.config.ts
+Auto-merging client/index.html
+CONFLICT (content): Merge conflict in client/index.html
+warning: Cannot merge binary files: client/public/fayaflex-logo.png (HEAD vs. 18628cf7092db0e554655ee19815afdcff75b7df)
+Auto-merging client/public/fayaflex-logo.png
+CONFLICT (add/add): Merge conflict in client/public/fayaflex-logo.png
+warning: Cannot merge binary files: client/public/fayaflex-logo.webp (HEAD vs. 18628cf7092db0e554655ee19815afdcff75b7df)
+Auto-merging client/public/fayaflex-logo.webp
+CONFLICT (add/add): Merge conflict in client/public/fayaflex-logo.webp
+warning: Cannot merge binary files: client/public/icon-192.png (HEAD vs. 18628cf7092db0e554655ee19815afdcff75b7df)
+Auto-merging client/public/icon-192.png
+CONFLICT (content): Merge conflict in client/public/icon-192.png
+warning: Cannot merge binary files: client/public/icon-192.webp (HEAD vs. 18628cf7092db0e554655ee19815afdcff75b7df)
+Auto-merging client/public/icon-192.webp
+CONFLICT (add/add): Merge conflict in client/public/icon-192.webp
+warning: Cannot merge binary files: client/public/icon-512.png (HEAD vs. 18628cf7092db0e554655ee19815afdcff75b7df)
+Auto-merging client/public/icon-512.png
+CONFLICT (content): Merge conflict in client/public/icon-512.png
+warning: Cannot merge binary files: client/public/icon-512.webp (HEAD vs. 18628cf7092db0e554655ee19815afdcff75b7df)
+Auto-merging client/public/icon-512.webp
+CONFLICT (add/add): Merge conflict in client/public/icon-512.webp
+Auto-merging client/public/sw-v6.js
+CONFLICT (content): Merge conflict in client/public/sw-v6.js
+CONFLICT (modify/delete): ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png deleted in HEAD and modified in 18628cf7092db0e554655ee19815afdcff75b7df.  Version 18628cf7092db0e554655ee19815afdcff75b7df of ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png left in tree.
+Auto-merging ios/App/App/HealthKitPlugin.swift
+CONFLICT (add/add): Merge conflict in ios/App/App/HealthKitPlugin.swift
+Auto-merging ios/App/App/Info.plist
+CONFLICT (content): Merge conflict in ios/App/App/Info.plist
+Auto-merging package-lock.json
+CONFLICT (content): Merge conflict in package-lock.json
+Auto-merging package.json
+Auto-merging server/index.ts
+CONFLICT (content): Merge conflict in server/index.ts
+Automatic merge failed; fix conflicts and then commit the result.
+capacitor.config.ts: needs merge
+client/index.html: needs merge
+client/public/fayaflex-logo.png: needs merge
+client/public/fayaflex-logo.webp: needs merge
+client/public/icon-192.png: needs merge
+client/public/icon-192.webp: needs merge
+client/public/icon-512.png: needs merge
+client/public/icon-512.webp: needs merge
+client/public/sw-v6.js: needs merge
+ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png: needs merge
+ios/App/App/HealthKitPlugin.swift: needs merge
+ios/App/App/Info.plist: needs merge
+package-lock.json: needs merge
+server/index.ts: needs merge
+error: could not write index
+The stash entry is kept in case you need it again.
