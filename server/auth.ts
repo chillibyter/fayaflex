@@ -543,10 +543,10 @@ export function setupAuth(app: Express) {
   // Google OAuth endpoint - verifies Google ID token and creates/logs in user
   app.post("/api/auth/google", async (req, res, next) => {
     try {
-      const { idToken } = req.body;
+      const { idToken, code } = req.body;
       
-      if (!idToken) {
-        return res.status(400).json({ message: "ID token is required" });
+      if (!idToken && !code) {
+        return res.status(400).json({ message: "ID token or authorization code is required" });
       }
 
       const googleClientId = process.env.GOOGLE_CLIENT_ID;
@@ -555,18 +555,40 @@ export function setupAuth(app: Express) {
         return res.status(500).json({ message: "Google Sign-In is not configured" });
       }
 
-      // Verify the Google ID token
       const client = new OAuth2Client(googleClientId);
       let payload;
-      try {
-        const ticket = await client.verifyIdToken({
-          idToken,
-          audience: googleClientId,
-        });
-        payload = ticket.getPayload();
-      } catch (error) {
-        console.error("[Google Auth] Token verification failed:", error);
-        return res.status(401).json({ message: "Invalid Google token" });
+
+      if (idToken) {
+        // Verify the Google ID token (One Tap or native flow)
+        try {
+          const ticket = await client.verifyIdToken({
+            idToken,
+            audience: googleClientId,
+          });
+          payload = ticket.getPayload();
+        } catch (error) {
+          console.error("[Google Auth] Token verification failed:", error);
+          return res.status(401).json({ message: "Invalid Google token" });
+        }
+      } else if (code) {
+        // Exchange authorization code for tokens (OAuth2 popup flow)
+        try {
+          const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+          const redirectUri = "postmessage";
+          const oauthClient = new OAuth2Client(googleClientId, googleClientSecret, redirectUri);
+          const { tokens } = await oauthClient.getToken(code);
+          if (!tokens.id_token) {
+            return res.status(401).json({ message: "Failed to get ID token from authorization code" });
+          }
+          const ticket = await client.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: googleClientId,
+          });
+          payload = ticket.getPayload();
+        } catch (error) {
+          console.error("[Google Auth] Code exchange failed:", error);
+          return res.status(401).json({ message: "Invalid authorization code" });
+        }
       }
 
       if (!payload || !payload.email) {

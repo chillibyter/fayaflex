@@ -48,41 +48,59 @@ export async function signInWithGoogle(): Promise<SocialLoginResult> {
     }
   }
 
-  // Web-based Google Sign-In using Google Identity Services
+  // Web-based Google Sign-In using Google OAuth2 popup flow
   return new Promise((resolve, reject) => {
     if (!GOOGLE_CLIENT_ID) {
       reject(new Error("Google Sign-In is not configured. Please set up VITE_GOOGLE_CLIENT_ID."));
       return;
     }
 
-    // Check if Google Identity Services is loaded
     if (typeof google === "undefined" || !google.accounts) {
       reject(new Error("Google Sign-In is not available. Please ensure the Google Identity Services script is loaded."));
       return;
     }
 
-    // Initialize Google Identity Services
+    const handleCredentialResponse = async (response: any) => {
+      try {
+        const res = await apiRequest("POST", "/api/auth/google", {
+          idToken: response.credential,
+        });
+        const data = await res.json();
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
-      callback: async (response: any) => {
-        try {
-          // Send ID token to our backend for verification
-          const res = await apiRequest("POST", "/api/auth/google", {
-            idToken: response.credential,
-          });
-          const data = await res.json();
-          resolve(data);
-        } catch (error) {
-          reject(error);
-        }
-      },
+      callback: handleCredentialResponse,
     });
 
-    // Prompt the user to select an account
     google.accounts.id.prompt((notification: any) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // If the prompt is not displayed, try the button approach
-        reject(new Error("Google Sign-In was cancelled or not available"));
+        console.log("[SocialAuth] One Tap not available, using OAuth2 popup flow");
+        const client = google.accounts.oauth2.initCodeClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: "openid email profile",
+          ux_mode: "popup",
+          callback: async (response: any) => {
+            if (response.error) {
+              reject(new Error("Google Sign-In was cancelled"));
+              return;
+            }
+            try {
+              const res = await apiRequest("POST", "/api/auth/google", {
+                code: response.code,
+              });
+              const data = await res.json();
+              resolve(data);
+            } catch (error) {
+              reject(error);
+            }
+          },
+        });
+        client.requestCode();
       }
     });
   });
@@ -160,6 +178,9 @@ declare global {
         initialize: (config: any) => void;
         prompt: (callback?: (notification: any) => void) => void;
         renderButton: (element: HTMLElement, config: any) => void;
+      };
+      oauth2: {
+        initCodeClient: (config: any) => { requestCode: () => void };
       };
     };
   };
