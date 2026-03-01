@@ -48,7 +48,7 @@ export async function signInWithGoogle(): Promise<SocialLoginResult> {
     }
   }
 
-  // Web-based Google Sign-In using Google OAuth2 popup flow
+  // Web-based Google Sign-In using OAuth2 authorization code flow
   return new Promise((resolve, reject) => {
     if (!GOOGLE_CLIENT_ID) {
       reject(new Error("Google Sign-In is not configured. Please set up VITE_GOOGLE_CLIENT_ID."));
@@ -60,49 +60,29 @@ export async function signInWithGoogle(): Promise<SocialLoginResult> {
       return;
     }
 
-    const handleCredentialResponse = async (response: any) => {
-      try {
-        const res = await apiRequest("POST", "/api/auth/google", {
-          idToken: response.credential,
-        });
-        const data = await res.json();
-        resolve(data);
-      } catch (error) {
-        reject(error);
-      }
-    };
-
-    google.accounts.id.initialize({
+    console.log("[SocialAuth] Starting Google OAuth2 popup flow");
+    const client = google.accounts.oauth2.initCodeClient({
       client_id: GOOGLE_CLIENT_ID,
-      callback: handleCredentialResponse,
+      scope: "openid email profile",
+      ux_mode: "popup",
+      callback: async (response: any) => {
+        if (response.error) {
+          console.error("[SocialAuth] OAuth2 error:", response.error);
+          reject(new Error("Google Sign-In was cancelled"));
+          return;
+        }
+        try {
+          const res = await apiRequest("POST", "/api/auth/google", {
+            code: response.code,
+          });
+          const data = await res.json();
+          resolve(data);
+        } catch (error) {
+          reject(error);
+        }
+      },
     });
-
-    google.accounts.id.prompt((notification: any) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        console.log("[SocialAuth] One Tap not available, using OAuth2 popup flow");
-        const client = google.accounts.oauth2.initCodeClient({
-          client_id: GOOGLE_CLIENT_ID,
-          scope: "openid email profile",
-          ux_mode: "popup",
-          callback: async (response: any) => {
-            if (response.error) {
-              reject(new Error("Google Sign-In was cancelled"));
-              return;
-            }
-            try {
-              const res = await apiRequest("POST", "/api/auth/google", {
-                code: response.code,
-              });
-              const data = await res.json();
-              resolve(data);
-            } catch (error) {
-              reject(error);
-            }
-          },
-        });
-        client.requestCode();
-      }
-    });
+    client.requestCode();
   });
 }
 
