@@ -41,7 +41,8 @@ export async function signInWithGoogle(): Promise<SocialLoginResult> {
         idToken: result.authentication.idToken,
       });
       const data = await res.json();
-      return data;
+      const { token, ...user } = data;
+      return { user, token };
     } catch (error: any) {
       console.error("Native Google Sign-In error:", error);
       throw new Error(error.message || "Google Sign-In failed");
@@ -76,7 +77,8 @@ export async function signInWithGoogle(): Promise<SocialLoginResult> {
             code: response.code,
           });
           const data = await res.json();
-          resolve(data);
+          const { token, ...user } = data;
+          resolve({ user, token });
         } catch (error) {
           reject(error);
         }
