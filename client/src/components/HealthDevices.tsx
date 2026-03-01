@@ -286,6 +286,10 @@ export function HealthDevices() {
     }
   };
 
+  const handleInstallHealthConnect = () => {
+    window.open('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata', '_system');
+  };
+
   const formatLastSync = (lastSyncAt: Date | null) => {
     if (!lastSyncAt) return 'Never synced';
     const date = new Date(lastSyncAt);
@@ -404,7 +408,7 @@ export function HealthDevices() {
                   variant="outline" 
                   size="sm" 
                   className="mt-2"
-                  onClick={handleOpenSettings}
+                  onClick={handleInstallHealthConnect}
                   data-testid="button-install-health-connect"
                 >
                   Install Health Connect
