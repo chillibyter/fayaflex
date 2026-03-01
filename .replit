@@ -46,4 +46,4 @@ integrations = ["javascript_log_in_with_replit:1.0.0", "javascript_database:1.0.
 
 [userenv.shared]
 APP_URL = "https://ultimatefitnesschallenge.com"
-VITE_GOOGLE_CLIENT_ID = "1076206676827-hkae7kn82em3am1jqrfnn9j0i3glgict.apps.googleusercontent.com"
+VITE_GOOGLE_CLIENT_ID = "389653262932-o11o8g7cv616b3svs0i3h9idkgu3bho7.apps.googleusercontent.com"
