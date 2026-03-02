@@ -16,37 +16,42 @@ export interface SocialLoginResult {
  */
 export async function signInWithGoogle(): Promise<SocialLoginResult> {
   if (Capacitor.isNativePlatform()) {
-    try {
-      const { GoogleAuth } = await import("@southdevs/capacitor-google-auth");
+    const pluginAvailable = Capacitor.isPluginAvailable("GoogleAuth");
+    console.log("[SocialAuth] Native platform detected, GoogleAuth plugin available:", pluginAvailable);
 
-      await GoogleAuth.initialize({
-        clientId: GOOGLE_CLIENT_ID || "",
-        scopes: ["profile", "email"],
-        grantOfflineAccess: true,
-      });
+    if (pluginAvailable) {
+      try {
+        const { GoogleAuth } = await import("@southdevs/capacitor-google-auth");
 
-      const result = await GoogleAuth.signIn({
-        clientId: GOOGLE_CLIENT_ID || undefined,
-        scopes: ["profile", "email"],
-      });
+        await GoogleAuth.initialize({
+          clientId: GOOGLE_CLIENT_ID || "",
+          scopes: ["profile", "email"],
+          grantOfflineAccess: true,
+        });
 
-      if (!result.authentication?.idToken) {
-        throw new Error("Failed to get ID token from Google Sign-In");
-      }
+        const result = await GoogleAuth.signIn({
+          clientId: GOOGLE_CLIENT_ID || undefined,
+          scopes: ["profile", "email"],
+        });
 
-      const res = await apiRequest("POST", "/api/auth/google", {
-        idToken: result.authentication.idToken,
-      });
-      const data = await res.json();
-      const { token, ...user } = data;
-      return { user, token };
-    } catch (error: any) {
-      console.error("Native Google Sign-In error:", error);
-      if (error.message?.includes("not implemented") || error.message?.includes("not available") || error.message?.includes("plugin_not_installed")) {
-        console.log("[SocialAuth] Native plugin unavailable, falling back to redirect flow");
+        if (!result.authentication?.idToken) {
+          throw new Error("Failed to get ID token from Google Sign-In");
+        }
+
+        const res = await apiRequest("POST", "/api/auth/google", {
+          idToken: result.authentication.idToken,
+        });
+        const data = await res.json();
+        const { token, ...user } = data;
+        return { user, token };
+      } catch (error: any) {
+        console.error("Native Google Sign-In error:", error);
+        console.log("[SocialAuth] Native plugin failed, falling back to redirect flow");
         return signInWithGoogleRedirect();
       }
-      throw new Error(error.message || "Google Sign-In failed");
+    } else {
+      console.log("[SocialAuth] GoogleAuth plugin not registered, using redirect flow");
+      return signInWithGoogleRedirect();
     }
   }
 
@@ -57,7 +62,10 @@ async function signInWithGoogleRedirect(): Promise<SocialLoginResult> {
   if (!GOOGLE_CLIENT_ID) {
     throw new Error("Google Sign-In is not configured.");
   }
-  const redirectUri = `${window.location.origin}/api/auth/google/callback`;
+  const origin = window.location.origin.includes("localhost") || window.location.origin.includes("capacitor")
+    ? "https://www.fayaflex.com"
+    : window.location.origin;
+  const redirectUri = `${origin}/api/auth/google/callback`;
   const state = crypto.randomUUID();
   sessionStorage.setItem("google_auth_state", state);
   const params = new URLSearchParams({
