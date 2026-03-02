@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,26 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const googleToken = params.get("google_auth_token");
+    const error = params.get("error");
+    if (googleToken) {
+      window.history.replaceState({}, "", "/");
+      if (Capacitor.isNativePlatform()) {
+        import("@capacitor/preferences").then(({ Preferences }) => {
+          Preferences.set({ key: "auth_token", value: googleToken });
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({ title: "Login successful!", description: "Welcome to FayaFlex!" });
+      setLocation("/");
+    } else if (error === "google_auth_failed") {
+      window.history.replaceState({}, "", "/auth");
+      setLoginError("Google Sign-In failed. Please try again.");
+    }
+  }, []);
 
   // Redirect if already logged in
   if (user) {

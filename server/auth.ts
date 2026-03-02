@@ -636,6 +636,76 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Google OAuth redirect callback - handles authorization code from redirect flow
+  app.get("/api/auth/google/callback", async (req, res, next) => {
+    try {
+      const { code, state } = req.query;
+
+      if (!code) {
+        return res.redirect("/?error=google_auth_failed");
+      }
+
+      const googleClientId = process.env.GOOGLE_CLIENT_ID;
+      const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      if (!googleClientId || !googleClientSecret) {
+        return res.redirect("/?error=google_not_configured");
+      }
+
+      const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+      const oauthClient = new OAuth2Client(googleClientId, googleClientSecret, redirectUri);
+      const { tokens } = await oauthClient.getToken(code as string);
+
+      if (!tokens.id_token) {
+        return res.redirect("/?error=google_auth_failed");
+      }
+
+      const client = new OAuth2Client(googleClientId);
+      const ticket = await client.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: googleClientId,
+      });
+      const payload = ticket.getPayload();
+
+      if (!payload || !payload.email) {
+        return res.redirect("/?error=google_auth_failed");
+      }
+
+      const { email, given_name, family_name, picture, sub: googleId } = payload;
+      console.log(`[Google Auth Callback] Verified user: ${email}`);
+
+      let user = await storage.getUserByEmail(email);
+
+      if (!user) {
+        const username = email.split("@")[0] + "_" + randomBytes(4).toString("hex");
+        user = await storage.createUser({
+          username,
+          email,
+          firstName: given_name || undefined,
+          lastName: family_name || undefined,
+          profileImageUrl: picture || undefined,
+        });
+        console.log(`[Google Auth Callback] Created new user: ${user.id}`);
+      } else {
+        if (!user.profileImageUrl && picture) {
+          await storage.updateUser(user.id, { profileImageUrl: picture });
+        }
+        console.log(`[Google Auth Callback] Existing user found: ${user.id}`);
+      }
+
+      req.login(user, (err) => {
+        if (err) {
+          console.error("[Google Auth Callback] Session error:", err);
+          return res.redirect("/?error=google_auth_failed");
+        }
+        const token = generateAuthToken(user.id);
+        res.redirect(`/?google_auth_token=${token}`);
+      });
+    } catch (error) {
+      console.error("[Google Auth Callback] Error:", error);
+      res.redirect("/?error=google_auth_failed");
+    }
+  });
+
   // Apple Sign In endpoint - verifies Apple ID token and creates/logs in user
   app.post("/api/auth/apple", async (req, res, next) => {
     try {

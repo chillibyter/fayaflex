@@ -16,27 +16,24 @@ export interface SocialLoginResult {
  */
 export async function signInWithGoogle(): Promise<SocialLoginResult> {
   if (Capacitor.isNativePlatform()) {
-    // Native Google Sign-In using Capacitor plugin
     try {
       const { GoogleAuth } = await import("@southdevs/capacitor-google-auth");
-      
-      // Initialize if not already done
+
       await GoogleAuth.initialize({
         clientId: GOOGLE_CLIENT_ID || "",
         scopes: ["profile", "email"],
         grantOfflineAccess: true,
       });
-      
+
       const result = await GoogleAuth.signIn({
         clientId: GOOGLE_CLIENT_ID || undefined,
         scopes: ["profile", "email"],
       });
-      
+
       if (!result.authentication?.idToken) {
         throw new Error("Failed to get ID token from Google Sign-In");
       }
-      
-      // Send ID token to backend for verification
+
       const res = await apiRequest("POST", "/api/auth/google", {
         idToken: result.authentication.idToken,
       });
@@ -45,11 +42,38 @@ export async function signInWithGoogle(): Promise<SocialLoginResult> {
       return { user, token };
     } catch (error: any) {
       console.error("Native Google Sign-In error:", error);
+      if (error.message?.includes("not implemented") || error.message?.includes("not available") || error.message?.includes("plugin_not_installed")) {
+        console.log("[SocialAuth] Native plugin unavailable, falling back to redirect flow");
+        return signInWithGoogleRedirect();
+      }
       throw new Error(error.message || "Google Sign-In failed");
     }
   }
 
-  // Web-based Google Sign-In using OAuth2 authorization code flow
+  return signInWithGoogleWeb();
+}
+
+async function signInWithGoogleRedirect(): Promise<SocialLoginResult> {
+  if (!GOOGLE_CLIENT_ID) {
+    throw new Error("Google Sign-In is not configured.");
+  }
+  const redirectUri = `${window.location.origin}/api/auth/google/callback`;
+  const state = crypto.randomUUID();
+  sessionStorage.setItem("google_auth_state", state);
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: "code",
+    scope: "openid email profile",
+    state,
+    access_type: "offline",
+    prompt: "select_account",
+  });
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  return new Promise(() => {});
+}
+
+function signInWithGoogleWeb(): Promise<SocialLoginResult> {
   return new Promise((resolve, reject) => {
     if (!GOOGLE_CLIENT_ID) {
       reject(new Error("Google Sign-In is not configured. Please set up VITE_GOOGLE_CLIENT_ID."));
