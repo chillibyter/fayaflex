@@ -1,18 +1,74 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Flame, Footprints, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowLeft, Flame, Footprints, TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
+import { Capacitor } from "@capacitor/core";
 
 type DailyData = {
   date: string;
   fullDate: string;
   value: number;
 };
+
+type CalorieDiagnostic = {
+  dataType: string;
+  value: number;
+  status: string;
+};
+
+function useCalorieDiagnostics(isCalories: boolean) {
+  const [diagnostics, setDiagnostics] = useState<CalorieDiagnostic[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isCalories || Capacitor.getPlatform() !== 'android') return;
+
+    const runDiagnostics = async () => {
+      setLoading(true);
+      const results: CalorieDiagnostic[] = [];
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const endOfDay = new Date(startOfDay);
+      endOfDay.setDate(endOfDay.getDate() + 1);
+
+      try {
+        const { Health } = await import("capacitor-health");
+        const dataTypes = ['active-calories', 'calories', 'total-calories'];
+
+        for (const dataType of dataTypes) {
+          try {
+            const raw: any = await Health.queryAggregated({
+              startDate: startOfDay.toISOString(),
+              endDate: endOfDay.toISOString(),
+              dataType,
+              bucket: 'day'
+            });
+            const data = raw?.aggregatedData || raw?.data || raw || [];
+            const total = data.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
+            results.push({ dataType, value: Math.round(total), status: 'ok' });
+          } catch (err: any) {
+            results.push({ dataType, value: 0, status: err.message || 'error' });
+          }
+        }
+      } catch (err) {
+        results.push({ dataType: 'plugin', value: 0, status: 'Health plugin not available' });
+      }
+
+      setDiagnostics(results);
+      setLoading(false);
+    };
+
+    runDiagnostics();
+  }, [isCalories]);
+
+  return { diagnostics, loading };
+}
 
 export default function DailyChart() {
   const [location] = useLocation();
@@ -24,6 +80,8 @@ export default function DailyChart() {
   const unit = isCalories ? 'kcal' : 'steps';
   const color = isCalories ? 'hsl(24, 95%, 53%)' : 'hsl(142, 76%, 36%)';
   const Icon = isCalories ? Flame : Footprints;
+
+  const { diagnostics, loading: diagLoading } = useCalorieDiagnostics(isCalories);
 
   const { 
     data: dailyData = [], 
@@ -94,6 +152,29 @@ export default function DailyChart() {
             </CardContent>
           </Card>
         </div>
+
+        {isCalories && diagnostics.length > 0 && (
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            {diagnostics.map((d) => (
+              <Card key={d.dataType} className="bg-white/20 border-0 backdrop-blur">
+                <CardContent className="p-3 text-center">
+                  <p className="text-xs text-white/80 truncate" data-testid={`text-diag-label-${d.dataType}`}>{d.dataType}</p>
+                  <p className="text-lg font-bold text-white" data-testid={`text-diag-value-${d.dataType}`}>
+                    {d.status === 'ok' ? d.value.toLocaleString() : '--'}
+                  </p>
+                  <p className="text-xs text-white/80">
+                    {d.status === 'ok' ? 'today' : d.status.substring(0, 15)}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+        {isCalories && diagLoading && (
+          <div className="mt-3">
+            <p className="text-xs text-white/70 text-center">Reading health data...</p>
+          </div>
+        )}
       </header>
 
       <main className="px-4 py-6 space-y-6">
