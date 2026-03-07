@@ -24,7 +24,8 @@ type CalorieDiagnostic = {
 
 function useCalorieDiagnostics(isCalories: boolean) {
   const [todayDiag, setTodayDiag] = useState<CalorieDiagnostic[]>([]);
-  const [yesterdayDiag, setYesterdayDiag] = useState<CalorieDiagnostic[]>([]);
+  const [march5Diag, setMarch5Diag] = useState<CalorieDiagnostic[]>([]);
+  const [exerciseDiag, setExerciseDiag] = useState<CalorieDiagnostic[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -56,6 +57,71 @@ function useCalorieDiagnostics(isCalories: boolean) {
       return results;
     };
 
+    const queryExerciseCalories = async (Health: any, startOfDay: Date, endOfDay: Date): Promise<CalorieDiagnostic[]> => {
+      const results: CalorieDiagnostic[] = [];
+      try {
+        console.log(`[CalorieDiag] Querying workouts for ${startOfDay.toDateString()}`);
+        const workoutsRaw: any = await Health.queryWorkouts({
+          startDate: startOfDay.toISOString(),
+          endDate: endOfDay.toISOString(),
+          includeHeartRate: false,
+          includeRoute: false,
+          includeSteps: false
+        });
+        const workouts = workoutsRaw?.workouts || [];
+        console.log(`[CalorieDiag] Found ${workouts.length} workouts`);
+
+        let workoutCaloriesFromPlugin = 0;
+        let workoutCaloriesFromTotalCal = 0;
+        let workoutCount = 0;
+
+        for (const w of workouts) {
+          workoutCount++;
+          const wCal = w?.calories || 0;
+          workoutCaloriesFromPlugin += wCal;
+          console.log(`[CalorieDiag] Workout ${workoutCount}: type=${w.workoutType}, calories=${wCal}, start=${w.startDate}, end=${w.endDate}`);
+
+          if (w.startDate && w.endDate) {
+            try {
+              const tcRaw: any = await Health.queryAggregated({
+                startDate: w.startDate,
+                endDate: w.endDate,
+                dataType: 'total-calories',
+                bucket: 'day'
+              });
+              const tcData = tcRaw?.aggregatedData || tcRaw?.data || tcRaw || [];
+              const tcArr = Array.isArray(tcData) ? tcData : [tcData];
+              const tcTotal = tcArr.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
+              workoutCaloriesFromTotalCal += tcTotal;
+              console.log(`[CalorieDiag] Workout ${workoutCount} total-cal overlap: ${Math.round(tcTotal)}`);
+            } catch (tcErr: any) {
+              console.log(`[CalorieDiag] total-cal overlap query failed:`, tcErr.message);
+            }
+          }
+        }
+
+        results.push({
+          dataType: 'workout-cal',
+          value: Math.round(workoutCaloriesFromPlugin),
+          status: workoutCount > 0 ? 'ok' : 'no workouts'
+        });
+        results.push({
+          dataType: 'exercise-overlap',
+          value: Math.round(workoutCaloriesFromTotalCal),
+          status: workoutCount > 0 ? 'ok' : 'no workouts'
+        });
+
+        console.log(`[CalorieDiag] Exercise summary: ${workoutCount} workouts, plugin-cal=${Math.round(workoutCaloriesFromPlugin)}, overlap-cal=${Math.round(workoutCaloriesFromTotalCal)}`);
+      } catch (err: any) {
+        console.log(`[CalorieDiag] Workout query error:`, err.message);
+        results.push(
+          { dataType: 'workout-cal', value: 0, status: err.message?.substring(0, 20) || 'error' },
+          { dataType: 'exercise-overlap', value: 0, status: err.message?.substring(0, 20) || 'error' }
+        );
+      }
+      return results;
+    };
+
     const runDiagnostics = async () => {
       setLoading(true);
       const platform = Capacitor.getPlatform();
@@ -73,11 +139,14 @@ function useCalorieDiagnostics(isCalories: boolean) {
           const { Health } = await import("capacitor-health");
           const todayResults = await queryDay(Health, todayStart, todayEnd);
           const march5Results = await queryDay(Health, march5Start, march5End);
+          const march5Exercise = await queryExerciseCalories(Health, march5Start, march5End);
 
           console.log('[CalorieDiag] Today:', JSON.stringify(todayResults));
           console.log('[CalorieDiag] March 5:', JSON.stringify(march5Results));
+          console.log('[CalorieDiag] March 5 Exercise:', JSON.stringify(march5Exercise));
           setTodayDiag(todayResults);
-          setYesterdayDiag(march5Results);
+          setMarch5Diag(march5Results);
+          setExerciseDiag(march5Exercise);
         } catch (err: any) {
           console.log('[CalorieDiag] Plugin import error:', err.message);
           const fallback = [
@@ -85,7 +154,11 @@ function useCalorieDiagnostics(isCalories: boolean) {
             { dataType: 'total-calories', value: 0, status: 'no plugin' }
           ];
           setTodayDiag(fallback);
-          setYesterdayDiag(fallback);
+          setMarch5Diag(fallback);
+          setExerciseDiag([
+            { dataType: 'workout-cal', value: 0, status: 'no plugin' },
+            { dataType: 'exercise-overlap', value: 0, status: 'no plugin' }
+          ]);
         }
       } else {
         const webFallback = [
@@ -93,7 +166,11 @@ function useCalorieDiagnostics(isCalories: boolean) {
           { dataType: 'total-calories', value: 0, status: 'web n/a' }
         ];
         setTodayDiag(webFallback);
-        setYesterdayDiag(webFallback);
+        setMarch5Diag(webFallback);
+        setExerciseDiag([
+          { dataType: 'workout-cal', value: 0, status: 'web n/a' },
+          { dataType: 'exercise-overlap', value: 0, status: 'web n/a' }
+        ]);
       }
 
       setLoading(false);
@@ -102,7 +179,7 @@ function useCalorieDiagnostics(isCalories: boolean) {
     runDiagnostics();
   }, [isCalories]);
 
-  return { todayDiag, yesterdayDiag, loading };
+  return { todayDiag, march5Diag, exerciseDiag, loading };
 }
 
 export default function DailyChart() {
@@ -116,7 +193,7 @@ export default function DailyChart() {
   const color = isCalories ? 'hsl(24, 95%, 53%)' : 'hsl(142, 76%, 36%)';
   const Icon = isCalories ? Flame : Footprints;
 
-  const { todayDiag, yesterdayDiag, loading: diagLoading } = useCalorieDiagnostics(isCalories);
+  const { todayDiag, march5Diag, exerciseDiag, loading: diagLoading } = useCalorieDiagnostics(isCalories);
 
   const { 
     data: dailyData = [], 
@@ -190,7 +267,7 @@ export default function DailyChart() {
 
         {isCalories && (
           <div className="mt-3 space-y-2">
-            <p className="text-xs text-white/70 font-medium">Health Connect Raw Data</p>
+            <p className="text-xs text-white/70 font-medium">Today - Raw Data</p>
             <div className="grid grid-cols-2 gap-2">
               {(todayDiag.length > 0 ? todayDiag : ['active-calories', 'total-calories'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
                 <Card key={`today-${d.dataType}`} className="bg-white/20 border-0 backdrop-blur">
@@ -206,13 +283,30 @@ export default function DailyChart() {
                 </Card>
               ))}
             </div>
+            <p className="text-xs text-white/70 font-medium">Mar 5 - Raw Data</p>
             <div className="grid grid-cols-2 gap-2">
-              {(yesterdayDiag.length > 0 ? yesterdayDiag : ['active-calories', 'total-calories'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
-                <Card key={`yest-${d.dataType}`} className="bg-white/15 border-0 backdrop-blur">
+              {(march5Diag.length > 0 ? march5Diag : ['active-calories', 'total-calories'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
+                <Card key={`m5-${d.dataType}`} className="bg-white/15 border-0 backdrop-blur">
                   <CardContent className="p-2 text-center">
-                    <p className="text-[10px] text-white/70 truncate" data-testid={`text-diag-yest-${d.dataType}`}>{d.dataType}</p>
-                    <p className="text-lg font-bold text-white/90" data-testid={`text-diag-yest-val-${d.dataType}`}>
+                    <p className="text-[10px] text-white/70 truncate" data-testid={`text-diag-m5-${d.dataType}`}>{d.dataType}</p>
+                    <p className="text-lg font-bold text-white/90" data-testid={`text-diag-m5-val-${d.dataType}`}>
                       {d.status === 'ok' ? d.value.toLocaleString() : (diagLoading ? '...' : '--')}
+                    </p>
+                    <p className="text-[10px] text-white/70">
+                      {d.status === 'ok' ? 'Mar 5' : d.status.substring(0, 15)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <p className="text-xs text-white/70 font-medium">Mar 5 - Exercise Overlap</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(exerciseDiag.length > 0 ? exerciseDiag : ['workout-cal', 'exercise-overlap'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
+                <Card key={`ex-${d.dataType}`} className="bg-white/10 border-0 backdrop-blur">
+                  <CardContent className="p-2 text-center">
+                    <p className="text-[10px] text-white/70 truncate" data-testid={`text-diag-ex-${d.dataType}`}>{d.dataType}</p>
+                    <p className="text-lg font-bold text-yellow-200" data-testid={`text-diag-ex-val-${d.dataType}`}>
+                      {d.status === 'ok' ? d.value.toLocaleString() : (d.status === 'no workouts' ? '0' : (diagLoading ? '...' : '--'))}
                     </p>
                     <p className="text-[10px] text-white/70">
                       {d.status === 'ok' ? 'Mar 5' : d.status.substring(0, 15)}
