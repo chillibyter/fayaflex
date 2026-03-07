@@ -27,37 +27,54 @@ function useCalorieDiagnostics(isCalories: boolean) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isCalories || Capacitor.getPlatform() !== 'android') return;
+    if (!isCalories) return;
 
     const runDiagnostics = async () => {
       setLoading(true);
       const results: CalorieDiagnostic[] = [];
-      const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const endOfDay = new Date(startOfDay);
-      endOfDay.setDate(endOfDay.getDate() + 1);
 
-      try {
-        const { Health } = await import("capacitor-health");
-        const dataTypes = ['active-calories', 'calories', 'total-calories'];
+      if (Capacitor.isNativePlatform()) {
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfDay = new Date(startOfDay);
+        endOfDay.setDate(endOfDay.getDate() + 1);
 
-        for (const dataType of dataTypes) {
-          try {
-            const raw: any = await Health.queryAggregated({
-              startDate: startOfDay.toISOString(),
-              endDate: endOfDay.toISOString(),
-              dataType,
-              bucket: 'day'
-            });
-            const data = raw?.aggregatedData || raw?.data || raw || [];
-            const total = data.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
-            results.push({ dataType, value: Math.round(total), status: 'ok' });
-          } catch (err: any) {
-            results.push({ dataType, value: 0, status: err.message || 'error' });
+        try {
+          const { Health } = await import("capacitor-health");
+          const dataTypes = ['active-calories', 'calories', 'total-calories'];
+
+          for (const dataType of dataTypes) {
+            try {
+              const raw: any = await Health.queryAggregated({
+                startDate: startOfDay.toISOString(),
+                endDate: endOfDay.toISOString(),
+                dataType,
+                bucket: 'day'
+              });
+              const data = raw?.aggregatedData || raw?.data || raw || [];
+              const total = data.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
+              results.push({ dataType, value: Math.round(total), status: 'ok' });
+            } catch (err: any) {
+              results.push({ dataType, value: 0, status: err.message || 'error' });
+            }
           }
+        } catch (err) {
+          results.push({ dataType: 'plugin', value: 0, status: 'Health plugin not available' });
         }
-      } catch (err) {
-        results.push({ dataType: 'plugin', value: 0, status: 'Health plugin not available' });
+      } else {
+        try {
+          const res = await apiRequest("GET", "/api/stats/calorie-diagnostics");
+          const data = await res.json();
+          if (data.diagnostics) {
+            results.push(...data.diagnostics);
+          }
+        } catch {
+          results.push(
+            { dataType: 'active-calories', value: 0, status: 'web only' },
+            { dataType: 'calories', value: 0, status: 'web only' },
+            { dataType: 'total-calories', value: 0, status: 'web only' }
+          );
+        }
       }
 
       setDiagnostics(results);

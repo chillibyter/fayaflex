@@ -2630,6 +2630,28 @@ IMPORTANT RULES:
     }
   });
 
+  app.get("/api/stats/calorie-diagnostics", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const today = new Date().toISOString().split('T')[0];
+      
+      const todayActivities = await storage.getUserActivitiesForDate(userId, today);
+      const todayCalories = todayActivities
+        .filter((a: any) => a.type === 'calories')
+        .reduce((sum: number, a: any) => sum + (a.value || 0), 0);
+      
+      res.json({
+        diagnostics: [
+          { dataType: 'active-calories', value: 0, status: 'server n/a' },
+          { dataType: 'calories', value: Math.round(todayCalories), status: 'ok' },
+          { dataType: 'total-calories', value: 0, status: 'server n/a' }
+        ]
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch calorie diagnostics" });
+    }
+  });
+
   // Daily breakdown route - for detailed stat views (calories/steps)
   app.get("/api/stats/daily-breakdown", isAuthenticated, async (req: any, res) => {
     try {
