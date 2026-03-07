@@ -32,6 +32,8 @@ function useCalorieDiagnostics(isCalories: boolean) {
     const runDiagnostics = async () => {
       setLoading(true);
       const results: CalorieDiagnostic[] = [];
+      const platform = Capacitor.getPlatform();
+      console.log('[CalorieDiag] Platform:', platform, 'isNative:', Capacitor.isNativePlatform());
 
       if (Capacitor.isNativePlatform()) {
         const now = new Date();
@@ -45,38 +47,40 @@ function useCalorieDiagnostics(isCalories: boolean) {
 
           for (const dataType of dataTypes) {
             try {
+              console.log('[CalorieDiag] Querying:', dataType);
               const raw: any = await Health.queryAggregated({
                 startDate: startOfDay.toISOString(),
                 endDate: endOfDay.toISOString(),
                 dataType,
                 bucket: 'day'
               });
+              console.log('[CalorieDiag] Raw result for', dataType, ':', JSON.stringify(raw));
               const data = raw?.aggregatedData || raw?.data || raw || [];
-              const total = data.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
+              const arr = Array.isArray(data) ? data : [data];
+              const total = arr.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
               results.push({ dataType, value: Math.round(total), status: 'ok' });
             } catch (err: any) {
-              results.push({ dataType, value: 0, status: err.message || 'error' });
+              console.log('[CalorieDiag] Error for', dataType, ':', err.message);
+              results.push({ dataType, value: 0, status: err.message?.substring(0, 20) || 'error' });
             }
           }
-        } catch (err) {
-          results.push({ dataType: 'plugin', value: 0, status: 'Health plugin not available' });
-        }
-      } else {
-        try {
-          const res = await apiRequest("GET", "/api/stats/calorie-diagnostics");
-          const data = await res.json();
-          if (data.diagnostics) {
-            results.push(...data.diagnostics);
-          }
-        } catch {
+        } catch (err: any) {
+          console.log('[CalorieDiag] Plugin import error:', err.message);
           results.push(
-            { dataType: 'active-calories', value: 0, status: 'web only' },
-            { dataType: 'calories', value: 0, status: 'web only' },
-            { dataType: 'total-calories', value: 0, status: 'web only' }
+            { dataType: 'active-calories', value: 0, status: 'no plugin' },
+            { dataType: 'calories', value: 0, status: 'no plugin' },
+            { dataType: 'total-calories', value: 0, status: 'no plugin' }
           );
         }
+      } else {
+        results.push(
+          { dataType: 'active-calories', value: 0, status: 'web n/a' },
+          { dataType: 'calories', value: 0, status: 'web n/a' },
+          { dataType: 'total-calories', value: 0, status: 'web n/a' }
+        );
       }
 
+      console.log('[CalorieDiag] Final results:', JSON.stringify(results));
       setDiagnostics(results);
       setLoading(false);
     };
@@ -170,9 +174,9 @@ export default function DailyChart() {
           </Card>
         </div>
 
-        {isCalories && diagnostics.length > 0 && (
+        {isCalories && (
           <div className="mt-3 grid grid-cols-3 gap-3">
-            {diagnostics.map((d) => (
+            {diagnostics.length > 0 ? diagnostics.map((d) => (
               <Card key={d.dataType} className="bg-white/20 border-0 backdrop-blur">
                 <CardContent className="p-3 text-center">
                   <p className="text-xs text-white/80 truncate" data-testid={`text-diag-label-${d.dataType}`}>{d.dataType}</p>
@@ -184,12 +188,15 @@ export default function DailyChart() {
                   </p>
                 </CardContent>
               </Card>
+            )) : ['active-calories', 'calories', 'total-calories'].map((label) => (
+              <Card key={label} className="bg-white/20 border-0 backdrop-blur">
+                <CardContent className="p-3 text-center">
+                  <p className="text-xs text-white/80 truncate">{label}</p>
+                  <p className="text-lg font-bold text-white">{diagLoading ? '...' : '--'}</p>
+                  <p className="text-xs text-white/80">{diagLoading ? 'loading' : 'today'}</p>
+                </CardContent>
+              </Card>
             ))}
-          </div>
-        )}
-        {isCalories && diagLoading && (
-          <div className="mt-3">
-            <p className="text-xs text-white/70 text-center">Reading health data...</p>
           </div>
         )}
       </header>
