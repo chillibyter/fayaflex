@@ -66,18 +66,18 @@ function useCalorieDiagnostics(isCalories: boolean) {
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const todayEnd = new Date(todayStart);
         todayEnd.setDate(todayEnd.getDate() + 1);
-        const yesterdayStart = new Date(todayStart);
-        yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+        const march5Start = new Date(2026, 2, 5);
+        const march5End = new Date(2026, 2, 6);
 
         try {
           const { Health } = await import("capacitor-health");
           const todayResults = await queryDay(Health, todayStart, todayEnd);
-          const yesterdayResults = await queryDay(Health, yesterdayStart, todayStart);
+          const march5Results = await queryDay(Health, march5Start, march5End);
 
           console.log('[CalorieDiag] Today:', JSON.stringify(todayResults));
-          console.log('[CalorieDiag] Yesterday:', JSON.stringify(yesterdayResults));
+          console.log('[CalorieDiag] March 5:', JSON.stringify(march5Results));
           setTodayDiag(todayResults);
-          setYesterdayDiag(yesterdayResults);
+          setYesterdayDiag(march5Results);
         } catch (err: any) {
           console.log('[CalorieDiag] Plugin import error:', err.message);
           const fallback = [
@@ -215,7 +215,7 @@ export default function DailyChart() {
                       {d.status === 'ok' ? d.value.toLocaleString() : (diagLoading ? '...' : '--')}
                     </p>
                     <p className="text-[10px] text-white/70">
-                      {d.status === 'ok' ? 'yesterday' : d.status.substring(0, 15)}
+                      {d.status === 'ok' ? 'Mar 5' : d.status.substring(0, 15)}
                     </p>
                   </CardContent>
                 </Card>

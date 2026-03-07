@@ -88,10 +88,15 @@ export function HealthDevices() {
         throw new Error(`${displayName} is not available on this device.`);
       }
       
-      // Step 2: Request permissions
-      console.log('[HealthDevices] Step 2: Requesting permissions...');
-      await healthService.requestPermissions();
-      console.log('[HealthDevices] Permission dialog shown');
+      // Step 2: Check current permissions first
+      console.log('[HealthDevices] Step 2a: Checking current permissions...');
+      const currentPerms = await healthService.checkPermissions();
+      console.log('[HealthDevices] Current permissions granted:', currentPerms);
+      
+      // Step 2b: Request permissions (dialog should appear if not already granted)
+      console.log('[HealthDevices] Step 2b: Requesting permissions...');
+      const permResult = await healthService.requestPermissions();
+      console.log('[HealthDevices] Permission request returned:', permResult);
       
       // IMPORTANT: Skip permission check on ALL platforms and just try to read data
       // - iOS: Apple HealthKit does NOT tell apps if permissions were granted
