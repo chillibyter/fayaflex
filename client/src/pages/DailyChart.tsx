@@ -23,72 +23,86 @@ type CalorieDiagnostic = {
 };
 
 function useCalorieDiagnostics(isCalories: boolean) {
-  const [diagnostics, setDiagnostics] = useState<CalorieDiagnostic[]>([]);
+  const [todayDiag, setTodayDiag] = useState<CalorieDiagnostic[]>([]);
+  const [yesterdayDiag, setYesterdayDiag] = useState<CalorieDiagnostic[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isCalories) return;
 
+    const queryDay = async (Health: any, startOfDay: Date, endOfDay: Date): Promise<CalorieDiagnostic[]> => {
+      const results: CalorieDiagnostic[] = [];
+      const dataTypes = ['active-calories', 'total-calories'];
+
+      for (const dataType of dataTypes) {
+        try {
+          console.log(`[CalorieDiag] Querying ${dataType} for ${startOfDay.toDateString()}`);
+          const raw: any = await Health.queryAggregated({
+            startDate: startOfDay.toISOString(),
+            endDate: endOfDay.toISOString(),
+            dataType,
+            bucket: 'day'
+          });
+          console.log(`[CalorieDiag] Raw result for ${dataType}:`, JSON.stringify(raw));
+          const data = raw?.aggregatedData || raw?.data || raw || [];
+          const arr = Array.isArray(data) ? data : [data];
+          const total = arr.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
+          results.push({ dataType, value: Math.round(total), status: 'ok' });
+        } catch (err: any) {
+          console.log(`[CalorieDiag] Error for ${dataType}:`, err.message);
+          results.push({ dataType, value: 0, status: err.message?.substring(0, 20) || 'error' });
+        }
+      }
+      return results;
+    };
+
     const runDiagnostics = async () => {
       setLoading(true);
-      const results: CalorieDiagnostic[] = [];
       const platform = Capacitor.getPlatform();
       console.log('[CalorieDiag] Platform:', platform, 'isNative:', Capacitor.isNativePlatform());
 
       if (Capacitor.isNativePlatform()) {
         const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const endOfDay = new Date(startOfDay);
-        endOfDay.setDate(endOfDay.getDate() + 1);
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const todayEnd = new Date(todayStart);
+        todayEnd.setDate(todayEnd.getDate() + 1);
+        const yesterdayStart = new Date(todayStart);
+        yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 
         try {
           const { Health } = await import("capacitor-health");
-          const dataTypes = ['active-calories', 'calories', 'total-calories'];
+          const todayResults = await queryDay(Health, todayStart, todayEnd);
+          const yesterdayResults = await queryDay(Health, yesterdayStart, todayStart);
 
-          for (const dataType of dataTypes) {
-            try {
-              console.log('[CalorieDiag] Querying:', dataType);
-              const raw: any = await Health.queryAggregated({
-                startDate: startOfDay.toISOString(),
-                endDate: endOfDay.toISOString(),
-                dataType,
-                bucket: 'day'
-              });
-              console.log('[CalorieDiag] Raw result for', dataType, ':', JSON.stringify(raw));
-              const data = raw?.aggregatedData || raw?.data || raw || [];
-              const arr = Array.isArray(data) ? data : [data];
-              const total = arr.reduce((sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0);
-              results.push({ dataType, value: Math.round(total), status: 'ok' });
-            } catch (err: any) {
-              console.log('[CalorieDiag] Error for', dataType, ':', err.message);
-              results.push({ dataType, value: 0, status: err.message?.substring(0, 20) || 'error' });
-            }
-          }
+          console.log('[CalorieDiag] Today:', JSON.stringify(todayResults));
+          console.log('[CalorieDiag] Yesterday:', JSON.stringify(yesterdayResults));
+          setTodayDiag(todayResults);
+          setYesterdayDiag(yesterdayResults);
         } catch (err: any) {
           console.log('[CalorieDiag] Plugin import error:', err.message);
-          results.push(
+          const fallback = [
             { dataType: 'active-calories', value: 0, status: 'no plugin' },
-            { dataType: 'calories', value: 0, status: 'no plugin' },
             { dataType: 'total-calories', value: 0, status: 'no plugin' }
-          );
+          ];
+          setTodayDiag(fallback);
+          setYesterdayDiag(fallback);
         }
       } else {
-        results.push(
+        const webFallback = [
           { dataType: 'active-calories', value: 0, status: 'web n/a' },
-          { dataType: 'calories', value: 0, status: 'web n/a' },
           { dataType: 'total-calories', value: 0, status: 'web n/a' }
-        );
+        ];
+        setTodayDiag(webFallback);
+        setYesterdayDiag(webFallback);
       }
 
-      console.log('[CalorieDiag] Final results:', JSON.stringify(results));
-      setDiagnostics(results);
       setLoading(false);
     };
 
     runDiagnostics();
   }, [isCalories]);
 
-  return { diagnostics, loading };
+  return { todayDiag, yesterdayDiag, loading };
 }
 
 export default function DailyChart() {
@@ -102,7 +116,7 @@ export default function DailyChart() {
   const color = isCalories ? 'hsl(24, 95%, 53%)' : 'hsl(142, 76%, 36%)';
   const Icon = isCalories ? Flame : Footprints;
 
-  const { diagnostics, loading: diagLoading } = useCalorieDiagnostics(isCalories);
+  const { todayDiag, yesterdayDiag, loading: diagLoading } = useCalorieDiagnostics(isCalories);
 
   const { 
     data: dailyData = [], 
@@ -175,28 +189,38 @@ export default function DailyChart() {
         </div>
 
         {isCalories && (
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            {diagnostics.length > 0 ? diagnostics.map((d) => (
-              <Card key={d.dataType} className="bg-white/20 border-0 backdrop-blur">
-                <CardContent className="p-3 text-center">
-                  <p className="text-xs text-white/80 truncate" data-testid={`text-diag-label-${d.dataType}`}>{d.dataType}</p>
-                  <p className="text-lg font-bold text-white" data-testid={`text-diag-value-${d.dataType}`}>
-                    {d.status === 'ok' ? d.value.toLocaleString() : '--'}
-                  </p>
-                  <p className="text-xs text-white/80">
-                    {d.status === 'ok' ? 'today' : d.status.substring(0, 15)}
-                  </p>
-                </CardContent>
-              </Card>
-            )) : ['active-calories', 'calories', 'total-calories'].map((label) => (
-              <Card key={label} className="bg-white/20 border-0 backdrop-blur">
-                <CardContent className="p-3 text-center">
-                  <p className="text-xs text-white/80 truncate">{label}</p>
-                  <p className="text-lg font-bold text-white">{diagLoading ? '...' : '--'}</p>
-                  <p className="text-xs text-white/80">{diagLoading ? 'loading' : 'today'}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-white/70 font-medium">Health Connect Raw Data</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(todayDiag.length > 0 ? todayDiag : ['active-calories', 'total-calories'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
+                <Card key={`today-${d.dataType}`} className="bg-white/20 border-0 backdrop-blur">
+                  <CardContent className="p-2 text-center">
+                    <p className="text-[10px] text-white/70 truncate" data-testid={`text-diag-today-${d.dataType}`}>{d.dataType}</p>
+                    <p className="text-lg font-bold text-white" data-testid={`text-diag-today-val-${d.dataType}`}>
+                      {d.status === 'ok' ? d.value.toLocaleString() : (diagLoading ? '...' : '--')}
+                    </p>
+                    <p className="text-[10px] text-white/70">
+                      {d.status === 'ok' ? 'today' : d.status.substring(0, 15)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {(yesterdayDiag.length > 0 ? yesterdayDiag : ['active-calories', 'total-calories'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
+                <Card key={`yest-${d.dataType}`} className="bg-white/15 border-0 backdrop-blur">
+                  <CardContent className="p-2 text-center">
+                    <p className="text-[10px] text-white/70 truncate" data-testid={`text-diag-yest-${d.dataType}`}>{d.dataType}</p>
+                    <p className="text-lg font-bold text-white/90" data-testid={`text-diag-yest-val-${d.dataType}`}>
+                      {d.status === 'ok' ? d.value.toLocaleString() : (diagLoading ? '...' : '--')}
+                    </p>
+                    <p className="text-[10px] text-white/70">
+                      {d.status === 'ok' ? 'yesterday' : d.status.substring(0, 15)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </header>

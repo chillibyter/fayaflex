@@ -35,6 +35,15 @@ function patchHealthPlugin() {
     console.log('[patch]   + Added BasalMetabolicRateRecord import');
   }
 
+  if (!content.includes('import androidx.health.connect.client.records.TotalCaloriesBurnedRecord')) {
+    content = content.replace(
+      'import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord',
+      'import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord\nimport androidx.health.connect.client.records.TotalCaloriesBurnedRecord'
+    );
+    changed = true;
+    console.log('[patch]   + Added TotalCaloriesBurnedRecord import');
+  }
+
   if (!content.includes('import androidx.health.connect.client.units.Power')) {
     content = content.replace(
       'import androidx.health.connect.client.time.TimeRangeFilter',
@@ -81,6 +90,16 @@ function patchHealthPlugin() {
     );
     changed = true;
     console.log('[patch]   + Added READ_BMR to permissionMapping');
+  }
+
+  if (!content.includes('"total-calories"')) {
+    content = content.replace(
+      `"active-calories" -> metricAndMapper("active-calories", CapHealthPermission.READ_ACTIVE_CALORIES, ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL) { it?.inKilocalories }`,
+      `"active-calories" -> metricAndMapper("active-calories", CapHealthPermission.READ_ACTIVE_CALORIES, ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL) { it?.inKilocalories }
+            "total-calories" -> metricAndMapper("total-calories", CapHealthPermission.READ_TOTAL_CALORIES, TotalCaloriesBurnedRecord.ENERGY_TOTAL) { it?.inKilocalories }`
+    );
+    changed = true;
+    console.log('[patch]   + Added "total-calories" data type mapped to TotalCaloriesBurnedRecord');
   }
 
   if (!content.includes('"bmr"')) {
@@ -154,9 +173,12 @@ function patchHealthPlugin() {
 
     const requiredPatterns = [
       { pattern: 'BasalMetabolicRateRecord', desc: 'BMR import' },
+      { pattern: 'TotalCaloriesBurnedRecord', desc: 'TotalCaloriesBurnedRecord import' },
       { pattern: 'READ_BMR', desc: 'READ_BMR permission enum' },
       { pattern: 'READ_BASAL_METABOLIC_RATE', desc: 'BMR Android permission' },
       { pattern: '"bmr"', desc: 'BMR data type in getMetricAndMapper' },
+      { pattern: '"total-calories"', desc: 'total-calories data type in getMetricAndMapper' },
+      { pattern: 'ENERGY_TOTAL', desc: 'TotalCaloriesBurnedRecord.ENERGY_TOTAL mapping' },
       { pattern: 'queryBmr', desc: 'queryBmr method' },
     ];
 
@@ -196,6 +218,7 @@ function main() {
   if (result) {
     console.log('[patch] Health plugin patch complete!');
     console.log('[patch] Changes:');
+    console.log('[patch]   - Added TotalCaloriesBurnedRecord import and "total-calories" aggregated data type');
     console.log('[patch]   - Added BMR (BasalMetabolicRateRecord) support');
     console.log('[patch]   - Added READ_BMR permission');
     console.log('[patch]   - Added queryBmr method for reading BMR records');

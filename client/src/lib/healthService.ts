@@ -194,8 +194,10 @@ class HealthService {
       let caloriesResult: any = { aggregatedData: [] };
       let usedCalorieDataType = '';
       
-      // Try different calorie data types in order of preference (active first!)
-      const calorieDataTypes = ['active-calories', 'calories', 'total-calories'];
+      // Try different calorie data types in order of preference
+      // Samsung Health writes to TotalCaloriesBurnedRecord, so try total-calories first
+      // active-calories (ActiveCaloriesBurnedRecord) is often empty on Samsung devices
+      const calorieDataTypes = ['total-calories', 'active-calories'];
       
       for (const dataType of calorieDataTypes) {
         try {
@@ -233,7 +235,7 @@ class HealthService {
           const individualCalories: any = await Health.query({
             startDate: startDateStr,
             endDate: endDateStr,
-            dataType: 'calories'
+            dataType: 'total-calories'
           });
           const records = individualCalories?.records || individualCalories?.data || [];
           console.log(`[HealthService] Individual calorie records: ${records.length}`);
