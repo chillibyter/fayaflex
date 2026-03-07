@@ -2650,18 +2650,26 @@ IMPORTANT RULES:
       // Get first day of month
       const firstDayOfMonth = new Date(year, month - 1, 1);
       
-      // Calculate 30 days from beginning of month
+      // Calculate end of range: either end of month or 30 days from start
       const startDate = new Date(firstDayOfMonth);
       const endDate = new Date(firstDayOfMonth);
       endDate.setDate(endDate.getDate() + 29); // 30 days total (0-29)
       
+      // Use today's date string to ensure it's always included regardless of timezone
+      const todayStr = now.toISOString().split('T')[0];
+      
       // Group activities by date - take MAX per day to avoid double-counting from multiple sources
       const dailyData: { [key: string]: number } = {};
       
-      // Initialize all days with 0
-      for (let d = new Date(startDate); d <= endDate && d <= now; d.setDate(d.getDate() + 1)) {
+      // Initialize all days from start of month through today (inclusive)
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
         const dateKey = d.toISOString().split('T')[0];
+        if (dateKey > todayStr) break;
         dailyData[dateKey] = 0;
+      }
+      // Ensure today is always present
+      if (!dailyData[todayStr] && todayStr >= startDate.toISOString().split('T')[0]) {
+        dailyData[todayStr] = 0;
       }
       
       // Take the maximum value for each day (avoids double-counting if multiple sources exist)
