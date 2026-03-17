@@ -1,0 +1,79 @@
+I want you to implement an Android active-calorie estimation fallback for my fitness app called FayaFlex.
+
+Context:
+- On Android, active calories are not always reliably available from Health Connect or device sources.
+- I want a fallback estimation model that uses a combination of:
+  1. Option 1: population-average BMR baseline
+  3. Option 3: per-kg BMR assumption
+- This should be used only when precise calorie data is missing.
+- The output should be practical, stable, and production-friendly rather than scientifically perfect.
+
+What I want built:
+Create a clean, reusable Kotlin implementation for Android that estimates:
+1. Daily BMR
+2. Resting calories for a time interval
+3. Active calories from step count / duration / distance
+4. Total calories = resting + active
+5. Active calories only = total - resting
+
+Functional requirements:
+- If user profile data exists, use it:
+  - weightKg if available
+  - gender if available
+- If user profile data does NOT exist, fall back to:
+  - defaultWeightKg = 70.0
+  - defaultBmrPerKg = 23.0 kcal/kg/day
+  - neutralDefaultBmr = 1500.0 kcal/day
+- Combine option 1 and option 3 like this:
+  - If weight is known:
+    estimatedBmr = weightKg * 23.0
+  - If weight is unknown:
+    estimatedBmr = average of:
+      a) neutralDefaultBmr (1500.0)
+      b) defaultWeightKg * 23.0
+- Add optional light gender adjustment if gender is known:
+  - male: +5%
+  - female: -5%
+  - unknown: no adjustment
+- Clamp the final BMR to a sensible daily range:
+  - minimum 1200 kcal/day
+  - maximum 2200 kcal/day
+
+Active calorie estimation requirements:
+- Estimate active calories primarily from steps.
+- Use a simple distance-based fallback if step data exists:
+  - estimatedDistanceKm = steps * 0.00075
+- Then estimate gross walking calories with:
+  - grossCalories = weightKgOrDefault * estimatedDistanceKm * 0.75
+- Estimate resting calories for the same active interval:
+  - restingCaloriesPerMinute = bmr / 1440
+  - if activeDurationMinutes is known, use it
+  - if duration is unknown, estimate duration from steps using cadence:
+    durationMinutes = steps / 100.0
+- ActiveCalories = max(grossCalories - restingCaloriesForInterval, 0)
+
+Additional requirements:
+- Create a Kotlin data class for the inputs and outputs.
+- Put the core logic in a separate estimator class, e.g. CalorieEstimator.
+- Include clear comments explaining the fallback logic.
+- Make the code null-safe and production-friendly.
+- Include unit-test-like sample usage with a few scenarios:
+  1. Known weight, male, 8000 steps
+  2. Unknown weight and gender, 8000 steps
+  3. Known female weight, 3000 steps, known duration
+- Return rounded values for UI display, but keep internal calculations as Double.
+
+Architecture requirements:
+- Provide:
+  1. Kotlin model classes
+  2. CalorieEstimator class
+  3. Example ViewModel usage
+  4. Example function showing how to plug this into Health Connect fallback logic
+- Keep it Android-native and simple. No unnecessary libraries.
+- Use idiomatic Kotlin.
+
+Please generate:
+1. The full Kotlin implementation
+2. A short explanation of the formula choices
+3. Notes on limitations and future improvements
+4. Suggestions for how FayaFlex can later improve accuracy when profile data becomes available
