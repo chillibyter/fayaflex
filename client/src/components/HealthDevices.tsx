@@ -358,6 +358,20 @@ export function HealthDevices() {
 
       {/* Main Connect Card - Primary CTA at top */}
       <Card data-testid="card-native-health">
+        {isIOS && (
+          <div
+            className="flex items-center gap-2 px-4 py-2 rounded-t-lg bg-primary/10 border-b border-primary/20"
+            data-testid="banner-healthkit-disclosure"
+          >
+            <Heart className="h-4 w-4 text-primary shrink-0" />
+            <p className="text-xs font-medium text-primary">
+              This app uses Apple HealthKit to read your fitness data
+            </p>
+            <Link href="/health-data" className="ml-auto text-xs text-primary underline shrink-0" data-testid="link-healthkit-learn-more">
+              Learn more
+            </Link>
+          </div>
+        )}
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
@@ -365,11 +379,6 @@ export function HealthDevices() {
               <div>
                 <CardTitle>{displayName}</CardTitle>
                 <CardDescription>{description}</CardDescription>
-                {isIOS && (
-                  <Badge variant="secondary" className="mt-1 text-xs" data-testid="badge-healthkit">
-                    HealthKit Integration
-                  </Badge>
-                )}
               </div>
             </div>
             {isConnected ? (
@@ -503,21 +512,28 @@ export function HealthDevices() {
         </CardContent>
       </Card>
 
-      {/* Compact Health Data Disclosure - Below the action */}
-      <Card data-testid="card-health-data-disclosure" className="bg-muted/30">
+      {/* Health Data Disclosure */}
+      <Card data-testid="card-health-data-disclosure">
         <CardHeader className="pb-2 pt-4">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-medium">Health Data We Access</CardTitle>
+            <Shield className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base font-semibold">
+              {isIOS ? 'Apple HealthKit — Health Data Access' : 'Health Data We Access'}
+            </CardTitle>
           </div>
+          {isIOS && (
+            <CardDescription className="mt-1">
+              FayaFlex uses Apple HealthKit APIs to read your fitness data. This data stays on your device until you choose to sync.
+            </CardDescription>
+          )}
         </CardHeader>
-        <CardContent className="pt-0 pb-4">
-          <div className="flex flex-wrap gap-2 mb-3">
+        <CardContent className="pt-0 pb-4 space-y-3">
+          <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="gap-1 text-xs">
               <Footprints className="h-3 w-3" /> Steps
             </Badge>
             <Badge variant="secondary" className="gap-1 text-xs">
-              <Flame className="h-3 w-3" /> Calories
+              <Flame className="h-3 w-3" /> Active Calories
             </Badge>
             <Badge variant="secondary" className="gap-1 text-xs">
               <Dumbbell className="h-3 w-3" /> Workouts
@@ -529,15 +545,20 @@ export function HealthDevices() {
               <Heart className="h-3 w-3" /> Heart Rate
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mb-2">
-            Your health data is used to calculate fitness scores and display on leaderboards. We never sell or share your data.
+          <p className="text-xs text-muted-foreground">
+            Your health data is used only to calculate fitness scores and team leaderboard rankings. We never sell or share your data with third parties.
           </p>
-          <div className="flex gap-3">
-            <Link href="/health-data" className="text-xs text-primary hover:underline" data-testid="link-health-data-details">
-              Learn more
+          <div className="flex gap-4">
+            <Link href="/health-data" data-testid="link-health-data-details">
+              <Button variant="outline" size="sm">
+                <Info className="mr-1 h-3 w-3" />
+                Health Data Details
+              </Button>
             </Link>
-            <Link href="/privacy" className="text-xs text-primary hover:underline" data-testid="link-health-privacy">
-              Privacy Policy
+            <Link href="/privacy" data-testid="link-health-privacy">
+              <Button variant="ghost" size="sm">
+                Privacy Policy
+              </Button>
             </Link>
           </div>
         </CardContent>

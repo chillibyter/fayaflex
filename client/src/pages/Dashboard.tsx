@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin, Users, ChevronRight } from "lucide-react";
+import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin, Users, ChevronRight, Heart } from "lucide-react";
 import { SiApple } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
+import { Capacitor } from "@capacitor/core";
 import type { Activity as ActivityType, User } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
@@ -166,6 +167,15 @@ export default function Dashboard() {
     queryKey: ['/api/notifications'],
   });
 
+  // Device connections — used to show HealthKit attribution on iOS
+  type DeviceConnection = { provider: string; isConnected: boolean; lastSyncAt: Date | null };
+  const { data: deviceConnections = [] } = useQuery<DeviceConnection[]>({
+    queryKey: ['/api/devices'],
+    staleTime: 60 * 1000,
+  });
+  const isIOS = Capacitor.getPlatform() === 'ios';
+  const hasAppleHealthConnected = isIOS && deviceConnections.some(d => d.provider === 'apple_health' && d.isConnected);
+
   // Fetch user's teams for quick access
   type TeamInfo = { id: number; name: string; memberCount: number; isMember: boolean };
   const { data: userTeams = [] } = useQuery<TeamInfo[]>({
@@ -259,6 +269,15 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+
+        {hasAppleHealthConnected && (
+          <Link href="/health-data" data-testid="link-healthkit-dashboard-attribution">
+            <div className="flex items-center justify-center gap-1.5 py-1.5 rounded-md bg-primary/10" data-testid="banner-healthkit-dashboard">
+              <Heart className="h-3 w-3 text-primary" />
+              <p className="text-xs text-primary font-medium">Stats synced from Apple HealthKit</p>
+            </div>
+          </Link>
+        )}
       </header>
 
       <main className="px-4 py-6 space-y-6">
