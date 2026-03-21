@@ -320,14 +320,17 @@ class HealthService {
         getOrCreate(date).steps += getSampleValue(sample);
       }
 
-      // Android: Apply active calorie formula ONLY when total-calories are returned (not active-calories)
-      // Formula: Active Cal = Total Burned Cal × 1.2 - BMR
-      // Only convert when: 1) Android platform, 2) data came from 'total-calories' specifically, 3) user has set their BMR
-      const needsAndroidConversion = this.isAndroid() && usedCalorieDataType === 'total-calories' && !!userBmr;
+      // Android: Convert total calories → active calories using BMR formula.
+      // Formula: Active Cal = max(0, Total × 1.2 − BMR)
+      // Applies whenever: Android platform AND data came from 'total-calories' (Samsung Health path).
+      // BMR used: user's profile value if set, otherwise population-average fallback (1555 kcal/day).
+      // The fallback mirrors the CalorieEstimator.kt logic: avg(1500, 70 × 23) = 1555.
+      const BMR_FALLBACK = 1555; // kcal/day — population-average (no weight/gender info)
+      const needsAndroidConversion = this.isAndroid() && usedCalorieDataType === 'total-calories';
+      const effectiveBmr = userBmr || BMR_FALLBACK;
       if (needsAndroidConversion) {
-        console.log(`[HealthService] Android: Will convert total calories to active using formula (BMR: ${userBmr})`);
-      } else if (this.isAndroid() && usedCalorieDataType === 'total-calories' && !userBmr) {
-        console.log('[HealthService] Android: Total calories detected but no BMR set - using raw values. Set BMR in Profile for accurate active calories.');
+        const bmrSource = userBmr ? `user-set BMR: ${userBmr}` : `fallback BMR: ${BMR_FALLBACK}`;
+        console.log(`[HealthService] Android: Converting total → active calories (${bmrSource})`);
       }
 
       // Process calories - use aggregated data, or workout calories as fallback
@@ -337,10 +340,10 @@ class HealthService {
           if (!date) continue;
           let calorieValue = getSampleValue(sample);
           
-          if (needsAndroidConversion && calorieValue > 0 && userBmr) {
+          if (needsAndroidConversion && calorieValue > 0) {
             const originalValue = calorieValue;
-            calorieValue = Math.max(0, Math.round(calorieValue * 1.2 - userBmr));
-            console.log(`[HealthService] Android calorie conversion: ${originalValue} total -> ${calorieValue} active (BMR: ${userBmr})`);
+            calorieValue = Math.max(0, Math.round(calorieValue * 1.2 - effectiveBmr));
+            console.log(`[HealthService] Android calorie conversion: ${originalValue} total -> ${calorieValue} active (BMR: ${effectiveBmr})`);
           }
           
           getOrCreate(date).calories += calorieValue;
