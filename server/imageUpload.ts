@@ -5,6 +5,7 @@ import { promises as fs } from 'fs';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'evidence');
 const PROFILE_UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'profiles');
+const FEED_UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'feed');
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Ensure upload directory exists
@@ -22,6 +23,15 @@ export async function ensureProfileUploadDir() {
     await fs.access(PROFILE_UPLOAD_DIR);
   } catch {
     await fs.mkdir(PROFILE_UPLOAD_DIR, { recursive: true });
+  }
+}
+
+// Ensure feed upload directory exists (never cleaned up — feed images are permanent)
+export async function ensureFeedUploadDir() {
+  try {
+    await fs.access(FEED_UPLOAD_DIR);
+  } catch {
+    await fs.mkdir(FEED_UPLOAD_DIR, { recursive: true });
   }
 }
 
@@ -94,6 +104,31 @@ export async function compressAndSaveProfileImage(buffer: Buffer, userId: string
 
   // Return relative path for storage
   return `/uploads/profiles/${filename}`;
+}
+
+// Compress and save feed post image (saved to /uploads/feed/ — never auto-deleted)
+export async function compressAndSaveFeedImage(buffer: Buffer, originalName: string): Promise<string> {
+  await ensureFeedUploadDir();
+
+  const timestamp = Date.now();
+  const randomString = Math.random().toString(36).substring(7);
+  const filename = `${timestamp}_${randomString}.webp`;
+  const filepath = path.join(FEED_UPLOAD_DIR, filename);
+
+  await sharp(buffer)
+    .rotate()
+    .resize(1920, 1920, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .withMetadata({ orientation: undefined })
+    .webp({
+      quality: 80,
+      effort: 6,
+    })
+    .toFile(filepath);
+
+  return `/uploads/feed/${filename}`;
 }
 
 // Delete old evidence files (older than 24 hours)

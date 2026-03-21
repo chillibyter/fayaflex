@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema, locations } from "@shared/schema";
 import { z } from "zod";
-import { upload, compressAndSaveImage, compressAndSaveProfileImage, cleanupOldEvidence } from "./imageUpload";
+import { upload, compressAndSaveImage, compressAndSaveProfileImage, compressAndSaveFeedImage, cleanupOldEvidence } from "./imageUpload";
 import express from "express";
 import path from "path";
 import OpenAI from "openai";
@@ -3802,7 +3802,7 @@ IMPORTANT RULES:
   app.post("/api/upload/feed-image", isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
       if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-      const outputPath = await compressAndSaveImage(req.file.buffer, req.file.originalname || 'feed-post');
+      const outputPath = await compressAndSaveFeedImage(req.file.buffer, req.file.originalname || 'feed-post');
       res.json({ url: outputPath });
     } catch (err) {
       console.error("[Feed] Image upload error:", err);
