@@ -5,124 +5,172 @@ import { healthService } from '@/lib/healthService';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
-const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes cooldown between syncs
-const LAST_SYNC_KEY = 'ufc_last_auto_sync';
+const FULL_SYNC_COOLDOWN_MS  = 5 * 60 * 1000; // 5 min between full 7-day syncs
+const TODAY_POLL_INTERVAL_MS = 60 * 1000;      // poll today's data every 60 seconds
+const LAST_FULL_SYNC_KEY     = 'ufc_last_auto_sync';
 
 export function useAutoHealthSync() {
   const { user } = useAuth();
-  const isSyncingRef = useRef(false);
+  const isFullSyncingRef  = useRef(false);
+  const isTodaySyncingRef = useRef(false);
+  const todayIntervalRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const appActiveRef      = useRef(true);
 
-  const performSync = useCallback(async () => {
-    // Only sync on native platforms
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+  // ── helpers ────────────────────────────────────────────────────────────────
 
-    // Don't sync if not logged in
-    if (!user) {
-      console.log('[AutoSync] No user logged in, skipping sync');
-      return;
-    }
+  const getProvider = useCallback(async () => {
+    const isAvailable = await healthService.isAvailable();
+    if (!isAvailable) return null;
+    return healthService.getProviderName();
+  }, []);
 
-    // Check cooldown to prevent excessive syncing
-    const lastSyncTime = localStorage.getItem(LAST_SYNC_KEY);
-    if (lastSyncTime) {
-      const timeSinceLastSync = Date.now() - parseInt(lastSyncTime, 10);
-      if (timeSinceLastSync < SYNC_COOLDOWN_MS) {
-        console.log('[AutoSync] Within cooldown period, skipping sync');
-        return;
-      }
-    }
+  const invalidateTodayQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/stats/daily-breakdown'] });
+  }, []);
 
-    // Prevent concurrent syncs
-    if (isSyncingRef.current) {
-      console.log('[AutoSync] Sync already in progress, skipping');
-      return;
-    }
+  // ── Today-only sync (runs every 60 s while active) ─────────────────────────
+
+  const performTodaySync = useCallback(async () => {
+    if (!Capacitor.isNativePlatform() || !user || !appActiveRef.current) return;
+    if (isTodaySyncingRef.current) return;
 
     try {
-      isSyncingRef.current = true;
-      console.log('[AutoSync] Starting automatic health sync...');
+      isTodaySyncingRef.current = true;
 
-      // Check if health is available
-      const isAvailable = await healthService.isAvailable();
-      if (!isAvailable) {
-        console.log('[AutoSync] Health service not available');
-        return;
-      }
+      const provider = await getProvider();
+      if (!provider) return;
 
-      // Get the provider name
-      const provider = await healthService.getProviderName();
-      console.log('[AutoSync] Provider:', provider);
-
-      // Fetch health data for the last 7 days (incremental sync)
-      const endDate = new Date();
+      // Query only today
+      const endDate   = new Date();
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 7);
+      startDate.setHours(0, 0, 0, 0); // midnight today
 
-      console.log('[AutoSync] Fetching health data from', startDate.toISOString(), 'to', endDate.toISOString());
-      
+      console.log('[TodaySync] Fetching today\'s health data...');
       const healthData = await healthService.getHealthData(startDate, endDate, (user as any)?.bmr);
-      
+
       if (healthData.length === 0) {
-        console.log('[AutoSync] No health data to sync');
-        localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
+        console.log('[TodaySync] No data for today yet');
         return;
       }
 
-      console.log('[AutoSync] Syncing', healthData.length, 'days of health data');
-
-      // Send to backend and wait for it to complete
       const syncResponse = await apiRequest('POST', '/api/devices/sync', {
         provider,
         activities: healthData
       });
-      
-      // Ensure the sync is committed before we invalidate caches
+
       if (syncResponse.ok) {
-        console.log('[AutoSync] Health data synced successfully');
-      } else {
-        console.warn('[AutoSync] Sync response not ok:', syncResponse.status);
+        console.log('[TodaySync] Today\'s data updated:', JSON.stringify(healthData));
+        invalidateTodayQueries();
+      }
+    } catch (error) {
+      console.error('[TodaySync] Failed:', error);
+    } finally {
+      isTodaySyncingRef.current = false;
+    }
+  }, [user, getProvider, invalidateTodayQueries]);
+
+  // ── Full 7-day sync (runs on load + foreground resume, 5-min cooldown) ─────
+
+  const performFullSync = useCallback(async () => {
+    if (!Capacitor.isNativePlatform() || !user) return;
+    if (isFullSyncingRef.current) return;
+
+    const lastSyncTime = localStorage.getItem(LAST_FULL_SYNC_KEY);
+    if (lastSyncTime) {
+      const elapsed = Date.now() - parseInt(lastSyncTime, 10);
+      if (elapsed < FULL_SYNC_COOLDOWN_MS) {
+        console.log('[FullSync] Within cooldown, skipping');
+        return;
+      }
+    }
+
+    try {
+      isFullSyncingRef.current = true;
+      console.log('[FullSync] Starting 7-day health sync...');
+
+      const provider = await getProvider();
+      if (!provider) return;
+
+      const endDate   = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+
+      const healthData = await healthService.getHealthData(startDate, endDate, (user as any)?.bmr);
+
+      if (healthData.length === 0) {
+        console.log('[FullSync] No health data');
+        localStorage.setItem(LAST_FULL_SYNC_KEY, Date.now().toString());
+        return;
       }
 
-      // Update last sync time
-      localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
+      console.log('[FullSync] Syncing', healthData.length, 'days');
+      const syncResponse = await apiRequest('POST', '/api/devices/sync', {
+        provider,
+        activities: healthData
+      });
 
-      // Invalidate and refetch relevant queries to refresh UI with latest data
-      queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats/daily-breakdown'] });
+      if (syncResponse.ok) {
+        console.log('[FullSync] Sync complete');
+      } else {
+        console.warn('[FullSync] Sync response not ok:', syncResponse.status);
+      }
+
+      localStorage.setItem(LAST_FULL_SYNC_KEY, Date.now().toString());
+      invalidateTodayQueries();
 
     } catch (error) {
-      console.error('[AutoSync] Failed to sync health data:', error);
-      // Don't throw - this is a background operation
+      console.error('[FullSync] Failed:', error);
     } finally {
-      isSyncingRef.current = false;
+      isFullSyncingRef.current = false;
     }
-  }, [user]);
+  }, [user, getProvider, invalidateTodayQueries]);
+
+  // ── Interval management ────────────────────────────────────────────────────
+
+  const startTodayPolling = useCallback(() => {
+    if (todayIntervalRef.current) return; // already running
+    console.log('[TodaySync] Starting real-time polling (every 60 s)');
+    todayIntervalRef.current = setInterval(performTodaySync, TODAY_POLL_INTERVAL_MS);
+  }, [performTodaySync]);
+
+  const stopTodayPolling = useCallback(() => {
+    if (todayIntervalRef.current) {
+      clearInterval(todayIntervalRef.current);
+      todayIntervalRef.current = null;
+      console.log('[TodaySync] Polling paused (app in background)');
+    }
+  }, []);
+
+  // ── Effect: wires everything together ──────────────────────────────────────
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+    if (!Capacitor.isNativePlatform()) return;
 
-    // Sync on initial app load
-    const initialSyncTimeout = setTimeout(() => {
-      performSync();
-    }, 2000); // Small delay to let the app fully initialize
+    // Initial load: full sync + first today-sync, then start polling
+    const initialTimeout = setTimeout(async () => {
+      await performFullSync();
+      await performTodaySync();
+      startTodayPolling();
+    }, 2000);
 
-    // Listen for app state changes (resume from background)
+    // Foreground / background transitions
     let appStateListener: any;
-    
-    const setupAppStateListener = async () => {
+    const setupListener = async () => {
       try {
         appStateListener = await App.addListener('appStateChange', (state) => {
-          console.log('[AutoSync] App state changed:', state.isActive ? 'active' : 'background');
+          appActiveRef.current = state.isActive;
           if (state.isActive) {
-            // App came to foreground - sync health data
-            performSync();
+            console.log('[AutoSync] App foregrounded');
+            performFullSync();
+            performTodaySync();
+            startTodayPolling();
+          } else {
+            console.log('[AutoSync] App backgrounded — pausing poll');
+            stopTodayPolling();
           }
         });
       } catch (error) {
@@ -130,17 +178,14 @@ export function useAutoHealthSync() {
       }
     };
 
-    setupAppStateListener();
+    setupListener();
 
-    // Cleanup
     return () => {
-      clearTimeout(initialSyncTimeout);
-      if (appStateListener) {
-        appStateListener.remove();
-      }
+      clearTimeout(initialTimeout);
+      stopTodayPolling();
+      if (appStateListener) appStateListener.remove();
     };
-  }, [performSync]);
+  }, [performFullSync, performTodaySync, startTodayPolling, stopTodayPolling]);
 
-  // Return a manual sync function for edge cases
-  return { syncNow: performSync };
+  return { syncNow: performFullSync, syncToday: performTodaySync };
 }
