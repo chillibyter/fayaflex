@@ -13,3 +13,9 @@ if (!process.env.DATABASE_URL) {
 
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 export const db = drizzle({ client: pool, schema });
+
+// Prevent unhandled 'error' events from crashing the server.
+// Neon serverless terminates WebSocket connections periodically — this is normal.
+pool.on('error', (err) => {
+  console.error('[DB] Pool connection error (non-fatal):', err.message);
+});

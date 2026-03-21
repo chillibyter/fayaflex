@@ -2,6 +2,22 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Global safety net: prevent Neon DB connection resets (or any other
+// transient async errors) from crashing the whole process.
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process] Unhandled promise rejection (non-fatal):', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  // Log the error but only exit for truly unrecoverable situations.
+  console.error('[Process] Uncaught exception:', err.message);
+  if ((err as any).code === 'ERR_USE_AFTER_CLOSE' || err.message?.includes('terminating connection')) {
+    console.error('[Process] DB connection reset — continuing.');
+  } else {
+    process.exit(1);
+  }
+});
+
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
