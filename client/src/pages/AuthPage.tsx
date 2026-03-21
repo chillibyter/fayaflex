@@ -1,20 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Fingerprint, ArrowLeft, AlertCircle, Eye, EyeOff, Trophy } from "lucide-react";
+import { Fingerprint, ArrowLeft, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
 import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
 import { CitySearch } from "@/components/CitySearch";
-import { SiGoogle, SiApple } from "react-icons/si";
-import { signInWithGoogle, signInWithApple, isSocialLoginAvailable } from "@/lib/socialAuth";
-import { Capacitor } from "@capacitor/core";
 
 export default function AuthPage() {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -49,25 +46,6 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const googleToken = params.get("google_auth_token");
-    const error = params.get("error");
-    if (googleToken) {
-      window.history.replaceState({}, "", "/");
-      if (Capacitor.isNativePlatform()) {
-        import("@capacitor/preferences").then(({ Preferences }) => {
-          Preferences.set({ key: "auth_token", value: googleToken });
-        });
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Login successful!", description: "Welcome to FayaFlex!" });
-      setLocation("/");
-    } else if (error === "google_auth_failed") {
-      window.history.replaceState({}, "", "/auth");
-      setLoginError("Google Sign-In failed. Please try again.");
-    }
-  }, []);
 
   // Redirect if already logged in
   if (user) {
@@ -241,54 +219,6 @@ export default function AuthPage() {
     });
   };
 
-  // Social login handlers
-  const [socialLoginPending, setSocialLoginPending] = useState(false);
-
-  const handleGoogleLogin = async () => {
-    setSocialLoginPending(true);
-    setLoginError("");
-    try {
-      const result = await signInWithGoogle();
-      queryClient.setQueryData(["/api/auth/user"], result.user);
-      // Store token for mobile apps
-      if (result.token && Capacitor.isNativePlatform()) {
-        const { Preferences } = await import("@capacitor/preferences");
-        await Preferences.set({ key: "auth_token", value: result.token });
-      }
-      toast({
-        title: "Login successful!",
-        description: "Welcome to FayaFlex!",
-      });
-      setLocation("/");
-    } catch (error: any) {
-      setLoginError(error.message || "Google Sign-In failed");
-    } finally {
-      setSocialLoginPending(false);
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    setSocialLoginPending(true);
-    setLoginError("");
-    try {
-      const result = await signInWithApple();
-      queryClient.setQueryData(["/api/auth/user"], result.user);
-      // Store token for mobile apps
-      if (result.token && Capacitor.isNativePlatform()) {
-        const { Preferences } = await import("@capacitor/preferences");
-        await Preferences.set({ key: "auth_token", value: result.token });
-      }
-      toast({
-        title: "Login successful!",
-        description: "Welcome to FayaFlex!",
-      });
-      setLocation("/");
-    } catch (error: any) {
-      setLoginError(error.message || "Apple Sign-In failed");
-    } finally {
-      setSocialLoginPending(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-green-50/50 dark:bg-green-950/20 pt-8 pb-12 px-4">
@@ -446,48 +376,6 @@ export default function AuthPage() {
                   {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
                 </Button>
 
-                {/* Social Login Buttons - Only shown when properly configured */}
-                {(isSocialLoginAvailable().google || isSocialLoginAvailable().apple) && (
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-gray-300 dark:border-gray-700" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      {isSocialLoginAvailable().apple && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          data-testid="button-apple-login"
-                          className="flex-1 gap-2 rounded-[10px] border-gray-300 dark:border-gray-700"
-                          onClick={handleAppleLogin}
-                          disabled={socialLoginPending}
-                        >
-                          <SiApple className="w-4 h-4" />
-                          Apple
-                        </Button>
-                      )}
-                      {isSocialLoginAvailable().google && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          data-testid="button-google-login"
-                          className="flex-1 gap-2 rounded-[10px] border-gray-300 dark:border-gray-700"
-                          onClick={handleGoogleLogin}
-                          disabled={socialLoginPending}
-                        >
-                          <SiGoogle className="w-4 h-4" />
-                          Google
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 <p className="text-center text-sm text-muted-foreground">
                   Don't have an account?{" "}
