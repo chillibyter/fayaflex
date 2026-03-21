@@ -26,6 +26,7 @@ import DailyChart from "@/pages/DailyChart";
 import Challenges from "@/pages/Challenges";
 import Messages from "@/pages/Messages";
 import ChallengeArchive from "@/pages/ChallengeArchive";
+import ForYou from "@/pages/ForYou";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -97,6 +98,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/feed" component={ForYou} />
       <Route path="/daily-chart" component={DailyChart} />
       <Route path="/track" component={TrackActivity} />
       <Route path="/leaderboard" component={Leaderboard} />

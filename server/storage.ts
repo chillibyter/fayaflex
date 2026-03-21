@@ -17,6 +17,9 @@ import {
   challenges,
   messages,
   teamMessages,
+  feedPosts,
+  feedPostLikes,
+  feedPostComments,
   type User,
   type UpsertUser,
   type Team,
@@ -50,10 +53,20 @@ import {
   type Message,
   type InsertMessage,
   type TeamMessage,
+  type FeedPost,
+  type FeedPostLike,
+  type FeedPostComment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
 import { randomBytes } from "crypto";
+
+export interface FeedPostWithMeta extends FeedPost {
+  user: User;
+  likeCount: number;
+  commentCount: number;
+  likedByMe: boolean;
+}
 
 export interface IStorage {
   // User operations
@@ -190,6 +203,17 @@ export interface IStorage {
   // Team chat operations
   sendTeamMessage(teamId: string, userId: string, content: string): Promise<TeamMessage>;
   getTeamMessages(teamId: string, limit?: number, before?: string): Promise<(TeamMessage & { user: User })[]>;
+
+  // Feed post operations
+  createFeedPost(userId: string, content: string, imageUrl?: string | null): Promise<FeedPost>;
+  getFeed(userId: string, limit?: number, offset?: number): Promise<FeedPostWithMeta[]>;
+  deleteFeedPost(postId: string, userId: string): Promise<void>;
+  likeFeedPost(postId: string, userId: string): Promise<void>;
+  unlikeFeedPost(postId: string, userId: string): Promise<void>;
+  getFeedPostLike(postId: string, userId: string): Promise<FeedPostLike | undefined>;
+  addFeedPostComment(postId: string, userId: string, content: string): Promise<FeedPostComment>;
+  getFeedPostComments(postId: string): Promise<(FeedPostComment & { user: User })[]>;
+  deleteFeedPostComment(commentId: string, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1595,6 +1619,120 @@ export class DatabaseStorage implements IStorage {
       ...message,
       user,
     }));
+  }
+
+  // ── Feed post operations ──────────────────────────────────────────────────
+
+  async createFeedPost(userId: string, content: string, imageUrl?: string | null): Promise<FeedPost> {
+    const [post] = await db.insert(feedPosts).values({ userId, content, imageUrl: imageUrl ?? null }).returning();
+    return post;
+  }
+
+  async getFeed(userId: string, limit: number = 30, offset: number = 0): Promise<FeedPostWithMeta[]> {
+    // Get all team-mates (including self) so we can show their posts
+    const userTeamRows = await db
+      .select({ teamId: teamMembers.teamId })
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+
+    const teamIds = userTeamRows.map((r) => r.teamId);
+
+    let visibleUserIds: string[] = [userId];
+    if (teamIds.length > 0) {
+      const teammateRows = await db
+        .select({ userId: teamMembers.userId })
+        .from(teamMembers)
+        .where(inArray(teamMembers.teamId, teamIds));
+      const ids = teammateRows.map((r) => r.userId);
+      visibleUserIds = [...new Set([...visibleUserIds, ...ids])];
+    }
+
+    // Fetch posts from visible users
+    const posts = await db
+      .select({ post: feedPosts, user: users })
+      .from(feedPosts)
+      .innerJoin(users, eq(feedPosts.userId, users.id))
+      .where(inArray(feedPosts.userId, visibleUserIds))
+      .orderBy(desc(feedPosts.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    if (posts.length === 0) return [];
+
+    const postIds = posts.map((p) => p.post.id);
+
+    // Aggregate like counts
+    const likeCounts = await db
+      .select({ postId: feedPostLikes.postId, count: sql<number>`count(*)::int` })
+      .from(feedPostLikes)
+      .where(inArray(feedPostLikes.postId, postIds))
+      .groupBy(feedPostLikes.postId);
+
+    const likeCountMap = new Map(likeCounts.map((l) => [l.postId, l.count]));
+
+    // Aggregate comment counts
+    const commentCounts = await db
+      .select({ postId: feedPostComments.postId, count: sql<number>`count(*)::int` })
+      .from(feedPostComments)
+      .where(inArray(feedPostComments.postId, postIds))
+      .groupBy(feedPostComments.postId);
+
+    const commentCountMap = new Map(commentCounts.map((c) => [c.postId, c.count]));
+
+    // Which posts has the current user liked?
+    const myLikes = await db
+      .select({ postId: feedPostLikes.postId })
+      .from(feedPostLikes)
+      .where(and(eq(feedPostLikes.userId, userId), inArray(feedPostLikes.postId, postIds)));
+
+    const likedSet = new Set(myLikes.map((l) => l.postId));
+
+    return posts.map(({ post, user }) => ({
+      ...post,
+      user,
+      likeCount: likeCountMap.get(post.id) ?? 0,
+      commentCount: commentCountMap.get(post.id) ?? 0,
+      likedByMe: likedSet.has(post.id),
+    }));
+  }
+
+  async deleteFeedPost(postId: string, userId: string): Promise<void> {
+    await db.delete(feedPosts).where(and(eq(feedPosts.id, postId), eq(feedPosts.userId, userId)));
+  }
+
+  async likeFeedPost(postId: string, userId: string): Promise<void> {
+    await db.insert(feedPostLikes).values({ postId, userId }).onConflictDoNothing();
+  }
+
+  async unlikeFeedPost(postId: string, userId: string): Promise<void> {
+    await db.delete(feedPostLikes).where(and(eq(feedPostLikes.postId, postId), eq(feedPostLikes.userId, userId)));
+  }
+
+  async getFeedPostLike(postId: string, userId: string): Promise<FeedPostLike | undefined> {
+    const [like] = await db
+      .select()
+      .from(feedPostLikes)
+      .where(and(eq(feedPostLikes.postId, postId), eq(feedPostLikes.userId, userId)));
+    return like;
+  }
+
+  async addFeedPostComment(postId: string, userId: string, content: string): Promise<FeedPostComment> {
+    const [comment] = await db.insert(feedPostComments).values({ postId, userId, content }).returning();
+    return comment;
+  }
+
+  async getFeedPostComments(postId: string): Promise<(FeedPostComment & { user: User })[]> {
+    const results = await db
+      .select({ comment: feedPostComments, user: users })
+      .from(feedPostComments)
+      .innerJoin(users, eq(feedPostComments.userId, users.id))
+      .where(eq(feedPostComments.postId, postId))
+      .orderBy(feedPostComments.createdAt);
+    return results.map(({ comment, user }) => ({ ...comment, user }));
+  }
+
+  async deleteFeedPostComment(commentId: string, userId: string): Promise<void> {
+    await db.delete(feedPostComments).where(and(eq(feedPostComments.id, commentId), eq(feedPostComments.userId, userId)));
   }
 }
 

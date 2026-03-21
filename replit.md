@@ -64,6 +64,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**For You Feed** (March 21, 2026)
+- Added "For You" social feed page at /feed — shows posts from teammates and yourself
+- Instagram-style: text posts with optional photo, heart likes, comment threads
+- Users can create posts with text and/or an uploaded image
+- Like toggle with optimistic UI update (instant feedback, server synced)
+- Collapsible comment section per post with add/delete own comments
+- Feed is scoped to teammates (users sharing at least one team) + yourself
+- Auto-refreshes every 30 seconds
+- Feed tab added to bottom navigation (replaced Teams; Teams still accessible from Dashboard)
+- New database tables: feed_posts, feed_post_likes, feed_post_comments
+- New API endpoints: GET/POST /api/feed, POST/DELETE /api/feed/posts/:id, like toggle, comments CRUD, image upload
+- New image upload endpoint: POST /api/upload/feed-image (same compression pipeline as evidence photos)
+
+
+
 **Registration Location Fix** (January 1, 2026)
 - Fixed bug where city/location data was captured in frontend but not saved to database during registration
 - Updated /api/register endpoint to include location fields (continentId, countryId, regionId, townId)

@@ -3696,6 +3696,119 @@ IMPORTANT RULES:
   
   // Check immediately on startup (in case server restarts on the 1st at noon)
   autoCalculateMonthlyWinners().catch(err => console.error('[VictoryWall] Initial check failed:', err));
-  
+
+  // ── Feed routes ─────────────────────────────────────────────────────────────
+
+  // GET /api/feed — paginated feed for the current user (own + teammates' posts)
+  app.get("/api/feed", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const limit  = Math.min(parseInt((req.query.limit  as string) || "30"), 50);
+      const offset = parseInt((req.query.offset as string) || "0");
+      const posts  = await storage.getFeed(userId, limit, offset);
+      // Strip email from embedded user objects
+      const sanitized = posts.map((p) => ({ ...p, user: sanitizeUserForDisplay(p.user, userId) }));
+      res.json(sanitized);
+    } catch (err) {
+      console.error("[Feed] GET /api/feed error:", err);
+      res.status(500).json({ message: "Failed to fetch feed" });
+    }
+  });
+
+  // POST /api/feed/posts — create a new post
+  app.post("/api/feed/posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const schema = z.object({
+        content:  z.string().min(1).max(2000),
+        imageUrl: z.string().nullable().optional(),
+      });
+      const { content, imageUrl } = schema.parse(req.body);
+      const post = await storage.createFeedPost(userId, content, imageUrl);
+      res.status(201).json(post);
+    } catch (err: any) {
+      console.error("[Feed] POST /api/feed/posts error:", err);
+      res.status(400).json({ message: err.message || "Failed to create post" });
+    }
+  });
+
+  // DELETE /api/feed/posts/:id — delete own post
+  app.delete("/api/feed/posts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.deleteFeedPost(req.params.id, req.user.id);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("[Feed] DELETE /api/feed/posts error:", err);
+      res.status(500).json({ message: "Failed to delete post" });
+    }
+  });
+
+  // POST /api/feed/posts/:id/like — toggle like
+  app.post("/api/feed/posts/:id/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = req.params.id;
+      const userId = req.user.id;
+      const existing = await storage.getFeedPostLike(postId, userId);
+      if (existing) {
+        await storage.unlikeFeedPost(postId, userId);
+        res.json({ liked: false });
+      } else {
+        await storage.likeFeedPost(postId, userId);
+        res.json({ liked: true });
+      }
+    } catch (err) {
+      console.error("[Feed] POST like error:", err);
+      res.status(500).json({ message: "Failed to toggle like" });
+    }
+  });
+
+  // GET /api/feed/posts/:id/comments
+  app.get("/api/feed/posts/:id/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const comments = await storage.getFeedPostComments(req.params.id);
+      const sanitized = comments.map((c) => ({ ...c, user: sanitizeUserForDisplay(c.user, req.user.id) }));
+      res.json(sanitized);
+    } catch (err) {
+      console.error("[Feed] GET comments error:", err);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // POST /api/feed/posts/:id/comments
+  app.post("/api/feed/posts/:id/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const schema = z.object({ content: z.string().min(1).max(500) });
+      const { content } = schema.parse(req.body);
+      const comment = await storage.addFeedPostComment(req.params.id, req.user.id, content);
+      res.status(201).json(comment);
+    } catch (err: any) {
+      console.error("[Feed] POST comment error:", err);
+      res.status(400).json({ message: err.message || "Failed to add comment" });
+    }
+  });
+
+  // DELETE /api/feed/posts/:postId/comments/:commentId
+  app.delete("/api/feed/posts/:postId/comments/:commentId", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.deleteFeedPostComment(req.params.commentId, req.user.id);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("[Feed] DELETE comment error:", err);
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // POST /api/upload/feed-image — upload image for a feed post
+  app.post("/api/upload/feed-image", isAuthenticated, upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+      const outputPath = await compressAndSaveImage(req.file.buffer, req.file.originalname || 'feed-post');
+      res.json({ url: outputPath });
+    } catch (err) {
+      console.error("[Feed] Image upload error:", err);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
   return httpServer;
 }

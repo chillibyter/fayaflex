@@ -630,3 +630,90 @@ export const insertTeamMessageSchema = createInsertSchema(teamMessages).omit({
   createdAt: true,
 });
 export type InsertTeamMessage = z.infer<typeof insertTeamMessageSchema>;
+
+// Feed posts table — user-created posts (text + optional image), shown in the "For You" feed
+export const feedPosts = pgTable("feed_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const feedPostsRelations = relations(feedPosts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [feedPosts.userId],
+    references: [users.id],
+  }),
+  likes: many(feedPostLikes),
+  comments: many(feedPostComments),
+}));
+
+export type FeedPost = typeof feedPosts.$inferSelect;
+export const insertFeedPostSchema = createInsertSchema(feedPosts).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
+export type InsertFeedPost = z.infer<typeof insertFeedPostSchema>;
+
+// Feed post likes
+export const feedPostLikes = pgTable("feed_post_likes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id")
+    .notNull()
+    .references(() => feedPosts.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  postUserUnique: uniqueIndex("feed_post_likes_post_user_unique").on(table.postId, table.userId),
+}));
+
+export const feedPostLikesRelations = relations(feedPostLikes, ({ one }) => ({
+  post: one(feedPosts, {
+    fields: [feedPostLikes.postId],
+    references: [feedPosts.id],
+  }),
+  user: one(users, {
+    fields: [feedPostLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export type FeedPostLike = typeof feedPostLikes.$inferSelect;
+
+// Feed post comments
+export const feedPostComments = pgTable("feed_post_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id")
+    .notNull()
+    .references(() => feedPosts.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const feedPostCommentsRelations = relations(feedPostComments, ({ one }) => ({
+  post: one(feedPosts, {
+    fields: [feedPostComments.postId],
+    references: [feedPosts.id],
+  }),
+  user: one(users, {
+    fields: [feedPostComments.userId],
+    references: [users.id],
+  }),
+}));
+
+export type FeedPostComment = typeof feedPostComments.$inferSelect;
+export const insertFeedPostCommentSchema = createInsertSchema(feedPostComments).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
+export type InsertFeedPostComment = z.infer<typeof insertFeedPostCommentSchema>;

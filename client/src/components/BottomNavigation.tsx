@@ -1,11 +1,11 @@
 import { useLocation, Link } from "wouter";
-import { Home, Dumbbell, Trophy, Users, User } from "lucide-react";
+import { Home, Dumbbell, Trophy, User, Rss } from "lucide-react";
 
 const navItems = [
-  { path: "/", label: "Dashboard", icon: Home },
+  { path: "/", label: "Home", icon: Home },
+  { path: "/feed", label: "Feed", icon: Rss },
   { path: "/track", label: "Track", icon: Dumbbell },
   { path: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { path: "/teams", label: "Teams", icon: Users },
   { path: "/profile", label: "Profile", icon: User },
 ];
 
