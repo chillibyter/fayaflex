@@ -283,38 +283,6 @@ export default function DailyChart() {
                 </Card>
               ))}
             </div>
-            <p className="text-xs text-white/70 font-medium">Mar 5 - Raw Data</p>
-            <div className="grid grid-cols-2 gap-2">
-              {(march5Diag.length > 0 ? march5Diag : ['active-calories', 'total-calories'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
-                <Card key={`m5-${d.dataType}`} className="bg-white/15 border-0 backdrop-blur">
-                  <CardContent className="p-2 text-center">
-                    <p className="text-[10px] text-white/70 truncate" data-testid={`text-diag-m5-${d.dataType}`}>{d.dataType}</p>
-                    <p className="text-lg font-bold text-white/90" data-testid={`text-diag-m5-val-${d.dataType}`}>
-                      {d.status === 'ok' ? d.value.toLocaleString() : (diagLoading ? '...' : '--')}
-                    </p>
-                    <p className="text-[10px] text-white/70">
-                      {d.status === 'ok' ? 'Mar 5' : d.status.substring(0, 15)}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <p className="text-xs text-white/70 font-medium">Mar 5 - Exercise Overlap</p>
-            <div className="grid grid-cols-2 gap-2">
-              {(exerciseDiag.length > 0 ? exerciseDiag : ['workout-cal', 'exercise-overlap'].map(dt => ({ dataType: dt, value: 0, status: diagLoading ? 'loading' : '--' }))).map((d) => (
-                <Card key={`ex-${d.dataType}`} className="bg-white/10 border-0 backdrop-blur">
-                  <CardContent className="p-2 text-center">
-                    <p className="text-[10px] text-white/70 truncate" data-testid={`text-diag-ex-${d.dataType}`}>{d.dataType}</p>
-                    <p className="text-lg font-bold text-yellow-200" data-testid={`text-diag-ex-val-${d.dataType}`}>
-                      {d.status === 'ok' ? d.value.toLocaleString() : (d.status === 'no workouts' ? '0' : (diagLoading ? '...' : '--'))}
-                    </p>
-                    <p className="text-[10px] text-white/70">
-                      {d.status === 'ok' ? 'Mar 5' : d.status.substring(0, 15)}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </div>
         )}
       </header>
