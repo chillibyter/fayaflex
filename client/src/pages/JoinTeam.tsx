@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 
 const APP_STORE_URL = "https://apps.apple.com/us/app/fayaflex/id6757204288";
 
+const isIphone = /iPhone/i.test(navigator.userAgent);
+
 export default function JoinTeam() {
   const { code } = useParams<{ code: string }>();
   const { user } = useAuth();
@@ -56,16 +58,12 @@ export default function JoinTeam() {
     },
   });
 
-  const handleJoin = () => {
-    if (!user) {
-      sessionStorage.setItem(
-        "fayaflex_pending_join",
-        JSON.stringify({ code, teamName: team?.name || "a team" })
-      );
-      setLocation("/auth");
-    } else {
-      joinMutation.mutate();
-    }
+  const handleWebJoin = () => {
+    sessionStorage.setItem(
+      "fayaflex_pending_join",
+      JSON.stringify({ code, teamName: team?.name || "a team" })
+    );
+    setLocation("/auth");
   };
 
   if (isLoading) {
@@ -125,53 +123,63 @@ export default function JoinTeam() {
                 {user ? "Back to Dashboard" : "Sign In"}
               </Button>
             </div>
+          ) : user ? (
+            // Already logged in — join directly
+            <Button
+              className="w-full"
+              onClick={() => joinMutation.mutate()}
+              disabled={joinMutation.isPending}
+              data-testid="button-join-team-link"
+            >
+              {joinMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Joining...</>
+              ) : (
+                <><CheckCircle className="h-4 w-4 mr-2" /> Join Team</>
+              )}
+            </Button>
+          ) : isIphone ? (
+            // iPhone visitor — direct to App Store as primary action
+            <div className="space-y-3">
+              <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="block">
+                <Button className="w-full" data-testid="button-app-store">
+                  <SiApple className="h-4 w-4 mr-2" />
+                  Get the App to Join
+                </Button>
+              </a>
+              <p className="text-xs text-muted-foreground">
+                Open this link in FayaFlex to join {team.name} instantly.
+              </p>
+              <div className="relative my-1">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleWebJoin}
+                data-testid="button-join-web-fallback"
+              >
+                <Lock className="h-4 w-4 mr-2" />
+                Continue on Web
+              </Button>
+            </div>
           ) : (
+            // Non-iPhone visitor — web sign-in flow
             <div className="space-y-3">
               <Button
                 className="w-full"
-                onClick={handleJoin}
-                disabled={joinMutation.isPending}
+                onClick={handleWebJoin}
                 data-testid="button-join-team-link"
               >
-                {joinMutation.isPending ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Joining...</>
-                ) : user ? (
-                  <><CheckCircle className="h-4 w-4 mr-2" /> Join Team</>
-                ) : (
-                  <><Lock className="h-4 w-4 mr-2" /> Sign In to Join</>
-                )}
+                <Lock className="h-4 w-4 mr-2" /> Sign In to Join
               </Button>
-
-              {!user && (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    Sign in or create a free account and you'll be added to the team automatically.
-                  </p>
-
-                  <div className="relative my-1">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="bg-card px-2 text-muted-foreground">or get the app</span>
-                    </div>
-                  </div>
-
-                  <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="block">
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      data-testid="button-app-store"
-                    >
-                      <SiApple className="h-4 w-4 mr-2" />
-                      Download on the App Store
-                    </Button>
-                  </a>
-                  <p className="text-xs text-muted-foreground">
-                    Open this link in the FayaFlex app to join with one tap.
-                  </p>
-                </>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Sign in or create a free account and you'll be added to the team automatically.
+              </p>
             </div>
           )}
         </CardContent>
