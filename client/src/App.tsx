@@ -90,6 +90,7 @@ function Router() {
     if (!hasSkippedTeam) {
       return (
         <Switch>
+          <Route path="/auth"><Redirect to="/" /></Route>
           <Route path="/team-selection" component={TeamSelection} />
           <Route path="/" component={TeamSelection} />
           <Route component={TeamSelection} />
@@ -100,6 +101,7 @@ function Router() {
 
   return (
     <Switch>
+      <Route path="/auth"><Redirect to="/" /></Route>
       <Route path="/" component={Dashboard} />
       <Route path="/feed" component={ForYou} />
       <Route path="/join/:code" component={JoinTeam} />
