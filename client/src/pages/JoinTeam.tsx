@@ -7,10 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, CheckCircle, AlertCircle, Loader2, Lock } from "lucide-react";
 import { SiApple } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
+import { Capacitor } from "@capacitor/core";
 
 const APP_STORE_URL = "https://apps.apple.com/us/app/fayaflex/id6757204288";
 
-const isIphone = /iPhone/i.test(navigator.userAgent);
+// Only show App Store prompt on iPhone web browsers, not inside the native app
+const isIphone = /iPhone/i.test(navigator.userAgent) && !Capacitor.isNativePlatform();
 
 export default function JoinTeam() {
   const { code } = useParams<{ code: string }>();
