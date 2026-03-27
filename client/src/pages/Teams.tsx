@@ -109,7 +109,7 @@ export default function Teams() {
   const APP_STORE_URL = "https://apps.apple.com/us/app/fayaflex/id6757204288";
 
   const getInviteLink = (team: EnrichedTeam) =>
-    `https://www.fayaflex.com/join/${team.inviteCode}`;
+    `https://fayaflex.com/join/${team.inviteCode}`;
 
   const copyInviteLink = () => {
     if (selectedTeam?.inviteCode) {

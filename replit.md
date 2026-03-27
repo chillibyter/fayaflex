@@ -38,7 +38,7 @@ Preferred communication style: Simple, everyday language.
 ### Mobile Application
 - **Platform**: Capacitor for iOS and Android native app deployment.
 - **App ID**: com.fayaflex.app
-- **Production Server**: https://www.fayaflex.com
+- **Production Server**: https://fayaflex.com
 
 ## External Dependencies
 
