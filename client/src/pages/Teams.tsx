@@ -106,31 +106,34 @@ export default function Teams() {
     setShareDialogOpen(true);
   };
 
-  const copyInviteCode = () => {
+  const getInviteLink = (team: EnrichedTeam) =>
+    `https://www.fayaflex.com/join/${team.inviteCode}`;
+
+  const copyInviteLink = () => {
     if (selectedTeam?.inviteCode) {
-      navigator.clipboard.writeText(selectedTeam.inviteCode);
-      toast({ title: "Copied!", description: "Invite code copied to clipboard." });
+      navigator.clipboard.writeText(getInviteLink(selectedTeam));
+      toast({ title: "Link copied!", description: "Share this link to invite teammates." });
     }
   };
 
   const shareViaWhatsApp = () => {
     if (!selectedTeam?.inviteCode) return;
-    const appUrl = "https://www.fayaflex.com";
-    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nInvite Code: ${selectedTeam.inviteCode}\n\nDownload the app: ${appUrl}`;
+    const link = getInviteLink(selectedTeam);
+    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nTap to join instantly: ${link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const shareViaGeneric = async () => {
     if (!selectedTeam?.inviteCode) return;
-    const appUrl = "https://www.fayaflex.com";
-    const message = `Join my fitness team "${selectedTeam.name}"!\n\nInvite Code: ${selectedTeam.inviteCode}\n\n${appUrl}`;
+    const link = getInviteLink(selectedTeam);
+    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: `Join ${selectedTeam.name}`, text: message, url: appUrl });
+        await navigator.share({ title: `Join ${selectedTeam.name}`, text: message, url: link });
       } catch {}
     } else {
-      navigator.clipboard.writeText(message);
-      toast({ title: "Copied!", description: "Share message copied." });
+      navigator.clipboard.writeText(link);
+      toast({ title: "Link copied!", description: "Share this link to invite teammates." });
     }
   };
 
@@ -272,19 +275,21 @@ export default function Teams() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite to {selectedTeam?.name}</DialogTitle>
-            <DialogDescription>Share this code with others to let them join.</DialogDescription>
+            <DialogDescription>
+              Share the link — teammates tap it to join instantly, no code needed.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <Label>Invite Code</Label>
+              <Label>Invite Link</Label>
               <div className="flex gap-2">
                 <Input
-                  value={selectedTeam?.inviteCode || ""}
+                  value={selectedTeam ? getInviteLink(selectedTeam) : ""}
                   readOnly
-                  className="font-mono"
-                  data-testid="text-invite-code"
+                  className="text-sm"
+                  data-testid="text-invite-link"
                 />
-                <Button onClick={copyInviteCode} data-testid="button-copy-code">
+                <Button onClick={copyInviteLink} data-testid="button-copy-link">
                   Copy
                 </Button>
               </div>

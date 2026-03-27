@@ -14,8 +14,32 @@ import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBann
 import { CitySearch } from "@/components/CitySearch";
 
 export default function AuthPage() {
-  const [isLoginView, setIsLoginView] = useState(true);
-  
+  // Context banners — read sessionStorage once at mount time (lazy init)
+  const [pendingJoinTeamName] = useState<string | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("fayaflex_pending_join");
+      if (raw) return JSON.parse(raw)?.teamName ?? null;
+    } catch {}
+    return null;
+  });
+
+  const [draftTeamName] = useState<string | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("fayaflex_draft_team");
+      if (raw) return JSON.parse(raw)?.teamName ?? null;
+    } catch {}
+    return null;
+  });
+
+  // Default to register mode if a team draft is pending
+  const [isLoginView, setIsLoginView] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem("fayaflex_draft_team");
+      if (raw && JSON.parse(raw)?.teamName) return false;
+    } catch {}
+    return true;
+  });
+
   // Login state
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -45,6 +69,7 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
 
 
   // Redirect if already logged in
@@ -248,6 +273,20 @@ export default function AuthPage() {
           </h2>
         </CardHeader>
         <CardContent className="space-y-4">
+          {(pendingJoinTeamName || draftTeamName) && (
+            <div className="rounded-md bg-primary/10 border border-primary/20 px-3 py-2.5 text-sm text-center">
+              {draftTeamName ? (
+                <span>
+                  <span className="font-semibold">Create an account</span> to launch your team{" "}
+                  <span className="font-semibold">"{draftTeamName}"</span> — it'll be set up instantly.
+                </span>
+              ) : (
+                <span>
+                  Sign in or create an account and you'll be <span className="font-semibold">added to {pendingJoinTeamName}</span> automatically.
+                </span>
+              )}
+            </div>
+          )}
           {isLoginView ? (
             showForgotPassword ? (
               <>

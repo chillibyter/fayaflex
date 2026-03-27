@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +27,8 @@ import Challenges from "@/pages/Challenges";
 import Messages from "@/pages/Messages";
 import ChallengeArchive from "@/pages/ChallengeArchive";
 import ForYou from "@/pages/ForYou";
+import Landing from "@/pages/Landing";
+import JoinTeam from "@/pages/JoinTeam";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -56,13 +58,14 @@ function Router() {
     return (
       <Switch>
         <Route path="/auth" component={AuthPage} />
+        <Route path="/join/:code" component={JoinTeam} />
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/support" component={Support} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/health-data" component={HealthData} />
         <Route path="/delete-account" component={DeleteAccount} />
-        <Route path="/" component={AuthPage} />
-        <Route component={AuthPage} />
+        <Route path="/" component={Landing} />
+        <Route component={Landing} />
       </Switch>
     );
   }
@@ -99,6 +102,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/feed" component={ForYou} />
+      <Route path="/join/:code" component={JoinTeam} />
       <Route path="/daily-chart" component={DailyChart} />
       <Route path="/track" component={TrackActivity} />
       <Route path="/leaderboard" component={Leaderboard} />
@@ -126,7 +130,7 @@ function Router() {
 function AuthenticatedApp() {
   const { user, isLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  
+
   // Auto-sync health data when app is in use (native platforms only)
   useAutoHealthSync();
   
@@ -141,6 +145,41 @@ function AuthenticatedApp() {
         setShowOnboarding(true);
       }
     }
+  }, [user]);
+
+  // Handle pending team join after login/register (set by JoinTeam page)
+  useEffect(() => {
+    if (!user) return;
+    const raw = sessionStorage.getItem("fayaflex_pending_join");
+    if (!raw) return;
+    sessionStorage.removeItem("fayaflex_pending_join");
+    try {
+      const { code } = JSON.parse(raw);
+      if (code) {
+        apiRequest("POST", "/api/teams/join", { inviteCode: code })
+          .then(() => queryClient.invalidateQueries({ queryKey: ["/api/teams"] }))
+          .catch(() => {});
+      }
+    } catch {}
+  }, [user]);
+
+  // Handle team creation draft after registration (set by zero-login wizard)
+  useEffect(() => {
+    if (!user) return;
+    const raw = sessionStorage.getItem("fayaflex_draft_team");
+    if (!raw) return;
+    sessionStorage.removeItem("fayaflex_draft_team");
+    try {
+      const { teamName, goalType } = JSON.parse(raw);
+      if (teamName) {
+        apiRequest("POST", "/api/teams", {
+          name: teamName,
+          description: goalType ? `${goalType.charAt(0).toUpperCase() + goalType.slice(1)} challenge` : undefined,
+        })
+          .then(() => queryClient.invalidateQueries({ queryKey: ["/api/teams"] }))
+          .catch(() => {});
+      }
+    } catch {}
   }, [user]);
 
   const handleOnboardingComplete = () => {

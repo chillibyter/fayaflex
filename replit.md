@@ -64,6 +64,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**Deep-Link Team Joining & Zero-Login Wizard** (March 27, 2026)
+- Added `GET /api/teams/invite/:code` public endpoint — returns team name/member count without requiring auth
+- New `/join/:code` page (`JoinTeam.tsx`): shows team info, auto-joins if logged in, otherwise saves code to sessionStorage and redirects to auth
+- After login/register, `AuthenticatedApp` auto-processes pending join from sessionStorage
+- Teams share dialog now shows a direct join link (`https://www.fayaflex.com/join/[code]`) instead of raw invite code
+- Landing page is now the default unauthenticated route at `/`; auth form is at `/auth`
+- Zero-login team creation wizard on Landing page: 3-step Dialog (name → goal type → account creation)
+- Wizard saves draft (team name + goal) to sessionStorage; after registration, `AuthenticatedApp` auto-creates the team
+- AuthPage shows a context banner and auto-selects register mode when arriving from the wizard or a join link
+
 **For You Feed** (March 21, 2026)
 - Added "For You" social feed page at /feed — shows posts from teammates and yourself
 - Instagram-style: text posts with optional photo, heart likes, comment threads

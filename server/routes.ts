@@ -1011,6 +1011,28 @@ IMPORTANT RULES:
     }
   });
 
+  // Public endpoint — no auth needed, used by deep-link join page
+  app.get("/api/teams/invite/:code", async (req, res) => {
+    try {
+      const code = req.params.code.trim().toLowerCase();
+      const team = await storage.getTeamByInviteCode(code);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      const members = await storage.getTeamMembers(team.id);
+      res.json({
+        id: team.id,
+        name: team.name,
+        description: team.description,
+        memberCount: members.length,
+        isFull: members.length >= 20,
+      });
+    } catch (error) {
+      console.error("Error fetching team by invite code:", error);
+      res.status(500).json({ message: "Failed to fetch team" });
+    }
+  });
+
   app.post("/api/teams/join", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
