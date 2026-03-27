@@ -78,18 +78,12 @@ export async function compressAndSaveImage(buffer: Buffer, originalName: string)
   return `/uploads/evidence/${filename}`;
 }
 
-// Compress and save profile image (smaller size, circular crop friendly)
+// Compress profile image and return as base64 data URL (stored in DB — survives redeploys)
 export async function compressAndSaveProfileImage(buffer: Buffer, userId: string): Promise<string> {
-  await ensureProfileUploadDir();
-
-  const timestamp = Date.now();
-  const filename = `${userId}_${timestamp}.webp`;
-  const filepath = path.join(PROFILE_UPLOAD_DIR, filename);
-
-  // Compress and resize profile image to reasonable size (500x500 max for avatars)
+  // Compress and resize profile image to 500x500 WebP
   // .rotate() auto-corrects image orientation based on EXIF data
   // .withMetadata({ orientation: undefined }) strips EXIF orientation to prevent double-rotation
-  await sharp(buffer)
+  const webpBuffer = await sharp(buffer)
     .rotate()
     .resize(500, 500, {
       fit: 'cover',
@@ -100,10 +94,10 @@ export async function compressAndSaveProfileImage(buffer: Buffer, userId: string
       quality: 85,
       effort: 6,
     })
-    .toFile(filepath);
+    .toBuffer();
 
-  // Return relative path for storage
-  return `/uploads/profiles/${filename}`;
+  // Return as base64 data URL — stored directly in the database so it never disappears
+  return `data:image/webp;base64,${webpBuffer.toString('base64')}`;
 }
 
 // Compress and save feed post image (saved to /uploads/feed/ — never auto-deleted)

@@ -14,6 +14,10 @@ interface UserAvatarProps {
 // Convert relative paths to absolute URLs for native apps
 function getImageUrl(path: string | null | undefined): string | null {
   if (!path) return null;
+  // Data URLs (base64 profile images stored in DB) — always pass through unchanged
+  if (path.startsWith('data:')) {
+    return path;
+  }
   // If already absolute URL, return as-is
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;

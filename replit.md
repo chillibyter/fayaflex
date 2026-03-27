@@ -134,11 +134,11 @@ Preferred communication style: Simple, everyday language.
 - Android manifest updated with READ_BASAL_METABOLIC_RATE permission
 - Run manually with: node scripts/patch-health-plugin.cjs (add as postinstall in package.json for automation)
 
-**Profile Photo Upload** (December 30, 2025)
+**Profile Photo Upload** (December 30, 2025, updated March 27, 2026)
 - Users can now upload a photo or take a selfie as their profile picture
 - Added POST /api/upload/profile-image endpoint with Sharp image compression
-- Profile images stored in /uploads/profiles/ as WebP (500x500, optimized)
-- UserAvatar component prioritizes custom photo over avatar icons
+- Profile images compressed to 500x500 WebP and stored as base64 data URLs directly in the profileImageUrl database column — not on the filesystem, so they persist across redeploys and container restarts
+- UserAvatar component handles data: URLs, http(s) URLs, and relative paths correctly on web and native
 - Edit Profile dialog includes Upload and Selfie buttons with live preview
 - Avatar icons remain as fallback when no custom photo is set
 
