@@ -47,8 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return response;
     },
-    onSuccess: async (response: AuthResponse) => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: (response: AuthResponse) => {
+      queryClient.setQueryData(["/api/auth/user"], response);
       toast({
         title: "Welcome back!",
         description: `Logged in as ${response.username}`,
@@ -72,8 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return response;
     },
-    onSuccess: async (response: AuthResponse) => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: (response: AuthResponse) => {
+      queryClient.setQueryData(["/api/auth/user"], response);
       toast({
         title: "Account created!",
         description: `Welcome, ${response.username}!`,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -70,13 +70,12 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-
-
-  // Redirect if already logged in
-  if (user) {
-    setLocation("/");
-    return null;
-  }
+  // Redirect if already logged in (useEffect to avoid calling during render)
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user]);
 
   const validateLogin = () => {
     if (!loginUsername.trim()) {
