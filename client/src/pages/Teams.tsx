@@ -24,7 +24,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Search, Users, Share2, Flame, ArrowLeft, Trophy } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
-import { SiWhatsapp } from "react-icons/si";
+import { SiWhatsapp, SiApple } from "react-icons/si";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -106,6 +106,8 @@ export default function Teams() {
     setShareDialogOpen(true);
   };
 
+  const APP_STORE_URL = "https://apps.apple.com/us/app/fayaflex/id6757204288";
+
   const getInviteLink = (team: EnrichedTeam) =>
     `https://www.fayaflex.com/join/${team.inviteCode}`;
 
@@ -119,14 +121,14 @@ export default function Teams() {
   const shareViaWhatsApp = () => {
     if (!selectedTeam?.inviteCode) return;
     const link = getInviteLink(selectedTeam);
-    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nTap to join instantly: ${link}`;
+    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nTap to join instantly: ${link}\n\nGet the app: ${APP_STORE_URL}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const shareViaGeneric = async () => {
     if (!selectedTeam?.inviteCode) return;
     const link = getInviteLink(selectedTeam);
-    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!`;
+    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nGet the app: ${APP_STORE_URL}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: `Join ${selectedTeam.name}`, text: message, url: link });
@@ -304,6 +306,22 @@ export default function Teams() {
                 Share
               </Button>
             </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-background px-2 text-muted-foreground">get the app</span>
+              </div>
+            </div>
+
+            <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="block">
+              <Button variant="outline" className="w-full" data-testid="button-share-app-store">
+                <SiApple className="h-4 w-4 mr-2" />
+                Download on the App Store
+              </Button>
+            </a>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShareDialogOpen(false)}>

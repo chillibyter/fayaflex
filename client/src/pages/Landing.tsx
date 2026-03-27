@@ -12,7 +12,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Trophy, Users, TrendingUp, Target, Footprints, Flame, Dumbbell, ChevronRight, ArrowLeft, CheckCircle } from "lucide-react";
+import { SiApple } from "react-icons/si";
 import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
+
+const APP_STORE_URL = "https://apps.apple.com/us/app/fayaflex/id6757204288";
 
 type GoalType = "steps" | "calories" | "workouts";
 
@@ -81,7 +84,7 @@ export default function Landing() {
               className="mb-8 [&_p]:text-xl [&_p]:max-w-2xl [&_p]:mx-auto"
             />
 
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-center flex-wrap">
               <Button
                 size="lg"
                 className="text-lg"
@@ -94,6 +97,12 @@ export default function Landing() {
               <a href="/auth">
                 <Button size="lg" variant="outline" className="text-lg" data-testid="button-get-started">
                   Get Started
+                </Button>
+              </a>
+              <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
+                <Button size="lg" variant="outline" className="text-lg" data-testid="button-app-store-hero">
+                  <SiApple className="h-5 w-5 mr-2" />
+                  App Store
                 </Button>
               </a>
             </div>
@@ -161,14 +170,22 @@ export default function Landing() {
             <p className="text-lg text-muted-foreground mb-8">
               Join thousands of users competing in monthly fitness challenges.
             </p>
-            <Button
-              size="lg"
-              className="text-lg"
-              onClick={openWizard}
-              data-testid="button-join-now"
-            >
-              Start a New Team — It's Free
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-center flex-wrap">
+              <Button
+                size="lg"
+                className="text-lg"
+                onClick={openWizard}
+                data-testid="button-join-now"
+              >
+                Start a New Team — It's Free
+              </Button>
+              <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
+                <Button size="lg" variant="outline" className="text-lg" data-testid="button-app-store-cta">
+                  <SiApple className="h-5 w-5 mr-2" />
+                  Download on the App Store
+                </Button>
+              </a>
+            </div>
           </div>
         </section>
       </main>

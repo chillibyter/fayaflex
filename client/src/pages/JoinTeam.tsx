@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -6,7 +5,10 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, CheckCircle, AlertCircle, Loader2, Lock } from "lucide-react";
+import { SiApple } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
+
+const APP_STORE_URL = "https://apps.apple.com/us/app/fayaflex/id6757204288";
 
 export default function JoinTeam() {
   const { code } = useParams<{ code: string }>();
@@ -78,12 +80,14 @@ export default function JoinTeam() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-10 pb-8">
-            <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <h2 className="text-xl font-bold mb-2">Invite Link Invalid</h2>
-            <p className="text-muted-foreground mb-6">
-              This invite link may have expired or the team no longer exists.
-            </p>
+          <CardContent className="pt-10 pb-8 space-y-4">
+            <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+            <div>
+              <h2 className="text-xl font-bold mb-2">Invite Link Invalid</h2>
+              <p className="text-muted-foreground">
+                This invite link may have expired or the team no longer exists.
+              </p>
+            </div>
             <Button onClick={() => setLocation(user ? "/" : "/auth")}>
               {user ? "Go to Dashboard" : "Sign In"}
             </Button>
@@ -137,10 +141,36 @@ export default function JoinTeam() {
                   <><Lock className="h-4 w-4 mr-2" /> Sign In to Join</>
                 )}
               </Button>
+
               {!user && (
-                <p className="text-xs text-muted-foreground">
-                  You'll be asked to sign in or create a free account, then automatically added to the team.
-                </p>
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Sign in or create a free account and you'll be added to the team automatically.
+                  </p>
+
+                  <div className="relative my-1">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-card px-2 text-muted-foreground">or get the app</span>
+                    </div>
+                  </div>
+
+                  <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="block">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      data-testid="button-app-store"
+                    >
+                      <SiApple className="h-4 w-4 mr-2" />
+                      Download on the App Store
+                    </Button>
+                  </a>
+                  <p className="text-xs text-muted-foreground">
+                    Open this link in the FayaFlex app to join with one tap.
+                  </p>
+                </>
               )}
             </div>
           )}
