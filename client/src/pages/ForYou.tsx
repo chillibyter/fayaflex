@@ -284,6 +284,7 @@ function ComposeBox({ currentUser }: { currentUser: any }) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const composeRef = useRef<HTMLTextAreaElement>(null);
 
   const createMutation = useMutation({
     mutationFn: async ({ content, imageUrl }: { content: string; imageUrl?: string | null }) =>
@@ -292,6 +293,8 @@ function ComposeBox({ currentUser }: { currentUser: any }) {
       setContent("");
       setImageFile(null);
       setImagePreview(null);
+      // Dismiss the keyboard on mobile so the viewport restores correctly
+      composeRef.current?.blur();
       qc.invalidateQueries({ queryKey: ["/api/feed"] });
     },
     onError: () => toast({ title: "Could not create post", variant: "destructive" }),
@@ -347,6 +350,7 @@ function ComposeBox({ currentUser }: { currentUser: any }) {
         <UserAvatar user={currentUser} className="h-10 w-10" />
         <div className="flex-1 min-w-0">
           <Textarea
+            ref={composeRef}
             placeholder="Share an achievement, workout, or update…"
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -419,7 +423,7 @@ export default function ForYou() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="pb-24">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background border-b border-border px-4 py-3">
         <h1 className="text-xl font-bold tracking-tight">For You</h1>
