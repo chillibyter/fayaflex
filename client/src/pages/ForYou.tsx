@@ -315,7 +315,7 @@ function ComposeBox({ currentUser }: { currentUser: any }) {
 
   const handlePost = async () => {
     const trimmed = content.trim();
-    if (!trimmed) return;
+    if (!trimmed && !imageFile) return;
 
     let imageUrl: string | null = null;
 
@@ -398,7 +398,7 @@ function ComposeBox({ currentUser }: { currentUser: any }) {
         />
         <Button
           onClick={handlePost}
-          disabled={!content.trim() || isBusy}
+          disabled={(!content.trim() && !imageFile) || isBusy}
           data-testid="button-post"
           size="sm"
         >

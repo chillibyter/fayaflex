@@ -3742,10 +3742,13 @@ IMPORTANT RULES:
     try {
       const userId = req.user.id;
       const schema = z.object({
-        content:  z.string().min(1).max(2000),
+        content:  z.string().max(2000).default(""),
         imageUrl: z.string().nullable().optional(),
       });
       const { content, imageUrl } = schema.parse(req.body);
+      if (!content.trim() && !imageUrl) {
+        return res.status(400).json({ message: "Post must have text or an image" });
+      }
       const post = await storage.createFeedPost(userId, content, imageUrl);
       res.status(201).json(post);
     } catch (err: any) {

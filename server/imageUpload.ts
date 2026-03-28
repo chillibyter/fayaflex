@@ -100,29 +100,22 @@ export async function compressAndSaveProfileImage(buffer: Buffer, userId: string
   return `data:image/webp;base64,${webpBuffer.toString('base64')}`;
 }
 
-// Compress and save feed post image (saved to /uploads/feed/ — never auto-deleted)
-export async function compressAndSaveFeedImage(buffer: Buffer, originalName: string): Promise<string> {
-  await ensureFeedUploadDir();
-
-  const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(7);
-  const filename = `${timestamp}_${randomString}.webp`;
-  const filepath = path.join(FEED_UPLOAD_DIR, filename);
-
-  await sharp(buffer)
+// Compress feed post image and return as base64 data URL (stored in DB — survives redeploys)
+export async function compressAndSaveFeedImage(buffer: Buffer, _originalName: string): Promise<string> {
+  const webpBuffer = await sharp(buffer)
     .rotate()
-    .resize(1920, 1920, {
+    .resize(1200, 1200, {
       fit: 'inside',
       withoutEnlargement: true,
     })
     .withMetadata({ orientation: undefined })
     .webp({
-      quality: 80,
+      quality: 75,
       effort: 6,
     })
-    .toFile(filepath);
+    .toBuffer();
 
-  return `/uploads/feed/${filename}`;
+  return `data:image/webp;base64,${webpBuffer.toString('base64')}`;
 }
 
 // Delete old evidence files (older than 24 hours)
