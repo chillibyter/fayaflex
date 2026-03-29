@@ -1977,6 +1977,43 @@ IMPORTANT RULES:
     }
   });
 
+  // Lightweight: current user's rank within a specific team (no full member loop)
+  app.get("/api/leaderboard/team/:teamId/my-rank", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const teamId = req.params.teamId;
+      const month = req.query.month ? parseInt(req.query.month as string) : new Date().getMonth() + 1;
+      const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+
+      const isMember = await storage.isUserInTeam(currentUserId, teamId);
+      if (!isMember) return res.status(403).json({ message: "Not a member of this team" });
+
+      const members = await storage.getTeamMembers(teamId);
+
+      const aggregateCalories = (activities: any[]) => {
+        const byDate = new Map<string, number>();
+        for (const act of activities) {
+          byDate.set(act.date, Math.max(byDate.get(act.date) || 0, act.calories));
+        }
+        return Array.from(byDate.values()).reduce((s, v) => s + v, 0);
+      };
+
+      const scores: { userId: string; calories: number }[] = [];
+      for (const member of members) {
+        const activities = await storage.getUserActivities(member.userId, month, year);
+        scores.push({ userId: member.userId, calories: aggregateCalories(activities) });
+      }
+
+      scores.sort((a, b) => b.calories - a.calories);
+      const rank = scores.findIndex((s) => s.userId === currentUserId) + 1;
+
+      res.json({ rank, total: members.length });
+    } catch (error) {
+      console.error("Error fetching team my-rank:", error);
+      res.status(500).json({ message: "Failed to fetch rank" });
+    }
+  });
+
   // Category leaderboard - separate rankings for calories, steps, and workouts
   // Shows only teammates (members from user's teams)
   app.get("/api/leaderboard/category/:category", isAuthenticated, async (req: any, res) => {

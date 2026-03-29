@@ -182,6 +182,17 @@ export default function Dashboard() {
     queryKey: ['/api/teams'],
   });
   const myTeams = userTeams.filter(t => t.isMember);
+  const primaryTeam = myTeams[0] ?? null;
+
+  // Fetch current user's rank within their primary team
+  const { data: teamRank, isLoading: isLoadingTeamRank } = useQuery<{ rank: number; total: number }>({
+    queryKey: ['/api/leaderboard/team', primaryTeam?.id, 'my-rank', currentMonth, currentYear],
+    queryFn: () =>
+      apiRequest("GET", `/api/leaderboard/team/${primaryTeam!.id}/my-rank?month=${currentMonth}&year=${currentYear}`)
+        .then((r) => r.json()),
+    enabled: !!primaryTeam,
+    staleTime: 2 * 60 * 1000,
+  });
 
   useEffect(() => {
     if (user?.id && !isLoadingActivities) {
@@ -198,6 +209,12 @@ export default function Dashboard() {
       localStorage.setItem(`fayaflex_onboarding_seen_${user.id}`, 'true');
     }
     setShowOnboarding(false);
+  };
+
+  const toOrdinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
 
   const topActivities = recentActivities.slice(0, 5);
@@ -371,6 +388,70 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </Link>
+
+        {/* Team Ranking Widget */}
+        {userTeams.length > 0 && primaryTeam ? (
+          <Link href="/teams">
+            <Card className="cursor-pointer hover-elevate" data-testid="widget-team-rank">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shrink-0">
+                      <Users className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Team Standing</p>
+                      {isLoadingTeamRank ? (
+                        <Skeleton className="h-5 w-40 mt-1" />
+                      ) : teamRank ? (
+                        <p className="font-semibold leading-tight truncate" data-testid="text-team-rank-label">
+                          {toOrdinal(teamRank.rank)} in{" "}
+                          <span className="text-primary">{primaryTeam.name}</span>
+                        </p>
+                      ) : (
+                        <p className="font-semibold leading-tight text-muted-foreground">View team leaderboard</p>
+                      )}
+                      {teamRank && (
+                        <p className="text-xs text-muted-foreground">
+                          of {teamRank.total} {teamRank.total === 1 ? "member" : "members"} this month
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isLoadingTeamRank ? (
+                      <Skeleton className="h-10 w-12 rounded-lg" />
+                    ) : teamRank ? (
+                      <div className="text-right">
+                        <p className="text-3xl font-bold text-primary" data-testid="text-team-rank-number">
+                          #{teamRank.rank}
+                        </p>
+                      </div>
+                    ) : null}
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ) : userTeams.length === 0 && !isLoadingStats ? (
+          <Link href="/teams">
+            <Card className="cursor-pointer hover-elevate border-dashed" data-testid="widget-join-team-cta">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <Users className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold">Join a team to compete</p>
+                    <p className="text-xs text-muted-foreground">See how you rank against your teammates</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ) : null}
 
         <SmartGoals />
 
