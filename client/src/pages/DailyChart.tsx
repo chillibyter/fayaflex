@@ -225,7 +225,7 @@ export default function DailyChart() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className={`px-4 pt-4 pb-6 ${isCalories ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gradient-to-br from-green-500 to-green-600'} text-white rounded-b-3xl`}>
+      <header className={`px-4 pt-4 pb-6 ${isCalories ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gradient-to-br from-green-600 to-green-700'} text-white rounded-b-3xl`}>
         <div className="flex items-center gap-3 mb-4">
           <Link href="/">
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 min-w-[44px] min-h-[44px]" data-testid="button-back">
@@ -311,7 +311,7 @@ export default function DailyChart() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Icon className={`h-5 w-5 ${isCalories ? 'text-orange-500' : 'text-green-500'}`} />
+                  <Icon className={`h-5 w-5 ${isCalories ? 'text-orange-500' : 'text-green-700'}`} />
                   Daily Breakdown
                 </CardTitle>
               </CardHeader>
@@ -370,7 +370,7 @@ export default function DailyChart() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className={`h-10 w-10 rounded-full ${isCalories ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-green-100 dark:bg-green-900/30'} flex items-center justify-center`}>
-                      <Icon className={`h-5 w-5 ${isCalories ? 'text-orange-500' : 'text-green-500'}`} />
+                      <Icon className={`h-5 w-5 ${isCalories ? 'text-orange-500' : 'text-green-700'}`} />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Best Day This Month</p>

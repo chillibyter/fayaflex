@@ -24,7 +24,7 @@ function StatCard({ icon, iconBgColor, label, value, unit, trend, trendLabel, pe
     
     if (trend > 0) {
       return (
-        <div className="flex items-center gap-0.5 text-xs text-green-600 dark:text-green-400">
+        <div className="flex items-center gap-0.5 text-xs text-green-700 dark:text-green-400">
           <TrendingUp className="h-3 w-3" />
           <span>+{trend}%</span>
         </div>

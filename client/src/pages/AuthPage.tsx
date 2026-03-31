@@ -247,7 +247,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-green-50/50 dark:bg-green-950/20 pt-8 pb-12 px-4">
       <div className="w-full max-w-md mb-6">
-        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-600 to-green-700 text-white">
           <div className="p-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <img 

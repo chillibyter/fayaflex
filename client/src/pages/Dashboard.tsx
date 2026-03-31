@@ -234,7 +234,7 @@ export default function Dashboard() {
         />
       )}
 
-      <header className="bg-gradient-to-br from-green-500 to-green-600 text-white px-4 pt-4 pb-6 rounded-b-3xl">
+      <header className="bg-gradient-to-br from-green-600 to-green-700 text-white px-4 pt-4 pb-6 rounded-b-3xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <img 

@@ -83,7 +83,7 @@ const workoutLabels: Record<WorkoutType, string> = {
 };
 
 const intensityColors = {
-  low: "bg-green-500/10 text-green-600 border-green-500/20",
+  low: "bg-green-500/10 text-green-700 border-green-500/20",
   medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
   high: "bg-red-500/10 text-red-600 border-red-500/20",
 };
