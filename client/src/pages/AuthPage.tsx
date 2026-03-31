@@ -506,10 +506,21 @@ export default function AuthPage() {
                     className={`rounded-[10px] ${registerErrors.email ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 dark:border-gray-700"}`}
                   />
                   {registerErrors.email && (
-                    <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-email">
-                      <AlertCircle className="w-4 h-4" />
-                      {registerErrors.email}
-                    </p>
+                    <div className="text-sm text-red-500 flex items-start gap-1" data-testid="error-email">
+                      <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <span>
+                        {registerErrors.email}
+                        {registerErrors.email.includes("already exists") && (
+                          <button
+                            type="button"
+                            className="ml-1 underline font-semibold"
+                            onClick={() => { setIsLoginView(true); setRegisterErrors({}); }}
+                          >
+                            Log in instead
+                          </button>
+                        )}
+                      </span>
+                    </div>
                   )}
                 </div>
 

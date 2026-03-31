@@ -168,7 +168,11 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       try {
         console.log(`[Auth] Login attempt for username: "${username}"`);
-        const user = await storage.getUserByUsername(username);
+        // Try by username first, then fall back to email so users can log in with either
+        let user = await storage.getUserByUsername(username);
+        if (!user) {
+          user = await storage.getUserByEmail(username);
+        }
         if (!user) {
           console.log(`[Auth] User not found: "${username}"`);
           return done(null, false, { message: "Invalid username or password" });
@@ -221,7 +225,15 @@ export function setupAuth(app: Express) {
       // Check if username already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+        return res.status(400).json({ message: "Username already taken. Please choose a different one." });
+      }
+
+      // Check if email is already registered
+      if (email) {
+        const existingEmail = await storage.getUserByEmail(email);
+        if (existingEmail) {
+          return res.status(400).json({ message: "An account with this email already exists. Please log in instead." });
+        }
       }
 
       // Create user with hashed password and location data
@@ -247,8 +259,16 @@ export function setupAuth(app: Express) {
         const token = generateAuthToken(user.id);
         res.status(201).json({ ...sanitizeUser(user), token });
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during registration:", error);
+      // Convert known DB constraint violations into friendly messages
+      const msg: string = error?.message ?? "";
+      if (msg.includes("users_email_unique") || msg.includes("duplicate key") && msg.includes("email")) {
+        return res.status(400).json({ message: "An account with this email already exists. Please log in instead." });
+      }
+      if (msg.includes("users_username_unique") || msg.includes("duplicate key") && msg.includes("username")) {
+        return res.status(400).json({ message: "Username already taken. Please choose a different one." });
+      }
       next(error);
     }
   });
