@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, Trophy, Calendar, Flame, Lock, Users, Crown } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
@@ -16,6 +16,7 @@ type MonthlyWinner = {
   userId: string;
   userName: string;
   userAvatarId?: string;
+  profileImageUrl?: string | null;
   month: number;
   year: number;
   totalCalories: number;
@@ -90,11 +91,6 @@ export default function VictoryWall() {
   const handleCalculateWinner = (month: number, year: number) => {
     setCalculatingMonth(`${month}-${year}`);
     calculateWinnerMutation.mutate({ month, year });
-  };
-
-  const getAvatarUrl = (avatarId?: string) => {
-    if (!avatarId) return undefined;
-    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarId}`;
   };
 
   const getCurrentMonthYear = () => {
@@ -203,10 +199,18 @@ export default function VictoryWall() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-16 w-16" data-testid={`avatar-${winner.id}`}>
-                    <AvatarImage src={getAvatarUrl(winner.userAvatarId)} />
-                    <AvatarFallback>{winner.userName.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar
+                    user={{
+                      profileImageUrl: winner.profileImageUrl ?? null,
+                      avatarId: winner.userAvatarId ?? null,
+                      username: winner.userName,
+                      firstName: null,
+                      lastName: null,
+                      email: null,
+                    } as any}
+                    className="h-16 w-16"
+                    data-testid={`avatar-${winner.id}`}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-muted-foreground">Champion</p>
                     <h3 className="font-semibold truncate" data-testid={`text-winner-name-${winner.id}`}>

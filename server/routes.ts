@@ -1308,6 +1308,7 @@ IMPORTANT RULES:
             ...winner,
             userName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown',
             userAvatarId: user?.avatarId,
+            profileImageUrl: user?.profileImageUrl ?? null,
           };
         })
       );
