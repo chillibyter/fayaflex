@@ -1989,6 +1989,7 @@ IMPORTANT RULES:
             name: displayName || 'Unknown User',
             calories: totalCalories,
             avatarId: user.avatarId,
+            profileImageUrl: user.profileImageUrl,
             firstName: user.firstName,
             lastName: user.lastName,
           });

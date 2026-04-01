@@ -19,7 +19,10 @@ type LeaderboardEntry = {
   goalPercentage: number;
   userId?: string;
   teamId?: string;
-  avatarId?: string;
+  avatarId?: string | null;
+  profileImageUrl?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
 };
 
 export default function Leaderboard() {

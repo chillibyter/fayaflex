@@ -36,6 +36,10 @@ type LeaderboardEntry = {
   calories: number;
   goalPercentage: number;
   userId?: string;
+  avatarId?: string | null;
+  profileImageUrl?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
 };
 
 export default function TeamLeaderboard() {

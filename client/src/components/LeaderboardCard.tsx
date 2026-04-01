@@ -13,6 +13,7 @@ interface LeaderboardCardProps {
   userId?: string;
   teamId?: string;
   avatarId?: string | null;
+  profileImageUrl?: string | null;
   firstName?: string | null;
   lastName?: string | null;
 }
@@ -26,6 +27,7 @@ export default function LeaderboardCard({
   userId,
   teamId,
   avatarId,
+  profileImageUrl,
   firstName,
   lastName,
 }: LeaderboardCardProps) {
@@ -41,7 +43,7 @@ export default function LeaderboardCard({
     return "secondary";
   };
 
-  // Create a partial user object for UserAvatar
+  // Create a partial user object for UserAvatar (priority: photo → avatar → initials)
   const userForAvatar = userId ? {
     id: userId,
     avatarId: avatarId || null,
@@ -49,7 +51,7 @@ export default function LeaderboardCard({
     lastName: lastName || null,
     username: name,
     email: "",
-    profileImageUrl: null,
+    profileImageUrl: profileImageUrl || null,
     createdAt: new Date(),
     updatedAt: null,
     password: null,
