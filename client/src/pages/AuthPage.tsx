@@ -1,20 +1,82 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Fingerprint, ArrowLeft, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Fingerprint, ArrowLeft, AlertCircle, Eye, EyeOff, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
 import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
-import { CitySearch } from "@/components/CitySearch";
+
+// ── Password strength ────────────────────────────────────────────────────────
+type StrengthLevel = "weak" | "fair" | "strong" | "very_strong";
+
+function getPasswordStrength(pw: string): StrengthLevel | null {
+  if (!pw) return null;
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasNumber = /[0-9]/.test(pw);
+  const hasSpecial = /[^A-Za-z0-9]/.test(pw);
+  if (pw.length >= 12 && hasUpper && hasNumber && hasSpecial) return "very_strong";
+  if (pw.length >= 8 && hasNumber && hasUpper) return "strong";
+  if (pw.length >= 6 && (hasNumber || hasUpper)) return "fair";
+  return "weak";
+}
+
+const strengthMeta: Record<StrengthLevel, { label: string; color: string; bars: number }> = {
+  weak:       { label: "Weak",        color: "bg-red-500",    bars: 1 },
+  fair:       { label: "Fair",        color: "bg-orange-400", bars: 2 },
+  strong:     { label: "Strong",      color: "bg-primary",    bars: 3 },
+  very_strong:{ label: "Very Strong", color: "bg-primary",    bars: 4 },
+};
+
+function PasswordStrengthMeter({ password }: { password: string }) {
+  const level = getPasswordStrength(password);
+  if (!level) return null;
+  const { label, color, bars } = strengthMeta[level];
+  return (
+    <div className="space-y-1 mt-1">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4].map((n) => (
+          <div
+            key={n}
+            className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${n <= bars ? color : "bg-muted"}`}
+          />
+        ))}
+      </div>
+      <p className={`text-xs font-medium ${level === "weak" ? "text-red-500" : level === "fair" ? "text-orange-500" : "text-green-700 dark:text-green-400"}`}>
+        {label}
+      </p>
+    </div>
+  );
+}
+
+// ── Username availability indicator ─────────────────────────────────────────
+type AvailStatus = "idle" | "checking" | "available" | "taken" | "too_short";
+
+function UsernameStatus({ status }: { status: AvailStatus }) {
+  if (status === "idle" || status === "too_short") return null;
+  if (status === "checking") return (
+    <p className="text-xs text-muted-foreground flex items-center gap-1">
+      <Loader2 className="w-3 h-3 animate-spin" /> Checking…
+    </p>
+  );
+  if (status === "available") return (
+    <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+      <CheckCircle2 className="w-3 h-3" /> Username available
+    </p>
+  );
+  return (
+    <p className="text-xs text-red-500 flex items-center gap-1">
+      <XCircle className="w-3 h-3" /> Username already taken
+    </p>
+  );
+}
 
 export default function AuthPage() {
-  // Context banners — read sessionStorage once at mount time (lazy init)
   const [pendingJoinTeamName] = useState<string | null>(() => {
     try {
       const raw = sessionStorage.getItem("fayaflex_pending_join");
@@ -31,7 +93,6 @@ export default function AuthPage() {
     return null;
   });
 
-  // Default to register mode if a team draft is pending
   const [isLoginView, setIsLoginView] = useState(() => {
     try {
       const raw = sessionStorage.getItem("fayaflex_draft_team");
@@ -45,89 +106,75 @@ export default function AuthPage() {
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
-  
+
   // Register state
   const [registerUsername, setRegisterUsername] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
-  
-  // Location state for registration
-  const [continentId, setContinentId] = useState<string | null>(null);
-  const [countryId, setCountryId] = useState<string | null>(null);
-  const [regionId, setRegionId] = useState<string | null>(null);
-  const [townId, setTownId] = useState<string | null>(null);
-  
+  const [usernameStatus, setUsernameStatus] = useState<AvailStatus>("idle");
+
   // Forgot password state
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [forgotError, setForgotError] = useState("");
-  
+
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Redirect if already logged in (useEffect to avoid calling during render)
   useEffect(() => {
-    if (user) {
-      setLocation("/");
-    }
+    if (user) setLocation("/");
   }, [user]);
 
+  // ── Username availability debounce ─────────────────────────────────────────
+  useEffect(() => {
+    if (!registerUsername || registerUsername.length < 3) {
+      setUsernameStatus(registerUsername.length > 0 ? "too_short" : "idle");
+      return;
+    }
+    setUsernameStatus("checking");
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-username?username=${encodeURIComponent(registerUsername)}`);
+        const data = await res.json();
+        setUsernameStatus(data.available ? "available" : "taken");
+      } catch {
+        setUsernameStatus("idle");
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [registerUsername]);
+
+  // ── Validation ─────────────────────────────────────────────────────────────
   const validateLogin = () => {
-    if (!loginUsername.trim()) {
-      setLoginError("Please enter your username");
-      return false;
-    }
-    if (loginUsername.trim().length < 3) {
-      setLoginError("Username must be at least 3 characters");
-      return false;
-    }
-    if (!loginPassword) {
-      setLoginError("Please enter your password");
-      return false;
-    }
-    if (loginPassword.length < 6) {
-      setLoginError("Password must be at least 6 characters");
-      return false;
-    }
+    if (!loginUsername.trim()) { setLoginError("Please enter your username"); return false; }
+    if (!loginPassword) { setLoginError("Please enter your password"); return false; }
     return true;
   };
 
   const validateRegister = () => {
     const errors: Record<string, string> = {};
-    
-    if (!registerUsername.trim()) {
-      errors.username = "Username is required";
-    } else if (registerUsername.trim().length < 3) {
-      errors.username = "Username must be at least 3 characters";
-    }
-    
-    if (!registerPassword) {
-      errors.password = "Password is required";
-    } else if (registerPassword.length < 6) {
-      errors.password = "Password must be at least 6 characters";
-    }
-    
-    if (!email.trim()) {
-      errors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
-    }
-    
+    if (!registerUsername.trim()) errors.username = "Username is required";
+    else if (registerUsername.trim().length < 3) errors.username = "Username must be at least 3 characters";
+    else if (usernameStatus === "taken") errors.username = "This username is already taken";
+
+    if (!registerPassword) errors.password = "Password is required";
+    else if (registerPassword.length < 6) errors.password = "Password must be at least 6 characters";
+
+    if (!email.trim()) errors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Please enter a valid email address";
+
     setRegisterErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
-    
     if (!validateLogin()) return;
-    
     try {
       await loginMutation.mutateAsync({ username: loginUsername.trim(), password: loginPassword });
     } catch (error: any) {
@@ -145,21 +192,17 @@ export default function AuthPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegisterErrors({});
-    
     if (!validateRegister()) return;
-    
     try {
-      await registerMutation.mutateAsync({
+      const newUser = await registerMutation.mutateAsync({
         username: registerUsername.trim(),
         password: registerPassword,
         email: email.trim(),
-        firstName: firstName.trim() || undefined,
-        lastName: lastName.trim() || undefined,
-        continentId: continentId || undefined,
-        countryId: countryId || undefined,
-        regionId: regionId || undefined,
-        townId: townId || undefined,
       });
+      // Mark as new user so Dashboard shows profile completion prompt
+      if (newUser?.id) {
+        localStorage.setItem(`fayaflex_needs_profile_${newUser.id}`, "true");
+      }
     } catch (error: any) {
       const message = error.message || "Registration failed";
       if (message.includes("username") && (message.includes("exists") || message.includes("taken"))) {
@@ -179,10 +222,7 @@ export default function AuthPage() {
     },
     onSuccess: (user) => {
       queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Login successful!",
-        description: "You've been authenticated with your passkey.",
-      });
+      toast({ title: "Login successful!", description: "You've been authenticated with your passkey." });
       setLocation("/");
     },
     onError: (error: any) => {
@@ -196,10 +236,7 @@ export default function AuthPage() {
       return res.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Check your email",
-        description: data.message,
-      });
+      toast({ title: "Check your email", description: data.message });
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
       setForgotError("");
@@ -212,37 +249,28 @@ export default function AuthPage() {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setForgotError("");
-    
-    if (!forgotPasswordEmail.trim()) {
-      setForgotError("Please enter your email address");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail)) {
-      setForgotError("Please enter a valid email address");
-      return;
-    }
-    
+    if (!forgotPasswordEmail.trim()) { setForgotError("Please enter your email address"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail)) { setForgotError("Please enter a valid email address"); return; }
     await forgotPasswordMutation.mutateAsync(forgotPasswordEmail.trim());
   };
 
   const handlePasskeyLogin = async () => {
     setLoginError("");
-    if (!loginUsername.trim()) {
-      setLoginError("Please enter your username to use passkey login");
-      return;
-    }
+    if (!loginUsername.trim()) { setLoginError("Please enter your username to use passkey login"); return; }
     await passkeyLoginMutation.mutateAsync(loginUsername.trim());
   };
 
   const clearLoginError = () => setLoginError("");
   const clearRegisterError = (field: string) => {
-    setRegisterErrors(prev => {
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
+    setRegisterErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
   };
 
+  const switchToSignup = () => { setIsLoginView(false); clearLoginError(); };
+  const switchToLogin = () => { setIsLoginView(true); setRegisterErrors({}); };
+
+  // ── Email real-time validation ─────────────────────────────────────────────
+  const emailValid = email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const emailInvalid = email.length > 4 && !emailValid;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-green-50/50 dark:bg-green-950/20 pt-8 pb-12 px-4">
@@ -250,17 +278,10 @@ export default function AuthPage() {
         <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-600 to-green-700 text-white">
           <div className="p-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <img 
-                src="/fayaflex-logo.webp" 
-                alt="FayaFlex" 
-                className="h-12 w-12 rounded-lg"
-              />
+              <img src="/fayaflex-logo.webp" alt="FayaFlex" className="h-12 w-12 rounded-lg" />
               <h1 className="text-2xl font-bold">FayaFlex</h1>
             </div>
-            <RotatingBanner 
-              messages={defaultBannerMessages} 
-              className="[&_p]:text-white/90"
-            />
+            <RotatingBanner messages={defaultBannerMessages} className="[&_p]:text-white/90" />
           </div>
         </Card>
       </div>
@@ -286,6 +307,8 @@ export default function AuthPage() {
               )}
             </div>
           )}
+
+          {/* ── LOGIN VIEW ───────────────────────────────────────────────── */}
           {isLoginView ? (
             showForgotPassword ? (
               <>
@@ -322,7 +345,6 @@ export default function AuthPage() {
                       </p>
                     )}
                   </div>
-
                   <Button
                     type="submit"
                     data-testid="button-send-reset"
@@ -344,14 +366,14 @@ export default function AuthPage() {
                       </p>
                     </div>
                   )}
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="login-username">Username</Label>
+                    <Label htmlFor="login-username">Username or Email</Label>
                     <Input
                       id="login-username"
                       data-testid="input-login-username"
                       type="text"
-                      placeholder="Enter your username"
+                      placeholder="Enter your username or email"
                       value={loginUsername}
                       onChange={(e) => { setLoginUsername(e.target.value); clearLoginError(); }}
                       className={`rounded-[10px] ${loginError ? "border-red-300 dark:border-red-700" : "border-gray-300 dark:border-gray-700"}`}
@@ -414,18 +436,19 @@ export default function AuthPage() {
                   {passkeyLoginMutation.isPending ? "Authenticating..." : "Sign in with Passkey"}
                 </Button>
 
-
-                <p className="text-center text-sm text-muted-foreground">
-                  Don't have an account?{" "}
-                  <button
+                {/* ── Prominent switch to Sign Up ── */}
+                <div className="pt-2 border-t border-border">
+                  <p className="text-center text-sm text-muted-foreground mb-3">New to FayaFlex?</p>
+                  <Button
                     type="button"
-                    className="text-[#00A63E] hover:text-[#009035] hover:underline font-medium"
-                    onClick={() => { setIsLoginView(false); clearLoginError(); }}
+                    variant="outline"
+                    className="w-full rounded-[10px] font-semibold text-base border-primary text-primary hover:bg-primary/5"
+                    onClick={switchToSignup}
                     data-testid="button-switch-to-signup"
                   >
-                    Sign up
-                  </button>
-                </p>
+                    Create a Free Account
+                  </Button>
+                </div>
 
                 <p className="text-center text-xs text-muted-foreground">
                   <Link href="/privacy" className="hover:underline" data-testid="link-privacy-login">
@@ -435,6 +458,7 @@ export default function AuthPage() {
               </>
             )
           ) : (
+            /* ── REGISTER VIEW ──────────────────────────────────────────── */
             <>
               <form onSubmit={handleRegister} className="space-y-4">
                 {registerErrors.general && (
@@ -445,8 +469,9 @@ export default function AuthPage() {
                     </p>
                   </div>
                 )}
-                
-                <div className="space-y-2">
+
+                {/* Username */}
+                <div className="space-y-1.5">
                   <Label htmlFor="register-username">Username</Label>
                   <Input
                     id="register-username"
@@ -455,17 +480,25 @@ export default function AuthPage() {
                     placeholder="Choose a username"
                     value={registerUsername}
                     onChange={(e) => { setRegisterUsername(e.target.value); clearRegisterError("username"); }}
-                    className={`rounded-[10px] ${registerErrors.username ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 dark:border-gray-700"}`}
+                    className={`rounded-[10px] ${
+                      registerErrors.username || usernameStatus === "taken"
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : usernameStatus === "available"
+                        ? "border-green-500 focus-visible:ring-green-500"
+                        : "border-gray-300 dark:border-gray-700"
+                    }`}
                   />
+                  <UsernameStatus status={usernameStatus} />
                   {registerErrors.username && (
                     <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-username">
-                      <AlertCircle className="w-4 h-4" />
+                      <AlertCircle className="w-3.5 h-3.5" />
                       {registerErrors.username}
                     </p>
                   )}
                 </div>
 
-                <div className="space-y-2">
+                {/* Password + strength meter */}
+                <div className="space-y-1.5">
                   <Label htmlFor="register-password">Password</Label>
                   <div className="relative">
                     <Input
@@ -486,15 +519,17 @@ export default function AuthPage() {
                       {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  <PasswordStrengthMeter password={registerPassword} />
                   {registerErrors.password && (
                     <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-password">
-                      <AlertCircle className="w-4 h-4" />
+                      <AlertCircle className="w-3.5 h-3.5" />
                       {registerErrors.password}
                     </p>
                   )}
                 </div>
 
-                <div className="space-y-2">
+                {/* Email */}
+                <div className="space-y-1.5">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
@@ -503,8 +538,24 @@ export default function AuthPage() {
                     placeholder="your.email@example.com"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); clearRegisterError("email"); }}
-                    className={`rounded-[10px] ${registerErrors.email ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 dark:border-gray-700"}`}
+                    className={`rounded-[10px] ${
+                      registerErrors.email || emailInvalid
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : emailValid
+                        ? "border-green-500 focus-visible:ring-green-500"
+                        : "border-gray-300 dark:border-gray-700"
+                    }`}
                   />
+                  {emailInvalid && !registerErrors.email && (
+                    <p className="text-xs text-red-500 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Enter a valid email address
+                    </p>
+                  )}
+                  {emailValid && !registerErrors.email && (
+                    <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Looks good
+                    </p>
+                  )}
                   {registerErrors.email && (
                     <div className="text-sm text-red-500 flex items-start gap-1" data-testid="error-email">
                       <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
@@ -514,7 +565,7 @@ export default function AuthPage() {
                           <button
                             type="button"
                             className="ml-1 underline font-semibold"
-                            onClick={() => { setIsLoginView(true); setRegisterErrors({}); }}
+                            onClick={() => { switchToLogin(); }}
                           >
                             Log in instead
                           </button>
@@ -524,73 +575,29 @@ export default function AuthPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name (optional)</Label>
-                    <Input
-                      id="firstName"
-                      data-testid="input-firstname"
-                      type="text"
-                      placeholder="First name"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name (optional)</Label>
-                    <Input
-                      id="lastName"
-                      data-testid="input-lastname"
-                      type="text"
-                      placeholder="Last name"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="rounded-[10px] border-gray-300 dark:border-gray-700"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <CitySearch
-                    onSelect={(location) => {
-                      setContinentId(location.continentId);
-                      setCountryId(location.countryId);
-                      setRegionId(location.regionId);
-                      setTownId(location.townId);
-                      clearRegisterError("city");
-                    }}
-                  />
-                  {registerErrors.city && (
-                    <p className="text-sm text-red-500 flex items-center gap-1" data-testid="error-city">
-                      <AlertCircle className="w-4 h-4" />
-                      {registerErrors.city}
-                    </p>
-                  )}
-                </div>
-
                 <Button
                   type="submit"
                   data-testid="button-register"
                   className="w-full bg-[#00A63E] hover:bg-[#009035] text-white rounded-[10px]"
-                  disabled={registerMutation.isPending}
+                  disabled={registerMutation.isPending || usernameStatus === "taken"}
                 >
                   {registerMutation.isPending ? "Creating account..." : "Create Account"}
                 </Button>
               </form>
 
-              <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <button
+              {/* ── Prominent switch to Sign In ── */}
+              <div className="pt-2 border-t border-border">
+                <p className="text-center text-sm text-muted-foreground mb-3">Already have an account?</p>
+                <Button
                   type="button"
-                  className="text-[#00A63E] hover:text-[#009035] hover:underline font-medium"
-                  onClick={() => { setIsLoginView(true); setRegisterErrors({}); }}
+                  variant="outline"
+                  className="w-full rounded-[10px] font-semibold text-base border-primary text-primary hover:bg-primary/5"
+                  onClick={switchToLogin}
                   data-testid="button-switch-to-login"
                 >
-                  Sign in
-                </button>
-              </p>
+                  Sign In
+                </Button>
+              </div>
 
               <p className="text-center text-xs text-muted-foreground">
                 By creating an account, you agree to our{" "}

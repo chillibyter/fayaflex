@@ -68,6 +68,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check username availability (public endpoint — used during registration typing)
+  app.get("/api/check-username", async (req, res) => {
+    try {
+      const username = (req.query.username as string || "").trim();
+      if (!username || username.length < 3) {
+        return res.json({ available: false, reason: "too_short" });
+      }
+      const existing = await storage.getUserByUsername(username);
+      res.json({ available: !existing });
+    } catch (error) {
+      res.status(500).json({ available: false });
+    }
+  });
+
   // Delete user account
   app.delete("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
