@@ -72,5 +72,16 @@
         <string>FayaFlex needs access to your camera to take a profile photo or capture workout evidence.</string>
         <key>ITSAppUsesNonExemptEncryption</key>
         <false/>
+        <key>CFBundleURLTypes</key>
+        <array>
+                <dict>
+                        <key>CFBundleURLName</key>
+                        <string>com.fayaflex.app</string>
+                        <key>CFBundleURLSchemes</key>
+                        <array>
+                                <string>fayaflex</string>
+                        </array>
+                </dict>
+        </array>
 </dict>
 </plist>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route, Redirect } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -38,6 +38,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { App as CapApp } from "@capacitor/app";
 
 type Team = {
   id: number;
@@ -132,6 +133,26 @@ function Router() {
 function AuthenticatedApp() {
   const { user, isLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [, setLocation] = useLocation();
+
+  // Handle deep links opened via fayaflex:// custom URL scheme (native platforms only)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let listener: any;
+    CapApp.addListener("appUrlOpen", (event) => {
+      try {
+        // fayaflex://join/CODE  →  hostname = "join", pathname = "/CODE"
+        const url = new URL(event.url);
+        if (url.protocol === "fayaflex:" && url.hostname === "join") {
+          const code = url.pathname.replace(/^\//, "");
+          if (code) setLocation(`/join/${code}`);
+        }
+      } catch {
+        // ignore malformed URLs
+      }
+    }).then((l) => { listener = l; });
+    return () => { listener?.remove(); };
+  }, [setLocation]);
 
   // Auto-sync health data when app is in use (native platforms only)
   useAutoHealthSync();

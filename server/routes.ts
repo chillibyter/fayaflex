@@ -36,6 +36,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded evidence images
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+  // Apple App Site Association — enables Universal Links so iOS opens the app
+  // when a user taps a https://fayaflex.com/join/:code link (requires YOURTEAMID
+  // to be replaced with the 10-character Apple Developer Team ID in App Store Connect)
+  app.get('/.well-known/apple-app-site-association', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json({
+      applinks: {
+        apps: [],
+        details: [
+          {
+            appID: 'YOURTEAMID.com.fayaflex.app',
+            paths: ['/join/*'],
+          },
+        ],
+      },
+    });
+  });
+
   // Note: /api/auth/user route is now handled in auth.ts
 
   app.patch("/api/auth/user", isAuthenticated, async (req: any, res) => {
