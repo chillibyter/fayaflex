@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, CheckCircle, AlertCircle, Loader2, Lock, Copy, Check, Download } from "lucide-react";
+import { Users, CheckCircle, AlertCircle, Loader2, Lock, Copy, Check } from "lucide-react";
 import { SiApple } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
 import { Capacitor } from "@capacitor/core";
@@ -122,25 +122,6 @@ export default function JoinTeam() {
     setLocation("/auth");
   };
 
-  // Try to open the native app via custom URL scheme; fall back to App Store
-  const handleGetApp = () => {
-    const deepLink = `fayaflex://join/${code}`;
-    let appOpened = false;
-
-    const onBlur = () => { appOpened = true; };
-    window.addEventListener("blur", onBlur, { once: true });
-
-    // Attempt to open via custom URL scheme
-    window.location.href = deepLink;
-
-    setTimeout(() => {
-      window.removeEventListener("blur", onBlur);
-      if (!appOpened) {
-        // App not installed — go to App Store
-        window.location.href = APP_STORE_URL;
-      }
-    }, 1500);
-  };
 
   if (isLoading) {
     return (
@@ -217,18 +198,16 @@ export default function JoinTeam() {
               )}
             </Button>
           ) : isIphone ? (
-            // iPhone visitor — offer deep link or App Store, then web fallback
+            // iPhone visitor — App Store as primary, web as fallback
             <div className="space-y-3">
-              <Button
-                className="w-full"
-                onClick={handleGetApp}
-                data-testid="button-open-in-app"
-              >
-                <SiApple className="h-4 w-4 mr-2" />
-                Open in FayaFlex App
-              </Button>
+              <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="block">
+                <Button className="w-full" data-testid="button-app-store">
+                  <SiApple className="h-4 w-4 mr-2" />
+                  Get the App to Join
+                </Button>
+              </a>
               <p className="text-xs text-muted-foreground">
-                Opens the app directly to the join screen. If you don't have it installed, you'll be taken to the App Store.
+                Copy the code above, download FayaFlex, then go to Teams → Join Team and paste it.
               </p>
               <div className="relative my-1">
                 <div className="absolute inset-0 flex items-center">
@@ -261,23 +240,6 @@ export default function JoinTeam() {
               <p className="text-xs text-muted-foreground">
                 Sign in or create a free account and you'll be added to the team automatically.
               </p>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-card px-2 text-muted-foreground">have the app?</span>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleGetApp}
-                data-testid="button-download-app"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download FayaFlex
-              </Button>
             </div>
           )}
         </CardContent>

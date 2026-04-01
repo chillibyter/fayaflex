@@ -8,8 +8,8 @@ Changes that require an Xcode rebuild + App Store submission to take effect.
 
 ### 1. Custom URL scheme — `fayaflex://`
 - **File:** `ios/App/App/Info.plist`
-- **What it does:** Registers `fayaflex://` as a URL scheme so the app can be opened by tapping a `fayaflex://join/CODE` link from anywhere on the device (Safari, Messages, etc.)
-- **User-facing effect:** The "Open in FayaFlex App" button on the invite join page will open the app directly to the join screen instead of falling back to the App Store
+- **What it does:** Registers `fayaflex://` as a URL scheme so the app can be opened by tapping a `fayaflex://join/CODE` link from anywhere on the device (Messages, Mail, etc.)
+- **Note:** The web join page no longer attempts to open the custom scheme directly (it caused a "Safari cannot open" error before the rebuild). Universal Links (item 2 below) handle the "open in app" flow instead — when a user with the app taps the invite URL in Messages or Mail, iOS opens the app directly and never shows the web page at all.
 
 ### 2. Associated Domains entitlement (Universal Links)
 - **File:** `ios/App/App/App.entitlements`
