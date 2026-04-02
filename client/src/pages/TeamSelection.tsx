@@ -1,96 +1,98 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Plus, Search, Trophy, User } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { Users, Plus, Trophy, User, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 
-type Team = {
-  id: number;
+type TeamPreview = {
+  id: string;
   name: string;
-  description?: string | null;
+  description: string | null;
   memberCount: number;
-  isOwner: boolean;
-  isMember: boolean;
+  isFull: boolean;
 };
 
 export default function TeamSelection() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
-  
+
+  // Join team state
+  const [inviteCode, setInviteCode] = useState("");
+
   // Create team state
   const [teamName, setTeamName] = useState("");
   const [teamDescription, setTeamDescription] = useState("");
-  
+
   const handleSkipTeam = () => {
     if (user) {
-      localStorage.setItem(`fayaflex_skip_team_${user.id}`, 'true');
+      localStorage.setItem(`fayaflex_skip_team_${user.id}`, "true");
       toast({
         title: "Exploring solo",
         description: "Visit the Teams page anytime to join or create a team.",
       });
-      // Invalidate teams query to force Router to re-check
-      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
       setLocation("/");
     }
   };
-  
-  // Join team state
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: teams = [], isLoading } = useQuery<Team[]>({
-    queryKey: ['/api/teams'],
-  });
+  // Preview the team from the invite code (debounced by query enabled check)
+  const trimmedCode = inviteCode.trim();
+  const { data: teamPreview, isLoading: previewLoading, isError: previewError } =
+    useQuery<TeamPreview>({
+      queryKey: ["/api/teams/invite", trimmedCode],
+      queryFn: async () => {
+        const res = await fetch(`/api/teams/invite/${trimmedCode}`);
+        if (!res.ok) throw new Error("Invalid code");
+        return res.json();
+      },
+      enabled: trimmedCode.length >= 6,
+      retry: false,
+    });
 
-  const createTeamMutation = useMutation({
-    mutationFn: async (data: { name: string; description?: string }) => {
-      const res = await apiRequest('POST', '/api/teams', data);
-      return await res.json();
+  const joinTeamMutation = useMutation({
+    mutationFn: async (code: string) => {
+      const res = await apiRequest("POST", "/api/teams/join", { inviteCode: code });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to join team");
+      }
+      return res.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Team created!",
-        description: "You've successfully created your team.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/teams'] });
+      toast({ title: "Joined team!", description: "You've successfully joined the team." });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
       setLocation("/");
     },
     onError: (error: any) => {
       toast({
-        title: "Failed to create team",
-        description: error.message || "Something went wrong.",
+        title: "Could not join",
+        description: error.message || "Failed to join team.",
         variant: "destructive",
       });
     },
   });
 
-  const joinTeamMutation = useMutation({
-    mutationFn: async (teamId: number) => {
-      const res = await apiRequest('POST', `/api/teams/${teamId}/join`, {});
+  const createTeamMutation = useMutation({
+    mutationFn: async (data: { name: string; description?: string }) => {
+      const res = await apiRequest("POST", "/api/teams", data);
       return await res.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Joined team!",
-        description: "You've successfully joined the team.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/teams'] });
+      toast({ title: "Team created!", description: "You've successfully created your team." });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
       setLocation("/");
     },
     onError: (error: any) => {
       toast({
-        title: "Failed to join team",
+        title: "Failed to create team",
         description: error.message || "Something went wrong.",
         variant: "destructive",
       });
@@ -105,13 +107,13 @@ export default function TeamSelection() {
     });
   };
 
-  const filteredTeams = teams.filter(team =>
-    !team.isMember && team.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleJoin = () => {
+    joinTeamMutation.mutate(trimmedCode);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-3xl">
+      <Card className="w-full max-w-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Trophy className="w-10 h-10 text-primary" />
@@ -121,6 +123,7 @@ export default function TeamSelection() {
             Teams compete together and support each other in reaching fitness goals. Join or create a team, or explore solo first.
           </CardDescription>
         </CardHeader>
+
         <div className="px-6 pb-4 -mt-2">
           <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800">
             <CardContent className="p-4">
@@ -134,10 +137,10 @@ export default function TeamSelection() {
                     <p className="text-sm text-muted-foreground">You can join a team anytime later</p>
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleSkipTeam}
-                  className="border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 whitespace-nowrap"
+                  className="border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 whitespace-nowrap"
                   data-testid="button-skip-team"
                 >
                   Try Solo First
@@ -146,11 +149,12 @@ export default function TeamSelection() {
             </CardContent>
           </Card>
         </div>
+
         <CardContent>
           <Tabs defaultValue="join" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="join" data-testid="tab-join-team">
-                <Search className="w-4 h-4 mr-2" />
+                <Users className="w-4 h-4 mr-2" />
                 Join a Team
               </TabsTrigger>
               <TabsTrigger value="create" data-testid="tab-create-team">
@@ -159,64 +163,80 @@ export default function TeamSelection() {
               </TabsTrigger>
             </TabsList>
 
+            {/* ── JOIN TAB ── */}
             <TabsContent value="join" className="space-y-4 mt-6">
               <div className="space-y-2">
-                <Label htmlFor="search-teams">Search for a team</Label>
+                <Label htmlFor="invite-code">Invite code</Label>
                 <Input
-                  id="search-teams"
-                  data-testid="input-search-teams"
+                  id="invite-code"
+                  data-testid="input-invite-code"
                   type="text"
-                  placeholder="Enter team name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Paste your invite code here"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                 />
+                <p className="text-xs text-muted-foreground">
+                  You'll find this in the invite message — it looks like{" "}
+                  <span className="font-mono bg-muted px-1 rounded">34f147b0379d</span>
+                </p>
               </div>
 
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {isLoading ? (
-                  <>
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                  </>
-                ) : filteredTeams.length > 0 ? (
-                  filteredTeams.map((team) => (
-                    <Card key={team.id} className="hover-elevate" data-testid={`team-card-${team.id}`}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{team.name}</h3>
-                            {team.description && (
-                              <p className="text-sm text-muted-foreground mt-1">{team.description}</p>
-                            )}
-                            <div className="flex items-center gap-2 mt-2">
-                              <Users className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm text-muted-foreground">
-                                {team.memberCount} {team.memberCount === 1 ? 'member' : 'members'}
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            onClick={() => joinTeamMutation.mutate(team.id)}
-                            disabled={joinTeamMutation.isPending}
-                            data-testid={`button-join-team-${team.id}`}
-                          >
-                            {joinTeamMutation.isPending ? "Joining..." : "Join"}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+              {/* Live team preview */}
+              {trimmedCode.length >= 6 && (
+                <div className="rounded-md border bg-muted/30 p-4">
+                  {previewLoading ? (
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Looking up team…
+                    </div>
+                  ) : previewError || !teamPreview ? (
+                    <div className="flex items-center gap-2 text-destructive text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      Code not found — check for typos and try again.
+                    </div>
+                  ) : teamPreview.isFull ? (
+                    <div className="flex items-center gap-2 text-destructive text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      <span><strong>{teamPreview.name}</strong> is full (20/20 members).</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                      <div>
+                        <p className="font-semibold">{teamPreview.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {teamPreview.memberCount} member{teamPreview.memberCount !== 1 ? "s" : ""}
+                          {teamPreview.description ? ` · ${teamPreview.description}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <Button
+                className="w-full"
+                onClick={handleJoin}
+                disabled={
+                  !trimmedCode ||
+                  !teamPreview ||
+                  teamPreview.isFull ||
+                  joinTeamMutation.isPending
+                }
+                data-testid="button-join-team-submit"
+              >
+                {joinTeamMutation.isPending ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Joining…</>
                 ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    {searchQuery 
-                      ? "No teams found matching your search. Try a different name or create your own team!" 
-                      : "Be a pioneer! Create the first team and invite your friends to join your fitness journey."}
-                  </div>
+                  <><CheckCircle className="h-4 w-4 mr-2" /> Join Team</>
                 )}
-              </div>
+              </Button>
             </TabsContent>
 
+            {/* ── CREATE TAB ── */}
             <TabsContent value="create" className="space-y-4 mt-6">
               <form onSubmit={handleCreateTeam} className="space-y-4">
                 <div className="space-y-2">
@@ -240,7 +260,7 @@ export default function TeamSelection() {
                     id="team-description"
                     data-testid="input-team-description"
                     type="text"
-                    placeholder="Tell others about your team..."
+                    placeholder="Tell others about your team…"
                     value={teamDescription}
                     onChange={(e) => setTeamDescription(e.target.value)}
                     maxLength={500}
@@ -253,7 +273,7 @@ export default function TeamSelection() {
                   className="w-full"
                   disabled={createTeamMutation.isPending}
                 >
-                  {createTeamMutation.isPending ? "Creating..." : "Create Team"}
+                  {createTeamMutation.isPending ? "Creating…" : "Create Team"}
                 </Button>
               </form>
 
