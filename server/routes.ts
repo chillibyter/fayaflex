@@ -2798,12 +2798,27 @@ IMPORTANT RULES:
           dailyData[dateKey] = Math.max(dailyData[dateKey] || 0, value);
         }
       });
+
+      // For calories: past completed days below 50 kcal are within BMR estimation
+      // noise (population-average BMR varies widely person-to-person).  Treat them
+      // as rest days so they don't clutter the chart with meaningless micro-bars.
+      // Today's partial-day value is always kept as-is.
+      if (metric === 'calories') {
+        for (const dateKey of Object.keys(dailyData)) {
+          if (dateKey < todayStr && dailyData[dateKey] > 0 && dailyData[dateKey] < 50) {
+            dailyData[dateKey] = 0;
+          }
+        }
+      }
       
-      // Convert to array format for charts
+      // Convert to array format for charts.  Days with a zero value are omitted
+      // unless they are today (so today always appears, even when no data has
+      // synced yet).
       // Parse day number from the "YYYY-MM-DD" string directly — avoids UTC-midnight
       // misinterpretation when Date objects are used (e.g. new Date("2026-04-01")
       // is local March 31 for UTC-5 users, causing getDate() to return 31 not 1).
       const chartData = Object.entries(dailyData)
+        .filter(([date, value]) => value > 0 || date === todayStr)
         .map(([date, value]) => ({
           date: parseInt(date.split('-')[2], 10).toString(), // day of month, no leading zero
           fullDate: date,

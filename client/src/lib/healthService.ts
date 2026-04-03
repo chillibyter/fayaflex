@@ -368,6 +368,12 @@ class HealthService {
             const bmrToSubtract = Math.round(effectiveBmr * bmrFraction);
             const originalValue = calorieValue;
             calorieValue = Math.max(0, calorieValue - bmrToSubtract);
+            // For past completed days: values < 50 kcal are within the noise floor of
+            // the population-average BMR estimate (individual BMRs vary ±200+ kcal/day).
+            // Zeroing them avoids micro-bars for rest days that look like data errors.
+            if (!isToday && calorieValue < 50) {
+              calorieValue = 0;
+            }
             console.log(`[HealthService] Android calorie: ${originalValue} total - ${bmrToSubtract} resting${isToday ? ` (${Math.round(minutesElapsedToday)}min)` : ' (full day)'} = ${calorieValue} active`);
           }
 
