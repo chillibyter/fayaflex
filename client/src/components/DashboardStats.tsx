@@ -48,7 +48,7 @@ function StatCard({ icon, iconBgColor, label, value, unit, trend, trendLabel, pe
 
   return (
     <Card 
-      className={`p-3 shadow-sm hover:shadow-md transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
+      className={`p-3 shadow-sm hover:shadow-md transition-shadow h-full ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
       data-testid={`card-${label.toLowerCase().replace(/\s/g, '-')}`}
     >
@@ -65,12 +65,10 @@ function StatCard({ icon, iconBgColor, label, value, unit, trend, trendLabel, pe
             {value}
             {unit && <span className="text-xs font-normal text-muted-foreground ml-1">{unit}</span>}
           </div>
-          {personalBest !== undefined && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Award className="w-3 h-3" />
-              <span>Best: {personalBest.toLocaleString()}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground" style={{ visibility: personalBest !== undefined ? 'visible' : 'hidden' }}>
+            <Award className="w-3 h-3" />
+            <span>Best: {personalBest !== undefined ? personalBest.toLocaleString() : '0'}</span>
+          </div>
         </div>
       </div>
     </Card>
@@ -165,7 +163,7 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
           unit="this month"
           onClick={() => setWorkoutsDialogOpen(true)}
         />
-        <Card className="p-3 shadow-sm" data-testid="card-your-rank">
+        <Card className="p-3 shadow-sm h-full" data-testid="card-your-rank">
           <div className="flex items-center gap-3">
             <div className="bg-yellow-50 dark:bg-yellow-950 p-2 rounded-lg flex-shrink-0">
               <Trophy className="h-5 w-5 text-yellow-500" />

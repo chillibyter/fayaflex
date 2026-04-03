@@ -378,19 +378,23 @@ class HealthService {
 
   private extractDate(isoString: string): string {
     try {
-      // Parse the ISO string into a Date object, then extract the date
-      // using LOCAL time (not UTC). This is critical for users in UTC+ timezones:
-      // Health Connect returns bucket start times in UTC (e.g. "2026-04-02T16:00:00Z"
-      // for local midnight in UTC+8), so splitting on 'T' would give the wrong (UTC) date.
+      // Already in YYYY-MM-DD format — return as-is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) return isoString;
+
       const date = new Date(isoString);
-      if (isNaN(date.getTime())) {
-        // Already in YYYY-MM-DD format with no time component
-        if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) return isoString;
-        throw new Error('Invalid date');
-      }
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
+      if (isNaN(date.getTime())) throw new Error('Invalid date');
+
+      // Health Connect returns bucket START times at UTC midnight (e.g. "2026-04-03T00:00:00Z").
+      // Converting UTC midnight directly to local time fails for UTC- users:
+      //   UTC-5: "2026-04-03T00:00:00Z" → "2026-04-02T19:00:00" → April 2 (yesterday!) ✗
+      // Fix: shift to UTC NOON (+12h) before reading the local date. Noon UTC always
+      // maps to the correct local date for every timezone from UTC-11 to UTC+11.
+      //   UTC-5: "2026-04-03T12:00:00Z" → "2026-04-03T07:00:00" → April 3 ✓
+      //   UTC+8: "2026-04-03T12:00:00Z" → "2026-04-03T20:00:00" → April 3 ✓
+      const noonUTC = new Date(date.getTime() + 12 * 60 * 60 * 1000);
+      const y = noonUTC.getFullYear();
+      const m = String(noonUTC.getMonth() + 1).padStart(2, '0');
+      const d = String(noonUTC.getDate()).padStart(2, '0');
       return `${y}-${m}-${d}`;
     } catch {
       console.warn('[HealthService] Failed to parse date:', isoString);
