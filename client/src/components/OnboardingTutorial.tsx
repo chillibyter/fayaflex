@@ -121,12 +121,12 @@ export default function OnboardingTutorial({ onComplete, onSkip }: OnboardingTut
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
       style={{
         paddingTop: '16px',
         paddingLeft: '16px',
         paddingRight: '16px',
-        paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom) + 16px))',
       }}
     >
       <Card className="w-full max-w-2xl flex flex-col overflow-hidden" style={{ maxHeight: '100%' }}>
