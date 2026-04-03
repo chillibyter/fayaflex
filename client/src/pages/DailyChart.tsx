@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Flame, Footprints, TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
-import { format } from "date-fns";
+
 import { apiRequest } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
 
@@ -207,11 +207,27 @@ export default function DailyChart() {
     }
   });
 
-  const formattedData = dailyData.map(d => ({
-    ...d,
-    label: format(new Date(d.fullDate), 'MMM d'),
-    shortLabel: format(new Date(d.fullDate), 'd')
-  }));
+  // Build today's local date string without any Date object construction, to
+  // avoid UTC-midnight timezone shifts (new Date('2026-04-03') is April 2 in UTC-1).
+  const todayLocalStr = (() => {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+  })();
+
+  const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const formattedData = dailyData.map(d => {
+    // Parse date components directly from 'YYYY-MM-DD' — avoids all UTC/local shifts.
+    const [, mm, dd] = d.fullDate.split('-');
+    const dayNum  = parseInt(dd, 10);
+    const monthIdx = parseInt(mm, 10) - 1;
+    return {
+      ...d,
+      label: `${MONTH_ABBR[monthIdx]} ${dayNum}`,
+      shortLabel: String(dayNum),
+      isToday: d.fullDate === todayLocalStr,
+    };
+  });
 
   const total = dailyData.reduce((sum, d) => sum + d.value, 0);
   const average = dailyData.length > 0 ? Math.round(total / dailyData.length) : 0;
@@ -348,9 +364,16 @@ export default function DailyChart() {
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {formattedData.map((entry, index) => {
                           const isMaxDay = entry.fullDate === maxDay.fullDate;
-                          const barColor = isCalories 
-                            ? (isMaxDay ? 'hsl(24, 95%, 53%)' : 'hsl(24, 95%, 53%, 0.5)')
-                            : (isMaxDay ? 'hsl(142, 76%, 36%)' : 'hsl(142, 76%, 36%, 0.5)');
+                          // Today gets a solid accent; max day (if not today) gets the base
+                          // colour; all others get a dimmed version.
+                          let barColor: string;
+                          if (entry.isToday) {
+                            barColor = isCalories ? 'hsl(24, 95%, 53%)' : 'hsl(142, 76%, 36%)';
+                          } else if (isMaxDay) {
+                            barColor = isCalories ? 'hsl(24, 80%, 65%)' : 'hsl(142, 60%, 48%)';
+                          } else {
+                            barColor = isCalories ? 'hsl(24, 95%, 53%, 0.35)' : 'hsl(142, 76%, 36%, 0.35)';
+                          }
                           return (
                             <Cell 
                               key={`cell-${index}`} 
@@ -375,7 +398,11 @@ export default function DailyChart() {
                     <div>
                       <p className="text-sm text-muted-foreground">Best Day This Month</p>
                       <p className="font-semibold">
-                        {format(new Date(maxDay.fullDate), 'MMMM d')} - {maxDay.value.toLocaleString()} {unit}
+                        {(() => {
+                          const [, mm, dd] = maxDay.fullDate.split('-');
+                          const fullMonths = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                          return `${fullMonths[parseInt(mm,10)-1]} ${parseInt(dd,10)}`;
+                        })()} - {maxDay.value.toLocaleString()} {unit}
                       </p>
                     </div>
                   </div>
