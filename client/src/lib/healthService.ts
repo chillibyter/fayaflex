@@ -8,6 +8,7 @@ export interface HealthDataPoint {
   workouts: number;
 }
 
+// iOS HealthKit plugin (custom native Swift plugin)
 interface HealthKitPluginInterface {
   isAvailable(): Promise<{ available: boolean }>;
   requestPermissions(): Promise<{ granted: boolean; error?: string }>;
@@ -16,7 +17,16 @@ interface HealthKitPluginInterface {
   getHealthData(options: { startDate: string; endDate: string }): Promise<{ data: HealthDataPoint[] }>;
 }
 
+// Huawei HMS Health Kit plugin (custom native Kotlin plugin)
+interface HuaweiHealthPluginInterface {
+  isAvailable(): Promise<{ available: boolean }>;
+  requestPermissions(): Promise<{ granted: boolean; error?: string }>;
+  getHealthData(options: { startDate: string; endDate: string }): Promise<{ data: HealthDataPoint[] }>;
+  openHealthSettings(): Promise<void>;
+}
+
 const HealthKit = registerPlugin<HealthKitPluginInterface>('HealthKit');
+const HuaweiHealth = registerPlugin<HuaweiHealthPluginInterface>('HuaweiHealth');
 
 class HealthService {
   private isIOS(): boolean {
@@ -34,6 +44,16 @@ class HealthService {
         console.log('[HealthService] iOS HealthKit available:', result.available);
         return result.available;
       }
+
+      // Huawei devices: check HMS Core availability
+      const provider = await this.getProviderName();
+      if (provider === 'huawei_health') {
+        const result = await HuaweiHealth.isAvailable();
+        console.log('[HealthService] Huawei HMS available:', result.available);
+        return result.available;
+      }
+
+      // Standard Android: Health Connect
       const result = await Health.isHealthAvailable();
       return result.available;
     } catch (error) {
@@ -54,6 +74,15 @@ class HealthService {
         console.log('[HealthService] iOS permission result:', JSON.stringify(result));
         // Note: iOS HealthKit doesn't reveal if user granted or denied
         // We return true if no error, and verify by trying to read data
+        return result.granted !== false;
+      }
+
+      // Huawei: HMS sign-in with health scopes (replaces Health Connect permission dialog)
+      const provider = await this.getProviderName();
+      if (provider === 'huawei_health') {
+        console.log('[HealthService] Huawei - Requesting HMS Health permissions via Huawei ID sign-in...');
+        const result = await HuaweiHealth.requestPermissions();
+        console.log('[HealthService] Huawei permission result:', JSON.stringify(result));
         return result.granted !== false;
       }
       
@@ -114,6 +143,13 @@ class HealthService {
         console.log('[HealthService] iOS - skipping permission check (Apple privacy restriction)');
         return true;
       }
+
+      // Huawei: treat similar to iOS — auth state is managed by the HMS sign-in result
+      const provider = await this.getProviderName();
+      if (provider === 'huawei_health') {
+        console.log('[HealthService] Huawei - skipping explicit permission check (HMS auth manages this)');
+        return true;
+      }
       
       // Android only: check permissions
       // Permission names must match the CapHealthPermission enum in the plugin
@@ -168,6 +204,20 @@ class HealthService {
         });
         console.log('[HealthService] iOS HealthKit data:', result.data?.length || 0, 'days');
         return result.data || [];
+      }
+
+      // Huawei: Use HMS Health Kit plugin (bypasses Health Connect entirely)
+      const provider = await this.getProviderName();
+      if (provider === 'huawei_health') {
+        console.log('[HealthService] Huawei - Using HMS Health Kit plugin');
+        const result = await HuaweiHealth.getHealthData({
+          startDate: startDateStr,
+          endDate: endDateStr
+        });
+        const data: HealthDataPoint[] = result.data || [];
+        console.log('[HealthService] Huawei HMS data:', data.length, 'days');
+        // HMS Health Kit returns activeKilocalories directly (no BMR subtraction needed)
+        return data;
       }
 
       // Android: Use capacitor-health plugin
@@ -435,17 +485,26 @@ class HealthService {
   }
 
   async detectManufacturer(): Promise<string> {
-    // Detect Huawei devices
+    // Detect Huawei devices on Android
     if (Capacitor.getPlatform() === 'android') {
       try {
-        // Check for Huawei manufacturer via Device plugin if available
-        // For now, we'll check if HMS Core is available
+        // 1. Fast heuristic: check user agent string for Huawei/Honor brand
         const userAgent = navigator.userAgent.toLowerCase();
         if (userAgent.includes('huawei') || userAgent.includes('honor')) {
+          console.log('[HealthService] Huawei detected via user agent');
+          return 'huawei';
+        }
+
+        // 2. Definitive check: ask the native HMS plugin directly.
+        //    If HMS Core is installed and ready, this device is a Huawei/Honor device.
+        const result = await HuaweiHealth.isAvailable();
+        if (result.available) {
+          console.log('[HealthService] Huawei detected via HMS isAvailable()');
           return 'huawei';
         }
       } catch (error) {
-        console.error('Error detecting manufacturer:', error);
+        // HMS plugin not present (GMS-only device) — continue to standard Android path
+        console.log('[HealthService] HMS not available, treating as standard Android:', error);
       }
     }
     return 'standard';
@@ -468,9 +527,14 @@ class HealthService {
     try {
       if (Capacitor.getPlatform() === 'ios') {
         await Health.openAppleHealthSettings();
-      } else {
-        await Health.openHealthConnectSettings();
+        return;
       }
+      const provider = await this.getProviderName();
+      if (provider === 'huawei_health') {
+        await HuaweiHealth.openHealthSettings();
+        return;
+      }
+      await Health.openHealthConnectSettings();
     } catch (error) {
       console.error('[HealthService] Error opening health settings:', error);
     }
@@ -479,20 +543,22 @@ class HealthService {
   async showPermissionsRationale(): Promise<void> {
     try {
       console.log('[HealthService] Opening permissions rationale...');
-      if (Capacitor.getPlatform() === 'android') {
-        // Try to launch the ACTION_SHOW_PERMISSIONS_RATIONALE intent as per PDF requirements
-        // This intent is declared in AndroidManifest.xml and handled by PermissionsRationaleActivity
-        try {
-          // Attempt to open Health Connect with rationale flow
-          // The registered PermissionsRationaleActivity in AndroidManifest will handle this
-          await Health.openHealthConnectSettings();
-        } catch (intentError) {
-          console.log('[HealthService] Could not launch rationale, falling back to Play Store');
-          // If Health Connect is not installed, open Play Store to install it
-          window.open('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata', '_system');
-        }
-      } else if (Capacitor.getPlatform() === 'ios') {
+      if (Capacitor.getPlatform() === 'ios') {
         await Health.openAppleHealthSettings();
+        return;
+      }
+      const provider = await this.getProviderName();
+      if (provider === 'huawei_health') {
+        // For Huawei, open the Health app directly
+        await HuaweiHealth.openHealthSettings();
+        return;
+      }
+      // Standard Android: Health Connect
+      try {
+        await Health.openHealthConnectSettings();
+      } catch (intentError) {
+        console.log('[HealthService] Could not launch rationale, falling back to Play Store');
+        window.open('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata', '_system');
       }
     } catch (error) {
       console.error('[HealthService] Error showing permissions rationale:', error);
