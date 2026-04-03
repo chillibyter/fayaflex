@@ -120,8 +120,16 @@ export default function OnboardingTutorial({ onComplete, onSkip }: OnboardingTut
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
-      <Card className="w-full max-w-2xl max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
+      style={{
+        paddingTop: '16px',
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+      }}
+    >
+      <Card className="w-full max-w-2xl flex flex-col overflow-hidden" style={{ maxHeight: '100%' }}>
         <CardContent className="p-0 flex flex-col flex-1 min-h-0">
           {/* Fixed Header */}
           <div className="p-4 pb-2 flex-shrink-0">
@@ -185,16 +193,16 @@ export default function OnboardingTutorial({ onComplete, onSkip }: OnboardingTut
                     {slide.scoreBreakdown.map((item, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-4 p-4 rounded-lg bg-muted/50"
+                        className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
                       >
-                        <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                           <item.icon className="w-5 h-5 text-orange-500" />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="font-medium">{item.label}</div>
                           <div className="text-sm text-muted-foreground">{item.value}</div>
+                          <div className="text-xs font-medium text-primary mt-0.5">{item.example}</div>
                         </div>
-                        <div className="text-sm font-medium text-primary">{item.example}</div>
                       </div>
                     ))}
                   </div>

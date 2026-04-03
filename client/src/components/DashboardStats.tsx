@@ -138,7 +138,7 @@ export default function DashboardStats({ calories, steps, workouts, rank, totalA
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           icon={<Flame className="h-5 w-5 text-orange-500" />}
           iconBgColor="bg-orange-50 dark:bg-orange-950"
