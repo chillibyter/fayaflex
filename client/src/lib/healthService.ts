@@ -322,15 +322,15 @@ class HealthService {
 
       // Android: Convert total calories → active calories using BMR formula.
       // Formula: Active Cal = max(0, Total × 1.2 − BMR)
-      // Applies whenever: Android platform AND data came from 'total-calories' (Samsung Health path).
-      // BMR used: user's profile value if set, otherwise population-average fallback (1555 kcal/day).
-      // The fallback mirrors the CalorieEstimator.kt logic: avg(1500, 70 × 23) = 1555.
-      const BMR_FALLBACK = 1555; // kcal/day — population-average (no weight/gender info)
-      const needsAndroidConversion = this.isAndroid() && usedCalorieDataType === 'total-calories';
-      const effectiveBmr = userBmr || BMR_FALLBACK;
+      // ONLY applied when: Android + total-calories data + user has EXPLICITLY set their BMR.
+      // Without a user-set BMR we use the raw total-calories value as-is — showing the
+      // fallback-converted result produced zeros mid-day (threshold = BMR/1.2 ≈ 1296 kcal).
+      const needsAndroidConversion = this.isAndroid() && usedCalorieDataType === 'total-calories' && !!userBmr;
+      const effectiveBmr = userBmr ?? 0;
       if (needsAndroidConversion) {
-        const bmrSource = userBmr ? `user-set BMR: ${userBmr}` : `fallback BMR: ${BMR_FALLBACK}`;
-        console.log(`[HealthService] Android: Converting total → active calories (${bmrSource})`);
+        console.log(`[HealthService] Android: Converting total → active calories (user BMR: ${userBmr})`);
+      } else if (this.isAndroid() && usedCalorieDataType === 'total-calories') {
+        console.log('[HealthService] Android: No BMR set — using raw total-calories (set BMR in profile to see active-only)');
       }
 
       // Process calories - use aggregated data, or workout calories as fallback
