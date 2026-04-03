@@ -16,6 +16,14 @@ import {
   type RegistrationResponseJSON,
   type AuthenticationResponseJSON,
 } from "@simplewebauthn/server";
+import {
+  getRequestToken,
+  buildAuthorizationUrl,
+  getAccessToken,
+  fetchDailies,
+  fetchActivities,
+  mergeGarminData,
+} from "./garmin";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Helper function to remove email from user object
@@ -256,6 +264,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ message: error.message || "Failed to sync device" });
     }
   });
+
+  // ─── Garmin Connect OAuth + Sync routes ──────────────────────────────────────
+
+  const GARMIN_KEY    = process.env.GARMIN_CONSUMER_KEY    ?? "";
+  const GARMIN_SECRET = process.env.GARMIN_CONSUMER_SECRET ?? "";
+  const garminEnabled = !!GARMIN_KEY && !!GARMIN_SECRET;
+
+  // Step 1 – kick off OAuth: redirect user to Garmin authorization page
+  app.get("/api/garmin/connect", isAuthenticated, async (req: any, res) => {
+    if (!garminEnabled) {
+      return res.status(503).json({ message: "Garmin integration is not configured on this server." });
+    }
+    try {
+      const callbackUrl = `${process.env.SERVER_URL || "https://www.fayaflex.com"}/api/garmin/callback`;
+      const { oauthToken, oauthTokenSecret } = await getRequestToken(GARMIN_KEY, GARMIN_SECRET, callbackUrl);
+      // Stash the request-token secret in the session so we can use it in the callback
+      (req.session as any).garminRequestTokenSecret = oauthTokenSecret;
+      (req.session as any).garminUserId = req.user.id;
+      await new Promise<void>((resolve, reject) =>
+        req.session.save((err: any) => (err ? reject(err) : resolve()))
+      );
+      const authUrl = buildAuthorizationUrl(oauthToken);
+      res.redirect(authUrl);
+    } catch (err: any) {
+      console.error("[Garmin] OAuth initiation error:", err.message);
+      res.redirect("/?garmin_error=" + encodeURIComponent(err.message));
+    }
+  });
+
+  // Step 2 – Garmin redirects back here with oauth_token + oauth_verifier
+  app.get("/api/garmin/callback", async (req: any, res) => {
+    if (!garminEnabled) {
+      return res.redirect("/?garmin_error=not_configured");
+    }
+    try {
+      const { oauth_token: requestToken, oauth_verifier: verifier } = req.query as Record<string, string>;
+      const requestTokenSecret = (req.session as any).garminRequestTokenSecret;
+      const userId = (req.session as any).garminUserId;
+
+      if (!requestToken || !verifier || !requestTokenSecret || !userId) {
+        throw new Error("Missing OAuth state — please try connecting again.");
+      }
+
+      const { oauthToken, oauthTokenSecret } = await getAccessToken(
+        GARMIN_KEY,
+        GARMIN_SECRET,
+        requestToken,
+        requestTokenSecret,
+        verifier
+      );
+
+      // Persist the User Access Token (UAT) in device_connections
+      await storage.upsertDeviceConnection({
+        userId,
+        provider: "garmin_connect",
+        isConnected: true,
+        lastSyncAt: null,
+        accessToken: oauthToken,
+        refreshToken: oauthTokenSecret, // OAuth 1.0a token secret (no real refresh token)
+      });
+
+      // Clean up session state
+      delete (req.session as any).garminRequestTokenSecret;
+      delete (req.session as any).garminUserId;
+
+      // Trigger an initial data sync in the background
+      syncGarminForUser(userId, oauthToken, oauthTokenSecret, 30).catch((e) =>
+        console.error("[Garmin] Background sync after connect failed:", e.message)
+      );
+
+      res.redirect("/?garmin_connected=1");
+    } catch (err: any) {
+      console.error("[Garmin] OAuth callback error:", err.message);
+      res.redirect("/?garmin_error=" + encodeURIComponent(err.message));
+    }
+  });
+
+  // Sync Garmin data for the authenticated user
+  app.post("/api/garmin/sync", isAuthenticated, async (req: any, res) => {
+    if (!garminEnabled) {
+      return res.status(503).json({ message: "Garmin integration is not configured." });
+    }
+    try {
+      const userId = req.user.id;
+      const conn = await storage.getDeviceConnection(userId, "garmin_connect");
+      if (!conn || !conn.isConnected || !conn.accessToken) {
+        return res.status(400).json({ message: "Garmin is not connected." });
+      }
+      const days = parseInt(req.body?.days ?? "7", 10);
+      const { synced } = await syncGarminForUser(userId, conn.accessToken, conn.refreshToken!, days);
+      res.json({ success: true, synced });
+    } catch (err: any) {
+      console.error("[Garmin] Sync error:", err.message);
+      res.status(500).json({ message: err.message || "Garmin sync failed" });
+    }
+  });
+
+  // Disconnect Garmin
+  app.post("/api/garmin/disconnect", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.upsertDeviceConnection({
+        userId,
+        provider: "garmin_connect",
+        isConnected: false,
+        lastSyncAt: null,
+        accessToken: null,
+        refreshToken: null,
+      });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed to disconnect" });
+    }
+  });
+
+  // Status check – is Garmin configured on this server?
+  app.get("/api/garmin/status", async (_req, res) => {
+    res.json({ enabled: garminEnabled });
+  });
+
+  /** Pull up to `daysBack` days of Garmin data and store as activities. */
+  async function syncGarminForUser(
+    userId: string,
+    userToken: string,
+    userTokenSecret: string,
+    daysBack = 7
+  ): Promise<{ synced: number }> {
+    const endTime = Math.floor(Date.now() / 1000);
+    const startTime = endTime - daysBack * 86400;
+
+    const [dailies, activities] = await Promise.all([
+      fetchDailies(GARMIN_KEY, GARMIN_SECRET, userToken, userTokenSecret, startTime, endTime),
+      fetchActivities(GARMIN_KEY, GARMIN_SECRET, userToken, userTokenSecret, startTime, endTime),
+    ]);
+
+    const merged = mergeGarminData(dailies, activities);
+    console.log(`[Garmin] User ${userId}: ${dailies.length} dailies, ${activities.length} activities → ${merged.length} days`);
+
+    const results = await storage.syncHealthActivities(
+      userId,
+      "garmin_connect",
+      merged.map((d) => ({
+        date: d.date,
+        calories: d.calories,
+        steps: d.steps,
+        workoutType: d.workouts > 0
+          ? `Garmin Sync (${d.workouts} workout${d.workouts > 1 ? "s" : ""})`
+          : undefined,
+      }))
+    );
+
+    await storage.upsertDeviceConnection({
+      userId,
+      provider: "garmin_connect",
+      isConnected: true,
+      lastSyncAt: new Date(),
+    });
+
+    return { synced: results.created + results.updated };
+  }
+
+  // ─── End Garmin routes ────────────────────────────────────────────────────────
 
   // Location API routes for hierarchical geo rankings
   app.get("/api/locations", async (req, res) => {
