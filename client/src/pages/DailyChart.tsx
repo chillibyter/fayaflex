@@ -372,7 +372,7 @@ export default function DailyChart() {
                           } else if (isMaxDay) {
                             barColor = isCalories ? 'hsl(24, 80%, 65%)' : 'hsl(142, 60%, 48%)';
                           } else {
-                            barColor = isCalories ? 'hsl(24, 95%, 53%, 0.35)' : 'hsl(142, 76%, 36%, 0.35)';
+                            barColor = isCalories ? 'hsla(24, 95%, 53%, 0.35)' : 'hsla(142, 76%, 36%, 0.35)';
                           }
                           return (
                             <Cell 
