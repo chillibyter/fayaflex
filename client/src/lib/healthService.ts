@@ -378,20 +378,24 @@ class HealthService {
 
   private extractDate(isoString: string): string {
     try {
-      // Handle various date formats
-      if (isoString.includes('T')) {
-        return isoString.split('T')[0];
-      }
-      // Already in YYYY-MM-DD format
-      if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
-        return isoString;
-      }
-      // Try to parse as date
+      // Parse the ISO string into a Date object, then extract the date
+      // using LOCAL time (not UTC). This is critical for users in UTC+ timezones:
+      // Health Connect returns bucket start times in UTC (e.g. "2026-04-02T16:00:00Z"
+      // for local midnight in UTC+8), so splitting on 'T' would give the wrong (UTC) date.
       const date = new Date(isoString);
-      return date.toISOString().split('T')[0];
+      if (isNaN(date.getTime())) {
+        // Already in YYYY-MM-DD format with no time component
+        if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) return isoString;
+        throw new Error('Invalid date');
+      }
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
     } catch {
       console.warn('[HealthService] Failed to parse date:', isoString);
-      return new Date().toISOString().split('T')[0];
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
   }
 
