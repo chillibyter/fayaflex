@@ -2770,41 +2770,46 @@ IMPORTANT RULES:
       const endDate = new Date(firstDayOfMonth);
       endDate.setDate(endDate.getDate() + 29); // 30 days total (0-29)
       
-      // Use today's date string to ensure it's always included regardless of timezone
-      const todayStr = now.toISOString().split('T')[0];
-      
+      // Build today's date string using LOCAL date parts to avoid UTC-offset issues
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+      // Build month-boundary strings via date arithmetic on LOCAL midnight dates
+      // (avoids toISOString() UTC-shift for UTC- users)
+      const startDateStr = `${year}-${String(month).padStart(2, '0')}-01`;
+      const lastDay = new Date(year, month, 0).getDate();
+      const endDateStr   = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
       // Group activities by date - take MAX per day to avoid double-counting from multiple sources
       const dailyData: { [key: string]: number } = {};
-      
-      // Initialize all days from start of month through today (inclusive)
-      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const dateKey = d.toISOString().split('T')[0];
+
+      // Initialise every calendar day in the month up to (and including) today
+      for (let day = 1; day <= lastDay; day++) {
+        const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         if (dateKey > todayStr) break;
         dailyData[dateKey] = 0;
       }
-      // Ensure today is always present
-      if (!dailyData[todayStr] && todayStr >= startDate.toISOString().split('T')[0]) {
-        dailyData[todayStr] = 0;
-      }
-      
-      // Take the maximum value for each day (avoids double-counting if multiple sources exist)
+
+      // Take the maximum value for each day — compare date STRINGS, not Date objects,
+      // to avoid UTC-midnight vs local-midnight mismatches for UTC- timezone users.
       activities.forEach(activity => {
-        const activityDate = new Date(activity.date);
-        if (activityDate >= startDate && activityDate <= endDate) {
-          const dateKey = activity.date;
+        const dateKey = activity.date; // already "YYYY-MM-DD"
+        if (dateKey >= startDateStr && dateKey <= todayStr && dateKey in dailyData) {
           const value = metric === 'calories' ? activity.calories : activity.steps;
           dailyData[dateKey] = Math.max(dailyData[dateKey] || 0, value);
         }
       });
       
       // Convert to array format for charts
+      // Parse day number from the "YYYY-MM-DD" string directly — avoids UTC-midnight
+      // misinterpretation when Date objects are used (e.g. new Date("2026-04-01")
+      // is local March 31 for UTC-5 users, causing getDate() to return 31 not 1).
       const chartData = Object.entries(dailyData)
         .map(([date, value]) => ({
-          date: new Date(date).getDate().toString(), // Just the day number
+          date: parseInt(date.split('-')[2], 10).toString(), // day of month, no leading zero
           fullDate: date,
           value,
         }))
-        .sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
+        .sort((a, b) => a.fullDate.localeCompare(b.fullDate));
       
       res.json(chartData);
     } catch (error) {
