@@ -30,6 +30,7 @@ export function useAutoHealthSync() {
     queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
     queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
     queryClient.invalidateQueries({ queryKey: ['/api/stats/daily-breakdown'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/goals/suggested'] });
   }, []);
 
   // ── Today-only sync (runs every 60 s while active) ─────────────────────────

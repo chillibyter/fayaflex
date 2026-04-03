@@ -65,6 +65,7 @@ function GarminCard({
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/goals/suggested'] });
     },
     onError: (err: any) => {
       toast({ title: 'Sync failed', description: err.message ?? 'Could not sync Garmin data', variant: 'destructive' });
@@ -245,6 +246,7 @@ export function HealthDevices() {
       queryClient.invalidateQueries({ queryKey: ['/api/devices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/goals/suggested'] });
       // Clean up the URL param without a full reload
       const url = new URL(window.location.href);
       url.searchParams.delete('garmin_connected');
@@ -345,6 +347,7 @@ export function HealthDevices() {
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/goals/suggested'] });
     },
     onError: (error) => {
       toast({
@@ -397,6 +400,7 @@ export function HealthDevices() {
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/progress/chart'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/goals/suggested'] });
     },
     onError: (error) => {
       toast({ title: 'Sync failed', description: error instanceof Error ? error.message : 'Unknown error', variant: 'destructive' });

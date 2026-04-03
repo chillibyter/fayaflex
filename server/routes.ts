@@ -223,15 +223,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Sync] TOTALS: calories=${totalCalories}, steps=${totalSteps}, workouts=${totalWorkouts}`);
       console.log(`========================================\n`);
       
+      // Server-side today string in UTC — drop any activity dated in the future
+      // (happens when the user's device is ahead of UTC, e.g. NZ UTC+13 syncing
+      // at midnight local time, which is still "yesterday" on the server).
+      const serverTodayStr = new Date().toISOString().split('T')[0];
+
       // Transform activities: convert workouts count to workoutType if not already set
-      const transformedActivities = validatedData.activities.map(activity => ({
-        date: activity.date,
-        calories: activity.calories,
-        steps: activity.steps,
-        workoutType: activity.workoutType || (activity.workouts && activity.workouts > 0 
-          ? `Health Sync (${activity.workouts} workout${activity.workouts > 1 ? 's' : ''})` 
-          : undefined),
-      }));
+      const transformedActivities = validatedData.activities
+        .filter(activity => {
+          if (activity.date > serverTodayStr) {
+            console.log(`[Sync] Dropping future-dated activity: ${activity.date} (server today = ${serverTodayStr})`);
+            return false;
+          }
+          return true;
+        })
+        .map(activity => ({
+          date: activity.date,
+          calories: activity.calories,
+          steps: activity.steps,
+          workoutType: activity.workoutType || (activity.workouts && activity.workouts > 0 
+            ? `Health Sync (${activity.workouts} workout${activity.workouts > 1 ? 's' : ''})` 
+            : undefined),
+        }));
       
       console.log(`[Sync] User ${userId} syncing ${transformedActivities.length} activities from ${validatedData.provider}`);
       
@@ -2738,10 +2751,30 @@ IMPORTANT RULES:
         return byDate;
       };
       
+      // Today's date string in UTC — used to exclude future-dated rows and to
+      // avoid applying the BMR-noise filter to today's partial-day data.
+      const todayStr = now.toISOString().split('T')[0];
+
       // Get activities for current month only (resets on 1st of each month)
       const activities = await storage.getUserActivities(userId, month, year);
       const aggregated = aggregateByDate(activities);
-      
+
+      // Apply the same BMR-noise filter used by the daily-breakdown chart:
+      // past completed days with fewer than 50 kcal are essentially rest days
+      // (BMR estimation noise). Zero them out so the monthly total and the
+      // per-day chart always agree.  Today's partial-day value is never filtered.
+      aggregated.forEach((dayData, dateKey) => {
+        if (dateKey > todayStr) {
+          // Future-dated row (device timezone ahead of UTC): treat as zero
+          dayData.calories = 0;
+          dayData.steps = 0;
+          dayData.hasWorkout = false;
+        } else if (dateKey < todayStr && dayData.calories > 0 && dayData.calories < 50) {
+          dayData.calories = 0;
+          dayData.hasWorkout = dayData.steps > 0; // keep workout flag if steps present
+        }
+      });
+
       // Sum up the aggregated values
       let totalCalories = 0;
       let totalSteps = 0;
@@ -2758,12 +2791,20 @@ IMPORTANT RULES:
       const userCaloriesMap: Map<string, number> = new Map();
       
       // Calculate calories for each user for current month only (also using aggregation)
+      // Apply the same noise filter (<50 kcal past days) so rank is based on the same
+      // numbers the user sees on their own stat card.
       for (const user of allUsers) {
         const userActivities = await storage.getUserActivities(user.id, month, year);
         const userAggregated = aggregateByDate(userActivities);
         let userCalories = 0;
-        Array.from(userAggregated.values()).forEach(dayData => {
-          userCalories += dayData.calories;
+        Array.from(userAggregated.entries()).forEach(([dateKey, dayData]) => {
+          let cal = dayData.calories;
+          if (dateKey > todayStr) {
+            cal = 0; // future-dated row
+          } else if (dateKey < todayStr && cal > 0 && cal < 50) {
+            cal = 0; // BMR noise on past completed days
+          }
+          userCalories += cal;
         });
         if (userCalories > 0) {
           userCaloriesMap.set(user.id, userCalories);
