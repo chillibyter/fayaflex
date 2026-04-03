@@ -43,16 +43,17 @@
       
       if ('serviceWorker' in navigator && !isNativeApp) {
         window.addEventListener('load', () => {
-          // Unregister old service workers first
+          // Unregister all old service workers that aren't sw-v7
           navigator.serviceWorker.getRegistrations().then(registrations => {
             registrations.forEach(reg => {
-              if (reg.active && reg.active.scriptURL.includes('sw.js') && !reg.active.scriptURL.includes('sw-v6.js')) {
+              if (reg.active && !reg.active.scriptURL.includes('sw-v7.js')) {
+                console.log('Unregistering old SW:', reg.active.scriptURL);
                 reg.unregister();
               }
             });
           });
           // Register the new versioned service worker
-          navigator.serviceWorker.register('/sw-v6.js')
+          navigator.serviceWorker.register('/sw-v7.js')
             .then(registration => {
               console.log('Service Worker registered:', registration.scope);
               registration.update();
