@@ -342,15 +342,16 @@ class HealthService {
         const n = new Date();
         return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
       })();
-      // Fractional hours elapsed since local midnight (e.g. 13.5 at 1:30 PM).
-      const hoursElapsedToday = (() => {
+      // Minutes elapsed since local midnight — 1,440 minutes in a full day.
+      const minutesElapsedToday = (() => {
         const n = new Date();
-        return n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600;
+        return n.getHours() * 60 + n.getMinutes() + n.getSeconds() / 60;
       })();
+      const MINUTES_PER_DAY = 1440;
 
       if (needsAndroidConversion) {
         const bmrSource = userBmr ? `user BMR: ${userBmr}` : `avg BMR: ${AVG_BMR}`;
-        console.log(`[HealthService] Android: prorated BMR subtraction (${bmrSource}, ${hoursElapsedToday.toFixed(1)}h elapsed today)`);
+        console.log(`[HealthService] Android: prorated BMR subtraction (${bmrSource}, ${Math.round(minutesElapsedToday)}min elapsed today)`);
       }
 
       // Process calories - use aggregated data, or workout calories as fallback
@@ -361,13 +362,13 @@ class HealthService {
           let calorieValue = getSampleValue(sample);
 
           if (needsAndroidConversion && calorieValue > 0) {
-            // Past completed days use the full daily BMR; today uses only the elapsed fraction.
+            // Past completed days use the full daily BMR; today uses only the elapsed-minute fraction.
             const isToday = date === todayLocalStr;
-            const bmrFraction = isToday ? hoursElapsedToday / 24 : 1;
+            const bmrFraction = isToday ? minutesElapsedToday / MINUTES_PER_DAY : 1;
             const bmrToSubtract = Math.round(effectiveBmr * bmrFraction);
             const originalValue = calorieValue;
             calorieValue = Math.max(0, calorieValue - bmrToSubtract);
-            console.log(`[HealthService] Android calorie: ${originalValue} total - ${bmrToSubtract} resting${isToday ? ` (${hoursElapsedToday.toFixed(1)}h)` : ' (full day)'} = ${calorieValue} active`);
+            console.log(`[HealthService] Android calorie: ${originalValue} total - ${bmrToSubtract} resting${isToday ? ` (${Math.round(minutesElapsedToday)}min)` : ' (full day)'} = ${calorieValue} active`);
           }
 
           getOrCreate(date).calories += calorieValue;
