@@ -320,17 +320,29 @@ class HealthService {
         getOrCreate(date).steps += getSampleValue(sample);
       }
 
-      // Android: Convert total calories → active calories using BMR formula.
-      // Formula: Active Cal = max(0, Total × 1.2 − BMR)
-      // ONLY applied when: Android + total-calories data + user has EXPLICITLY set their BMR.
-      // Without a user-set BMR we use the raw total-calories value as-is — showing the
-      // fallback-converted result produced zeros mid-day (threshold = BMR/1.2 ≈ 1296 kcal).
+      // Android: Convert total calories → active calories by subtracting the resting (BMR) burn.
+      // Formula: Active Cal = max(0, Total − BMR_prorated)
+      //   - Past full days: BMR_prorated = full daily BMR (24 h of resting burn)
+      //   - Today (partial day): BMR_prorated = BMR × (hoursElapsed / 24)
+      //     e.g. at noon with BMR 1600: subtract only 800, not 1600, so mid-day values are non-zero.
+      // ONLY applied when user has explicitly set their BMR. Without it, raw total-calories are used.
       const needsAndroidConversion = this.isAndroid() && usedCalorieDataType === 'total-calories' && !!userBmr;
-      const effectiveBmr = userBmr ?? 0;
+
+      // Today's local date string — used to detect the partial-day bucket.
+      const todayLocalStr = (() => {
+        const n = new Date();
+        return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+      })();
+      // Hours elapsed since local midnight — for prorating today's BMR.
+      const hoursElapsedToday = (() => {
+        const n = new Date();
+        return n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600;
+      })();
+
       if (needsAndroidConversion) {
-        console.log(`[HealthService] Android: Converting total → active calories (user BMR: ${userBmr})`);
+        console.log(`[HealthService] Android: subtracting prorated BMR (user BMR: ${userBmr}, hours elapsed today: ${hoursElapsedToday.toFixed(1)})`);
       } else if (this.isAndroid() && usedCalorieDataType === 'total-calories') {
-        console.log('[HealthService] Android: No BMR set — using raw total-calories (set BMR in profile to see active-only)');
+        console.log('[HealthService] Android: No BMR set — using raw total-calories (set BMR in Profile for active-only view)');
       }
 
       // Process calories - use aggregated data, or workout calories as fallback
@@ -339,13 +351,17 @@ class HealthService {
           const date = getSampleDate(sample);
           if (!date) continue;
           let calorieValue = getSampleValue(sample);
-          
+
           if (needsAndroidConversion && calorieValue > 0) {
+            // Prorate BMR: full day for past dates, fraction of day for today.
+            const isToday = date === todayLocalStr;
+            const bmrFraction = isToday ? hoursElapsedToday / 24 : 1;
+            const bmrToSubtract = Math.round((userBmr as number) * bmrFraction);
             const originalValue = calorieValue;
-            calorieValue = Math.max(0, Math.round(calorieValue * 1.2 - effectiveBmr));
-            console.log(`[HealthService] Android calorie conversion: ${originalValue} total -> ${calorieValue} active (BMR: ${effectiveBmr})`);
+            calorieValue = Math.max(0, calorieValue - bmrToSubtract);
+            console.log(`[HealthService] Android calorie: ${originalValue} total - ${bmrToSubtract} BMR${isToday ? ` (${hoursElapsedToday.toFixed(1)}h)` : ' (full day)'} = ${calorieValue} active`);
           }
-          
+
           getOrCreate(date).calories += calorieValue;
         }
       }
