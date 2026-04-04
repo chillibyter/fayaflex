@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getAuthHeaders, getApiUrl } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDistanceToNow } from "date-fns";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -324,15 +324,23 @@ function ComposeBox({ currentUser }: { currentUser: any }) {
       try {
         const formData = new FormData();
         formData.append("file", imageFile);
-        const res = await fetch("/api/upload/feed-image", {
+        // Use getApiUrl so native apps hit https://fayaflex.com; include the
+        // JWT Bearer token via getAuthHeaders() so the request isn't rejected
+        // with 401 on native platforms (which don't send session cookies).
+        const res = await fetch(getApiUrl("/api/upload/feed-image"), {
           method: "POST",
           body: formData,
           credentials: "include",
+          headers: getAuthHeaders(),
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Upload failed: ${res.status}`);
+        }
         const data = await res.json();
         imageUrl = data.url ?? null;
-      } catch {
-        toast({ title: "Image upload failed", variant: "destructive" });
+      } catch (err: any) {
+        toast({ title: "Image upload failed", description: err.message, variant: "destructive" });
         setUploading(false);
         return;
       }
