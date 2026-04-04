@@ -40,7 +40,7 @@ export async function clearAuthToken(): Promise<void> {
   await clearStoredToken();
 }
 
-function getAuthHeaders(): Record<string, string> {
+export function getAuthHeaders(): Record<string, string> {
   return cachedToken ? { 'Authorization': `Bearer ${cachedToken}` } : {};
 }
 
