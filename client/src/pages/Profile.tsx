@@ -506,6 +506,11 @@ export default function Profile() {
                 <span className="font-medium">Privacy Policy</span>
               </button>
             </Link>
+            <Link href="/notifications" onClick={() => setIsSettingsOpen(false)}>
+              <button className="w-full flex items-center gap-3 py-3 px-2 hover:bg-muted/50 rounded-md transition-colors" data-testid="link-notifications">
+                <span className="font-medium">Notifications</span>
+              </button>
+            </Link>
             <div className="border-t my-2" />
             <Link href="/delete-account" onClick={() => setIsSettingsOpen(false)}>
               <button className="w-full flex items-center gap-3 py-3 px-2 hover:bg-destructive/10 rounded-md transition-colors text-destructive" data-testid="link-delete-account">

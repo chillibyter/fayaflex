@@ -42,6 +42,8 @@ export const users = pgTable("users", {
   regionId: varchar("region_id"),
   townId: varchar("town_id"),
   bmr: integer("bmr"),
+  notificationPrefs: jsonb("notification_prefs"),
+  lastKnownGlobalRank: integer("last_known_global_rank"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -717,3 +719,57 @@ export const insertFeedPostCommentSchema = createInsertSchema(feedPostComments).
   createdAt: true,
 });
 export type InsertFeedPostComment = z.infer<typeof insertFeedPostCommentSchema>;
+
+// Push notification tokens — one row per device/browser per user
+export const pushTokens = pgTable("push_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  token: text("token").notNull(),
+  platform: varchar("platform", { length: 20 }).notNull(), // 'ios', 'android', 'web'
+  // For web push: stores the full PushSubscription endpoint+keys as JSON
+  // For native: stores the FCM/APNs token
+  webSubscription: jsonb("web_subscription"),
+  lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userTokenUnique: uniqueIndex("push_tokens_user_token_unique").on(table.userId, table.token),
+}));
+
+export const pushTokensRelations = relations(pushTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [pushTokens.userId],
+    references: [users.id],
+  }),
+}));
+
+export type PushToken = typeof pushTokens.$inferSelect;
+export const insertPushTokenSchema = createInsertSchema(pushTokens).omit({
+  id: true,
+  userId: true,
+  lastSeenAt: true,
+  createdAt: true,
+});
+export type InsertPushToken = z.infer<typeof insertPushTokenSchema>;
+
+// Per-user notification preferences (defaults to all on if null)
+export const notificationPrefsSchema = z.object({
+  dailyReminder: z.boolean().default(true),
+  teamMessage: z.boolean().default(true),
+  reaction: z.boolean().default(true),
+  comment: z.boolean().default(true),
+  directMessage: z.boolean().default(true),
+  monthlyWinner: z.boolean().default(true),
+  rankChange: z.boolean().default(true),
+});
+export type NotificationPrefs = z.infer<typeof notificationPrefsSchema>;
+export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
+  dailyReminder: true,
+  teamMessage: true,
+  reaction: true,
+  comment: true,
+  directMessage: true,
+  monthlyWinner: true,
+  rankChange: true,
+};

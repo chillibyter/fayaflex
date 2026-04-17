@@ -13,6 +13,7 @@ import TeamLeaderboard from "@/pages/TeamLeaderboard";
 import VictoryWall from "@/pages/VictoryWall";
 import CreateTeam from "@/pages/CreateTeam";
 import Profile from "@/pages/Profile";
+import NotificationSettings from "@/pages/NotificationSettings";
 import UserProfile from "@/pages/UserProfile";
 import AuthPage from "@/pages/AuthPage";
 import ResetPassword from "@/pages/ResetPassword";
@@ -34,6 +35,7 @@ import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useAutoHealthSync } from "@/hooks/use-auto-health-sync";
 import { useSwipeBack } from "@/hooks/use-swipe-back";
+import { initPushNotifications } from "@/lib/pushNotifications";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
@@ -124,6 +126,7 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/health-data" component={HealthData} />
       <Route path="/delete-account" component={DeleteAccount} />
+      <Route path="/notifications" component={NotificationSettings} />
       <Route path="/team-selection" component={TeamSelection} />
       <Route component={NotFound} />
     </Switch>
@@ -159,6 +162,18 @@ function AuthenticatedApp() {
   
   // Enable swipe-right from left edge to go back
   useSwipeBack();
+
+  // Initialize push notifications once user is authenticated
+  useEffect(() => {
+    if (user) {
+      // Slight delay so we don't request permission the moment the app opens —
+      // user has had a chance to see the dashboard first
+      const t = setTimeout(() => {
+        initPushNotifications().catch((e) => console.warn("[Push] init failed:", e));
+      }, 3000);
+      return () => clearTimeout(t);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {

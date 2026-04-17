@@ -20,6 +20,7 @@ import {
   feedPosts,
   feedPostLikes,
   feedPostComments,
+  pushTokens,
   type User,
   type UpsertUser,
   type Team,
@@ -56,6 +57,9 @@ import {
   type FeedPost,
   type FeedPostLike,
   type FeedPostComment,
+  type PushToken,
+  type InsertPushToken,
+  type NotificationPrefs,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
@@ -214,6 +218,15 @@ export interface IStorage {
   addFeedPostComment(postId: string, userId: string, content: string): Promise<FeedPostComment>;
   getFeedPostComments(postId: string): Promise<(FeedPostComment & { user: User })[]>;
   deleteFeedPostComment(commentId: string, userId: string): Promise<void>;
+
+  // Push notification operations
+  upsertPushToken(userId: string, data: InsertPushToken): Promise<PushToken>;
+  deletePushTokenById(id: string): Promise<void>;
+  deletePushTokenByToken(userId: string, token: string): Promise<void>;
+  getUserPushTokens(userId: string): Promise<PushToken[]>;
+  updateNotificationPrefs(userId: string, prefs: NotificationPrefs): Promise<User>;
+  getUsersWithoutActivityOn(date: string): Promise<User[]>;
+  getActivityById(id: string): Promise<Activity | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1733,6 +1746,76 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFeedPostComment(commentId: string, userId: string): Promise<void> {
     await db.delete(feedPostComments).where(and(eq(feedPostComments.id, commentId), eq(feedPostComments.userId, userId)));
+  }
+
+  // ==================== Push notification operations ====================
+  async upsertPushToken(userId: string, data: InsertPushToken): Promise<PushToken> {
+    const [existing] = await db
+      .select()
+      .from(pushTokens)
+      .where(and(eq(pushTokens.userId, userId), eq(pushTokens.token, data.token)));
+
+    if (existing) {
+      const [updated] = await db
+        .update(pushTokens)
+        .set({
+          platform: data.platform,
+          webSubscription: data.webSubscription ?? existing.webSubscription,
+          lastSeenAt: new Date(),
+        })
+        .where(eq(pushTokens.id, existing.id))
+        .returning();
+      return updated;
+    }
+
+    const [created] = await db
+      .insert(pushTokens)
+      .values({ ...data, userId })
+      .returning();
+    return created;
+  }
+
+  async deletePushTokenById(id: string): Promise<void> {
+    await db.delete(pushTokens).where(eq(pushTokens.id, id));
+  }
+
+  async deletePushTokenByToken(userId: string, token: string): Promise<void> {
+    await db
+      .delete(pushTokens)
+      .where(and(eq(pushTokens.userId, userId), eq(pushTokens.token, token)));
+  }
+
+  async getUserPushTokens(userId: string): Promise<PushToken[]> {
+    return await db.select().from(pushTokens).where(eq(pushTokens.userId, userId));
+  }
+
+  async updateNotificationPrefs(userId: string, prefs: NotificationPrefs): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ notificationPrefs: prefs as any, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    if (!user) throw new Error("User not found");
+    return user;
+  }
+
+  async getUsersWithoutActivityOn(date: string): Promise<User[]> {
+    // Find all users who have NO activity row for the given date (or all rows are zero calories+steps)
+    const result = await db.execute(sql`
+      SELECT u.* FROM users u
+      WHERE NOT EXISTS (
+        SELECT 1 FROM activities a
+        WHERE a.user_id = u.id
+          AND a.date = ${date}::date
+          AND (a.calories > 0 OR a.steps > 0)
+      )
+    `);
+    return result.rows as unknown as User[];
+  }
+
+  async getActivityById(id: string): Promise<Activity | undefined> {
+    const [row] = await db.select().from(activities).where(eq(activities.id, id));
+    return row;
   }
 }
 

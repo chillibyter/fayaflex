@@ -90,6 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
+      // Best-effort: unregister this device's push token before clearing session
+      try {
+        const { disablePushNotifications } = await import("@/lib/pushNotifications");
+        await disablePushNotifications();
+      } catch {}
       await apiRequest("POST", "/api/logout");
       await clearAuthToken();
     },

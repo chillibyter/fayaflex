@@ -2,8 +2,18 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertTeamSchema, locations } from "@shared/schema";
+import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS } from "@shared/schema";
 import { z } from "zod";
+import {
+  getVapidPublicKey,
+  triggerTeamMessage,
+  triggerReaction,
+  triggerComment,
+  triggerDirectMessage,
+  triggerMonthlyWinner,
+  triggerRankChange,
+} from "./pushService";
+import { startPushCron } from "./pushCron";
 import { upload, compressAndSaveImage, compressAndSaveProfileImage, compressAndSaveFeedImage, cleanupOldEvidence } from "./imageUpload";
 import express from "express";
 import path from "path";
@@ -1591,9 +1601,22 @@ IMPORTANT RULES:
       });
 
       const user = await storage.getUser(winner.userId);
+      const winnerName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown';
+
+      // Fire-and-forget push to all team members
+      try {
+        const recipientIds = members.map(m => m.userId);
+        triggerMonthlyWinner({
+          teamId,
+          teamName: team.name,
+          winnerName,
+          recipientUserIds: recipientIds,
+        });
+      } catch (e) { console.error("[Push] monthly winner trigger failed:", e); }
+
       res.json({
         ...monthlyWinner,
-        userName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown',
+        userName: winnerName,
       });
     } catch (error: any) {
       console.error("Error calculating winner:", error);
@@ -1657,6 +1680,23 @@ IMPORTANT RULES:
       
       // Get user details for response
       const user = await storage.getUser(userId);
+
+      // Fire-and-forget push notification to other team members
+      try {
+        const team = await storage.getTeam(teamId);
+        const members = await storage.getTeamMembers(teamId);
+        const recipientIds = members.map(m => m.userId).filter(id => id !== userId);
+        if (team && recipientIds.length) {
+          const senderName = user ? (user.firstName || user.username) : "A teammate";
+          triggerTeamMessage({
+            teamId,
+            teamName: team.name,
+            senderName,
+            recipientUserIds: recipientIds,
+            preview: validatedData.content,
+          });
+        }
+      } catch (e) { console.error("[Push] team message trigger failed:", e); }
       
       res.json({
         ...message,
@@ -1784,6 +1824,21 @@ IMPORTANT RULES:
       });
 
       console.log(`[Reactions] Successfully added reaction:`, reaction);
+
+      // Fire-and-forget push to activity owner
+      try {
+        const activity = await storage.getActivityById(activityId);
+        if (activity && activity.userId !== userId) {
+          const reactor = await storage.getUser(userId);
+          triggerReaction({
+            ownerUserId: activity.userId,
+            reactorName: reactor ? (reactor.firstName || reactor.username) : "Someone",
+            reactionType: type,
+            activityId,
+          });
+        }
+      } catch (e) { console.error("[Push] reaction trigger failed:", e); }
+
       res.json(reaction);
     } catch (error: any) {
       console.error("[Reactions] Error adding reaction:", error);
@@ -1844,6 +1899,20 @@ IMPORTANT RULES:
 
       // Return comment with user info (without email)
       const user = await storage.getUser(userId);
+
+      // Fire-and-forget push to activity owner
+      try {
+        const activity = await storage.getActivityById(activityId);
+        if (activity && activity.userId !== userId) {
+          triggerComment({
+            ownerUserId: activity.userId,
+            commenterName: user ? (user.firstName || user.username) : "Someone",
+            preview: content.trim(),
+            activityId,
+          });
+        }
+      } catch (e) { console.error("[Push] comment trigger failed:", e); }
+
       res.json({ ...comment, user: sanitizeUserForDisplay(user, userId) });
     } catch (error: any) {
       console.error("Error adding comment:", error);
@@ -3851,6 +3920,18 @@ IMPORTANT RULES:
       }
       
       const message = await storage.sendMessage(senderId, recipientId, content.trim());
+
+      // Fire-and-forget push to recipient
+      try {
+        const sender = await storage.getUser(senderId);
+        triggerDirectMessage({
+          recipientUserId: recipientId,
+          senderId,
+          senderName: sender ? (sender.firstName || sender.username) : "A teammate",
+          preview: content.trim(),
+        });
+      } catch (e) { console.error("[Push] DM trigger failed:", e); }
+
       res.status(201).json(message);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -3859,6 +3940,94 @@ IMPORTANT RULES:
   });
 
   // ============ END MESSAGE ROUTES ============
+
+  // ============ PUSH NOTIFICATION ROUTES ============
+
+  // Public — frontend needs this to subscribe via Push API (web)
+  app.get("/api/push/vapid-public-key", (_req, res) => {
+    const key = getVapidPublicKey();
+    if (!key) return res.status(503).json({ message: "Web push not configured" });
+    res.json({ publicKey: key });
+  });
+
+  // Register or refresh a push token (called on app launch / after permission grant)
+  app.post("/api/push/register", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const schema = z.object({
+        token: z.string().min(1),
+        platform: z.enum(["ios", "android", "web"]),
+        webSubscription: z.any().optional(),
+      });
+      const data = schema.parse(req.body);
+      const saved = await storage.upsertPushToken(userId, data);
+      res.json({ success: true, id: saved.id });
+    } catch (err: any) {
+      console.error("[Push] register error:", err);
+      res.status(400).json({ message: err.message || "Failed to register push token" });
+    }
+  });
+
+  // Unregister a push token (e.g. on logout or when user disables notifications)
+  app.delete("/api/push/token", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const token = (req.query.token as string) || (req.body && req.body.token);
+      if (!token) return res.status(400).json({ message: "Token required" });
+      await storage.deletePushTokenByToken(userId, token);
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("[Push] unregister error:", err);
+      res.status(400).json({ message: err.message || "Failed to unregister token" });
+    }
+  });
+
+  // Get current notification preferences (returns defaults if user has none set)
+  app.get("/api/notifications/preferences", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      const prefs = (user?.notificationPrefs as any) || DEFAULT_NOTIFICATION_PREFS;
+      res.json({ ...DEFAULT_NOTIFICATION_PREFS, ...prefs });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed to load preferences" });
+    }
+  });
+
+  // Update notification preferences
+  app.patch("/api/notifications/preferences", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const data = notificationPrefsSchema.partial().parse(req.body);
+      const current = (await storage.getUser(userId))?.notificationPrefs as any || DEFAULT_NOTIFICATION_PREFS;
+      const merged = { ...DEFAULT_NOTIFICATION_PREFS, ...current, ...data };
+      await storage.updateNotificationPrefs(userId, merged);
+      res.json(merged);
+    } catch (err: any) {
+      console.error("[Push] update prefs error:", err);
+      res.status(400).json({ message: err.message || "Failed to update preferences" });
+    }
+  });
+
+  // Test push (handy for verifying setup) — sends a test notification to all the caller's devices
+  app.post("/api/push/test", isAuthenticated, async (req: any, res) => {
+    try {
+      const { sendPushToUser } = await import("./pushService");
+      await sendPushToUser(req.user.id, {
+        type: "dailyReminder",
+        title: "FayaFlex test notification",
+        body: "If you can read this, push notifications are working!",
+        url: "/",
+      });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Test failed" });
+    }
+  });
+
+  // Start the daily reminder cron job
+  startPushCron();
+
+  // ============ END PUSH NOTIFICATION ROUTES ============
 
   const httpServer = createServer(app);
   

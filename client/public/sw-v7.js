@@ -28,6 +28,42 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// ---------------- Push notification handlers ----------------
+self.addEventListener('push', (event) => {
+  let payload = { title: 'FayaFlex', body: 'You have a new notification', url: '/' };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch (e) {
+    if (event.data) payload.body = event.data.text();
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { url: payload.url || '/', ...(payload.data || {}) },
+      vibrate: [200, 100, 200],
+      tag: payload.tag || undefined,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+      for (const w of wins) {
+        if ('focus' in w) {
+          w.navigate ? w.navigate(targetUrl) : null;
+          return w.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(targetUrl);
+    })
+  );
+});
+
 // Network-first for EVERYTHING: always fetch fresh from server, cache only as
 // an offline fallback. This guarantees published updates are visible immediately
 // on web and in the Android/iOS WebView without requiring a native rebuild.
