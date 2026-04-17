@@ -248,7 +248,9 @@ export function triggerRankChange(opts: {
   oldRank: number;
   newRank: number;
 }) {
-  if (opts.newRank >= opts.oldRank) return; // only notify on losing position (rank number got bigger)
+  // Only notify when the user actually lost ground (rank number got bigger).
+  // newRank > oldRank means someone passed them (e.g. #2 -> #3).
+  if (opts.newRank <= opts.oldRank) return;
   void sendPushToUser(opts.userId, {
     type: "rankChange",
     title: "You've been overtaken!",

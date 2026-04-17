@@ -1783,6 +1783,45 @@ IMPORTANT RULES:
       console.log('[API] Calling storage.createActivity');
       const activity = await storage.createActivity(validatedData, userId);
       console.log('[API] Activity created:', activity.id);
+
+      // Fire-and-forget: recompute global monthly rank, notify if user was overtaken
+      (async () => {
+        try {
+          const now = new Date();
+          const month = now.getMonth() + 1;
+          const year = now.getFullYear();
+          const allActivities = await storage.getAllActivitiesForMonth(month, year);
+          // Aggregate calories per user (max per day to avoid double-counting)
+          const userCalories = new Map<string, Map<string, number>>();
+          for (const act of allActivities) {
+            if (!userCalories.has(act.userId)) userCalories.set(act.userId, new Map());
+            const dates = userCalories.get(act.userId)!;
+            dates.set(act.date, Math.max(dates.get(act.date) || 0, act.calories));
+          }
+          const ranked: { userId: string; total: number }[] = [];
+          for (const [uid, dates] of userCalories.entries()) {
+            let total = 0;
+            for (const c of dates.values()) total += c;
+            ranked.push({ userId: uid, total });
+          }
+          ranked.sort((a, b) => b.total - a.total);
+          const newRank = ranked.findIndex(u => u.userId === userId) + 1;
+          if (newRank > 0) {
+            const user = await storage.getUser(userId);
+            const oldRank = user?.lastKnownGlobalRank ?? 0;
+            if (oldRank > 0 && newRank > oldRank) {
+              triggerRankChange({ userId, oldRank, newRank });
+            }
+            // Always update the snapshot so we have a baseline for next time
+            if (oldRank !== newRank) {
+              await storage.updateUser(userId, { lastKnownGlobalRank: newRank });
+            }
+          }
+        } catch (e) {
+          console.error("[Push] rank-change check failed:", e);
+        }
+      })();
+
       res.json(activity);
     } catch (error: any) {
       console.error("Error creating activity:", error);
