@@ -1,0 +1,73 @@
+⚡️  TO JS {"headers":{"date":"Sat, 18 Apr 2026 20:36:53 GMT","x-cloud-trace-context":"091b224591a7f3a62495a1de6b6326eb","strict-transport-security":"max-age=63072000; includeSubDomains","content-type":"application\/json; charset=utf-8","server":"Google Frontend","vi
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  CapacitorHttp request 107726230
+⚡️  [log] - [API] POST https://fayaflex.com/api/push/test (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/push/test
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/push\/test","status":200,"headers":{"date":"Sat, 18 Apr 2026 20:36:59 GMT","x-cloud-trace-context":"f25e6e30115a9e532495a1de6b6325ee;o=1","strict-transport-security":"max-age=63072000; includeSubDomains","content-type":
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 107726231
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 107726232
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:37:30.803Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+[MADService] Client XPC connection invalidated
+⚡️  To Native ->  HealthKit isAvailable 107726233
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 107726234
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:38:30.801Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  HealthKit isAvailable 107726235
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:39:30.801Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 107726236
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  HealthKit isAvailable 107726237
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 107726238
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:40:30.803Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  HealthKit isAvailable 107726239
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 107726240
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:41:30.803Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [API] POST https://fayaflex.com/api/push/test (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/push/test
+⚡️  To Native ->  CapacitorHttp request 107726241
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/push\/test","headers":{"x-cloud-trace-context":"ec27cbc673fc1e3e37df64efe5cfc286;o=1","date":"Sat, 18 Apr 2026 20:42:08 GMT","strict-transport-security":"max-age=63072000; includeSubDomains","server":"Googl
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 107726242
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  To Native ->  HealthKit getHealthData 107726243
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:42:30.804Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet

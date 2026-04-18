@@ -4051,14 +4051,24 @@ IMPORTANT RULES:
   app.post("/api/push/test", isAuthenticated, async (req: any, res) => {
     try {
       const { sendPushToUser } = await import("./pushService");
+      const tokens = await storage.getUserPushTokens(req.user.id);
+      console.log(`[Push] /api/push/test for user=${req.user.id} tokenCount=${tokens.length} platforms=${tokens.map(t => t.platform).join(",")}`);
+      if (tokens.length === 0) {
+        return res.status(200).json({
+          success: false,
+          tokenCount: 0,
+          message: "No push tokens registered for this user. The device has not sent its APNs/FCM token to the server yet.",
+        });
+      }
       await sendPushToUser(req.user.id, {
         type: "dailyReminder",
         title: "FayaFlex test notification",
         body: "If you can read this, push notifications are working!",
         url: "/",
       });
-      res.json({ success: true });
+      res.json({ success: true, tokenCount: tokens.length, platforms: tokens.map(t => t.platform) });
     } catch (err: any) {
+      console.error("[Push] /api/push/test error:", err);
       res.status(500).json({ message: err.message || "Test failed" });
     }
   });
