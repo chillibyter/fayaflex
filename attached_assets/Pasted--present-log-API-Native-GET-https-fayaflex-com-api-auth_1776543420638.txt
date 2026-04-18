@@ -1,0 +1,112 @@
+: present
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 23435866
+⚡️  To Native ->  App addListener 23435867
+⚡️  To Native ->  CapacitorHttp request 23435868
+⚡️  To Native ->  SplashScreen hide 23435869
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"headers":{"cache-control":"private","etag":"W\/\"14aa8-sUTHS9dtyBJ9yBlAbD+MteVUsI4\"","x-powered-by":"Express","via":"1.1 google","server":"Google Frontend","set-cookie":"GAESA=CpwBMDA4YzE1ZmYwOGJjZjFkNjk3MDdjMWRiODQyMjM3ZDIxMmQ4ZDdlNTdhZjQzMTJmZjA3YjJiO
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/teams
+⚡️  To Native ->  CapacitorHttp request 23435870
+⚡️  To Native ->  App addListener 23435871
+⚡️  To Native ->  App removeListener 23435872
+⚡️  TO JS {"data":[{"totalSteps":396005,"id":"820e9c3e-36ad-4e9e-b5f3-161696745014","status":"active","name":"75 soft ","ownerId":"2d6f28be-5208-424a-be38-5dcfc2cbfe50","memberAvatars":[{"profileImageUrl":null,"id":"2d6f28be-5208-424a-be38-5dcfc2cbfe50","firstName":
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/town_8030233
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  To Native ->  CapacitorHttp request 23435873
+⚡️  To Native ->  CapacitorHttp request 23435874
+⚡️  To Native ->  CapacitorHttp request 23435875
+⚡️  To Native ->  CapacitorHttp request 23435876
+⚡️  To Native ->  CapacitorHttp request 23435877
+⚡️  To Native ->  CapacitorHttp request 23435878
+⚡️  To Native ->  CapacitorHttp request 23435879
+⚡️  To Native ->  CapacitorHttp request 23435880
+⚡️  To Native ->  CapacitorHttp request 23435881
+WebContent[6404] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[6404] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/notifications","status":200,"headers":{"content-length":"2","etag":"W\/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\"","x-cloud-trace-context":"347460cb50528800bc90d9f4a3258181","server":"Google Frontend","alt-svc":"h3=\":443\"; ma=
+⚡️  TO JS {"status":200,"headers":{"content-length":"114","etag":"W\/\"72-v7sznRRupx5Kyr++FacGXAj10ek\"","date":"Sat, 18 Apr 2026 20:15:42 GMT","server":"Google Frontend","x-cloud-trace-context":"4e939dc94d4c3404bc90d9f4a3258f11","alt-svc":"h3=\":443\"; ma=2592000,h
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [FullSync] Within cooldown, skipping
+⚡️  To Native ->  HealthKit isAvailable 23435882
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 23435883
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:15:42.679Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"headers":{"content-length":"286","etag":"W\/\"11e-b72R5DEm31AyResKcmbXyuTbykI\"","date":"Sat, 18 Apr 2026 20:15:42 GMT","server":"Google Frontend","x-cloud-trace-context":"0bccc5e50ffd69fabc90d9f4a3258e75","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"content-length":"103","etag":"W\/\"67-9wp\/WZ5mPxQhoWzD6wAiWB8\/GbQ\"","x-cloud-trace-context":"430ca7623f91025ebc90d9f4a325890c","server":"Google Frontend","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sat, 18 Apr 202
+⚡️  TO JS {"headers":{"content-length":"53652","etag":"W\/\"d194-otOnS6bLJU4kACIG1QL0AE\/TiPA\"","date":"Sat, 18 Apr 2026 20:15:42 GMT","server":"Google Frontend","x-cloud-trace-context":"6d626ec615e8fd39bc90d9f4a3258133","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"content-length":"20","etag":"W\/\"14-Wch7iYZeEKyWFEciwo84C0RboW8\"","date":"Sat, 18 Apr 2026 20:15:42 GMT","server":"Google Frontend","x-cloud-trace-context":"ff99c82decbe4907bc90d9f4a32588be","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\";
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"content-length":"632","etag":"W\/\"278-WhBbTfEQoYCKEqrD5pbKKfxgnhk\"","date":"Sat, 18 Apr 2026 20:15:42 GMT","server":"Google Frontend","x-cloud-trace-context":"8f9392350f0d6224bc90d9f4a325895a","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"content-length":"261","etag":"W\/\"105-SaO5IvlCZs+DDA2\/oAzCpxHQyzs\"","date":"Sat, 18 Apr 2026 20:15:43 GMT","server":"Google Frontend","x-cloud-trace-context":"361e60c97b58a73dbc90d9f4a32580e5","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  PushNotifications checkPermissions 23435884
+⚡️  TO JS {"receive":"granted"}
+⚡️  To Native ->  PushNotifications addListener 23435885
+⚡️  To Native ->  PushNotifications addListener 23435886
+⚡️  To Native ->  PushNotifications addListener 23435887
+⚡️  To Native ->  PushNotifications register 23435888
+⚡️  TO JS undefined
+⚡️  TO JS {"headers":{"content-length":"1224","etag":"W\/\"4c8-Vv8MlRIie41mnJY1e+jY8SI1hIs\"","date":"Sat, 18 Apr 2026 20:15:45 GMT","server":"Google Frontend","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-cloud-trace-context":"2237e9155b08e84fbc
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  CapacitorHttp request 23435889
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/region_za_gauteng (native: true)
+⚡️  To Native ->  CapacitorHttp request 23435890
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/region_za_gauteng
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/region_za_gauteng","headers":{"content-length":"112","etag":"W\/\"70-6X20ugmZphKJBI61rQIKbOjRYuA\"","date":"Sat, 18 Apr 2026 20:15:47 GMT","server":"Google Frontend","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"data":{"rank":1,"total":2},"headers":{"content-length":"20","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","date":"Sat, 18 Apr 2026 20:15:47 GMT","server":"Google Frontend","x-cloud-trace-context":"074ddd3ba45f9b67bc90d9f4a3258d92","alt-svc
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/country_za (native: true)
+⚡️  To Native ->  CapacitorHttp request 23435891
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/country_za
+⚡️  To Native ->  CapacitorHttp request 23435892
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/locations\/country_za","data":{"name":"South Africa","type":"country","id":"country_za","parentId":"continent_af","sortOrder":0,"isoCode":null},"headers":{"content-length":"113","etag":"W\/\"71-Qu7L4RZlA\/H
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=country&locationId=country_za","data":{"rank":1,"total":2},"headers":{"content-length":"20","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","date":"Sat, 18 Apr
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/continent_af (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/continent_af
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af
+⚡️  To Native ->  CapacitorHttp request 23435893
+⚡️  To Native ->  CapacitorHttp request 23435894
+⚡️  TO JS {"data":{"name":"Africa","type":"continent","id":"continent_af","sortOrder":0,"isoCode":null,"parentId":null},"status":200,"url":"https:\/\/fayaflex.com\/api\/locations\/continent_af","headers":{"content-length":"101","etag":"W\/\"65-bmVng13ztcKUMiCgAZ9fVE
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"rank":1,"total":2},"status":200,"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=continent&locationId=continent_af","headers":{"content-length":"20","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","date":"Sat, 18
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026 (native: true)
+⚡️  To Native ->  CapacitorHttp request 23435895
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026
+⚡️  TO JS {"data":{"rank":1,"total":14},"status":200,"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026","headers":{"content-length":"21","etag":"W\/\"15-bbes62aQL3bqMN19s1vkokEL2Gc\"","date":"Sat, 18 Apr 2026 20:16:02 GMT","server":"Google
+⚡️  [log] - [API] Native response: 200
