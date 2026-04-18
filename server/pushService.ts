@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import admin from "firebase-admin";
+import apn from "@parse/node-apn";
 import { storage } from "./storage";
 import { DEFAULT_NOTIFICATION_PREFS, type NotificationPrefs } from "@shared/schema";
 
@@ -7,7 +8,11 @@ type NotificationType = keyof NotificationPrefs;
 
 let webPushReady = false;
 let firebaseReady = false;
+let apnsProvider: apn.Provider | null = null;
+let apnsBundleId: string | null = null;
 let vapidPublicKey: string | null = null;
+
+const APNS_TOKEN_REGEX = /^[0-9a-fA-F]{64}$/;
 
 // ---------------- Init Web Push ----------------
 function initWebPush() {
@@ -60,8 +65,38 @@ function initFirebase() {
   }
 }
 
+// ---------------- Init APNs (direct, no Firebase) ----------------
+function initApns() {
+  const key = process.env.APNS_KEY;
+  const keyId = process.env.APNS_KEY_ID;
+  const teamId = process.env.APNS_TEAM_ID;
+  const bundleId = process.env.APNS_BUNDLE_ID || "com.fayaflex.app";
+  const production = (process.env.APNS_PRODUCTION ?? "true") !== "false";
+
+  if (!key || !keyId || !teamId) {
+    console.log("[Push] APNS_KEY / APNS_KEY_ID / APNS_TEAM_ID not all set — direct APNs disabled");
+    return;
+  }
+
+  try {
+    apnsProvider = new apn.Provider({
+      token: {
+        key: key.replace(/\\n/g, "\n"),
+        keyId,
+        teamId,
+      },
+      production,
+    });
+    apnsBundleId = bundleId;
+    console.log(`[Push] APNs (direct) initialized (bundle=${bundleId}, production=${production})`);
+  } catch (e: any) {
+    console.error("[Push] Failed to initialize APNs:", e.message);
+  }
+}
+
 initWebPush();
 initFirebase();
+initApns();
 
 export function getVapidPublicKey(): string | null {
   return vapidPublicKey;
@@ -120,8 +155,39 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
           data: payload.data || {},
         })
       );
+    } else if (t.platform === "ios" && APNS_TOKEN_REGEX.test(t.token)) {
+      // Raw APNs token (64 hex chars from @capacitor/push-notifications) — send via APNs directly
+      if (!apnsProvider || !apnsBundleId) {
+        console.warn("[Push] APNs not initialized — cannot send to iOS device");
+        return;
+      }
+      const note = new apn.Notification();
+      note.topic = apnsBundleId;
+      note.alert = { title: payload.title, body: payload.body };
+      note.sound = "default";
+      note.badge = 1;
+      note.payload = {
+        url: payload.url || "/",
+        type: payload.type,
+        ...(payload.data || {}),
+      };
+      const result = await apnsProvider.send(note, t.token);
+      if (result.failed.length > 0) {
+        const failure = result.failed[0];
+        const reason = failure.response?.reason || failure.error?.message || "unknown";
+        const status = failure.status;
+        const isDead = reason === "BadDeviceToken" || reason === "Unregistered" || reason === "DeviceTokenNotForTopic";
+        if (isDead) {
+          await storage.deletePushTokenById(t.id);
+          console.log(`[Push] Pruned dead APNs token ${t.id} (reason=${reason})`);
+        } else {
+          console.warn(`[Push] APNs send failed (status=${status}, reason=${reason})`);
+        }
+      } else {
+        console.log(`[Push] APNs sent OK to ${t.token.slice(0, 8)}…`);
+      }
     } else {
-      // ios / android
+      // FCM token (android, or future iOS via Firebase SDK)
       if (!firebaseReady) return;
       await admin.messaging().send({
         token: t.token,
