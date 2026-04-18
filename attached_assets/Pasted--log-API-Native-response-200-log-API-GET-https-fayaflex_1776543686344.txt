@@ -1,0 +1,104 @@
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/continent_af (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/continent_af
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af
+⚡️  To Native ->  CapacitorHttp request 23435893
+⚡️  To Native ->  CapacitorHttp request 23435894
+⚡️  TO JS {"data":{"name":"Africa","type":"continent","id":"continent_af","sortOrder":0,"isoCode":null,"parentId":null},"status":200,"url":"https:\/\/fayaflex.com\/api\/locations\/continent_af","headers":{"content-length":"101","etag":"W\/\"65-bmVng13ztcKUMiCgAZ9fVE
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"rank":1,"total":2},"status":200,"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=continent&locationId=continent_af","headers":{"content-length":"20","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","date":"Sat, 18
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026 (native: true)
+⚡️  To Native ->  CapacitorHttp request 23435895
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026
+⚡️  TO JS {"data":{"rank":1,"total":14},"status":200,"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026","headers":{"content-length":"21","etag":"W\/\"15-bbes62aQL3bqMN19s1vkokEL2Gc\"","date":"Sat, 18 Apr 2026 20:16:02 GMT","server":"Google
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 23435896
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:16:42.698Z
+⚡️  To Native ->  ⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+HealthKit getHealthData 23435897
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  HealthKit isAvailable 23435898
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:17:42.699Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 23435899
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  HealthKit isAvailable 23435900
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:18:42.701Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 23435901
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  CapacitorHttp request 23435902
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges
+⚡️  To Native ->  CapacitorHttp request 23435903
+⚡️  To Native ->  CapacitorHttp request 23435904
+⚡️  To Native ->  CapacitorHttp request 23435905
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges/check
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/profile/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/challenges
+⚡️  TO JS {"data":[{"userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","badgeType":"workouts_10","earnedAt":"2025-12-31T19:49:45.749Z","metadata":{"workouts":17},"id":"1fa881cf-4df5-45bd-9731-e4f4e79c6d55"},{"userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","badgeType":"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/profile\/stats","headers":{"server":"Google Frontend","etag":"W\/\"53-CIt8RFWO\/S\/KcoWCx57KQNjLGG0\"","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/badges\/check","data":{"totalBadges":7,"newBadges":[]},"headers":{"server":"Google Frontend","etag":"W\/\"20-TMxloFFEhNXlrT8SdH+atYAcIaE\"","x-powered-by":"Express","content-type":"application\/json; charse
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/challenges","headers":{"server":"Google Frontend","x-powered-by":"Express","etag":"W\/\"29ae2-AqI1w3o5ezsCSEivuAc106dk3TE\"","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":
+⚡️  [log] - [API] Native response: 200
+⚡️  [warn] - Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications/preferences
+⚡️  To Native ->  CapacitorHttp request 23435906
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/notifications\/preferences","status":200,"headers":{"server":"Google Frontend","etag":"W\/\"84-CUxwm5eIEj98HOhSTDQXUQ3uO7I\"","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":4
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  PushNotifications checkPermissions 23435907
+⚡️  TO JS {"receive":"granted"}
+⚡️  To Native ->  PushNotifications addListener 23435908
+⚡️  To Native ->  PushNotifications addListener 23435909
+⚡️  To Native ->  PushNotifications addListener 23435910
+⚡️  To Native ->  PushNotifications register 23435911
+⚡️  TO JS undefined
+⚡️  To Native ->  CapacitorHttp request 23435912
+⚡️  [log] - [API] POST https://fayaflex.com/api/push/test (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/push/test
+⚡️  TO JS {"headers":{"server":"Google Frontend","etag":"W\/\"10-oV4hJxRVSENxc\/wX8+mA4\/Pe4tA\"","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","content-length":"16","x-cloud
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 23435913
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:19:42.700Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 23435914
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [API] POST https://fayaflex.com/api/push/test (native: true)
+⚡️  To Native ->  CapacitorHttp request 23435915
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/push/test
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/push\/test","status":200,"headers":{"server":"Google Frontend","etag":"W\/\"10-oV4hJxRVSENxc\/wX8+mA4\/Pe4tA\"","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=25920
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 23435916
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 23435917
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T20:20:42.701Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
