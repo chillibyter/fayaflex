@@ -1,0 +1,121 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/8980C9C9-7136-483C-86BE-3BC25F159C9A/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at https://fayaflex.com...
+WebContent[5892] Unable to hide query parameters from script (missing data)
+⚡️  To Native ->  Preferences get 110691881
+⚡️  TO JS {"value":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkYWVlZmEzYS04ZmFlLTQ2ZDEtYWVhNy1hZjYwOWU1YjI3YmQiLCJpYXQiOjE3NzY1MzcyNDgsImV4cCI6MTc3OTEyOTI0OH0.dEIqdMCQq41ZKT8VITx5wEmJrUSjKcpNYuScTEoFAes"}
+⚡️  [log] - [Auth] Token initialized: present
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 110691882
+⚡️  To Native ->  App addListener 110691883
+⚡️  To Native ->  CapacitorHttp request 110691884
+⚡️  To Native ->  SplashScreen hide 110691885
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"headers":{"set-cookie":"GAESA=CpwBMDA4YzE1ZmYwOGUzMTdlZmQ1MzcyYzkzMWZiZDljYWM3ZDEwMzM2MDY4ODBlYTI3NzI1YWM2ZjI4NmIyMDc1MTFkNjFkMjU0MDczNDBjMDkwNDU4NjYzYjdiMDJlMjY4ZjdhOTRkNzZiYmU3Y2Y2OTBhYTZhNTkyZjM2ZDJjYjY4YTAwZDg1MjUxNTY0ZGI5OTYyMDc4MmMyZGYxEIOMvY_aMw; 
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/teams
+⚡️  To Native ->  CapacitorHttp request 110691886
+⚡️  To Native ->  App addListener 110691887
+⚡️  To Native ->  App removeListener 110691888
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/teams","data":[{"totalWorkouts":0,"totalCalories":25287,"id":"820e9c3e-36ad-4e9e-b5f3-161696745014","memberCount":4,"rank":4,"totalSteps":397738,"status":"active","name":"75 soft ","createdAt":"2026-01-01T19:10:58.448Z"
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/town_8030233
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  To Native ->  CapacitorHttp request 110691889
+⚡️  To Native ->  CapacitorHttp request 110691890
+⚡️  To Native ->  CapacitorHttp request 110691891
+⚡️  To Native ->  CapacitorHttp request 110691892
+⚡️  To Native ->  CapacitorHttp request 110691893
+⚡️  To Native ->  CapacitorHttp request 110691894
+⚡️  To Native ->  CapacitorHttp request 110691895
+⚡️  To Native ->  CapacitorHttp request 110691896
+⚡️  To Native ->  CapacitorHttp request 110691897
+WebContent[5892] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[5892] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/notifications","data":[],"status":200,"headers":{"etag":"W\/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\"","server":"Google Frontend","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/activities","data":[{"source":"apple_health","userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","createdAt":"2026-04-18T08:58:43.402Z","attachmentUrl":null,"id":"c08ff29a-b21d-4450-b939-ea84220eadfb","calories":1624,"worko
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/goals\/suggested","data":{"activityDescription":"Very Active","averages":{"calories":913,"steps":11383,"workoutsPerWeek":7},"activityLevel":"active","todayProgress":{"calories":1624,"steps":23160,"hasWorkout":true},"sug
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=town&locationId=town_8030233","data":{"total":1,"rank":1},"status":200,"headers":{"etag":"W\/\"14-Wch7iYZeEKyWFEciwo84C0RboW8\"","server":"Google Frontend","content-type":"
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/town_8030233","data":{"isoCode":null,"parentId":"region_za_gauteng","id":"town_8030233","type":"town","sortOrder":0,"name":"Midstream"},"status":200,"headers":{"etag":"W\/\"72-v7sznRRupx5Kyr++FacGXAj10ek\"","
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/devices","headers":{"etag":"W\/\"278-WhBbTfEQoYCKEqrD5pbKKfxgnhk\"","server":"Google Frontend","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/progress\/chart","data":[{"date":"Week 3","calories":3964},{"date":"Week 2","calories":6876},{"date":"Week 1","calories":7903}],"status":200,"headers":{"etag":"W\/\"67-9wp\/WZ5mPxQhoWzD6wAiWB8\/GbQ\"","server":"Google F
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [FullSync] Within cooldown, skipping
+⚡️  To Native ->  HealthKit isAvailable 110691898
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 110691899
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T18:51:48.232Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","data":{"personalBests":{"daily_calories":1926,"daily_steps":25922,"daily_score":27658},"caloriesTrend":-45,"rank":1,"workouts":18,"percentile":8,"totalActiveUsers":13,"stepsTrend":-21,"steps":220312,"
+⚡️  [log] - [API] Native response: 200
+⚡️  [warn] - [Push] initNativePush failed: {"code":"UNIMPLEMENTED"}
+⚡️  TO JS {"status":200,"headers":{"content-type":"application\/json; charset=utf-8","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"49d-3iwhPbIXM3g\/1s62qyG3sQMCmSw\"","strict-transport-security":"max-age=6307200
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/region_za_gauteng (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/region_za_gauteng
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng
+⚡️  To Native ->  CapacitorHttp request 110691900
+⚡️  To Native ->  CapacitorHttp request 110691901
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/region_za_gauteng","data":{"isoCode":null,"parentId":"country_za","id":"region_za_gauteng","type":"region","sortOrder":0,"name":"Gauteng"},"status":200,"headers":{"content-type":"application\/json; charset=ut
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"headers":{"content-type":"application\/json; charset=utf-8","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","strict-transport-security":"max-age=63072000
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/country_za (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/country_za
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za (native: true)
+⚡️  To Native ->  CapacitorHttp request 110691902
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za
+⚡️  To Native ->  CapacitorHttp request 110691903
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/country_za","headers":{"content-type":"application\/json; charset=utf-8","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"71-Qu7L4RZlA\/HdWo2zAUYp9kABbEs\""
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=country&locationId=country_za","headers":{"content-type":"application\/json; charset=utf-8","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/continent_af (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/continent_af
+⚡️  To Native ->  CapacitorHttp request 110691904
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af (native: true)
+⚡️  To Native ->  ⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af
+CapacitorHttp request 110691905
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/continent_af","headers":{"content-type":"application\/json; charset=utf-8","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"65-bmVng13ztcKUMiCgAZ9fVEX+L1w\"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=continent&locationId=continent_af","headers":{"content-type":"application\/json; charset=utf-8","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; 
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026 (native: true)
+⚡️  To Native ->  CapacitorHttp request 110691906
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026","headers":{"content-type":"application\/json; charset=utf-8","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"15-bbes62aQL3bq
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 110691907
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T18:52:48.244Z
+⚡️  To Native ->  ⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+HealthKit getHealthData 110691908
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
