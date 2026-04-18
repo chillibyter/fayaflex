@@ -1,0 +1,252 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/D4D8073A-CFD4-4663-8410-9E84F78C7166/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at https://fayaflex.com...
+Networking process (0x111070100) took 1.007001 seconds to launch
+WebContent[5499] Unable to hide query parameters from script (missing data)
+⚡️  WebView loaded
+⚡️  To Native ->  Preferences get 130202903
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 130202904
+⚡️  To Native ->  App addListener 130202905
+⚡️  To Native ->  CapacitorHttp request 130202906
+⚡️  To Native ->  SplashScreen hide 130202907
+⚡️  TO JS undefined
+⚡️  TO JS {"status":401,"headers":{"content-length":"31","set-cookie":"GAESA=CpwBMDA4YzE1ZmYwOGUzMTdlZmQ1MzcyYzkzMWZiZDljYWM3ZDEwMzM2MDY4ODBlYTI3NzI1YWM2ZjI4NmIyMDc1MTFkNjFkMjU0MDczNDBjMDkwNDU4NjYzYjdiMDJlMjY4ZjdhOTRkNzZiYmU3Y2Y2OTBhYTZhNTkyZjM2ZDJjYjY4YTAwZDg1MjUxN
+⚡️  [log] - [API] Native response: 401
+WebContent[5499] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  Preferences get 124502487
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  To Native ->  App addListener 124502488
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 124502489
+⚡️  To Native ->  CapacitorHttp request 124502490
+⚡️  To Native ->  SplashScreen hide 124502491
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","content-length":"31","x-powered-by":"Express","server":"Google Frontend","via":"1.1 google","x-cloud-trace-context":"75d366d185bcc
+⚡️  [log] - [API] Native response: 401
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Reporter disconnected. { function=sendMessage, reporterID=23557895618561 }
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+(
+    "<NSLayoutConstraint:0x1221c5860 _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x122122a00.width == _UIButtonBarButton:0x12203d180.width   (active)>",
+    "<NSLayoutConstraint:0x1221c59a0 'IB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x122125c00]   (active, names: '|':_UIButtonBarButton:0x12203d180 )>",
+    "<NSLayoutConstraint:0x1221c59f0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x122125c00]-(8)-|   (active, names: '|':_UIButtonBarButton:0x12203d180 )>",
+    "<NSLayoutConstraint:0x1221c5f40 'UIView-Encapsulated-Layout-Width' _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x122122a00.width == 0   (active)>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x1221c59f0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x122125c00]-(8)-|   (active, names: '|':_UIButtonBarButton:0x12203d180 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+(
+    "<NSLayoutConstraint:0x1221c63a0 _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x122122e00.width == _UIButtonBarButton:0x12203d680.width   (active)>",
+    "<NSLayoutConstraint:0x1221c64e0 'IB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x122125f80]   (active, names: '|':_UIButtonBarButton:0x12203d680 )>",
+    "<NSLayoutConstraint:0x1221c6530 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x122125f80]-(8)-|   (active, names: '|':_UIButtonBarButton:0x12203d680 )>",
+    "<NSLayoutConstraint:0x1221c69e0 'UIView-Encapsulated-Layout-Width' _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x122122e00.width == 0   (active)>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x1221c6530 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x122125f80]-(8)-|   (active, names: '|':_UIButtonBarButton:0x12203d680 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+(
+    "<NSLayoutConstraint:0x1221c6df0 _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x122123200.width == _UIButtonBarButton:0x12203db80.width   (active)>",
+    "<NSLayoutConstraint:0x1221c6ee0 'IB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x122126300]   (active, names: '|':_UIButtonBarButton:0x12203db80 )>",
+    "<NSLayoutConstraint:0x1221c6f30 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x122126300]-(8)-|   (active, names: '|':_UIButtonBarButton:0x12203db80 )>",
+    "<NSLayoutConstraint:0x1221c73e0 'UIView-Encapsulated-Layout-Width' _TtC5UIKitP33_DDE14AA6B49FCAFC5A54255A118E1D8713ButtonWrapper:0x122123200.width == 0   (active)>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x1221c6f30 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x122126300]-(8)-|   (active, names: '|':_UIButtonBarButton:0x12203db80 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 917E9EEE-F164-4BF5-A627-B7C1E1D58561
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 917E9EEE-F164-4BF5-A627-B7C1E1D58561
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+The variant selector cell index number could not be found.
+⚡️  To Native ->  CapacitorHttp request 124502492
+⚡️  [log] - [API] POST https://fayaflex.com/api/login (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/login
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/login","headers":{"cache-control":"private","date":"Sat, 18 Apr 2026 18:22:33 GMT","expires":"Sat, 18 Apr 2026 18:22:33 GMT","x-cloud-trace-context":"116f0ab71775fa69bf0237efc3642694;o=1","server":"Google Frontend","str
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  Preferences set 124502493
+⚡️  TO JS undefined
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/teams
+⚡️  To Native ->  CapacitorHttp request 124502494
+⚡️  To Native ->  App addListener 124502495
+⚡️  To Native ->  App removeListener 124502496
+⚡️  To Native ->  HealthKit isAvailable 124502497
+⚡️  [log] - [FullSync] Starting 7-day health sync...
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  To Native ->  HealthKit getHealthData 124502498
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-11T18:22:36.345Z to 2026-04-18T18:22:36.345Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  To Native ->  HealthKit isAvailable 124502499
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [FullSync] No health data
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 124502500
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T18:22:36.370Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"headers":{"date":"Sat, 18 Apr 2026 18:22:35 GMT","x-cloud-trace-context":"9d39e2cb9fc61f97bf0237efc3642a10","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","via":"1.1 google","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; m
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/town_8030233
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  To Native ->  CapacitorHttp request 124502501
+⚡️  To Native ->  CapacitorHttp request 124502502
+⚡️  To Native ->  CapacitorHttp request 124502503
+⚡️  To Native ->  CapacitorHttp request 124502504
+WebContent[5499] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  To Native ->  CapacitorHttp request 124502505
+⚡️  To Native ->  CapacitorHttp request 124502506
+⚡️  To Native ->  CapacitorHttp request 124502507
+⚡️  To Native ->  CapacitorHttp request 124502508
+⚡️  To Native ->  CapacitorHttp request 124502509
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/locations\/town_8030233","data":{"type":"town","isoCode":null,"parentId":"region_za_gauteng","sortOrder":0,"id":"town_8030233","name":"Midstream"},"headers":{"content-length":"114","server":"Google Frontend
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/devices","data":[{"refreshToken":null,"lastSyncAt":"2026-04-18T17:44:57.861Z","provider":"apple_health","accessToken":null,"createdAt":"2025-12-31T19:47:30.798Z","userId":"daeefa3a-8fae-46d1-aea7-af609e5b27
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/activities","status":200,"data":[{"source":"apple_health","calories":1624,"attachmentUrl":null,"steps":23160,"workoutType":"Health Sync (1 workout)","userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","createdAt":"2026-04-1
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/goals\/suggested","data":{"activityLevel":"active","daysAnalyzed":30,"suggestedGoals":{"dailyCalories":1050,"weeklyWorkouts":7,"dailySteps":13000},"activityDescription":"Very Active","todayProgress":{"hasWo
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=town&locationId=town_8030233","status":200,"data":{"total":1,"rank":1},"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=630
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/progress\/chart","data":[{"date":"Week 3","calories":3964},{"date":"Week 2","calories":6876},{"date":"Week 1","calories":7903}],"headers":{"content-type":"application\/json; charset=utf-8","strict-transport
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/notifications","status":200,"data":[],"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:37 GMT","x-cloud-trace-
+⚡️  [log] - [API] Native response: 200
+⚡️  [warn] - [Push] initNativePush failed: {"code":"UNIMPLEMENTED"}
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:38 GMT","x-cloud-trace-context":"35aa97a4662e9ec4bf0237efc3642746","x-powered-by":"Express","etag
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/region_za_gauteng (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/region_za_gauteng
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng (native: true)
+⚡️  To Native ->  CapacitorHttp request 124502510
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng
+⚡️  To Native ->  CapacitorHttp request 124502511
+⚡️  TO JS {"headers":{"server":"Google Frontend","via":"1.1 google","date":"Sat, 18 Apr 2026 18:22:41 GMT","x-cloud-trace-context":"ea525a308b0c7a0994e9db57a694dd7a","strict-transport-security":"max-age=63072000; includeSubDomains","x-powered-by":"Express","content-
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"server":"Google Frontend","date":"Sat, 18 Apr 2026 18:22:42 GMT","via":"1.1 google","x-cloud-trace-context":"1c46c18548807fff94e9db57a694dcf9","strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"server":"Google Frontend","date":"Sat, 18 Apr 2026 18:22:42 GMT","via":"1.1 google","x-cloud-trace-context":"8bab2494471a59e0bf0237efc364269d","strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/country_za (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/country_za
+⚡️  To Native ->  CapacitorHttp request 124502512
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za (native: true)
+⚡️  To Native ->  CapacitorHttp request 124502513
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:46 GMT","x-cloud-trace-context":"323480da74e3f10394e9db57a694d16a;o=1","x-powered-by":"Express","
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:47 GMT","x-cloud-trace-context":"55523e717cf677a494e9db57a694d0e9","x-powered-by":"Express","etag
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/feed (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/feed
+⚡️  To Native ->  CapacitorHttp request 124502514
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:48 GMT","x-cloud-trace-context":"9eebcfa8ad4710fa94e9db57a694d3d1","x-powered-by":"Express","etag
+⚡️  [log] - [API] Native response: 200
+WebContent[5499] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[5499] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[5499] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[5499] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+<0x110284900> Home affordance gate timed out.
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/garmin/status
+⚡️  To Native ->  CapacitorHttp request 124502515
+⚡️  To Native ->  HealthKit isAvailable 124502516
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:53 GMT","x-cloud-trace-context":"26a58dbbe4de09ce94e9db57a694d47c","etag":"W\/\"11-n3JXNj2BI6Xcra
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges/check
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/profile/stats
+⚡️  To Native ->  CapacitorHttp request 124502517
+⚡️  To Native ->  CapacitorHttp request 124502518
+⚡️  To Native ->  CapacitorHttp request 124502519
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/challenges
+⚡️  To Native ->  CapacitorHttp request 124502520
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/badges","status":200,"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:54 GMT","x-cloud-trace-context":"decea06
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/profile\/stats","status":200,"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:55 GMT","x-cloud-trace-context":
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/badges\/check","status":200,"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:55 GMT","x-cloud-trace-context":"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/challenges","status":200,"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:22:54 GMT","x-cloud-trace-context":"459
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  To Native ->  CapacitorHttp request 124502521
+⚡️  To Native ->  CapacitorHttp request 124502522
+⚡️  To Native ->  CapacitorHttp request 124502523
+⚡️  TO JS {"headers":{"content-type":"application\/json; charset=utf-8","strict-transport-security":"max-age=63072000; includeSubDomains","date":"Sat, 18 Apr 2026 18:23:01 GMT","x-cloud-trace-context":"09ac64de8bf4efc63313de79afc0fb80","etag":"W\/\"d194-otOnS6bLJU4k
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"server":"Google Frontend","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-cloud-trace-context":"d8dadb4d5f1a55513313de79afc0f45f","date":"Sat, 18 Apr 
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"server":"Google Frontend","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-cloud-trace-context":"823fafe7f92e59af3313de79afc0f754","date":"Sat, 18 Apr 
+⚡️  [log] - [API] Native response: 200
