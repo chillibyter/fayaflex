@@ -1,0 +1,261 @@
+⚡️  To Native ->  CapacitorHttp request 2071005
+⚡️  [log] - [API] POST https://fayaflex.com/api/login (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/login
+⚡️  TO JS {"status":200,"headers":{"cache-control":"private","etag":"W\/\"14b73-VGdMc7t14dyZhhhHX8qUsF+Slro\"","strict-transport-security":"max-age=63072000; includeSubDomains","via":"1.1 google","content-type":"application\/json; charset=utf-8","x-powered-by":"Expr
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  Preferences set 2071006
+⚡️  TO JS undefined
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/teams
+⚡️  To Native ->  CapacitorHttp request 2071007
+⚡️  To Native ->  App addListener 2071008
+⚡️  To Native ->  App removeListener 2071009
+⚡️  [log] - [FullSync] Starting 7-day health sync...
+⚡️  To Native ->  HealthKit isAvailable 2071010
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-11T18:57:33.987Z to 2026-04-18T18:57:33.987Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 2071011
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [FullSync] No health data
+⚡️  To Native ->  HealthKit isAvailable 2071012
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  To Native ->  HealthKit getHealthData 2071013
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T18:57:34.012Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/teams","headers":{"content-length":"496816","via":"1.1 google","etag":"W\/\"794b0-fkLopaQqPTIjsZKcShcS2rn\/yu8\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sat, 18 Apr 2026 18:57:33 GMT","st
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/town_8030233
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  To Native ->  CapacitorHttp request 2071014
+⚡️  To Native ->  CapacitorHttp request 2071015
+⚡️  To Native ->  CapacitorHttp request 2071016
+⚡️  To Native ->  CapacitorHttp request 2071017
+WebContent[5978] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  To Native ->  CapacitorHttp request 2071018
+⚡️  To Native ->  CapacitorHttp request 2071019
+⚡️  To Native ->  CapacitorHttp request 2071020
+⚡️  To Native ->  CapacitorHttp request 2071021
+⚡️  To Native ->  CapacitorHttp request 2071022
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/activities","headers":{"content-length":"53652","via":"1.1 google","etag":"W\/\"d194-otOnS6bLJU4kACIG1QL0AE\/TiPA\"","date":"Sat, 18 Apr 2026 18:57:34 GMT","strict-transport-security":"max-age=63072000; includeSubDomain
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/devices","headers":{"content-length":"632","via":"1.1 google","etag":"W\/\"278-WhBbTfEQoYCKEqrD5pbKKfxgnhk\"","date":"Sat, 18 Apr 2026 18:57:34 GMT","strict-transport-security":"max-age=63072000; includeSubDomains","alt
+⚡️  TO JS {"status":200,"headers":{"content-length":"114","via":"1.1 google","etag":"W\/\"72-v7sznRRupx5Kyr++FacGXAj10ek\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sat, 18 Apr 2026 18:57:34 GMT","strict-transport-security":"max-age=630
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"headers":{"content-length":"2","via":"1.1 google","etag":"W\/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\"","date":"Sat, 18 Apr 2026 18:57:34 GMT","strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000,h3-29
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/goals\/suggested","headers":{"content-length":"286","via":"1.1 google","etag":"W\/\"11e-b72R5DEm31AyResKcmbXyuTbykI\"","date":"Sat, 18 Apr 2026 18:57:34 GMT","strict-transport-security":"max-age=63072000; includeSubDoma
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=town&locationId=town_8030233","headers":{"content-length":"20","via":"1.1 google","etag":"W\/\"14-Wch7iYZeEKyWFEciwo84C0RboW8\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/progress\/chart","headers":{"content-length":"103","via":"1.1 google","etag":"W\/\"67-9wp\/WZ5mPxQhoWzD6wAiWB8\/GbQ\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sat, 18 Apr 2026 18:57:34 GMT
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  PushNotifications checkPermissions 2071023
+⚡️  TO JS {"receive":"prompt"}
+⚡️  To Native ->  PushNotifications requestPermissions 2071024
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"status":200,"headers":{"content-length":"261","via":"1.1 google","strict-transport-security":"max-age=63072000; includeSubDomains","etag":"W\/\"105-SaO5IvlCZs+DDA2\/oAzCpxHQyzs\"","date":"Sat, 18 Apr 2026 18:57:35 GMT","alt-svc":"h3=\":443\"; ma=2592000,
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"receive":"granted"}
+⚡️  To Native ->  PushNotifications addListener 2071025
+⚡️  To Native ->  PushNotifications addListener 2071026
+⚡️  To Native ->  PushNotifications addListener 2071027
+⚡️  To Native ->  PushNotifications register 2071028
+⚡️  TO JS undefined
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  To Native ->  ⚡️  [log] - [FullSync] Within cooldown, skipping
+HealthKit isAvailable 2071029
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 2071030
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T18:57:37.107Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  TO JS {"data":{"workoutSuggestion":{"exercises":[{"sets":3,"duration":null,"key":"squat","reps":"12-15"},{"sets":3,"duration":null,"key":"pushup","reps":"10-12"},{"sets":3,"duration":null,"key":"lunge","reps":"12-15"},{"sets":3,"duration":null,"key":"row","reps"
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  CapacitorHttp request 2071031
+⚡️  To Native ->  ⚡️  [log] - [API] GET https://fayaflex.com/api/locations/region_za_gauteng (native: true)
+CapacitorHttp request 2071032
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/region_za_gauteng
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng
+⚡️  TO JS {"data":{"type":"region","name":"Gauteng","isoCode":null,"parentId":"country_za","sortOrder":0,"id":"region_za_gauteng"},"status":200,"headers":{"content-length":"112","via":"1.1 google","etag":"W\/\"70-6X20ugmZphKJBI61rQIKbOjRYuA\"","alt-svc":"h3=\":443\"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"rank":1,"total":2},"status":200,"headers":{"content-length":"20","via":"1.1 google","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sat, 18 Apr 2026 18:57:39 GMT","strict-tran
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/country_za (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/country_za
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za
+⚡️  To Native ->  CapacitorHttp request 2071033
+⚡️  To Native ->  CapacitorHttp request 2071034
+⚡️  TO JS {"data":{"sortOrder":0,"id":"country_za","type":"country","parentId":"continent_af","isoCode":null,"name":"South Africa"},"status":200,"headers":{"content-length":"113","via":"1.1 google","date":"Sat, 18 Apr 2026 18:57:44 GMT","alt-svc":"h3=\":443\"; ma=25
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"rank":1,"total":2},"status":200,"headers":{"content-length":"20","via":"1.1 google","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sat, 18 Apr 2026 18:57:44 GMT","strict-tran
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/continent_af (native: true)
+⚡️  To Native ->  CapacitorHttp request 2071035
+⚡️  To Native ->  CapacitorHttp request 2071036
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/continent_af
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af
+⚡️  TO JS {"data":{"type":"continent","name":"Africa","isoCode":null,"parentId":null,"sortOrder":0,"id":"continent_af"},"status":200,"headers":{"content-length":"101","via":"1.1 google","date":"Sat, 18 Apr 2026 18:57:49 GMT","alt-svc":"h3=\":443\"; ma=2592000,h3-29=
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"rank":1,"total":2},"status":200,"headers":{"content-length":"20","via":"1.1 google","etag":"W\/\"14-QFkr\/DDJUa20zUFCYEri+zgGGKI\"","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Sat, 18 Apr 2026 18:57:49 GMT","strict-tran
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026
+⚡️  To Native ->  CapacitorHttp request 2071037
+⚡️  TO JS {"data":{"total":14,"rank":1},"status":200,"headers":{"content-length":"21","via":"1.1 google","date":"Sat, 18 Apr 2026 18:57:54 GMT","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","etag":"W\/\"15-bbes62aQL3bqMN19s1vkokEL2Gc\"","strict-tran
+⚡️  [log] - [API] Native response: 200
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = dismissAutoFillPanel, customInfoType = UIUserInteractionRemoteInputOperations
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = dismissAutoFillPanel, customInfoType = UIUserInteractionRemoteInputOperations
+Snapshotting a view (0x119947400, UIKeyboardImpl) that is not in a visible window requires afterScreenUpdates:YES.
+Reporter disconnected or already stopped. { func=stop, reporterID=25623774887937 }
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [FullSync] Within cooldown, skipping
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  HealthKit isAvailable 2071038
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 2071039
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T18:58:10.843Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  HealthKit isAvailable 2071040
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 2071041
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T18:59:10.846Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  HealthKit isAvailable 2071042
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  HealthKit getHealthData 2071043
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T19:00:10.848Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  To Native ->  HealthKit isAvailable 2071044
+⚡️  [log] - [FullSync] Within cooldown, skipping
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"available":true}
+⚡️  To Native ->  HealthKit getHealthData 2071045
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T19:01:09.874Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [API] GET https://fayaflex.com/api/feed (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/feed
+⚡️  To Native ->  CapacitorHttp request 2071046
+⚡️  TO JS {"data":[{"imageUrl":"data:image\/webp;base64,UklGRsSVAABXRUJQVlA4WAoAAAAsAAAAKQIArwQASUNDUOABAAAAAAHgbGNtcwQgAABtbnRyUkdCIFhZWiAH4gADABQACQAOAB1hY3NwTVNGVAAAAABzYXdzY3RybAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWhhbmR56b9WWj4BtoMjhVVG90+qAAAAAAAAAAAAAAAAAAAAAAAAAA
+⚡️  [log] - [API] Native response: 200
+WebContent[5978] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[5978] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[5978] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[5978] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  To Native ->  HealthKit isAvailable 2071047
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  To Native ->  HealthKit getHealthData 2071048
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T19:02:09.876Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  CapacitorHttp ⚡️  [log] - [API] GET https://fayaflex.com/api/feed (native: true)
+request 2071049
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/feed
+⚡️  TO JS {"data":[{"imageUrl":"data:image\/webp;base64,UklGRsSVAABXRUJQVlA4WAoAAAAsAAAAKQIArwQASUNDUOABAAAAAAHgbGNtcwQgAABtbnRyUkdCIFhZWiAH4gADABQACQAOAB1hY3NwTVNGVAAAAABzYXdzY3RybAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWhhbmR56b9WWj4BtoMjhVVG90+qAAAAAAAAAAAAAAAAAAAAAAAAAA
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  CapacitorHttp ⚡️  [log] - [API] GET https://fayaflex.com/api/feed (native: true)
+request 2071050
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/feed
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/feed","headers":{"content-length":"538199","via":"1.1 google","date":"Sat, 18 Apr 2026 19:02:49 GMT","alt-svc":"h3=\":443\"; ma=2592000","etag":"W\/\"83657-kAl+sf9MhMSUYnk97fPoCOhgf30\"","strict-transport-security":"max
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 2071051
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T19:03:09.882Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 2071052
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  To Native ->  CapacitorHttp request 2071053
+⚡️  [log] - [API] GET https://fayaflex.com/api/feed (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/feed
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/feed","headers":{"content-length":"538199","via":"1.1 google","date":"Sat, 18 Apr 2026 19:03:20 GMT","etag":"W\/\"83657-kAl+sf9MhMSUYnk97fPoCOhgf30\"","alt-svc":"h3=\":443\"; ma=2592000","strict-transport-security":"max
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  CapacitorHttp request 2071054
+⚡️  [log] - [API] GET https://fayaflex.com/api/feed (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/feed
+⚡️  TO JS {"headers":{"content-length":"538199","via":"1.1 google","etag":"W\/\"83657-kAl+sf9MhMSUYnk97fPoCOhgf30\"","alt-svc":"h3=\":443\"; ma=2592000","date":"Sat, 18 Apr 2026 19:03:52 GMT","strict-transport-security":"max-age=63072000; includeSubDomains","content
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  HealthKit isAvailable 2071055
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  To Native ->  ⚡️  [log] - [HealthService] Fetching health data from 2026-04-17T22:00:00.000Z to 2026-04-18T19:04:09.881Z
+HealthKit getHealthData 2071056
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  TO JS {"data":[]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 0 days
+⚡️  [log] - [TodaySync] No data for today yet
+⚡️  [log] - [API] GET https://fayaflex.com/api/feed (native: true)
+⚡️  To Native ->  CapacitorHttp request 2071057
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/feed
+⚡️  TO JS {"headers":{"content-length":"538199","via":"1.1 google","etag":"W\/\"83657-kAl+sf9MhMSUYnk97fPoCOhgf30\"","date":"Sat, 18 Apr 2026 19:04:23 GMT","strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000","server"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+Snapshotting a view (0x119bb8000, UIKeyboardImpl) that has not been rendered at least once requires afterScreenUpdates:YES.
