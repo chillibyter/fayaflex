@@ -57,26 +57,32 @@ function parseWorkoutPost(content: string): ParsedWorkout | null {
   return out;
 }
 
-// Telkom-inspired gradient palettes per workout family.
-function gradientForType(type: string): string {
+// Cinematic, photo-style hero backgrounds per workout family.
+// Uses deep darks with type-specific warm/cool accent washes (no brand palette).
+function heroBgForType(type: string): string {
   const t = type.toLowerCase();
   if (t.includes("run") || t.includes("walk") || t.includes("jog")) {
-    return "from-[#0a3d8f] via-[#1666c9] to-[#3fc7e0]";
+    // Sunset run — deep charcoal with warm amber rim.
+    return "bg-[radial-gradient(ellipse_at_top_right,_rgba(249,115,22,0.32),_transparent_60%),_radial-gradient(ellipse_at_bottom_left,_rgba(244,63,94,0.18),_transparent_55%),_linear-gradient(135deg,_#0b0b0b_0%,_#1c1410_100%)]";
   }
   if (t.includes("cycl") || t.includes("bike") || t.includes("ride")) {
-    return "from-[#0d2b5e] via-[#1456a8] to-[#22b8d8]";
+    // Twilight ride — slate with crimson accent.
+    return "bg-[radial-gradient(ellipse_at_top_right,_rgba(239,68,68,0.28),_transparent_60%),_linear-gradient(135deg,_#0a0a0c_0%,_#1a1518_100%)]";
   }
   if (t.includes("hik") || t.includes("climb") || t.includes("mountain") || t.includes("trail")) {
-    return "from-[#0a2e4f] via-[#155a85] to-[#3aa9bf]";
+    // Alpine — earthy moss + warm rim light.
+    return "bg-[radial-gradient(ellipse_at_top_right,_rgba(132,204,22,0.22),_transparent_55%),_radial-gradient(ellipse_at_bottom_left,_rgba(217,119,6,0.18),_transparent_55%),_linear-gradient(135deg,_#0a0e0a_0%,_#15201a_100%)]";
   }
   if (t.includes("swim") || t.includes("pool")) {
-    return "from-[#0a2466] via-[#0f5fb0] to-[#4cd0e6]";
+    // Underwater — moody teal.
+    return "bg-[radial-gradient(ellipse_at_top_right,_rgba(20,184,166,0.30),_transparent_60%),_linear-gradient(135deg,_#08110f_0%,_#0f201d_100%)]";
   }
   if (t.includes("yoga") || t.includes("stretch") || t.includes("pilates")) {
-    return "from-[#1b2a72] via-[#3556b8] to-[#5fb6d6]";
+    // Studio — soft rose / mauve glow.
+    return "bg-[radial-gradient(ellipse_at_top_right,_rgba(244,114,182,0.25),_transparent_60%),_linear-gradient(135deg,_#0e0a10_0%,_#1c1620_100%)]";
   }
-  // Default: strength / HIIT / generic — bolder Telkom blue/cyan.
-  return "from-[#061d52] via-[#0e4ea8] to-[#2dbedb]";
+  // Default: strength / HIIT — pure dark with hot orange spark.
+  return "bg-[radial-gradient(ellipse_at_top_right,_rgba(249,115,22,0.30),_transparent_55%),_radial-gradient(ellipse_at_bottom_left,_rgba(220,38,38,0.18),_transparent_55%),_linear-gradient(135deg,_#0a0a0a_0%,_#1a1414_100%)]";
 }
 
 interface PBFlags {
@@ -175,19 +181,19 @@ export function WorkoutPostCard({ content, personalBests }: { content: string; p
   if (parsed.speed) secondary.push({ key: "speed", icon: Gauge, label: "Pace", value: parsed.speed });
 
   const typeLabel = parsed.type.replace(/\b\w/g, (c) => c.toUpperCase());
-  const gradient = gradientForType(parsed.type);
+  const heroBg = heroBgForType(parsed.type);
   const hasCaloriePB = !!pb.calories && !!parsed.calories;
 
   return (
     <div className="space-y-3" data-testid="workout-post-card">
       {/* HERO */}
       <div
-        className={`relative overflow-hidden rounded-lg bg-gradient-to-br ${gradient} text-white p-4 sm:p-5`}
+        className={`relative overflow-hidden rounded-lg ${heroBg} text-white p-4 sm:p-5 ring-1 ring-white/5`}
       >
-        {/* Soft photo-overlay light effects */}
-        <div className="pointer-events-none absolute inset-0 opacity-60">
-          <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-cyan-200/20 blur-3xl" />
-          <div className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-blue-300/20 blur-3xl" />
+        {/* Subtle film-grain / haze for photo feel */}
+        <div className="pointer-events-none absolute inset-0 opacity-40">
+          <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
         </div>
 
         <div className="relative flex items-center gap-3 mb-4">
