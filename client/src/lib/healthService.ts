@@ -486,21 +486,56 @@ class HealthService {
         const result = await HealthKit.getWorkouts({ limit: MAX_WORKOUTS });
         const raw = (result as any)?.workouts || [];
         const cutoff = startDate.getTime();
+        // Map raw HKWorkoutActivityType integer to a friendly name. We do this
+        // here (in JS, which auto-updates from fayaflex.com) instead of relying
+        // on the native plugin's activityTypeName, which is baked into older
+        // installed app builds and may return the generic fallback "workout"
+        // for activity types that were added to the Swift switch later.
+        const HK_ACTIVITY_NAMES: Record<number, string> = {
+          1: 'american football', 2: 'archery', 3: 'australian football', 4: 'badminton',
+          5: 'baseball', 6: 'basketball', 7: 'bowling', 8: 'boxing', 9: 'climbing',
+          10: 'cricket', 11: 'cross training', 12: 'curling', 13: 'cycling', 14: 'dance',
+          16: 'elliptical', 17: 'equestrian', 18: 'fencing', 19: 'fishing',
+          20: 'weightlifting', 21: 'golf', 22: 'gymnastics', 23: 'handball',
+          24: 'hiking', 25: 'hockey', 26: 'hunting', 27: 'lacrosse',
+          28: 'martial arts', 29: 'mind and body', 31: 'paddle sports', 32: 'play',
+          33: 'preparation and recovery', 34: 'racquetball', 35: 'rowing', 36: 'rugby',
+          37: 'running', 38: 'sailing', 39: 'skating', 40: 'snow sports',
+          41: 'soccer', 42: 'softball', 43: 'squash', 44: 'stair climbing',
+          45: 'surfing', 46: 'swimming', 47: 'table tennis', 48: 'tennis',
+          49: 'track and field', 50: 'weightlifting', 51: 'volleyball', 52: 'walking',
+          53: 'water fitness', 54: 'water polo', 55: 'water sports', 56: 'wrestling',
+          57: 'yoga', 58: 'barre', 59: 'core training', 60: 'cross country skiing',
+          61: 'downhill skiing', 62: 'stretching', 63: 'HIIT', 64: 'jump rope',
+          65: 'kickboxing', 66: 'pilates', 67: 'snowboarding', 68: 'stair climbing',
+          69: 'step training', 70: 'wheelchair walk', 71: 'wheelchair run',
+          72: 'tai chi', 73: 'cardio', 74: 'hand cycling', 75: 'disc sports',
+          76: 'fitness gaming', 77: 'cardio dance', 78: 'social dance', 79: 'pickleball',
+          80: 'cooldown', 82: 'swim bike run', 83: 'transition',
+        };
         return raw
           .filter((w: any) => {
             const t = new Date(w?.startDate || w?.start || 0).getTime();
             return !isNaN(t) && t >= cutoff;
           })
-          .map((w: any) => ({
+          .map((w: any) => {
+            const rawType = typeof w.activityType === 'number' ? w.activityType : null;
+            const mappedFromInt = rawType != null ? HK_ACTIVITY_NAMES[rawType] : null;
+            const nativeName = typeof w.activityTypeName === 'string' && w.activityTypeName.trim().toLowerCase() !== 'workout'
+              ? w.activityTypeName
+              : null;
+            const workoutType = nativeName || mappedFromInt || 'workout';
+            return {
             externalId: String(w.uuid || `${w.startDate}-${w.activityType}`),
-            workoutType: w.activityTypeName || 'workout',
+            workoutType,
             startedAt: w.startDate || w.start || null,
             calories: typeof w.calories === 'number' ? w.calories : null,
             durationMinutes: typeof w.duration === 'number' ? Math.round(w.duration / 60) : null,
             distanceMeters: typeof w.distanceMeters === 'number' && w.distanceMeters > 0 ? w.distanceMeters : null,
             elevationGainMeters: typeof w.elevationGainMeters === 'number' && w.elevationGainMeters > 0 ? w.elevationGainMeters : null,
             avgHeartRate: null,
-          }));
+            };
+          });
       }
 
       // Huawei: HMS plugin doesn't expose per-workout metadata yet
