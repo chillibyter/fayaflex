@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { feedPosts, syncedWorkouts } from "@shared/schema";
-import { and, gte, like, eq } from "drizzle-orm";
+import { and, gte, like, eq, isNotNull, notInArray, sql } from "drizzle-orm";
 
 const MIN_DURATION_MIN = 15;
 const MIN_CALORIES = 100;
@@ -80,6 +80,16 @@ export async function cleanupShortAutoPostedWorkouts(): Promise<void> {
       deleted++;
     }
     console.log(`[Cleanup] Removed ${deleted} short auto-posted workouts (of ${candidates.length} candidates)`);
+
+    // Also clear orphaned dedup rows (their feed post was deleted) so future
+    // syncs can re-post those workouts.
+    const orphanResult: any = await db.execute(sql`
+      DELETE FROM synced_workouts
+      WHERE feed_post_id IS NOT NULL
+        AND feed_post_id NOT IN (SELECT id FROM feed_posts)
+    `);
+    const orphanCount = orphanResult?.rowCount ?? orphanResult?.rows?.length ?? 0;
+    console.log(`[Cleanup] Cleared ${orphanCount} orphaned synced_workouts dedup rows`);
   } catch (err) {
     console.error("[Cleanup] cleanupShortAutoPostedWorkouts failed:", err);
   }
