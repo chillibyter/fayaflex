@@ -66,9 +66,14 @@ export async function cleanupShortAutoPostedWorkouts(): Promise<void> {
     let deleted = 0;
     for (const post of candidates) {
       const lines = (post.content || "").split("\n");
+      const firstLine = lines[0] || "";
       const metricsLine = lines[1] || "";
       const metrics = parseMetricsLine(metricsLine);
-      if (meetsThreshold(metrics)) continue;
+
+      // Always remove generic / unknown-type auto-posts (e.g. Apple Health
+      // auto-detected sessions tagged as "Workout").
+      const isGeneric = /^Completed a (workout|other|unknown|fitness) workout/i.test(firstLine);
+      if (!isGeneric && meetsThreshold(metrics)) continue;
 
       await db.delete(syncedWorkouts).where(eq(syncedWorkouts.feedPostId, post.id));
       await db.delete(feedPosts).where(eq(feedPosts.id, post.id));

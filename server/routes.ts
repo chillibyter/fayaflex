@@ -79,8 +79,16 @@ async function autoPostSyncedWorkouts(
   const MIN_CALORIES = 100;
   const MIN_DISTANCE_M = 1000;
   const MIN_STEPS = 1500;
+  // Generic / unknown workout types (e.g. Apple Health auto-detected
+  // sessions with no specific activity tag) — never auto-post these.
+  const GENERIC_TYPES = new Set(["", "workout", "other", "unknown", "fitness"]);
   for (const w of workouts) {
     if (!w.externalId || !w.workoutType) {
+      skipped++;
+      continue;
+    }
+    const normalizedType = String(w.workoutType).trim().toLowerCase();
+    if (GENERIC_TYPES.has(normalizedType)) {
       skipped++;
       continue;
     }
