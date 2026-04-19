@@ -141,6 +141,7 @@ export interface IStorage {
   removeReaction(activityId: string, userId: string): Promise<void>;
   getUserReaction(activityId: string, userId: string): Promise<ActivityReaction | undefined>;
   getActivityReactions(activityId: string): Promise<{ thumbsUp: number; thumbsDown: number; userReaction?: 'thumbs_up' | 'thumbs_down' }>;
+  getActivityReactors(activityId: string): Promise<Array<{ id: string; firstName: string | null; lastName: string | null; profileImageUrl: string | null; type: string; createdAt: Date | null }>>;
 
   // Activity comments operations
   addComment(comment: InsertActivityComment): Promise<ActivityComment>;
@@ -997,6 +998,23 @@ export class DatabaseStorage implements IStorage {
     const thumbsDown = reactions.filter(r => r.type === 'thumbs_down').length;
 
     return { thumbsUp, thumbsDown };
+  }
+
+  async getActivityReactors(activityId: string) {
+    const rows = await db
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        profileImageUrl: users.profileImageUrl,
+        type: activityReactions.type,
+        createdAt: activityReactions.createdAt,
+      })
+      .from(activityReactions)
+      .innerJoin(users, eq(activityReactions.userId, users.id))
+      .where(eq(activityReactions.activityId, activityId))
+      .orderBy(desc(activityReactions.createdAt));
+    return rows;
   }
 
   // Activity comments operations

@@ -1899,6 +1899,24 @@ IMPORTANT RULES:
     }
   });
 
+  app.get("/api/activities/:activityId/reactors", async (req: any, res) => {
+    try {
+      const { activityId } = req.params;
+      const reactors = await storage.getActivityReactors(activityId);
+      const sanitized = reactors.map(r => ({
+        id: r.id,
+        firstName: r.firstName,
+        lastName: r.lastName,
+        profileImageUrl: r.profileImageUrl,
+        type: r.type,
+      }));
+      res.json(sanitized);
+    } catch (error: any) {
+      console.error("Error fetching reactors:", error);
+      res.status(500).json({ message: "Failed to fetch reactors" });
+    }
+  });
+
   app.get("/api/activities/:activityId/reactions", async (req: any, res) => {
     try {
       const { activityId } = req.params;
