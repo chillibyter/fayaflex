@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -27,12 +28,13 @@ export default function DataEntryForm() {
   const [distanceKm, setDistanceKm] = useState<number | "">("");
   const [avgHeartRate, setAvgHeartRate] = useState<number | "">("");
   const [elevationGainMeters, setElevationGainMeters] = useState<number | "">("");
+  const [notes, setNotes] = useState("");
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
   const createActivityMutation = useMutation({
-    mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string; attachmentUrl?: string; durationMinutes?: number | null; distanceMeters?: number | null; avgHeartRate?: number | null; elevationGainMeters?: number | null }) => {
+    mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string; attachmentUrl?: string; durationMinutes?: number | null; distanceMeters?: number | null; avgHeartRate?: number | null; elevationGainMeters?: number | null; notes?: string | null }) => {
       console.log('[DataEntryForm] mutationFn executing with data:', data);
       const res = await apiRequest("POST", "/api/activities", {
         date: data.date,
@@ -44,6 +46,7 @@ export default function DataEntryForm() {
         distanceMeters: data.distanceMeters ?? null,
         avgHeartRate: data.avgHeartRate ?? null,
         elevationGainMeters: data.elevationGainMeters ?? null,
+        notes: data.notes ?? null,
         source: "manual",
       });
       const result = await res.json();
@@ -61,6 +64,7 @@ export default function DataEntryForm() {
       setDistanceKm("");
       setAvgHeartRate("");
       setElevationGainMeters("");
+      setNotes("");
       setAttachmentFile(null);
       setAttachmentPreview(null);
       toast({
@@ -185,6 +189,7 @@ export default function DataEntryForm() {
       distanceMeters: typeof distanceKm === "number" && distanceKm > 0 ? Math.round(distanceKm * 1000) : null,
       avgHeartRate: typeof avgHeartRate === "number" && avgHeartRate > 0 ? avgHeartRate : null,
       elevationGainMeters: typeof elevationGainMeters === "number" && elevationGainMeters > 0 ? elevationGainMeters : null,
+      notes: notes.trim() || null,
     });
   };
 
@@ -386,6 +391,19 @@ export default function DataEntryForm() {
               </div>
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="How did it feel? Anything to remember about this workout?"
+              rows={3}
+              maxLength={500}
+              data-testid="input-notes"
+            />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="attachment">Evidence (Optional)</Label>

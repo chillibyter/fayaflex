@@ -116,6 +116,7 @@ export const activities = pgTable("activities", {
   elevationGainMeters: integer("elevation_gain_meters"),
   source: varchar("source", { length: 50 }).default("manual"), // 'manual', 'apple_health', 'android_health', 'huawei_health'
   attachmentUrl: text("attachment_url"), // URL/path to uploaded evidence attachment
+  notes: text("notes"), // Optional user-entered notes/caption that ride along onto the auto-generated feed post
   createdAt: timestamp("created_at").defaultNow(),
 });
 

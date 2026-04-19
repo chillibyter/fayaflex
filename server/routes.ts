@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, type Activity } from "@shared/schema";
 
 interface WorkoutSummary {
+  notes?: string | null;
   workoutType?: string | null;
   durationMinutes?: number | null;
   distanceMeters?: number | null;
@@ -48,6 +49,11 @@ function formatWorkoutFeedPost(workout: WorkoutSummary): string {
   }
   if (stats.length > 0) {
     lines.push(stats.join(" • "));
+  }
+  const userNotes = (workout.notes || "").trim();
+  if (userNotes) {
+    lines.push("");
+    lines.push(userNotes);
   }
   return lines.join("\n");
 }
