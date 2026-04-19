@@ -356,8 +356,8 @@ export default function Profile() {
           </p>
 
           {!isLoadingStats && (stats?.currentStreak || 0) > 0 && (
-            <div className="flex items-center gap-2 mt-3 px-4 py-2 bg-black/20 rounded-full">
-              <Flame className="h-5 w-5 text-orange-400" />
+            <div className="flex items-center gap-2 mt-3 pl-2 pr-4 py-1 bg-black/20 rounded-full">
+              <Icon3D name="fire-streak" size={32} alt="Streak" />
               <span className="font-semibold">{stats?.currentStreak} Day Streak</span>
             </div>
           )}

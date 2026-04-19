@@ -32,6 +32,7 @@ import {
   Clock,
 } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import Icon3D from "@/components/Icon3D";
 import { useToast } from "@/hooks/use-toast";
 
 type Goal = {
@@ -263,7 +264,7 @@ export default function GoalJourneys() {
                       <div className="font-medium flex items-center gap-2">
                         {goal.targetValue.toLocaleString()} {goalConfig.unit}
                         {goal.isCompleted && (
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          <Icon3D name="confetti" size={28} alt="Goal complete" />
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">

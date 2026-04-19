@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, Trophy, Calendar, Flame, Lock, Users, Crown } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import Icon3D from "@/components/Icon3D";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
@@ -194,7 +195,7 @@ export default function VictoryWall() {
                     <Calendar className="h-3 w-3 mr-1" />
                     {monthNames[winner.month - 1]} {winner.year}
                   </Badge>
-                  <Trophy className="h-5 w-5 text-yellow-500" />
+                  <Icon3D name="crown" size={36} alt="Champion crown" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
