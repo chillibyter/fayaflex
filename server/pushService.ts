@@ -8,7 +8,8 @@ type NotificationType = keyof NotificationPrefs;
 
 let webPushReady = false;
 let firebaseReady = false;
-let apnsProvider: apn.Provider | null = null;
+let apnsProviderProd: apn.Provider | null = null;
+let apnsProviderSandbox: apn.Provider | null = null;
 let apnsBundleId: string | null = null;
 let vapidPublicKey: string | null = null;
 
@@ -91,7 +92,6 @@ function initApns() {
   const keyId = process.env.APNS_KEY_ID;
   const teamId = process.env.APNS_TEAM_ID;
   const bundleId = process.env.APNS_BUNDLE_ID || "com.fayaflex.app";
-  const production = (process.env.APNS_PRODUCTION ?? "true") !== "false";
 
   if (!rawKey || !keyId || !teamId) {
     console.log(
@@ -101,20 +101,15 @@ function initApns() {
   }
 
   const key = normalizeApnsKey(rawKey);
-  const lineCount = key.split("\n").length;
-  const hasBegin = key.includes("BEGIN PRIVATE KEY");
-  const hasEnd = key.includes("END PRIVATE KEY");
   console.log(
-    `[Push] APNs key check: length=${key.length} lines=${lineCount} hasBegin=${hasBegin} hasEnd=${hasEnd} keyId=${keyId} teamId=${teamId}`
+    `[Push] APNs key check: length=${key.length} lines=${key.split("\n").length} keyId=${keyId} teamId=${teamId}`
   );
 
   try {
-    apnsProvider = new apn.Provider({
-      token: { key, keyId, teamId },
-      production,
-    });
+    apnsProviderProd = new apn.Provider({ token: { key, keyId, teamId }, production: true });
+    apnsProviderSandbox = new apn.Provider({ token: { key, keyId, teamId }, production: false });
     apnsBundleId = bundleId;
-    console.log(`[Push] APNs (direct) initialized (bundle=${bundleId}, production=${production})`);
+    console.log(`[Push] APNs initialized (bundle=${bundleId}, dual prod+sandbox)`);
   } catch (e: any) {
     console.error("[Push] Failed to initialize APNs:", e.message);
   }
@@ -182,35 +177,56 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
         })
       );
     } else if (t.platform === "ios" && APNS_TOKEN_REGEX.test(t.token)) {
-      // Raw APNs token (64 hex chars from @capacitor/push-notifications) — send via APNs directly
-      if (!apnsProvider || !apnsBundleId) {
+      if ((!apnsProviderProd && !apnsProviderSandbox) || !apnsBundleId) {
         console.warn("[Push] APNs not initialized — cannot send to iOS device");
         return;
       }
-      const note = new apn.Notification();
-      note.topic = apnsBundleId;
-      note.alert = { title: payload.title, body: payload.body };
-      note.sound = "default";
-      note.badge = 1;
-      note.payload = {
-        url: payload.url || "/",
-        type: payload.type,
-        ...(payload.data || {}),
+      const buildNote = () => {
+        const note = new apn.Notification();
+        note.topic = apnsBundleId!;
+        note.alert = { title: payload.title, body: payload.body };
+        note.sound = "default";
+        note.badge = 1;
+        note.payload = {
+          url: payload.url || "/",
+          type: payload.type,
+          ...(payload.data || {}),
+        };
+        return note;
       };
-      const result = await apnsProvider.send(note, t.token);
-      if (result.failed.length > 0) {
+
+      const trySend = async (provider: apn.Provider | null, label: string) => {
+        if (!provider) return null;
+        const result = await provider.send(buildNote(), t.token);
+        if (result.failed.length === 0) {
+          console.log(`[Push] APNs (${label}) sent OK to ${t.token.slice(0, 8)}…`);
+          return { ok: true as const };
+        }
         const failure = result.failed[0];
         const reason = failure.response?.reason || failure.error?.message || "unknown";
         const status = failure.status;
-        const isDead = reason === "BadDeviceToken" || reason === "Unregistered" || reason === "DeviceTokenNotForTopic";
+        return { ok: false as const, reason, status };
+      };
+
+      // Try production first, fall back to sandbox if it's an environment mismatch.
+      let res = await trySend(apnsProviderProd, "prod");
+      const envMismatch = (r: typeof res) =>
+        !!r && !r.ok && (r.reason === "BadDeviceToken" || r.reason === "BadEnvironmentKeyInToken");
+
+      if (envMismatch(res)) {
+        const sandboxRes = await trySend(apnsProviderSandbox, "sandbox");
+        if (sandboxRes?.ok) return;
+        if (sandboxRes && !sandboxRes.ok) res = sandboxRes;
+      }
+
+      if (res && !res.ok) {
+        const isDead = res.reason === "BadDeviceToken" || res.reason === "Unregistered" || res.reason === "DeviceTokenNotForTopic";
         if (isDead) {
           await storage.deletePushTokenById(t.id);
-          console.log(`[Push] Pruned dead APNs token ${t.id} (reason=${reason})`);
+          console.log(`[Push] Pruned dead APNs token ${t.id} (reason=${res.reason})`);
         } else {
-          console.warn(`[Push] APNs send failed (status=${status}, reason=${reason})`);
+          console.warn(`[Push] APNs send failed (status=${res.status}, reason=${res.reason})`);
         }
-      } else {
-        console.log(`[Push] APNs sent OK to ${t.token.slice(0, 8)}…`);
       }
     } else {
       // FCM token (android, or future iOS via Firebase SDK)
