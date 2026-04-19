@@ -83,17 +83,21 @@ async function autoPostSyncedWorkouts(
   // sessions with no specific activity tag) — never auto-post these.
   const GENERIC_TYPES = new Set(["", "workout", "other", "unknown", "fitness"]);
   for (const w of workouts) {
+    const dbg = `type=${w.workoutType} dur=${w.durationMinutes} cal=${w.calories} dist=${w.distanceMeters} startedAt=${w.startedAt}`;
     if (!w.externalId || !w.workoutType) {
+      console.log(`[Feed] skip (missing id/type) ${dbg}`);
       skipped++;
       continue;
     }
     const normalizedType = String(w.workoutType).trim().toLowerCase();
     if (GENERIC_TYPES.has(normalizedType)) {
+      console.log(`[Feed] skip (generic type) ${dbg}`);
       skipped++;
       continue;
     }
     const startedAtMs = w.startedAt ? new Date(w.startedAt).getTime() : NaN;
     if (!isFinite(startedAtMs) || startedAtMs < cutoffMs) {
+      console.log(`[Feed] skip (>24h or no startedAt) ${dbg}`);
       skipped++;
       continue;
     }
@@ -102,6 +106,7 @@ async function autoPostSyncedWorkouts(
     const distanceOk = (w.distanceMeters ?? 0) >= MIN_DISTANCE_M;
     const stepsOk = (w.steps ?? 0) >= MIN_STEPS;
     if (!durationOk && !caloriesOk && !distanceOk && !stepsOk) {
+      console.log(`[Feed] skip (below threshold) ${dbg}`);
       skipped++;
       continue;
     }
@@ -110,6 +115,7 @@ async function autoPostSyncedWorkouts(
     try {
       const { alreadyExisted } = await storage.recordSyncedWorkout(userId, w.source, w.externalId, null);
       if (alreadyExisted) {
+        console.log(`[Feed] skip (already posted) ${dbg} externalId=${w.externalId}`);
         skipped++;
         continue;
       }
