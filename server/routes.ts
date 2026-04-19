@@ -2390,35 +2390,84 @@ IMPORTANT RULES:
         daysElapsed = 1;
       }
       
+      // Helper: aggregate calories for a subset of activities filtered by date range
+      const aggregateInRange = (activities: any[], startDate: Date, endDate: Date) => {
+        const byUserDate = new Map<string, number>();
+        for (const act of activities) {
+          const d = new Date(act.date);
+          if (d >= startDate && d <= endDate) {
+            const key = `${act.userId}:${act.date}`;
+            const existing = byUserDate.get(key) || 0;
+            byUserDate.set(key, Math.max(existing, act.calories));
+          }
+        }
+        let total = 0;
+        Array.from(byUserDate.values()).forEach(c => { total += c; });
+        return total;
+      };
+
+      const isCurrentMonth = year === currentYear && month === currentMonth;
+      const canShowTrend = isCurrentMonth && daysElapsed >= 14;
+      const today = new Date(currentYear, currentMonth - 1, now.getDate());
+      const last7Start = new Date(today);
+      last7Start.setDate(today.getDate() - 6);
+      const prev7End = new Date(last7Start);
+      prev7End.setDate(last7Start.getDate() - 1);
+      const prev7Start = new Date(prev7End);
+      prev7Start.setDate(prev7End.getDate() - 6);
+
       for (const team of teams) {
         const activities = await storage.getTeamActivities(team.id, month, year);
         const members = await storage.getTeamMembers(team.id);
         const totalCalories = aggregateTeamCalories(activities);
-        
+
         // Calculate average daily calories per user (using days elapsed, not full month)
-        const avgDailyCaloriesPerUser = members.length > 0 
+        const avgDailyCaloriesPerUser = members.length > 0
           ? totalCalories / (members.length * daysElapsed)
           : 0;
-        
+
+        // Trend: compare last 7 days vs prior 7 days (per-member daily avg)
+        let trend: 'up' | 'down' | 'flat' | null = null;
+        if (canShowTrend && members.length > 0) {
+          const last7Total = aggregateInRange(activities, last7Start, today);
+          const prev7Total = aggregateInRange(activities, prev7Start, prev7End);
+          const last7Avg = last7Total / (members.length * 7);
+          const prev7Avg = prev7Total / (members.length * 7);
+          const delta = last7Avg - prev7Avg;
+          // 5% threshold to avoid noise
+          const threshold = Math.max(prev7Avg * 0.05, 10);
+          if (delta > threshold) trend = 'up';
+          else if (delta < -threshold) trend = 'down';
+          else trend = 'flat';
+        }
+
         teamStats.push({
           teamId: team.id,
           name: team.name,
           teamName: `${members.length} members`,
-          calories: Math.round(avgDailyCaloriesPerUser), // Display as avg daily per user
+          calories: Math.round(avgDailyCaloriesPerUser), // avg daily per user
           memberCount: members.length,
           totalCalories: totalCalories,
+          daysElapsed,
+          unit: 'cal/day per member',
+          trend,
         });
       }
-      
+
       // Sort by average daily calories per user
       const sorted = teamStats
         .sort((a, b) => b.calories - a.calories)
-        .map((stat, index) => ({
-          ...stat,
-          rank: index + 1,
-          goalPercentage: Math.round((stat.calories / 1000) * 100), // Assuming 1000 cal/day goal per person
-        }));
-      
+        .map((stat, index, arr) => {
+          const above = index === 0 ? null : arr[index - 1];
+          const caloriesToOvertake = above ? Math.max(1, above.calories - stat.calories + 1) : 0;
+          return {
+            ...stat,
+            rank: index + 1,
+            caloriesToOvertake,
+            goalPercentage: Math.round((stat.calories / 1000) * 100), // legacy field, kept for back-compat
+          };
+        });
+
       res.json(sorted);
     } catch (error) {
       console.error("Error fetching team leaderboard:", error);

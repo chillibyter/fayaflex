@@ -1,10 +1,12 @@
 import LeaderboardCard from "@/components/LeaderboardCard";
+import TeamLeaderboardCard, { TeamLeaderboardEntry } from "@/components/TeamLeaderboardCard";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Trophy, Flame, Footprints, Dumbbell, ArrowLeft } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AlertCircle, Trophy, Flame, Footprints, Dumbbell, ArrowLeft, Info } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -36,7 +38,7 @@ export default function Leaderboard() {
     isLoading: isLoadingTeams,
     isError: isErrorTeams,
     refetch: refetchTeams 
-  } = useQuery<LeaderboardEntry[]>({
+  } = useQuery<TeamLeaderboardEntry[]>({
     queryKey: ['/api/leaderboard/teams', { month: currentMonth, year: currentYear }],
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/leaderboard/teams?month=${currentMonth}&year=${currentYear}`);
@@ -192,16 +194,59 @@ export default function Leaderboard() {
 
           <div className="mt-4 sm:mt-6">
             <TabsContent value="teams" className="mt-0">
-              <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <h2 className="text-base sm:text-lg font-semibold">
-                  Team Rankings
-                  <span className="text-muted-foreground font-normal text-xs sm:text-sm ml-1">
-                    (Global)
-                  </span>
-                </h2>
+              <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  <h2 className="text-base sm:text-lg font-semibold">
+                    Team Rankings
+                    <span className="text-muted-foreground font-normal text-xs sm:text-sm ml-1">
+                      (Global)
+                    </span>
+                  </h2>
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-xs gap-1 h-7" data-testid="button-how-calculated">
+                      <Info className="h-3 w-3" />
+                      How is this scored?
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 text-sm" align="end">
+                    <p className="font-semibold mb-1">Daily average per member</p>
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      We add up each member's best calories per day this month, then divide by the number of members and the days so far. Bigger teams aren't penalized — every member counts equally.
+                    </p>
+                    <p className="text-muted-foreground text-xs leading-relaxed mt-2">
+                      <span className="font-medium text-foreground">Trending up/down</span> compares the last 7 days to the 7 days before that.
+                    </p>
+                  </PopoverContent>
+                </Popover>
               </div>
-              {renderLeaderboardContent(teamLeaderboard, isLoadingTeams, isErrorTeams, refetchTeams, 'calories')}
+              {isErrorTeams ? (
+                <div className="text-center py-12 space-y-4">
+                  <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+                  <p className="text-muted-foreground">Failed to load team leaderboard</p>
+                  <Button onClick={() => refetchTeams()} variant="outline" data-testid="button-retry-teams">
+                    Try Again
+                  </Button>
+                </div>
+              ) : isLoadingTeams ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ) : teamLeaderboard.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  No team rankings yet. Encourage your team to log activities!
+                </div>
+              ) : (
+                <div className="space-y-2 sm:space-y-3">
+                  {teamLeaderboard.map((entry) => (
+                    <TeamLeaderboardCard key={`team-${entry.rank}-${entry.teamId}`} {...entry} />
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="calories" className="mt-0">
