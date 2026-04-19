@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, Trophy, Calendar, Flame, Lock, Users, Crown } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
-import Icon3D from "@/components/Icon3D";
+import { Icon3D } from "@/components/Icon3D";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";

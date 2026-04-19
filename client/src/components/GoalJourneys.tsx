@@ -32,7 +32,7 @@ import {
   Clock,
 } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import Icon3D from "@/components/Icon3D";
+import { Icon3D } from "@/components/Icon3D";
 import { useToast } from "@/hooks/use-toast";
 
 type Goal = {
