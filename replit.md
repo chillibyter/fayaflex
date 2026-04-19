@@ -29,6 +29,7 @@ Preferred communication style: Simple, everyday language.
     - **Victory Wall**: Team-based victory wall to showcase monthly champions.
     - **Email Privacy**: User emails are sanitized and hidden from other users.
     - **Goal Journeys**: Daily/weekly fitness goals with progress tracking.
+    - **Auto-Posted Workouts**: Logging an activity with a workout type automatically creates a feed post summarizing duration, distance, calories, avg heart rate, elevation, and avg speed.
 
 ### Data Storage
 - **Database**: PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe queries.

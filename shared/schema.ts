@@ -110,6 +110,10 @@ export const activities = pgTable("activities", {
   calories: integer("calories").notNull().default(0),
   steps: integer("steps").notNull().default(0),
   workoutType: varchar("workout_type", { length: 100 }),
+  durationMinutes: integer("duration_minutes"),
+  distanceMeters: integer("distance_meters"),
+  avgHeartRate: integer("avg_heart_rate"),
+  elevationGainMeters: integer("elevation_gain_meters"),
   source: varchar("source", { length: 50 }).default("manual"), // 'manual', 'apple_health', 'android_health', 'huawei_health'
   attachmentUrl: text("attachment_url"), // URL/path to uploaded evidence attachment
   createdAt: timestamp("created_at").defaultNow(),

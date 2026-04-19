@@ -2,7 +2,45 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS } from "@shared/schema";
+import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, type Activity } from "@shared/schema";
+
+function formatWorkoutFeedPost(activity: Activity): string {
+  const wt = (activity.workoutType || "workout").replace(/_/g, " ");
+  const title = wt.charAt(0).toUpperCase() + wt.slice(1);
+  const lines: string[] = [`Completed a ${title} workout`];
+  const stats: string[] = [];
+  if (activity.durationMinutes && activity.durationMinutes > 0) {
+    const h = Math.floor(activity.durationMinutes / 60);
+    const m = activity.durationMinutes % 60;
+    stats.push(h > 0 ? `${h}h ${m}m` : `${m} min`);
+  }
+  if (activity.distanceMeters && activity.distanceMeters > 0) {
+    const km = activity.distanceMeters / 1000;
+    stats.push(`${km.toFixed(km < 10 ? 2 : 1)} km`);
+  }
+  if (activity.calories && activity.calories > 0) {
+    stats.push(`${activity.calories} cal`);
+  }
+  if (activity.avgHeartRate && activity.avgHeartRate > 0) {
+    stats.push(`${activity.avgHeartRate} bpm avg`);
+  }
+  if (activity.elevationGainMeters && activity.elevationGainMeters > 0) {
+    stats.push(`${activity.elevationGainMeters} m elevation`);
+  }
+  if (activity.steps && activity.steps > 0 && !activity.distanceMeters) {
+    stats.push(`${activity.steps.toLocaleString()} steps`);
+  }
+  if (activity.distanceMeters && activity.durationMinutes && activity.durationMinutes > 0) {
+    const speedKmh = (activity.distanceMeters / 1000) / (activity.durationMinutes / 60);
+    if (speedKmh > 0 && isFinite(speedKmh)) {
+      stats.push(`${speedKmh.toFixed(1)} km/h avg`);
+    }
+  }
+  if (stats.length > 0) {
+    lines.push(stats.join(" • "));
+  }
+  return lines.join("\n");
+}
 import { z } from "zod";
 import {
   getVapidPublicKey,
@@ -1783,6 +1821,18 @@ IMPORTANT RULES:
       console.log('[API] Calling storage.createActivity');
       const activity = await storage.createActivity(validatedData, userId);
       console.log('[API] Activity created:', activity.id);
+
+      // Auto-post to feed when this activity is a workout
+      if (activity.workoutType) {
+        (async () => {
+          try {
+            const content = formatWorkoutFeedPost(activity);
+            await storage.createFeedPost(userId, content, activity.attachmentUrl ?? null);
+          } catch (e) {
+            console.error("[Feed] Auto-post failed:", e);
+          }
+        })();
+      }
 
       // Fire-and-forget: recompute global monthly rank, notify if user was overtaken
       (async () => {

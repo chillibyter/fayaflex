@@ -23,12 +23,16 @@ export default function DataEntryForm() {
   const [calories, setCalories] = useState(0);
   const [steps, setSteps] = useState(0);
   const [workoutType, setWorkoutType] = useState("");
+  const [durationMinutes, setDurationMinutes] = useState<number | "">("");
+  const [distanceKm, setDistanceKm] = useState<number | "">("");
+  const [avgHeartRate, setAvgHeartRate] = useState<number | "">("");
+  const [elevationGainMeters, setElevationGainMeters] = useState<number | "">("");
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
   const createActivityMutation = useMutation({
-    mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string; attachmentUrl?: string }) => {
+    mutationFn: async (data: { date: string; calories: number; steps: number; workoutType?: string; attachmentUrl?: string; durationMinutes?: number | null; distanceMeters?: number | null; avgHeartRate?: number | null; elevationGainMeters?: number | null }) => {
       console.log('[DataEntryForm] mutationFn executing with data:', data);
       const res = await apiRequest("POST", "/api/activities", {
         date: data.date,
@@ -36,6 +40,10 @@ export default function DataEntryForm() {
         steps: data.steps,
         workoutType: data.workoutType || null,
         attachmentUrl: data.attachmentUrl || null,
+        durationMinutes: data.durationMinutes ?? null,
+        distanceMeters: data.distanceMeters ?? null,
+        avgHeartRate: data.avgHeartRate ?? null,
+        elevationGainMeters: data.elevationGainMeters ?? null,
         source: "manual",
       });
       const result = await res.json();
@@ -49,6 +57,10 @@ export default function DataEntryForm() {
       setCalories(0);
       setSteps(0);
       setWorkoutType("");
+      setDurationMinutes("");
+      setDistanceKm("");
+      setAvgHeartRate("");
+      setElevationGainMeters("");
       setAttachmentFile(null);
       setAttachmentPreview(null);
       toast({
@@ -169,6 +181,10 @@ export default function DataEntryForm() {
       steps,
       workoutType: workoutType || undefined,
       attachmentUrl,
+      durationMinutes: typeof durationMinutes === "number" && durationMinutes > 0 ? durationMinutes : null,
+      distanceMeters: typeof distanceKm === "number" && distanceKm > 0 ? Math.round(distanceKm * 1000) : null,
+      avgHeartRate: typeof avgHeartRate === "number" && avgHeartRate > 0 ? avgHeartRate : null,
+      elevationGainMeters: typeof elevationGainMeters === "number" && elevationGainMeters > 0 ? elevationGainMeters : null,
     });
   };
 
@@ -312,6 +328,64 @@ export default function DataEntryForm() {
               </SelectContent>
             </Select>
           </div>
+
+          {workoutType && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration (min)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  min={0}
+                  inputMode="numeric"
+                  value={durationMinutes}
+                  onChange={(e) => setDurationMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+                  placeholder="e.g. 45"
+                  data-testid="input-duration"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="distance">Distance (km)</Label>
+                <Input
+                  id="distance"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  inputMode="decimal"
+                  value={distanceKm}
+                  onChange={(e) => setDistanceKm(e.target.value === "" ? "" : Number(e.target.value))}
+                  placeholder="e.g. 5.2"
+                  data-testid="input-distance"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hr">Avg Heart Rate (bpm)</Label>
+                <Input
+                  id="hr"
+                  type="number"
+                  min={0}
+                  inputMode="numeric"
+                  value={avgHeartRate}
+                  onChange={(e) => setAvgHeartRate(e.target.value === "" ? "" : Number(e.target.value))}
+                  placeholder="e.g. 142"
+                  data-testid="input-heart-rate"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="elevation">Elevation Gain (m)</Label>
+                <Input
+                  id="elevation"
+                  type="number"
+                  min={0}
+                  inputMode="numeric"
+                  value={elevationGainMeters}
+                  onChange={(e) => setElevationGainMeters(e.target.value === "" ? "" : Number(e.target.value))}
+                  placeholder="e.g. 120"
+                  data-testid="input-elevation"
+                />
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="attachment">Evidence (Optional)</Label>
