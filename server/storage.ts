@@ -1796,6 +1796,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteFeedPost(postId: string, userId: string): Promise<void> {
+    // Clear the dedup record first so a future sync can repost this workout.
+    await db.delete(syncedWorkouts).where(eq(syncedWorkouts.feedPostId, postId));
     await db.delete(feedPosts).where(and(eq(feedPosts.id, postId), eq(feedPosts.userId, userId)));
   }
 
