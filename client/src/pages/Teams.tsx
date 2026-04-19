@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { PlusCircle, Search, Users, Share2, Flame, ArrowLeft, Trophy } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
 import { SiWhatsapp, SiApple } from "react-icons/si";
+import { QRCodeSVG } from "qrcode.react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -282,6 +283,21 @@ export default function Teams() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
+            {selectedTeam && (
+              <div className="flex flex-col items-center gap-2">
+                <div className="rounded-lg bg-white p-3 border" data-testid="qr-invite">
+                  <QRCodeSVG
+                    value={getInviteLink(selectedTeam)}
+                    size={176}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground text-center max-w-xs">
+                  Scan with a phone camera to join {selectedTeam.name} instantly.
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Invite Link</Label>
               <div className="flex gap-2">

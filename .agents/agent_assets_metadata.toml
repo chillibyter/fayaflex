@@ -54,3 +54,21 @@ id = "JFw7LBgP-24OmEyqHFUM_"
 uri = "file://client/src/assets/icons-3d/mountain.png"
 type = "image"
 title = "3d mountain icon"
+
+[[generated]]
+id = "_uA7pWX6rLlaRV8D2q5Ye"
+uri = "file://client/src/assets/icons-3d/crown.png"
+type = "image"
+title = "3d crown icon"
+
+[[generated]]
+id = "bB1Ix5E1F2T3zoC44p2Cm"
+uri = "file://client/src/assets/icons-3d/confetti.png"
+type = "image"
+title = "3d confetti icon"
+
+[[generated]]
+id = "oMLhVmQ37256dLnYI4iJL"
+uri = "file://client/src/assets/icons-3d/fire_streak.png"
+type = "image"
+title = "3d fire_streak icon"

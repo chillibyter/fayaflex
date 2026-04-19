@@ -7,6 +7,9 @@ import medalSilver from "@/assets/icons-3d/medal_silver.png";
 import medalBronze from "@/assets/icons-3d/medal_bronze.png";
 import bicycle from "@/assets/icons-3d/bicycle.png";
 import mountain from "@/assets/icons-3d/mountain.png";
+import crown from "@/assets/icons-3d/crown.png";
+import confetti from "@/assets/icons-3d/confetti.png";
+import fireStreak from "@/assets/icons-3d/fire_streak.png";
 
 export type Icon3DName =
   | "flame"
@@ -17,7 +20,10 @@ export type Icon3DName =
   | "medal-silver"
   | "medal-bronze"
   | "bicycle"
-  | "mountain";
+  | "mountain"
+  | "crown"
+  | "confetti"
+  | "fire-streak";
 
 const MAP: Record<Icon3DName, string> = {
   flame,
@@ -29,6 +35,9 @@ const MAP: Record<Icon3DName, string> = {
   "medal-bronze": medalBronze,
   bicycle,
   mountain,
+  crown,
+  confetti,
+  "fire-streak": fireStreak,
 };
 
 interface Icon3DProps {
