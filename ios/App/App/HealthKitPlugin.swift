@@ -15,6 +15,39 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
     
     private let healthStore = HKHealthStore()
+
+    static func workoutActivityName(_ type: HKWorkoutActivityType) -> String {
+        switch type {
+        case .running: return "running"
+        case .walking: return "walking"
+        case .cycling: return "cycling"
+        case .swimming: return "swimming"
+        case .hiking: return "hiking"
+        case .yoga: return "yoga"
+        case .functionalStrengthTraining, .traditionalStrengthTraining: return "weightlifting"
+        case .crossTraining: return "crossfit"
+        case .rowing: return "rowing"
+        case .elliptical: return "elliptical"
+        case .stairClimbing, .stairs, .stepTraining: return "stair climbing"
+        case .highIntensityIntervalTraining: return "HIIT"
+        case .pilates: return "pilates"
+        case .dance, .danceInspiredTraining, .cardioDance, .socialDance: return "dance"
+        case .boxing, .kickboxing: return "boxing"
+        case .martialArts: return "martial arts"
+        case .climbing: return "climbing"
+        case .soccer: return "soccer"
+        case .basketball: return "basketball"
+        case .tennis: return "tennis"
+        case .golf: return "golf"
+        case .skatingSports: return "skating"
+        case .snowSports, .downhillSkiing, .crossCountrySkiing, .snowboarding: return "snow sports"
+        case .surfingSports, .paddleSports: return "water sports"
+        case .mixedCardio, .mixedMetabolicCardioTraining: return "cardio"
+        case .coreTraining: return "core training"
+        case .flexibility: return "stretching"
+        default: return "workout"
+        }
+    }
     
     private var readTypes: Set<HKObjectType> {
         var types = Set<HKObjectType>()
@@ -118,11 +151,19 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 
                 let workouts = (samples as? [HKWorkout] ?? []).map { workout -> [String: Any] in
                     let formatter = ISO8601DateFormatter()
+                    let energyKcal = workout.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie()) ?? 0
+                    let distanceMeters = workout.totalDistance?.doubleValue(for: HKUnit.meter()) ?? 0
+                    let elevation = (workout.metadata?[HKMetadataKeyElevationAscended] as? HKQuantity)?.doubleValue(for: HKUnit.meter()) ?? 0
                     return [
+                        "uuid": workout.uuid.uuidString,
                         "activityType": workout.workoutActivityType.rawValue,
+                        "activityTypeName": HealthKitPlugin.workoutActivityName(workout.workoutActivityType),
                         "startDate": formatter.string(from: workout.startDate),
                         "endDate": formatter.string(from: workout.endDate),
-                        "duration": workout.duration
+                        "duration": workout.duration,
+                        "calories": Int(energyKcal),
+                        "distanceMeters": Int(distanceMeters),
+                        "elevationGainMeters": Int(elevation)
                     ]
                 }
                 

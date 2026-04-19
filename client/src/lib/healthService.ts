@@ -8,6 +8,16 @@ export interface HealthDataPoint {
   workouts: number;
 }
 
+export interface DetailedWorkout {
+  externalId: string;
+  workoutType: string;
+  calories?: number | null;
+  durationMinutes?: number | null;
+  distanceMeters?: number | null;
+  avgHeartRate?: number | null;
+  elevationGainMeters?: number | null;
+}
+
 // iOS HealthKit plugin (custom native Swift plugin)
 interface HealthKitPluginInterface {
   isAvailable(): Promise<{ available: boolean }>;
@@ -454,6 +464,79 @@ class HealthService {
     } catch (error) {
       console.error('[HealthService] Error fetching health data:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Returns individual workouts (last `daysBack` days) with rich per-workout
+   * metadata (calories, distance, duration, etc.) for posting to the feed.
+   * Each workout has a stable externalId so the server can dedupe across syncs.
+   */
+  async getDetailedWorkouts(daysBack: number = 30): Promise<DetailedWorkout[]> {
+    if (!Capacitor.isNativePlatform()) return [];
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - daysBack);
+      const startStr = startDate.toISOString();
+      const endStr = endDate.toISOString();
+
+      if (this.isIOS()) {
+        const result = await HealthKit.getWorkouts({ limit: 100 });
+        const raw = (result as any)?.workouts || [];
+        const cutoff = startDate.getTime();
+        return raw
+          .filter((w: any) => {
+            const t = new Date(w?.startDate || w?.start || 0).getTime();
+            return !isNaN(t) && t >= cutoff;
+          })
+          .map((w: any) => ({
+            externalId: String(w.uuid || `${w.startDate}-${w.activityType}`),
+            workoutType: w.activityTypeName || 'workout',
+            calories: typeof w.calories === 'number' ? w.calories : null,
+            durationMinutes: typeof w.duration === 'number' ? Math.round(w.duration / 60) : null,
+            distanceMeters: typeof w.distanceMeters === 'number' && w.distanceMeters > 0 ? w.distanceMeters : null,
+            elevationGainMeters: typeof w.elevationGainMeters === 'number' && w.elevationGainMeters > 0 ? w.elevationGainMeters : null,
+            avgHeartRate: null,
+          }));
+      }
+
+      // Huawei: HMS plugin doesn't expose per-workout metadata yet
+      const provider = await this.getProviderName();
+      if (provider === 'huawei_health') return [];
+
+      // Android: capacitor-health queryWorkouts (with heart rate)
+      const resp: any = await Health.queryWorkouts({
+        startDate: startStr,
+        endDate: endStr,
+        includeHeartRate: true,
+        includeRoute: false,
+        includeSteps: false,
+      });
+      const raw: any[] = resp?.workouts || [];
+      return raw.map((w: any) => {
+        const start = w?.startDate || w?.start;
+        const externalId = String(w?.id || w?.uuid || `${start}-${w?.workoutType || w?.type || 'workout'}`);
+        const durationSec = typeof w?.duration === 'number' ? w.duration : null;
+        const heartRates: number[] = Array.isArray(w?.heartRate)
+          ? w.heartRate.map((h: any) => h?.bpm ?? h?.value).filter((v: any) => typeof v === 'number')
+          : [];
+        const avgHr = heartRates.length > 0
+          ? Math.round(heartRates.reduce((a, b) => a + b, 0) / heartRates.length)
+          : null;
+        return {
+          externalId,
+          workoutType: String(w?.workoutType || w?.type || 'workout').toLowerCase().replace(/_/g, ' '),
+          calories: typeof w?.calories === 'number' ? Math.round(w.calories) : null,
+          durationMinutes: durationSec ? Math.round(durationSec / 60) : null,
+          distanceMeters: typeof w?.distance === 'number' && w.distance > 0 ? Math.round(w.distance) : null,
+          avgHeartRate: avgHr,
+          elevationGainMeters: null,
+        };
+      });
+    } catch (error) {
+      console.error('[HealthService] getDetailedWorkouts failed:', error);
+      return [];
     }
   }
 

@@ -4,34 +4,44 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, type Activity } from "@shared/schema";
 
-function formatWorkoutFeedPost(activity: Activity): string {
-  const wt = (activity.workoutType || "workout").replace(/_/g, " ");
+interface WorkoutSummary {
+  workoutType?: string | null;
+  durationMinutes?: number | null;
+  distanceMeters?: number | null;
+  avgHeartRate?: number | null;
+  elevationGainMeters?: number | null;
+  calories?: number | null;
+  steps?: number | null;
+}
+
+function formatWorkoutFeedPost(workout: WorkoutSummary): string {
+  const wt = (workout.workoutType || "workout").replace(/_/g, " ").toLowerCase();
   const title = wt.charAt(0).toUpperCase() + wt.slice(1);
   const lines: string[] = [`Completed a ${title} workout`];
   const stats: string[] = [];
-  if (activity.durationMinutes && activity.durationMinutes > 0) {
-    const h = Math.floor(activity.durationMinutes / 60);
-    const m = activity.durationMinutes % 60;
+  if (workout.durationMinutes && workout.durationMinutes > 0) {
+    const h = Math.floor(workout.durationMinutes / 60);
+    const m = workout.durationMinutes % 60;
     stats.push(h > 0 ? `${h}h ${m}m` : `${m} min`);
   }
-  if (activity.distanceMeters && activity.distanceMeters > 0) {
-    const km = activity.distanceMeters / 1000;
+  if (workout.distanceMeters && workout.distanceMeters > 0) {
+    const km = workout.distanceMeters / 1000;
     stats.push(`${km.toFixed(km < 10 ? 2 : 1)} km`);
   }
-  if (activity.calories && activity.calories > 0) {
-    stats.push(`${activity.calories} cal`);
+  if (workout.calories && workout.calories > 0) {
+    stats.push(`${workout.calories} cal`);
   }
-  if (activity.avgHeartRate && activity.avgHeartRate > 0) {
-    stats.push(`${activity.avgHeartRate} bpm avg`);
+  if (workout.avgHeartRate && workout.avgHeartRate > 0) {
+    stats.push(`${workout.avgHeartRate} bpm avg`);
   }
-  if (activity.elevationGainMeters && activity.elevationGainMeters > 0) {
-    stats.push(`${activity.elevationGainMeters} m elevation`);
+  if (workout.elevationGainMeters && workout.elevationGainMeters > 0) {
+    stats.push(`${workout.elevationGainMeters} m elevation`);
   }
-  if (activity.steps && activity.steps > 0 && !activity.distanceMeters) {
-    stats.push(`${activity.steps.toLocaleString()} steps`);
+  if (workout.steps && workout.steps > 0 && !workout.distanceMeters) {
+    stats.push(`${workout.steps.toLocaleString()} steps`);
   }
-  if (activity.distanceMeters && activity.durationMinutes && activity.durationMinutes > 0) {
-    const speedKmh = (activity.distanceMeters / 1000) / (activity.durationMinutes / 60);
+  if (workout.distanceMeters && workout.durationMinutes && workout.durationMinutes > 0) {
+    const speedKmh = (workout.distanceMeters / 1000) / (workout.durationMinutes / 60);
     if (speedKmh > 0 && isFinite(speedKmh)) {
       stats.push(`${speedKmh.toFixed(1)} km/h avg`);
     }
@@ -40,6 +50,40 @@ function formatWorkoutFeedPost(activity: Activity): string {
     lines.push(stats.join(" • "));
   }
   return lines.join("\n");
+}
+
+interface SyncedWorkoutInput extends WorkoutSummary {
+  externalId: string;
+  source: string;
+}
+
+async function autoPostSyncedWorkouts(
+  userId: string,
+  workouts: SyncedWorkoutInput[],
+): Promise<{ posted: number; skipped: number }> {
+  let posted = 0;
+  let skipped = 0;
+  for (const w of workouts) {
+    if (!w.externalId || !w.workoutType) {
+      skipped++;
+      continue;
+    }
+    try {
+      // Reserve the externalId first; if already posted, skip.
+      const { alreadyExisted } = await storage.recordSyncedWorkout(userId, w.source, w.externalId, null);
+      if (alreadyExisted) {
+        skipped++;
+        continue;
+      }
+      const content = formatWorkoutFeedPost(w);
+      await storage.createFeedPost(userId, content, null);
+      posted++;
+    } catch (e) {
+      console.error("[Feed] Auto-post for synced workout failed:", e);
+      skipped++;
+    }
+  }
+  return { posted, skipped };
 }
 import { z } from "zod";
 import {
@@ -246,6 +290,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           workouts: z.number().int().min(0).optional(), // Health sync sends workout count
           workoutType: z.string().optional(),
         })).max(100), // Limit to 100 activities per sync
+        workouts: z.array(z.object({
+          externalId: z.string().min(1).max(255),
+          workoutType: z.string().min(1),
+          calories: z.number().int().min(0).optional().nullable(),
+          durationMinutes: z.number().int().min(0).optional().nullable(),
+          distanceMeters: z.number().int().min(0).optional().nullable(),
+          avgHeartRate: z.number().int().min(0).optional().nullable(),
+          elevationGainMeters: z.number().int().min(0).optional().nullable(),
+        })).max(100).optional(),
       });
       
       const validatedData = syncSchema.parse(req.body);
@@ -312,13 +365,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       console.log(`[Sync] Results: created=${results.created}, updated=${results.updated}, skipped=${results.skipped}`);
-      
+
+      // Auto-post any newly synced individual workouts to the feed
+      let autoPosted = { posted: 0, skipped: 0 };
+      if (validatedData.workouts && validatedData.workouts.length > 0) {
+        autoPosted = await autoPostSyncedWorkouts(
+          userId,
+          validatedData.workouts.map(w => ({ ...w, source: validatedData.provider })),
+        );
+        console.log(`[Sync] Feed auto-post: posted=${autoPosted.posted}, skipped=${autoPosted.skipped}`);
+      }
+
       res.json({
         success: true,
         synced: results.created + results.updated,
         created: results.created,
         updated: results.updated,
         skipped: results.skipped,
+        feedPosted: autoPosted.posted,
       });
     } catch (error: any) {
       console.error("Error syncing device:", error);
@@ -482,6 +546,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       isConnected: true,
       lastSyncAt: new Date(),
     });
+
+    // Auto-post each newly synced Garmin workout to the feed (deduped by summaryId)
+    if (activities.length > 0) {
+      const workoutInputs: SyncedWorkoutInput[] = activities.map((a) => ({
+        externalId: a.summaryId,
+        source: "garmin",
+        workoutType: (a.activityType || "workout").replace(/_/g, " ").toLowerCase(),
+        calories: a.activeKilocalories ? Math.round(a.activeKilocalories) : null,
+        durationMinutes: a.durationInSeconds ? Math.round(a.durationInSeconds / 60) : null,
+        distanceMeters: null,
+        avgHeartRate: null,
+        elevationGainMeters: null,
+        steps: a.steps ?? null,
+      }));
+      const autoPosted = await autoPostSyncedWorkouts(userId, workoutInputs);
+      console.log(`[Garmin] Feed auto-post: posted=${autoPosted.posted}, skipped=${autoPosted.skipped}`);
+    }
 
     return { synced: results.created + results.updated };
   }

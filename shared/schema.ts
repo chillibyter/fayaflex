@@ -119,6 +119,21 @@ export const activities = pgTable("activities", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Tracks individual workouts that have already been auto-posted to the feed
+// (one row per device-reported workout) so we don't re-post on every sync.
+export const syncedWorkouts = pgTable("synced_workouts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  source: varchar("source", { length: 50 }).notNull(), // apple_health | android_health | huawei_health | garmin
+  externalId: varchar("external_id", { length: 255 }).notNull(),
+  feedPostId: varchar("feed_post_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userSourceExternalUnique: uniqueIndex("synced_workouts_user_source_external_unique").on(table.userId, table.source, table.externalId),
+}));
+
 export const activitiesRelations = relations(activities, ({ one }) => ({
   user: one(users, {
     fields: [activities.userId],

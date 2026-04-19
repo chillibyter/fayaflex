@@ -21,6 +21,7 @@ import {
   feedPostLikes,
   feedPostComments,
   pushTokens,
+  syncedWorkouts,
   type User,
   type UpsertUser,
   type Team,
@@ -108,6 +109,7 @@ export interface IStorage {
   getUserActivitiesForDate(userId: string, date: string): Promise<Activity[]>;
   getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]>;
   getAllActivitiesForMonth(month: number, year: number): Promise<Activity[]>;
+  recordSyncedWorkout(userId: string, source: string, externalId: string, feedPostId: string | null): Promise<{ alreadyExisted: boolean }>;
   syncHealthActivities(
     userId: string,
     provider: string,
@@ -724,6 +726,22 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(activities.date));
+  }
+
+  async recordSyncedWorkout(
+    userId: string,
+    source: string,
+    externalId: string,
+    feedPostId: string | null,
+  ): Promise<{ alreadyExisted: boolean }> {
+    const inserted = await db
+      .insert(syncedWorkouts)
+      .values({ userId, source, externalId, feedPostId })
+      .onConflictDoNothing({
+        target: [syncedWorkouts.userId, syncedWorkouts.source, syncedWorkouts.externalId],
+      })
+      .returning({ id: syncedWorkouts.id });
+    return { alreadyExisted: inserted.length === 0 };
   }
 
   async syncHealthActivities(

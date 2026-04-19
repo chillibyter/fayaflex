@@ -319,7 +319,8 @@ export function HealthDevices() {
       const totalCalories = healthData.reduce((sum: number, day: any) => sum + (day.calories || 0), 0);
       const hasZeroCalories = isAndroid && totalCalories === 0 && healthData.length > 0;
 
-      await apiRequest('POST', '/api/devices/sync', { provider, activities: healthData });
+      const detailedWorkouts = await healthService.getDetailedWorkouts(30).catch(() => []);
+      await apiRequest('POST', '/api/devices/sync', { provider, activities: healthData, workouts: detailedWorkouts });
       return { provider, hasZeroCalories };
     },
     onSuccess: (result) => {
@@ -379,7 +380,8 @@ export function HealthDevices() {
       const totalCalories = healthData.reduce((sum: number, day: any) => sum + (day.calories || 0), 0);
       const hasZeroCalories = isAndroid && totalCalories === 0 && healthData.length > 0;
 
-      await apiRequest('POST', '/api/devices/sync', { provider, activities: healthData });
+      const detailedWorkouts = await healthService.getDetailedWorkouts(30).catch(() => []);
+      await apiRequest('POST', '/api/devices/sync', { provider, activities: healthData, workouts: detailedWorkouts });
       return { provider, hasZeroCalories };
     },
     onSuccess: (result) => {
