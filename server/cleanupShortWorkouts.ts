@@ -60,7 +60,6 @@ export async function cleanupShortAutoPostedWorkouts(): Promise<void> {
 
     if (candidates.length === 0) {
       console.log("[Cleanup] No recent auto-posted workouts to evaluate");
-      return;
     }
 
     let deleted = 0;
