@@ -66,25 +66,51 @@ function initFirebase() {
 }
 
 // ---------------- Init APNs (direct, no Firebase) ----------------
+function normalizeApnsKey(raw: string): string {
+  let k = raw.trim();
+  // Replace literal backslash-n with real newline
+  k = k.replace(/\\n/g, "\n");
+  // If there are no real newlines, the value got flattened — rebuild it.
+  if (!k.includes("\n")) {
+    const beginMarker = "-----BEGIN PRIVATE KEY-----";
+    const endMarker = "-----END PRIVATE KEY-----";
+    const beginIdx = k.indexOf(beginMarker);
+    const endIdx = k.indexOf(endMarker);
+    if (beginIdx >= 0 && endIdx > beginIdx) {
+      const body = k.slice(beginIdx + beginMarker.length, endIdx).replace(/\s+/g, "");
+      // Re-wrap base64 body to 64-char lines
+      const wrapped = body.match(/.{1,64}/g)?.join("\n") || body;
+      k = `${beginMarker}\n${wrapped}\n${endMarker}`;
+    }
+  }
+  return k;
+}
+
 function initApns() {
-  const key = process.env.APNS_KEY;
+  const rawKey = process.env.APNS_KEY;
   const keyId = process.env.APNS_KEY_ID;
   const teamId = process.env.APNS_TEAM_ID;
   const bundleId = process.env.APNS_BUNDLE_ID || "com.fayaflex.app";
   const production = (process.env.APNS_PRODUCTION ?? "true") !== "false";
 
-  if (!key || !keyId || !teamId) {
-    console.log("[Push] APNS_KEY / APNS_KEY_ID / APNS_TEAM_ID not all set — direct APNs disabled");
+  if (!rawKey || !keyId || !teamId) {
+    console.log(
+      `[Push] APNs not configured — APNS_KEY=${!!rawKey} APNS_KEY_ID=${!!keyId} APNS_TEAM_ID=${!!teamId}`
+    );
     return;
   }
 
+  const key = normalizeApnsKey(rawKey);
+  const lineCount = key.split("\n").length;
+  const hasBegin = key.includes("BEGIN PRIVATE KEY");
+  const hasEnd = key.includes("END PRIVATE KEY");
+  console.log(
+    `[Push] APNs key check: length=${key.length} lines=${lineCount} hasBegin=${hasBegin} hasEnd=${hasEnd} keyId=${keyId} teamId=${teamId}`
+  );
+
   try {
     apnsProvider = new apn.Provider({
-      token: {
-        key: key.replace(/\\n/g, "\n"),
-        keyId,
-        teamId,
-      },
+      token: { key, keyId, teamId },
       production,
     });
     apnsBundleId = bundleId;
