@@ -57,6 +57,15 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         if let calorieType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) {
             types.insert(calorieType)
         }
+        if let hrType = HKObjectType.quantityType(forIdentifier: .heartRate) {
+            types.insert(hrType)
+        }
+        if let distType = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) {
+            types.insert(distType)
+        }
+        if let cycDistType = HKObjectType.quantityType(forIdentifier: .distanceCycling) {
+            types.insert(cycDistType)
+        }
         types.insert(HKObjectType.workoutType())
         return types
     }
@@ -137,37 +146,65 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         let limit = call.getInt("limit") ?? 20
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         
+        let healthStoreRef = self.healthStore
         let query = HKSampleQuery(
             sampleType: HKObjectType.workoutType(),
             predicate: nil,
             limit: limit,
             sortDescriptors: [sortDescriptor]
         ) { _, samples, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    call.reject(error.localizedDescription)
-                    return
+            if let error = error {
+                DispatchQueue.main.async { call.reject(error.localizedDescription) }
+                return
+            }
+
+            let formatter = ISO8601DateFormatter()
+            let workoutSamples = samples as? [HKWorkout] ?? []
+            var results: [[String: Any]] = Array(repeating: [:], count: workoutSamples.count)
+            let group = DispatchGroup()
+            let hrType = HKQuantityType.quantityType(forIdentifier: .heartRate)
+            let hrUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
+
+            for (idx, workout) in workoutSamples.enumerated() {
+                let energyKcal = workout.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie()) ?? 0
+                let distanceMeters = workout.totalDistance?.doubleValue(for: HKUnit.meter()) ?? 0
+                let elevation = (workout.metadata?[HKMetadataKeyElevationAscended] as? HKQuantity)?.doubleValue(for: HKUnit.meter()) ?? 0
+
+                var entry: [String: Any] = [
+                    "uuid": workout.uuid.uuidString,
+                    "activityType": workout.workoutActivityType.rawValue,
+                    "activityTypeName": HealthKitPlugin.workoutActivityName(workout.workoutActivityType),
+                    "startDate": formatter.string(from: workout.startDate),
+                    "endDate": formatter.string(from: workout.endDate),
+                    "duration": workout.duration,
+                    "calories": Int(energyKcal),
+                    "distanceMeters": Int(distanceMeters),
+                    "elevationGainMeters": Int(elevation)
+                ]
+
+                guard let hrType = hrType else {
+                    results[idx] = entry
+                    continue
                 }
-                
-                let workouts = (samples as? [HKWorkout] ?? []).map { workout -> [String: Any] in
-                    let formatter = ISO8601DateFormatter()
-                    let energyKcal = workout.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie()) ?? 0
-                    let distanceMeters = workout.totalDistance?.doubleValue(for: HKUnit.meter()) ?? 0
-                    let elevation = (workout.metadata?[HKMetadataKeyElevationAscended] as? HKQuantity)?.doubleValue(for: HKUnit.meter()) ?? 0
-                    return [
-                        "uuid": workout.uuid.uuidString,
-                        "activityType": workout.workoutActivityType.rawValue,
-                        "activityTypeName": HealthKitPlugin.workoutActivityName(workout.workoutActivityType),
-                        "startDate": formatter.string(from: workout.startDate),
-                        "endDate": formatter.string(from: workout.endDate),
-                        "duration": workout.duration,
-                        "calories": Int(energyKcal),
-                        "distanceMeters": Int(distanceMeters),
-                        "elevationGainMeters": Int(elevation)
-                    ]
+
+                group.enter()
+                let predicate = HKQuery.predicateForSamples(withStart: workout.startDate, end: workout.endDate, options: .strictStartDate)
+                let hrQuery = HKStatisticsQuery(quantityType: hrType, quantitySamplePredicate: predicate, options: [.discreteAverage, .discreteMax]) { _, stats, _ in
+                    if let avg = stats?.averageQuantity()?.doubleValue(for: hrUnit) {
+                        entry["avgHeartRate"] = Int(avg.rounded())
+                    }
+                    if let max = stats?.maximumQuantity()?.doubleValue(for: hrUnit) {
+                        entry["maxHeartRate"] = Int(max.rounded())
+                    }
+                    results[idx] = entry
+                    group.leave()
                 }
-                
-                call.resolve(["workouts": workouts])
+                healthStoreRef.execute(hrQuery)
+            }
+
+            group.notify(queue: .main) {
+                let nonEmpty = results.map { $0.isEmpty ? [String: Any]() : $0 }.filter { !$0.isEmpty }
+                call.resolve(["workouts": nonEmpty])
             }
         }
         

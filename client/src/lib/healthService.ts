@@ -533,7 +533,7 @@ class HealthService {
             durationMinutes: typeof w.duration === 'number' ? Math.round(w.duration / 60) : null,
             distanceMeters: typeof w.distanceMeters === 'number' && w.distanceMeters > 0 ? w.distanceMeters : null,
             elevationGainMeters: typeof w.elevationGainMeters === 'number' && w.elevationGainMeters > 0 ? w.elevationGainMeters : null,
-            avgHeartRate: null,
+            avgHeartRate: typeof w.avgHeartRate === 'number' && w.avgHeartRate > 0 ? w.avgHeartRate : null,
             };
           });
       }

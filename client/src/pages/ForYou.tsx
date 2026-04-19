@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { WorkoutPostCard } from "@/components/WorkoutPostCard";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -167,7 +168,7 @@ function FeedCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
 
       {/* Content */}
       <div className="px-4 py-3">
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
+        <WorkoutPostCard content={post.content} />
       </div>
 
       <Separator />
