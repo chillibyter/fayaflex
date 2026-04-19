@@ -32,6 +32,7 @@ import { apiRequest, getApiUrl, getAuthToken } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { FITNESS_AVATARS, AVATAR_SPRITE_URL } from "@/lib/avatars";
 import { UserAvatar } from "@/components/UserAvatar";
+import { Icon3D } from "@/components/Icon3D";
 import BadgesDisplay from "@/components/BadgesDisplay";
 import SmartGoals from "@/components/SmartGoals";
 import { Link } from "wouter";
