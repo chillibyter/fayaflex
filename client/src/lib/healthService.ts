@@ -494,6 +494,7 @@ class HealthService {
           .map((w: any) => ({
             externalId: String(w.uuid || `${w.startDate}-${w.activityType}`),
             workoutType: w.activityTypeName || 'workout',
+            startedAt: w.startDate || w.start || null,
             calories: typeof w.calories === 'number' ? w.calories : null,
             durationMinutes: typeof w.duration === 'number' ? Math.round(w.duration / 60) : null,
             distanceMeters: typeof w.distanceMeters === 'number' && w.distanceMeters > 0 ? w.distanceMeters : null,
@@ -528,6 +529,7 @@ class HealthService {
         return {
           externalId,
           workoutType: String(w?.workoutType || w?.type || 'workout').toLowerCase().replace(/_/g, ' '),
+          startedAt: start ? new Date(start).toISOString() : null,
           calories: typeof w?.calories === 'number' ? Math.round(w.calories) : null,
           durationMinutes: durationSec ? Math.round(durationSec / 60) : null,
           distanceMeters: typeof w?.distance === 'number' && w.distance > 0 ? Math.round(w.distance) : null,

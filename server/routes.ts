@@ -55,6 +55,7 @@ function formatWorkoutFeedPost(workout: WorkoutSummary): string {
 interface SyncedWorkoutInput extends WorkoutSummary {
   externalId: string;
   source: string;
+  startedAt?: string | null;
 }
 
 async function autoPostSyncedWorkouts(
@@ -63,8 +64,15 @@ async function autoPostSyncedWorkouts(
 ): Promise<{ posted: number; skipped: number }> {
   let posted = 0;
   let skipped = 0;
+  // Only auto-post workouts that started within the last 24 hours.
+  const cutoffMs = Date.now() - 24 * 60 * 60 * 1000;
   for (const w of workouts) {
     if (!w.externalId || !w.workoutType) {
+      skipped++;
+      continue;
+    }
+    const startedAtMs = w.startedAt ? new Date(w.startedAt).getTime() : NaN;
+    if (!isFinite(startedAtMs) || startedAtMs < cutoffMs) {
       skipped++;
       continue;
     }
@@ -307,6 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         workouts: z.array(z.object({
           externalId: z.string().min(1).max(255),
           workoutType: z.string().min(1),
+          startedAt: z.string().datetime().optional().nullable(),
           calories: z.number().int().min(0).optional().nullable(),
           durationMinutes: z.number().int().min(0).optional().nullable(),
           distanceMeters: z.number().int().min(0).optional().nullable(),
@@ -549,6 +558,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         externalId: a.summaryId,
         source: "garmin",
         workoutType: (a.activityType || "workout").replace(/_/g, " ").toLowerCase(),
+        startedAt: a.startTimeInSeconds
+          ? new Date(a.startTimeInSeconds * 1000).toISOString()
+          : null,
         calories: a.activeKilocalories ? Math.round(a.activeKilocalories) : null,
         durationMinutes: a.durationInSeconds ? Math.round(a.durationInSeconds / 60) : null,
         distanceMeters: null,
