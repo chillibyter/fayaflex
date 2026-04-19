@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin, Users, ChevronRight, Heart, UserCircle2 } from "lucide-react";
+import { Icon3D } from "@/components/Icon3D";
 import { SiApple } from "react-icons/si";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
@@ -380,7 +381,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-3 gap-3">
           <Link href="/daily-chart?metric=calories">
             <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-calories">
-              <Flame className="h-6 w-6 text-orange-500 mx-auto mb-1" />
+              <Icon3D name="flame" size={40} className="mx-auto mb-1" />
               <p className="text-xs text-muted-foreground">Total Calories</p>
               <p className="text-2xl font-bold">{stats?.calories?.toLocaleString() || 0}</p>
               <p className="text-xs text-muted-foreground">kcal</p>
@@ -388,7 +389,7 @@ export default function Dashboard() {
           </Link>
           <Link href="/daily-chart?metric=steps">
             <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-steps">
-              <Footprints className="h-6 w-6 text-green-500 mx-auto mb-1" />
+              <Icon3D name="sneaker" size={40} className="mx-auto mb-1" />
               <p className="text-xs text-muted-foreground">Total Steps</p>
               <p className="text-2xl font-bold">{stats?.steps?.toLocaleString() || 0}</p>
               <p className="text-xs text-muted-foreground">steps</p>
@@ -396,7 +397,7 @@ export default function Dashboard() {
           </Link>
           <Link href="/track">
             <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm" data-testid="stat-workouts">
-              <Calendar className="h-6 w-6 text-green-600 mx-auto mb-1" />
+              <Icon3D name="dumbbell" size={40} className="mx-auto mb-1" />
               <p className="text-xs text-muted-foreground">Workout Days</p>
               <p className="text-2xl font-bold">{stats?.workouts || 0}</p>
               <p className="text-xs text-muted-foreground">days</p>

@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Medal, TrendingUp, TrendingDown, Minus, Users } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Users } from "lucide-react";
 import { Link } from "wouter";
+import { Icon3D } from "@/components/Icon3D";
 
 export interface TeamLeaderboardEntry {
   rank: number;
@@ -15,10 +16,10 @@ export interface TeamLeaderboardEntry {
   caloriesToOvertake?: number;
 }
 
-function getMedalIcon(rank: number) {
-  if (rank === 1) return <Trophy className="h-4 w-4 text-yellow-500" />;
-  if (rank === 2) return <Medal className="h-4 w-4 text-gray-400" />;
-  if (rank === 3) return <Medal className="h-4 w-4 text-amber-600" />;
+function getMedal3D(rank: number) {
+  if (rank === 1) return <Icon3D name="trophy-gold" size={28} />;
+  if (rank === 2) return <Icon3D name="medal-silver" size={24} />;
+  if (rank === 3) return <Icon3D name="medal-bronze" size={24} />;
   return null;
 }
 
@@ -73,7 +74,7 @@ export default function TeamLeaderboardCard({
           <h4 className="font-semibold truncate text-sm sm:text-base" data-testid={`text-team-name-${rank}`}>
             {name}
           </h4>
-          {getMedalIcon(rank)}
+          {getMedal3D(rank)}
         </div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           {typeof memberCount === "number" && (

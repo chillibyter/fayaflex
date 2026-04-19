@@ -1,4 +1,5 @@
 import { Activity, Clock, Flame, Heart, Mountain, MapPin, Footprints, Gauge } from "lucide-react";
+import { Icon3D, workoutTypeToIcon3D } from "@/components/Icon3D";
 
 interface ParsedWorkout {
   title: string;
@@ -88,12 +89,10 @@ export function WorkoutPostCard({ content }: { content: string }) {
 
   return (
     <div className="space-y-3" data-testid="workout-post-card">
-      <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
-          <Activity className="h-4 w-4 text-primary" />
-        </div>
+      <div className="flex items-center gap-3">
+        <Icon3D name={workoutTypeToIcon3D(parsed.type)} size={48} />
         <div className="min-w-0">
-          <p className="text-sm font-semibold leading-tight truncate">{typeLabel}</p>
+          <p className="text-base font-semibold leading-tight truncate">{typeLabel}</p>
           <p className="text-xs text-muted-foreground">Workout completed</p>
         </div>
       </div>

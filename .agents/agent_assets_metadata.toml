@@ -1,0 +1,56 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "WZck-y_dJH35H89F9es2O"
+uri = "file://client/src/assets/icons-3d/flame.png"
+type = "image"
+title = "3d flame icon"
+
+[[generated]]
+id = "JOtC1pQvvNhaUa78pqCcO"
+uri = "file://client/src/assets/icons-3d/sneaker.png"
+type = "image"
+title = "3d sneaker icon"
+
+[[generated]]
+id = "YhD1YgolAbgJKmJ4BWdwU"
+uri = "file://client/src/assets/icons-3d/dumbbell.png"
+type = "image"
+title = "3d dumbbell icon"
+
+[[generated]]
+id = "VMque7-AI7SlzphBWmIdx"
+uri = "file://client/src/assets/icons-3d/heart.png"
+type = "image"
+title = "3d heart icon"
+
+[[generated]]
+id = "y7dwHypzvX4K3dRYNTyZT"
+uri = "file://client/src/assets/icons-3d/trophy_gold.png"
+type = "image"
+title = "3d trophy_gold icon"
+
+[[generated]]
+id = "r0XIaRdbCmw88OLQKILPn"
+uri = "file://client/src/assets/icons-3d/medal_silver.png"
+type = "image"
+title = "3d medal_silver icon"
+
+[[generated]]
+id = "rgfZgSLCD7WR9XT4XYWKy"
+uri = "file://client/src/assets/icons-3d/medal_bronze.png"
+type = "image"
+title = "3d medal_bronze icon"
+
+[[generated]]
+id = "pJXumNfABJJg3yOC9DkWP"
+uri = "file://client/src/assets/icons-3d/bicycle.png"
+type = "image"
+title = "3d bicycle icon"
+
+[[generated]]
+id = "JFw7LBgP-24OmEyqHFUM_"
+uri = "file://client/src/assets/icons-3d/mountain.png"
+type = "image"
+title = "3d mountain icon"
