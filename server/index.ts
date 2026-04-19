@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { cleanupShortAutoPostedWorkouts } from "./cleanupShortWorkouts";
 import { setupVite, serveStatic, log } from "./vite";
 
 // Global safety net: prevent Neon DB connection resets (or any other
@@ -153,6 +154,10 @@ app.use((req, res, next) => {
     }, () => {
       log(`serving on port ${port}`);
       console.log(`[Startup] Server successfully started on port ${port}`);
+      // Fire-and-forget cleanup of low-quality auto-posted workouts.
+      cleanupShortAutoPostedWorkouts().catch((e) =>
+        console.error("[Cleanup] cleanupShortAutoPostedWorkouts crashed:", e),
+      );
     });
   } catch (error) {
     console.error(`[Startup] FATAL ERROR:`, error);
