@@ -72,6 +72,13 @@ async function autoPostSyncedWorkouts(
   let skipped = 0;
   // Only auto-post workouts that started within the last 24 hours.
   const cutoffMs = Date.now() - 24 * 60 * 60 * 1000;
+  // Skip noise from health platforms that flag every short movement as a
+  // "workout" — only post meaningful sessions (>= 15 min, or with calories,
+  // distance, or steps that look like a real workout).
+  const MIN_DURATION_MIN = 15;
+  const MIN_CALORIES = 100;
+  const MIN_DISTANCE_M = 1000;
+  const MIN_STEPS = 1500;
   for (const w of workouts) {
     if (!w.externalId || !w.workoutType) {
       skipped++;
@@ -79,6 +86,14 @@ async function autoPostSyncedWorkouts(
     }
     const startedAtMs = w.startedAt ? new Date(w.startedAt).getTime() : NaN;
     if (!isFinite(startedAtMs) || startedAtMs < cutoffMs) {
+      skipped++;
+      continue;
+    }
+    const durationOk = (w.durationMinutes ?? 0) >= MIN_DURATION_MIN;
+    const caloriesOk = (w.calories ?? 0) >= MIN_CALORIES;
+    const distanceOk = (w.distanceMeters ?? 0) >= MIN_DISTANCE_M;
+    const stepsOk = (w.steps ?? 0) >= MIN_STEPS;
+    if (!durationOk && !caloriesOk && !distanceOk && !stepsOk) {
       skipped++;
       continue;
     }
