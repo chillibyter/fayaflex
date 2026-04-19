@@ -481,8 +481,9 @@ class HealthService {
       const startStr = startDate.toISOString();
       const endStr = endDate.toISOString();
 
+      const MAX_WORKOUTS = 100; // server caps at 100 per sync
       if (this.isIOS()) {
-        const result = await HealthKit.getWorkouts({ limit: 100 });
+        const result = await HealthKit.getWorkouts({ limit: MAX_WORKOUTS });
         const raw = (result as any)?.workouts || [];
         const cutoff = startDate.getTime();
         return raw

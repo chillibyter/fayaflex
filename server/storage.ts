@@ -110,6 +110,8 @@ export interface IStorage {
   getTeamActivities(teamId: string, month?: number, year?: number): Promise<Activity[]>;
   getAllActivitiesForMonth(month: number, year: number): Promise<Activity[]>;
   recordSyncedWorkout(userId: string, source: string, externalId: string, feedPostId: string | null): Promise<{ alreadyExisted: boolean }>;
+  deleteSyncedWorkout(userId: string, source: string, externalId: string): Promise<void>;
+  setSyncedWorkoutFeedPost(userId: string, source: string, externalId: string, feedPostId: string): Promise<void>;
   syncHealthActivities(
     userId: string,
     provider: string,
@@ -742,6 +744,36 @@ export class DatabaseStorage implements IStorage {
       })
       .returning({ id: syncedWorkouts.id });
     return { alreadyExisted: inserted.length === 0 };
+  }
+
+  async deleteSyncedWorkout(userId: string, source: string, externalId: string): Promise<void> {
+    await db
+      .delete(syncedWorkouts)
+      .where(
+        and(
+          eq(syncedWorkouts.userId, userId),
+          eq(syncedWorkouts.source, source),
+          eq(syncedWorkouts.externalId, externalId),
+        ),
+      );
+  }
+
+  async setSyncedWorkoutFeedPost(
+    userId: string,
+    source: string,
+    externalId: string,
+    feedPostId: string,
+  ): Promise<void> {
+    await db
+      .update(syncedWorkouts)
+      .set({ feedPostId })
+      .where(
+        and(
+          eq(syncedWorkouts.userId, userId),
+          eq(syncedWorkouts.source, source),
+          eq(syncedWorkouts.externalId, externalId),
+        ),
+      );
   }
 
   async syncHealthActivities(

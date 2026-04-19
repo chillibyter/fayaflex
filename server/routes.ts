@@ -68,19 +68,33 @@ async function autoPostSyncedWorkouts(
       skipped++;
       continue;
     }
+    // Reserve the externalId first; if already posted, skip.
+    let reserved = false;
     try {
-      // Reserve the externalId first; if already posted, skip.
       const { alreadyExisted } = await storage.recordSyncedWorkout(userId, w.source, w.externalId, null);
       if (alreadyExisted) {
         skipped++;
         continue;
       }
+      reserved = true;
       const content = formatWorkoutFeedPost(w);
-      await storage.createFeedPost(userId, content, null);
+      const post = await storage.createFeedPost(userId, content, null);
+      const postId = (post as any)?.id;
+      if (postId) {
+        await storage.setSyncedWorkoutFeedPost(userId, w.source, w.externalId, postId);
+      }
       posted++;
     } catch (e) {
       console.error("[Feed] Auto-post for synced workout failed:", e);
       skipped++;
+      // Compensating delete so a future sync can retry posting this workout.
+      if (reserved) {
+        try {
+          await storage.deleteSyncedWorkout(userId, w.source, w.externalId);
+        } catch (cleanupErr) {
+          console.error("[Feed] Failed to roll back syncedWorkout reservation:", cleanupErr);
+        }
+      }
     }
   }
   return { posted, skipped };
@@ -302,28 +316,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const validatedData = syncSchema.parse(req.body);
-      
-      // Detailed logging of incoming health data
-      console.log(`\n========== HEALTH SYNC DEBUG ==========`);
-      console.log(`[Sync] User: ${userId} (${req.user.username})`);
-      console.log(`[Sync] Provider: ${validatedData.provider}`);
-      console.log(`[Sync] Activity count: ${validatedData.activities.length}`);
-      console.log(`[Sync] Raw activities received:`);
-      validatedData.activities.forEach((activity, index) => {
-        console.log(`  [${index + 1}] Date: ${activity.date}`);
-        console.log(`      Calories: ${activity.calories}`);
-        console.log(`      Steps: ${activity.steps}`);
-        console.log(`      Workouts: ${activity.workouts ?? 'undefined'}`);
-        console.log(`      WorkoutType: ${activity.workoutType ?? 'undefined'}`);
-      });
-      
-      // Calculate totals for summary
-      const totalCalories = validatedData.activities.reduce((sum, a) => sum + a.calories, 0);
-      const totalSteps = validatedData.activities.reduce((sum, a) => sum + a.steps, 0);
-      const totalWorkouts = validatedData.activities.reduce((sum, a) => sum + (a.workouts ?? 0), 0);
-      console.log(`[Sync] TOTALS: calories=${totalCalories}, steps=${totalSteps}, workouts=${totalWorkouts}`);
-      console.log(`========================================\n`);
-      
+
+      // Note: per-day calorie/step values are sensitive health data and must
+      // never be written to server logs. Only counts are logged below.
+
       // Server-side today string in UTC — drop any activity dated in the future
       // (happens when the user's device is ahead of UTC, e.g. NZ UTC+13 syncing
       // at midnight local time, which is still "yesterday" on the server).
