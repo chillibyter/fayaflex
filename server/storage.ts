@@ -1000,6 +1000,24 @@ export class DatabaseStorage implements IStorage {
     return { thumbsUp, thumbsDown };
   }
 
+  async getFeedPostLikers(postId: string) {
+    const rows = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        profileImageUrl: users.profileImageUrl,
+        avatarId: users.avatarId,
+        createdAt: feedPostLikes.createdAt,
+      })
+      .from(feedPostLikes)
+      .innerJoin(users, eq(feedPostLikes.userId, users.id))
+      .where(eq(feedPostLikes.postId, postId))
+      .orderBy(desc(feedPostLikes.createdAt));
+    return rows;
+  }
+
   async getActivityReactors(activityId: string) {
     const rows = await db
       .select({

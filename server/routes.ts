@@ -4325,6 +4325,25 @@ IMPORTANT RULES:
     }
   });
 
+  // GET /api/feed/posts/:id/likers — list users who liked the post
+  app.get("/api/feed/posts/:id/likers", isAuthenticated, async (req: any, res) => {
+    try {
+      const likers = await storage.getFeedPostLikers(req.params.id);
+      const sanitized = likers.map((l) => ({
+        id: l.id,
+        username: l.username,
+        firstName: l.firstName,
+        lastName: l.lastName,
+        profileImageUrl: l.profileImageUrl,
+        avatarId: l.avatarId,
+      }));
+      res.json(sanitized);
+    } catch (err) {
+      console.error("[Feed] GET likers error:", err);
+      res.status(500).json({ message: "Failed to load likers" });
+    }
+  });
+
   // GET /api/feed/posts/:id/comments
   app.get("/api/feed/posts/:id/comments", isAuthenticated, async (req: any, res) => {
     try {

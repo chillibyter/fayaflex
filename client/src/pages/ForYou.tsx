@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import {
   Heart,
@@ -175,17 +176,16 @@ function FeedCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
       <div className="flex items-center gap-1 px-3 py-2">
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           data-testid={`button-like-${post.id}`}
           onClick={() => likeMutation.mutate()}
           disabled={likeMutation.isPending}
-          className="flex items-center gap-1.5 px-2"
         >
           <Heart
             className={`h-5 w-5 transition-colors ${post.likedByMe ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
           />
-          <span className="text-sm tabular-nums">{post.likeCount}</span>
         </Button>
+        <LikersPopover postId={post.id} count={post.likeCount} />
 
         <Button
           variant="ghost"
@@ -414,6 +414,59 @@ function ComposeBox({ currentUser }: { currentUser: any }) {
         </Button>
       </div>
     </Card>
+  );
+}
+
+// ── Likers popover ──────────────────────────────────────────────────────────
+
+function LikersPopover({ postId, count }: { postId: string; count: number }) {
+  const [open, setOpen] = useState(false);
+  const { data: likers, isLoading } = useQuery<FeedUser[]>({
+    queryKey: ["/api/feed/posts", postId, "likers"],
+    queryFn: () => apiRequest("GET", `/api/feed/posts/${postId}/likers`).then((r) => r.json()),
+    enabled: open,
+  });
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={count === 0}
+          data-testid={`button-likers-${postId}`}
+          className="px-2 -ml-1"
+        >
+          <span className="text-sm tabular-nums">{count}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-2" align="start">
+        <div className="text-xs font-semibold text-muted-foreground px-3 py-1">
+          Liked by
+        </div>
+        {isLoading ? (
+          <div className="text-sm text-muted-foreground p-2">Loading…</div>
+        ) : !likers || likers.length === 0 ? (
+          <div className="text-sm text-muted-foreground p-2">No one yet</div>
+        ) : (
+          <div className="max-h-64 overflow-y-auto">
+            {likers.map((u) => (
+              <div
+                key={u.id}
+                className="flex items-center gap-3 px-3 py-2 rounded-md hover-elevate"
+                data-testid={`liker-${postId}-${u.id}`}
+              >
+                <UserAvatar user={u} className="h-8 w-8" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{displayName(u)}</p>
+                  <p className="text-xs text-muted-foreground truncate">@{u.username}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
 
