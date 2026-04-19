@@ -93,6 +93,10 @@ function initApns() {
   const teamId = process.env.APNS_TEAM_ID;
   const bundleId = process.env.APNS_BUNDLE_ID || "com.fayaflex.app";
 
+  // Optional separate sandbox key (Apple lets you scope keys to one environment)
+  const rawKeySandbox = process.env.APNS_KEY_SANDBOX;
+  const keyIdSandbox = process.env.APNS_KEY_ID_SANDBOX;
+
   if (!rawKey || !keyId || !teamId) {
     console.log(
       `[Push] APNs not configured — APNS_KEY=${!!rawKey} APNS_KEY_ID=${!!keyId} APNS_TEAM_ID=${!!teamId}`
@@ -100,18 +104,32 @@ function initApns() {
     return;
   }
 
-  const key = normalizeApnsKey(rawKey);
-  console.log(
-    `[Push] APNs key check: length=${key.length} lines=${key.split("\n").length} keyId=${keyId} teamId=${teamId}`
-  );
+  apnsBundleId = bundleId;
 
   try {
+    const key = normalizeApnsKey(rawKey);
     apnsProviderProd = new apn.Provider({ token: { key, keyId, teamId }, production: true });
-    apnsProviderSandbox = new apn.Provider({ token: { key, keyId, teamId }, production: false });
-    apnsBundleId = bundleId;
-    console.log(`[Push] APNs initialized (bundle=${bundleId}, dual prod+sandbox)`);
+    console.log(`[Push] APNs prod initialized (keyId=${keyId})`);
   } catch (e: any) {
-    console.error("[Push] Failed to initialize APNs:", e.message);
+    console.error("[Push] Failed to initialize APNs prod:", e.message);
+  }
+
+  try {
+    if (rawKeySandbox && keyIdSandbox) {
+      const keyS = normalizeApnsKey(rawKeySandbox);
+      apnsProviderSandbox = new apn.Provider({
+        token: { key: keyS, keyId: keyIdSandbox, teamId },
+        production: false,
+      });
+      console.log(`[Push] APNs sandbox initialized (keyId=${keyIdSandbox})`);
+    } else {
+      // Fall back: try production key on sandbox endpoint (works only if key is dual-scoped)
+      const key = normalizeApnsKey(rawKey);
+      apnsProviderSandbox = new apn.Provider({ token: { key, keyId, teamId }, production: false });
+      console.log(`[Push] APNs sandbox initialized (using prod key — works only if key is dual-scoped)`);
+    }
+  } catch (e: any) {
+    console.error("[Push] Failed to initialize APNs sandbox:", e.message);
   }
 }
 
