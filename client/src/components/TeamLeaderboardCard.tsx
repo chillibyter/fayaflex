@@ -108,7 +108,7 @@ export default function TeamLeaderboardCard({
 
   if (teamId) {
     return (
-      <Link href={`/teams/${teamId}/leaderboard`}>
+      <Link href={`/teams/${teamId}`}>
         <Card className="p-3 sm:p-4 hover-elevate cursor-pointer" data-testid={`card-team-${rank}`}>
           {content}
         </Card>
