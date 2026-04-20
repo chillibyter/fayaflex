@@ -202,9 +202,15 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
       const buildNote = () => {
         const note = new apn.Notification();
         note.topic = apnsBundleId!;
+        // Required since iOS 13 — without these headers Apple silently
+        // drops the notification while still returning 200 OK.
+        note.pushType = "alert";
+        note.priority = 10;
+        note.expiry = Math.floor(Date.now() / 1000) + 3600;
         note.alert = { title: payload.title, body: payload.body };
         note.sound = "default";
         note.badge = 1;
+        note.mutableContent = 1;
         note.payload = {
           url: payload.url || "/",
           type: payload.type,
