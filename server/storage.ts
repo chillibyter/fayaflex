@@ -1843,6 +1843,7 @@ export class DatabaseStorage implements IStorage {
       .from(pushTokens)
       .where(and(eq(pushTokens.userId, userId), eq(pushTokens.token, data.token)));
 
+    let saved: PushToken;
     if (existing) {
       const [updated] = await db
         .update(pushTokens)
@@ -1853,14 +1854,40 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(pushTokens.id, existing.id))
         .returning();
-      return updated;
+      saved = updated;
+    } else {
+      const [created] = await db
+        .insert(pushTokens)
+        .values({ ...data, userId })
+        .returning();
+      saved = created;
     }
 
-    const [created] = await db
-      .insert(pushTokens)
-      .values({ ...data, userId })
-      .returning();
-    return created;
+    // Prune stale same-platform tokens for this user (likely from previous installs).
+    // Anything not seen in the last 24h is considered dead — only the live device
+    // refreshes its token on every app launch, so this safely removes ghosts.
+    if (data.platform === "ios" || data.platform === "android") {
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      try {
+        const stale = await db
+          .delete(pushTokens)
+          .where(
+            and(
+              eq(pushTokens.userId, userId),
+              eq(pushTokens.platform, data.platform),
+              lte(pushTokens.lastSeenAt, cutoff),
+            ),
+          )
+          .returning({ id: pushTokens.id });
+        if (stale.length > 0) {
+          console.log(`[Push] Pruned ${stale.length} stale ${data.platform} token(s) for user ${userId}`);
+        }
+      } catch (e: any) {
+        console.warn("[Push] Stale token prune failed:", e?.message);
+      }
+    }
+
+    return saved;
   }
 
   async deletePushTokenById(id: string): Promise<void> {
