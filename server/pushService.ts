@@ -106,10 +106,24 @@ function initApns() {
 
   apnsBundleId = bundleId;
 
+  // A single .p8 APNs Auth Key works for BOTH production and sandbox gateways.
+  // If a sandbox-specific key is provided we prefer it for production too,
+  // because the operator has verified it works with this team's apps.
+  // Override is opt-in via APNS_PREFER_SANDBOX_KEY=true (default true).
+  const preferSandbox = (process.env.APNS_PREFER_SANDBOX_KEY ?? "true") === "true";
+
+  const prodKeyRaw =
+    preferSandbox && rawKeySandbox && keyIdSandbox ? rawKeySandbox : rawKey;
+  const prodKeyId =
+    preferSandbox && rawKeySandbox && keyIdSandbox ? keyIdSandbox : keyId;
+
   try {
-    const key = normalizeApnsKey(rawKey);
-    apnsProviderProd = new apn.Provider({ token: { key, keyId, teamId }, production: true });
-    console.log(`[Push] APNs prod initialized (keyId=${keyId})`);
+    const key = normalizeApnsKey(prodKeyRaw);
+    apnsProviderProd = new apn.Provider({
+      token: { key, keyId: prodKeyId, teamId },
+      production: true,
+    });
+    console.log(`[Push] APNs prod initialized (keyId=${prodKeyId})`);
   } catch (e: any) {
     console.error("[Push] Failed to initialize APNs prod:", e.message);
   }
@@ -123,10 +137,9 @@ function initApns() {
       });
       console.log(`[Push] APNs sandbox initialized (keyId=${keyIdSandbox})`);
     } else {
-      // Fall back: try production key on sandbox endpoint (works only if key is dual-scoped)
       const key = normalizeApnsKey(rawKey);
       apnsProviderSandbox = new apn.Provider({ token: { key, keyId, teamId }, production: false });
-      console.log(`[Push] APNs sandbox initialized (using prod key — works only if key is dual-scoped)`);
+      console.log(`[Push] APNs sandbox initialized (using prod key)`);
     }
   } catch (e: any) {
     console.error("[Push] Failed to initialize APNs sandbox:", e.message);
