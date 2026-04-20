@@ -199,6 +199,8 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
         console.warn("[Push] APNs not initialized — cannot send to iOS device");
         return;
       }
+      // Stable collapse-id so iOS dedupes if both gateways deliver.
+      const collapseId = `${payload.type || "msg"}-${t.id}-${Date.now()}`;
       const buildNote = () => {
         const note = new apn.Notification();
         note.topic = apnsBundleId!;
@@ -207,6 +209,7 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
         note.pushType = "alert";
         note.priority = 10;
         note.expiry = Math.floor(Date.now() / 1000) + 3600;
+        note.collapseId = collapseId;
         note.alert = { title: payload.title, body: payload.body };
         note.sound = "default";
         note.badge = 1;
@@ -232,24 +235,27 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
         return { ok: false as const, reason, status };
       };
 
-      // Try production first, fall back to sandbox if it's an environment mismatch.
-      let res = await trySend(apnsProviderProd, "prod");
-      const envMismatch = (r: typeof res) =>
-        !!r && !r.ok && (r.reason === "BadDeviceToken" || r.reason === "BadEnvironmentKeyInToken");
+      // With JWT-based APNs auth, Apple returns 200 OK for the wrong environment
+      // and silently drops the message. The only reliable approach is to attempt
+      // BOTH gateways every time — the right one delivers, the wrong one no-ops.
+      // Same collapse-id on both ensures iOS shows only a single banner.
+      const [prodRes, sandboxRes] = await Promise.all([
+        trySend(apnsProviderProd, "prod"),
+        trySend(apnsProviderSandbox, "sandbox"),
+      ]);
 
-      if (envMismatch(res)) {
-        const sandboxRes = await trySend(apnsProviderSandbox, "sandbox");
-        if (sandboxRes?.ok) return;
-        if (sandboxRes && !sandboxRes.ok) res = sandboxRes;
-      }
-
-      if (res && !res.ok) {
-        const isDead = res.reason === "BadDeviceToken" || res.reason === "Unregistered" || res.reason === "DeviceTokenNotForTopic";
+      const anyOk = prodRes?.ok || sandboxRes?.ok;
+      if (!anyOk) {
+        const reason =
+          (prodRes && !prodRes.ok && prodRes.reason) ||
+          (sandboxRes && !sandboxRes.ok && sandboxRes.reason) ||
+          "unknown";
+        const isDead = reason === "BadDeviceToken" || reason === "Unregistered" || reason === "DeviceTokenNotForTopic";
         if (isDead) {
           await storage.deletePushTokenById(t.id);
-          console.log(`[Push] Pruned dead APNs token ${t.id} (reason=${res.reason})`);
+          console.log(`[Push] Pruned dead APNs token ${t.id} (reason=${reason})`);
         } else {
-          console.warn(`[Push] APNs send failed (status=${res.status}, reason=${res.reason})`);
+          console.warn(`[Push] APNs send failed on both gateways (reason=${reason})`);
         }
       }
     } else {
