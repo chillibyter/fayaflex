@@ -51,8 +51,31 @@ export default function NotificationSettings() {
   });
 
   const testMutation = useMutation({
-    mutationFn: async () => sendTestPush(),
-    onSuccess: () => toast({ title: "Test sent", description: "If notifications are enabled, you should see one shortly." }),
+    mutationFn: async () => {
+      const res = await sendTestPush();
+      return res.json();
+    },
+    onSuccess: (data: any) => {
+      if (data?.success === false || data?.tokenCount === 0) {
+        toast({
+          title: "No device registered",
+          description:
+            data?.message ||
+            "This device hasn't sent its push token yet. Tap Enable, allow the prompt, then try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const platforms: string[] = data?.platforms || [];
+      const summary =
+        platforms.length > 0
+          ? `Delivered to ${data.tokenCount} device${data.tokenCount === 1 ? "" : "s"} (${platforms.join(", ")}).`
+          : `Delivered to ${data.tokenCount} device${data.tokenCount === 1 ? "" : "s"}.`;
+      toast({
+        title: "Test sent",
+        description: `${summary} On iOS the banner won't show while the app is open — background it or lock the screen first.`,
+      });
+    },
     onError: (err: any) => toast({ title: "Test failed", description: err.message || "Try again", variant: "destructive" }),
   });
 

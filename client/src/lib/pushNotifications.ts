@@ -63,6 +63,22 @@ async function initNativePush() {
       console.error("[Push] Native registration error:", err);
     });
 
+    // Show in-app banner when notification arrives while app is foregrounded
+    // (iOS does NOT show system banners for foreground apps).
+    PushNotifications.addListener("pushNotificationReceived", (notif) => {
+      try {
+        window.dispatchEvent(
+          new CustomEvent("fayaflex:push", {
+            detail: {
+              title: notif.title || "FayaFlex",
+              body: notif.body || "",
+              url: (notif.data as any)?.url,
+            },
+          })
+        );
+      } catch {}
+    });
+
     PushNotifications.addListener("pushNotificationActionPerformed", (notif) => {
       // Navigate when user taps a notification
       const url = notif.notification.data?.url;

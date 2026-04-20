@@ -4,6 +4,7 @@ import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 import BottomNavigation from "@/components/BottomNavigation";
 import Dashboard from "@/pages/Dashboard";
 import TrackActivity from "@/pages/TrackActivity";
@@ -270,6 +271,22 @@ function AuthenticatedApp() {
   );
 }
 
+function ForegroundPushBanner() {
+  const { toast } = useToast();
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      toast({
+        title: detail.title || "FayaFlex",
+        description: detail.body || "",
+      });
+    };
+    window.addEventListener("fayaflex:push", handler as EventListener);
+    return () => window.removeEventListener("fayaflex:push", handler as EventListener);
+  }, [toast]);
+  return null;
+}
+
 function App() {
   useEffect(() => {
     // Hide splash screen when app is loaded (for native mobile apps)
@@ -282,6 +299,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
+          <ForegroundPushBanner />
           <AuthenticatedApp />
         </AuthProvider>
       </TooltipProvider>
