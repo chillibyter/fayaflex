@@ -106,11 +106,13 @@ function initApns() {
 
   apnsBundleId = bundleId;
 
-  // A single .p8 APNs Auth Key works for BOTH production and sandbox gateways.
-  // If a sandbox-specific key is provided we prefer it for production too,
-  // because the operator has verified it works with this team's apps.
-  // Override is opt-in via APNS_PREFER_SANDBOX_KEY=true (default true).
-  const preferSandbox = (process.env.APNS_PREFER_SANDBOX_KEY ?? "true") === "true";
+  // A single .p8 APNs Auth Key CAN work for BOTH production and sandbox
+  // gateways, but Apple also lets you scope keys to a single environment.
+  // Default: use the env-specific key for each gateway (correct when the
+  // sandbox key is sandbox-only, which is common). Set
+  // APNS_PREFER_SANDBOX_KEY=true to force the sandbox key on prod too
+  // (only safe if the sandbox key is dual-scoped).
+  const preferSandbox = (process.env.APNS_PREFER_SANDBOX_KEY ?? "false") === "true";
 
   const prodKeyRaw =
     preferSandbox && rawKeySandbox && keyIdSandbox ? rawKeySandbox : rawKey;
