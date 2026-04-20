@@ -244,6 +244,14 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
         trySend(apnsProviderSandbox, "sandbox"),
       ]);
 
+      // Log per-gateway results so we can see env mismatches.
+      if (prodRes && !prodRes.ok) {
+        console.log(`[Push] APNs (prod) FAILED for ${t.token.slice(0, 8)}… status=${prodRes.status} reason=${prodRes.reason}`);
+      }
+      if (sandboxRes && !sandboxRes.ok) {
+        console.log(`[Push] APNs (sandbox) FAILED for ${t.token.slice(0, 8)}… status=${sandboxRes.status} reason=${sandboxRes.reason}`);
+      }
+
       const anyOk = prodRes?.ok || sandboxRes?.ok;
       if (!anyOk) {
         const reason =
@@ -254,8 +262,6 @@ async function sendToToken(t: { id: string; token: string; platform: string; web
         if (isDead) {
           await storage.deletePushTokenById(t.id);
           console.log(`[Push] Pruned dead APNs token ${t.id} (reason=${reason})`);
-        } else {
-          console.warn(`[Push] APNs send failed on both gateways (reason=${reason})`);
         }
       }
     } else {
