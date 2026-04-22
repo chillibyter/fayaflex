@@ -306,6 +306,34 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 });
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
+// In-app notifications center — a persistent log of every alert sent to the user
+// (push notifications, reactions, comments, team activity, monthly winners, etc.).
+// Separate from `notifications` (which holds daily motivational messages).
+export const appNotifications = pgTable("app_notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 50 }).notNull(), // matches NotificationType in pushService
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  link: text("link"), // optional in-app deep link, e.g. "/teams/abc"
+  data: jsonb("data"), // optional extra payload (ids, etc.)
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userCreatedIdx: index("app_notifications_user_created_idx").on(table.userId, table.createdAt),
+  userUnreadIdx: index("app_notifications_user_unread_idx").on(table.userId, table.isRead),
+}));
+
+export type AppNotification = typeof appNotifications.$inferSelect;
+export const insertAppNotificationSchema = createInsertSchema(appNotifications).omit({
+  id: true,
+  createdAt: true,
+  isRead: true,
+});
+export type InsertAppNotification = z.infer<typeof insertAppNotificationSchema>;
+
 // Monthly team winners table (Victory Wall)
 export const monthlyWinners = pgTable("monthly_winners", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

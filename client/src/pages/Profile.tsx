@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check } from "lucide-react";
+import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check, Bell } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { User as UserType, Team, Challenge } from "@shared/schema";
@@ -79,6 +79,11 @@ export default function Profile() {
 
   const { data: stats, isLoading: isLoadingStats } = useQuery<UserStats>({
     queryKey: ['/api/profile/stats'],
+  });
+
+  const { data: unreadData } = useQuery<{ count: number }>({
+    queryKey: ['/api/app-notifications/unread-count'],
+    refetchInterval: 60_000,
   });
 
   const { data: teams = [] } = useQuery<EnrichedTeam[]>({
@@ -327,13 +332,32 @@ export default function Profile() {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="absolute top-3 right-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-          data-testid="button-settings"
-        >
-          <Settings className="h-5 w-5" />
-        </button>
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setWouterLocation("/notifications")}
+            aria-label="Notifications"
+            className="relative p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+            data-testid="button-notifications"
+          >
+            <Bell className="h-5 w-5" />
+            {(unreadData?.count ?? 0) > 0 && (
+              <span
+                className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center leading-none"
+                data-testid="text-unread-badge"
+              >
+                {(unreadData!.count) > 99 ? "99+" : unreadData!.count}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+            data-testid="button-settings"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
+        </div>
 
         <div className="flex flex-col items-center">
           {isLoadingUser ? (

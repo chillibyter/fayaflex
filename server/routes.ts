@@ -4288,6 +4288,62 @@ IMPORTANT RULES:
     }
   });
 
+  // ---------- In-app Notifications Center ----------
+  app.get("/api/app-notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const limit = Math.min(parseInt(String(req.query.limit ?? "50"), 10) || 50, 200);
+      const items = await storage.listAppNotifications(req.user.id, limit);
+      res.json(items);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed to load notifications" });
+    }
+  });
+
+  app.get("/api/app-notifications/unread-count", isAuthenticated, async (req: any, res) => {
+    try {
+      const count = await storage.getAppNotificationUnreadCount(req.user.id);
+      res.json({ count });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed to load count" });
+    }
+  });
+
+  app.post("/api/app-notifications/:id/read", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.markAppNotificationRead(req.user.id, req.params.id);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed" });
+    }
+  });
+
+  app.post("/api/app-notifications/read-all", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.markAllAppNotificationsRead(req.user.id);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed" });
+    }
+  });
+
+  app.delete("/api/app-notifications/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.deleteAppNotification(req.user.id, req.params.id);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed" });
+    }
+  });
+
+  app.delete("/api/app-notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.clearAppNotifications(req.user.id);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed" });
+    }
+  });
+
   // Test push (handy for verifying setup) — sends a test notification to all the caller's devices
   app.post("/api/push/test", isAuthenticated, async (req: any, res) => {
     try {

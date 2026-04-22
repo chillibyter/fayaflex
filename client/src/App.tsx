@@ -15,6 +15,7 @@ import VictoryWall from "@/pages/VictoryWall";
 import CreateTeam from "@/pages/CreateTeam";
 import Profile from "@/pages/Profile";
 import NotificationSettings from "@/pages/NotificationSettings";
+import Notifications from "@/pages/Notifications";
 import UserProfile from "@/pages/UserProfile";
 import AuthPage from "@/pages/AuthPage";
 import ResetPassword from "@/pages/ResetPassword";
@@ -127,7 +128,8 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/health-data" component={HealthData} />
       <Route path="/delete-account" component={DeleteAccount} />
-      <Route path="/notifications" component={NotificationSettings} />
+      <Route path="/notifications/settings" component={NotificationSettings} />
+      <Route path="/notifications" component={Notifications} />
       <Route path="/team-selection" component={TeamSelection} />
       <Route component={NotFound} />
     </Switch>

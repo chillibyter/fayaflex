@@ -22,6 +22,9 @@ import {
   feedPostComments,
   pushTokens,
   syncedWorkouts,
+  appNotifications,
+  type AppNotification,
+  type InsertAppNotification,
   type User,
   type UpsertUser,
   type Team,
@@ -890,6 +893,53 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(notifications)
       .where(and(eq(notifications.userId, userId), eq(notifications.date, date)));
+  }
+
+  // ---------- App notifications (Notifications Center) ----------
+  async createAppNotification(data: InsertAppNotification): Promise<AppNotification> {
+    const [row] = await db.insert(appNotifications).values(data).returning();
+    return row;
+  }
+
+  async listAppNotifications(userId: string, limit = 50): Promise<AppNotification[]> {
+    return await db
+      .select()
+      .from(appNotifications)
+      .where(eq(appNotifications.userId, userId))
+      .orderBy(desc(appNotifications.createdAt))
+      .limit(limit);
+  }
+
+  async getAppNotificationUnreadCount(userId: string): Promise<number> {
+    const [row] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(appNotifications)
+      .where(and(eq(appNotifications.userId, userId), eq(appNotifications.isRead, false)));
+    return row?.count ?? 0;
+  }
+
+  async markAppNotificationRead(userId: string, id: string): Promise<void> {
+    await db
+      .update(appNotifications)
+      .set({ isRead: true })
+      .where(and(eq(appNotifications.userId, userId), eq(appNotifications.id, id)));
+  }
+
+  async markAllAppNotificationsRead(userId: string): Promise<void> {
+    await db
+      .update(appNotifications)
+      .set({ isRead: true })
+      .where(and(eq(appNotifications.userId, userId), eq(appNotifications.isRead, false)));
+  }
+
+  async deleteAppNotification(userId: string, id: string): Promise<void> {
+    await db
+      .delete(appNotifications)
+      .where(and(eq(appNotifications.userId, userId), eq(appNotifications.id, id)));
+  }
+
+  async clearAppNotifications(userId: string): Promise<void> {
+    await db.delete(appNotifications).where(eq(appNotifications.userId, userId));
   }
 
   // User operations (additional)

@@ -181,6 +181,21 @@ export async function sendPushToUser(userId: string, payload: PushPayload): Prom
       return; // user opted out of this notification type
     }
 
+    // Persist a copy in the in-app Notifications Center so the user can see
+    // every alert later, even if the OS-level push didn't display.
+    try {
+      await storage.createAppNotification({
+        userId,
+        type: payload.type,
+        title: payload.title,
+        body: payload.body,
+        link: payload.url ?? null,
+        data: payload.data ?? null,
+      });
+    } catch (e: any) {
+      console.error("[Push] failed to persist app notification:", e.message);
+    }
+
     const tokens = await storage.getUserPushTokens(userId);
     if (!tokens.length) return;
 

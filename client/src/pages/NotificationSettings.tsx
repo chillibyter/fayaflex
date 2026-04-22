@@ -94,10 +94,10 @@ export default function NotificationSettings() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-50 bg-background border-b px-4 py-3 flex items-center gap-3">
-        <Button size="icon" variant="ghost" onClick={() => setLocation("/profile")} data-testid="button-back">
+        <Button size="icon" variant="ghost" onClick={() => setLocation("/notifications")} data-testid="button-back">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold">Notifications</h1>
+        <h1 className="text-lg font-semibold">Notification settings</h1>
       </header>
 
       <div className="p-4 space-y-4 max-w-xl mx-auto">
