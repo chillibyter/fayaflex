@@ -113,8 +113,8 @@ function PrimaryStat({ stat, isPB }: { stat: MetricSpec; isPB: boolean }) {
         <stat.icon className="h-3 w-3" />
         <span>{stat.label}</span>
       </div>
-      <div className="flex items-baseline gap-1.5 min-w-0 w-full">
-        <span className="text-2xl sm:text-3xl font-extrabold leading-none text-white tracking-tight truncate">
+      <div className="flex items-baseline min-w-0 w-full">
+        <span className="block w-full text-lg sm:text-xl font-extrabold leading-tight text-white tracking-tight tabular-nums whitespace-nowrap overflow-hidden">
           {stat.value}
         </span>
       </div>
