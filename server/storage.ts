@@ -799,24 +799,29 @@ export class DatabaseStorage implements IStorage {
         );
 
       if (existing) {
-        // Check if values have changed
+        // Never let a re-sync reduce a day's totals for the same source.
+        // HealthKit / Garmin sometimes report a lower cumulative value
+        // mid-day (recalculation, workout edit, source switch). Take the
+        // max so users don't see their calories/steps drop after a sync.
+        const nextCalories = Math.max(existing.calories ?? 0, incoming.calories ?? 0);
+        const nextSteps = Math.max(existing.steps ?? 0, incoming.steps ?? 0);
+        const nextWorkoutType = incoming.workoutType || existing.workoutType || null;
+
         if (
-          existing.calories !== incoming.calories ||
-          existing.steps !== incoming.steps ||
-          existing.workoutType !== (incoming.workoutType || null)
+          existing.calories !== nextCalories ||
+          existing.steps !== nextSteps ||
+          existing.workoutType !== nextWorkoutType
         ) {
-          // Update existing activity
           await db
             .update(activities)
             .set({
-              calories: incoming.calories,
-              steps: incoming.steps,
-              workoutType: incoming.workoutType || null,
+              calories: nextCalories,
+              steps: nextSteps,
+              workoutType: nextWorkoutType,
             })
             .where(eq(activities.id, existing.id));
           updated++;
         } else {
-          // No changes, skip
           skipped++;
         }
       } else {
