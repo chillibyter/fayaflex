@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "WZck-y_dJH35H89F9es2O"
@@ -78,3 +77,9 @@ id = "2uL1Z-m5q-acqQpLCe9kK"
 uri = "file://attached_assets/generated_images/generated_image.png"
 type = "image"
 title = "generated_image"
+
+[[outputs]]
+id = "nsHLISl2MMaNHCdTl_sgM"
+uri = "file://exports/FayaFlex_Usage_Report_30d.pptx"
+type = "slides"
+title = "FayaFlex — 30-Day Usage Report"
