@@ -199,10 +199,8 @@ export default function AuthPage() {
         password: registerPassword,
         email: email.trim(),
       });
-      // Mark as new user so Dashboard shows profile completion prompt
-      if (newUser?.id) {
-        localStorage.setItem(`fayaflex_needs_profile_${newUser.id}`, "true");
-      }
+      // Profile completion is now driven server-side by missing firstName/townId
+      void newUser;
     } catch (error: any) {
       const message = error.message || "Registration failed";
       if (message.includes("username") && (message.includes("exists") || message.includes("taken"))) {

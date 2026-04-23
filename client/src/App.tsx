@@ -34,6 +34,7 @@ import Landing from "@/pages/Landing";
 import JoinTeam from "@/pages/JoinTeam";
 import NotFound from "@/pages/not-found";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
+import ProfileCompletionGate from "@/components/ProfileCompletionGate";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useAutoHealthSync } from "@/hooks/use-auto-health-sync";
 import { useSwipeBack } from "@/hooks/use-swipe-back";
@@ -259,6 +260,7 @@ function AuthenticatedApp() {
           onSkip={handleOnboardingComplete}
         />
       )}
+      {!showOnboarding && <ProfileCompletionGate user={user} />}
       <div 
         className="min-h-screen bg-background"
         style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 0.5rem)' }}

@@ -2,13 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin, Users, ChevronRight, Heart, UserCircle2 } from "lucide-react";
+import { AlertCircle, Dumbbell, Footprints, Flame, Calendar, ArrowRight, ArrowUp, Trophy, Edit3, Smartphone, Sparkles, Medal, Globe, MapPin, Users, ChevronRight, Heart } from "lucide-react";
 import { Icon3D } from "@/components/Icon3D";
 import { SiApple } from "react-icons/si";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
 import type { Activity as ActivityType, User } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,12 +61,6 @@ function getSourceInfo(source?: string | null) {
 
 export default function Dashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showProfileCompletion, setShowProfileCompletion] = useState(false);
-  const [profileFirstName, setProfileFirstName] = useState("");
-  const [profileLastName, setProfileLastName] = useState("");
-  const [profileLocation, setProfileLocation] = useState<{
-    continentId: string; countryId: string; regionId: string; townId: string;
-  } | null>(null);
   const [currentScopeIndex, setCurrentScopeIndex] = useState(0);
   const { user } = useAuth();
 
@@ -215,46 +206,11 @@ export default function Dashboard() {
     }
   }, [user?.id, isLoadingActivities, recentActivities.length]);
 
-  const profileCompletionMutation = useMutation({
-    mutationFn: async (data: { firstName?: string; lastName?: string; continentId?: string; countryId?: string; regionId?: string; townId?: string }) => {
-      const res = await apiRequest("PATCH", "/api/auth/user", data);
-      return res.json();
-    },
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(['/api/auth/user'], updatedUser);
-      if (user?.id) localStorage.removeItem(`fayaflex_needs_profile_${user.id}`);
-      setShowProfileCompletion(false);
-    },
-  });
-
   const handleOnboardingComplete = () => {
     if (user?.id) {
       localStorage.setItem(`fayaflex_onboarding_seen_${user.id}`, 'true');
-      // Show profile completion if this is a new user
-      const needsProfile = localStorage.getItem(`fayaflex_needs_profile_${user.id}`);
-      if (needsProfile) {
-        setTimeout(() => setShowProfileCompletion(true), 400);
-      }
     }
     setShowOnboarding(false);
-  };
-
-  const handleSkipProfile = () => {
-    if (user?.id) localStorage.removeItem(`fayaflex_needs_profile_${user.id}`);
-    setShowProfileCompletion(false);
-  };
-
-  const handleSaveProfile = () => {
-    const data: Record<string, string> = {};
-    if (profileFirstName.trim()) data.firstName = profileFirstName.trim();
-    if (profileLastName.trim()) data.lastName = profileLastName.trim();
-    if (profileLocation) {
-      data.continentId = profileLocation.continentId;
-      data.countryId = profileLocation.countryId;
-      data.regionId = profileLocation.regionId;
-      data.townId = profileLocation.townId;
-    }
-    profileCompletionMutation.mutate(data);
   };
 
   const toOrdinal = (n: number) => {
@@ -279,78 +235,6 @@ export default function Dashboard() {
           onSkip={handleOnboardingComplete}
         />
       )}
-
-      {/* Profile Completion Dialog — shown once after first registration */}
-      <Dialog open={showProfileCompletion} onOpenChange={(open) => { if (!open) handleSkipProfile(); }}>
-        <DialogContent className="sm:max-w-md" data-testid="dialog-profile-completion">
-          <DialogHeader>
-            <div className="flex items-center justify-center mb-2">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <UserCircle2 className="h-7 w-7 text-primary" />
-              </div>
-            </div>
-            <DialogTitle className="text-center">Complete Your Profile</DialogTitle>
-            <DialogDescription className="text-center">
-              Add your name and city to personalise your experience and appear in location-based leaderboards. You can always do this later in Profile settings.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="profile-firstname">First Name</Label>
-                <Input
-                  id="profile-firstname"
-                  data-testid="input-profile-firstname"
-                  placeholder="First name"
-                  value={profileFirstName}
-                  onChange={(e) => setProfileFirstName(e.target.value)}
-                  className="rounded-[10px]"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="profile-lastname">Last Name</Label>
-                <Input
-                  id="profile-lastname"
-                  data-testid="input-profile-lastname"
-                  placeholder="Last name"
-                  value={profileLastName}
-                  onChange={(e) => setProfileLastName(e.target.value)}
-                  className="rounded-[10px]"
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Your City</Label>
-              <CitySearch
-                onSelect={(loc) => setProfileLocation({
-                  continentId: loc.continentId,
-                  countryId: loc.countryId,
-                  regionId: loc.regionId,
-                  townId: loc.townId,
-                })}
-              />
-            </div>
-            <div className="flex gap-3 pt-1">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-[10px]"
-                onClick={handleSkipProfile}
-                data-testid="button-skip-profile"
-              >
-                Skip for now
-              </Button>
-              <Button
-                className="flex-1 rounded-[10px]"
-                onClick={handleSaveProfile}
-                disabled={profileCompletionMutation.isPending}
-                data-testid="button-save-profile"
-              >
-                {profileCompletionMutation.isPending ? "Saving…" : "Save Profile"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <header className="bg-gradient-to-br from-green-600 to-green-700 text-white px-4 pt-4 pb-6 rounded-b-3xl">
         <div className="flex items-center justify-between mb-6">
