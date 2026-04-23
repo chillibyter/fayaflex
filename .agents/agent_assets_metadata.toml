@@ -72,3 +72,9 @@ id = "oMLhVmQ37256dLnYI4iJL"
 uri = "file://client/src/assets/icons-3d/fire_streak.png"
 type = "image"
 title = "3d fire_streak icon"
+
+[[generated]]
+id = "2uL1Z-m5q-acqQpLCe9kK"
+uri = "file://attached_assets/generated_images/generated_image.png"
+type = "image"
+title = "generated_image"

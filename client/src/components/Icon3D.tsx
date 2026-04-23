@@ -10,6 +10,7 @@ import mountain from "@/assets/icons-3d/mountain.png";
 import crown from "@/assets/icons-3d/crown.png";
 import confetti from "@/assets/icons-3d/confetti.png";
 import fireStreak from "@/assets/icons-3d/fire_streak.png";
+import boxing from "@/assets/icons-3d/boxing.png";
 
 export type Icon3DName =
   | "flame"
@@ -23,7 +24,8 @@ export type Icon3DName =
   | "mountain"
   | "crown"
   | "confetti"
-  | "fire-streak";
+  | "fire-streak"
+  | "boxing";
 
 const MAP: Record<Icon3DName, string> = {
   flame,
@@ -38,6 +40,7 @@ const MAP: Record<Icon3DName, string> = {
   crown,
   confetti,
   "fire-streak": fireStreak,
+  boxing,
 };
 
 interface Icon3DProps {
@@ -68,5 +71,6 @@ export function workoutTypeToIcon3D(type: string | undefined | null): Icon3DName
   if (t.includes("run") || t.includes("walk") || t.includes("jog")) return "sneaker";
   if (t.includes("cycl") || t.includes("bike") || t.includes("ride")) return "bicycle";
   if (t.includes("hik") || t.includes("climb") || t.includes("mountain")) return "mountain";
+  if (t.includes("box")) return "boxing";
   return "dumbbell";
 }
