@@ -222,7 +222,10 @@ function FeedCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
                 }
               }}
               rows={1}
-              className="resize-none text-sm min-h-0"
+              // text-base (16px) prevents iOS Safari from auto-zooming the
+              // viewport when the textarea is focused. Smaller font sizes
+              // trigger a zoom-in that the user then can't easily reverse.
+              className="resize-none text-base min-h-0"
               data-testid={`input-comment-${post.id}`}
             />
             <Button
