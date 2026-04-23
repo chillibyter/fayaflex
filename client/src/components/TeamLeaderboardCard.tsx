@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, Users } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Users, Lock } from "lucide-react";
 import { Link } from "wouter";
 import { Icon3D } from "@/components/Icon3D";
 
@@ -14,6 +14,7 @@ export interface TeamLeaderboardEntry {
   unit?: string;
   trend?: "up" | "down" | "flat" | null;
   caloriesToOvertake?: number;
+  isMember?: boolean;
 }
 
 function getMedal3D(rank: number) {
@@ -59,6 +60,7 @@ export default function TeamLeaderboardCard({
   unit = "cal/day per member",
   trend,
   caloriesToOvertake,
+  isMember,
 }: TeamLeaderboardEntry) {
   const content = (
     <div className="flex items-center gap-3 sm:gap-4">
@@ -84,6 +86,15 @@ export default function TeamLeaderboardCard({
             </span>
           )}
           <TrendBadge trend={trend} />
+          {isMember === false && (
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground"
+              data-testid={`badge-members-only-${rank}`}
+            >
+              <Lock className="h-3 w-3" />
+              Members only
+            </span>
+          )}
         </div>
         {rank > 1 && caloriesToOvertake && caloriesToOvertake > 0 && (
           <p className="text-xs text-muted-foreground mt-1" data-testid={`text-overtake-${rank}`}>
@@ -106,7 +117,11 @@ export default function TeamLeaderboardCard({
     </div>
   );
 
-  if (teamId) {
+  // Only link into the team detail page when the current user is a member.
+  // Otherwise the link would lead to a 403 "Team Members Only" wall, which
+  // is a poor experience. Non-member rows are still visible (they're the
+  // global leaderboard after all) but render as non-clickable cards.
+  if (teamId && isMember !== false) {
     return (
       <Link href={`/teams/${teamId}`}>
         <Card className="p-3 sm:p-4 hover-elevate cursor-pointer" data-testid={`card-team-${rank}`}>

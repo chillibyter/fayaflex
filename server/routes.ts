@@ -2424,7 +2424,14 @@ IMPORTANT RULES:
       
       const teams = await storage.getAllTeams();
       const teamStats = [];
-      
+
+      // Pre-compute the set of teams the current user belongs to so we can
+      // tag each leaderboard entry with `isMember`. The frontend uses this to
+      // avoid linking non-members into a 403 wall on the team detail page.
+      const currentUserId = req.user?.id;
+      const myTeams = currentUserId ? await storage.getUserTeams(currentUserId) : [];
+      const myTeamIds = new Set(myTeams.map(t => t.id));
+
       // Calculate days elapsed in month (for current month use today's date, for past months use full month)
       const now = new Date();
       const currentMonth = now.getMonth() + 1;
@@ -2504,6 +2511,7 @@ IMPORTANT RULES:
           daysElapsed,
           unit: 'cal/day per member',
           trend,
+          isMember: myTeamIds.has(team.id),
         });
       }
 
