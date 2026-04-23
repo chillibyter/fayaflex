@@ -387,8 +387,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : undefined),
         }));
       
-      console.log(`[Sync] User ${userId} syncing ${transformedActivities.length} activities from ${validatedData.provider}`);
-      
+      // Structured telemetry: per-sync coverage summary so we can compare
+      // Apple vs Android sync quality over time without touching per-day values.
+      const daysWithSteps   = transformedActivities.filter(a => a.steps    > 0).length;
+      const daysWithCalories = transformedActivities.filter(a => a.calories > 0).length;
+      const daysWithWorkout = transformedActivities.filter(a => !!a.workoutType).length;
+      const totalSteps      = transformedActivities.reduce((s, a) => s + a.steps,    0);
+      const totalCalories   = transformedActivities.reduce((s, a) => s + a.calories, 0);
+      const detailedWorkouts = validatedData.workouts?.length ?? 0;
+      console.log(
+        `[SyncCoverage] provider=${validatedData.provider} user=${userId} ` +
+        `days=${transformedActivities.length} ` +
+        `daysWithSteps=${daysWithSteps} daysWithCalories=${daysWithCalories} daysWithWorkout=${daysWithWorkout} ` +
+        `totalSteps=${totalSteps} totalCalories=${totalCalories} ` +
+        `detailedWorkouts=${detailedWorkouts}`
+      );
+
       // Sync activities from health device
       const results = await storage.syncHealthActivities(
         userId,

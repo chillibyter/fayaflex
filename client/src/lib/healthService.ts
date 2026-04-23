@@ -343,14 +343,28 @@ class HealthService {
         console.log('[HealthService] queryWorkouts not available:', workoutError);
       }
 
-      // Check if aggregated calories returned nothing - use workout calories as fallback
+      // Pre-compute per-day workout-calorie totals so we can reconcile against
+      // aggregated calories. Health Connect on some Android OEMs (notably Samsung
+      // Health) writes workout-level calorie samples that aren't picked up by
+      // the day-bucket aggregate query, so we always take the MAX of the two
+      // signals per day rather than treating workouts as a binary fallback.
+      const workoutCaloriesByDate = new Map<string, number>();
+      for (const w of workoutsData) {
+        const wd = (() => {
+          const s = w?.startDate || w?.start || w?.date;
+          if (!s) return null;
+          return this.extractDate(s);
+        })();
+        if (!wd) continue;
+        const wc = Math.round(w?.calories || 0);
+        if (wc > 0) workoutCaloriesByDate.set(wd, (workoutCaloriesByDate.get(wd) || 0) + wc);
+      }
       const aggregatedCaloriesTotal = (caloriesResult.aggregatedData || []).reduce(
         (sum: number, s: any) => sum + (s?.value ?? s?.quantity ?? 0), 0
       );
-      const useWorkoutCaloriesFallback = aggregatedCaloriesTotal === 0 && workoutsData.length > 0;
-      if (useWorkoutCaloriesFallback) {
-        console.log('[HealthService] Using workout calories as fallback (aggregated returned 0)');
-      }
+      console.log(
+        `[HealthService] Calorie reconciliation: aggregated=${Math.round(aggregatedCaloriesTotal)}kcal across ${(caloriesResult.aggregatedData || []).length} days; workout-derived=${Array.from(workoutCaloriesByDate.values()).reduce((a, b) => a + b, 0)}kcal across ${workoutCaloriesByDate.size} days`
+      );
 
       // Combine data by date
       const dataByDate = new Map<string, HealthDataPoint>();
@@ -414,46 +428,47 @@ class HealthService {
         console.log(`[HealthService] Android: prorated BMR subtraction (${bmrSource}, ${Math.round(minutesElapsedToday)}min elapsed today)`);
       }
 
-      // Process calories - use aggregated data, or workout calories as fallback
-      if (!useWorkoutCaloriesFallback) {
-        for (const sample of caloriesResult.aggregatedData || []) {
-          const date = getSampleDate(sample);
-          if (!date) continue;
-          let calorieValue = getSampleValue(sample);
+      // Process aggregated calories first (with Android BMR subtraction if applicable).
+      for (const sample of caloriesResult.aggregatedData || []) {
+        const date = getSampleDate(sample);
+        if (!date) continue;
+        let calorieValue = getSampleValue(sample);
 
-          if (needsAndroidConversion && calorieValue > 0) {
-            // Past completed days use the full daily BMR; today uses only the elapsed-minute fraction.
-            const isToday = date === todayLocalStr;
-            const bmrFraction = isToday ? minutesElapsedToday / MINUTES_PER_DAY : 1;
-            const bmrToSubtract = Math.round(effectiveBmr * bmrFraction);
-            const originalValue = calorieValue;
-            calorieValue = Math.max(0, calorieValue - bmrToSubtract);
-            // For past completed days: values < 50 kcal are within the noise floor of
-            // the population-average BMR estimate (individual BMRs vary ±200+ kcal/day).
-            // Zeroing them avoids micro-bars for rest days that look like data errors.
-            if (!isToday && calorieValue < 50) {
-              calorieValue = 0;
-            }
-            console.log(`[HealthService] Android calorie: ${originalValue} total - ${bmrToSubtract} resting${isToday ? ` (${Math.round(minutesElapsedToday)}min)` : ' (full day)'} = ${calorieValue} active`);
+        if (needsAndroidConversion && calorieValue > 0) {
+          // Past completed days use the full daily BMR; today uses only the elapsed-minute fraction.
+          const isToday = date === todayLocalStr;
+          const bmrFraction = isToday ? minutesElapsedToday / MINUTES_PER_DAY : 1;
+          const bmrToSubtract = Math.round(effectiveBmr * bmrFraction);
+          const originalValue = calorieValue;
+          calorieValue = Math.max(0, calorieValue - bmrToSubtract);
+          // For past completed days: values < 50 kcal are within the noise floor of
+          // the population-average BMR estimate (individual BMRs vary ±200+ kcal/day).
+          // Zeroing them avoids micro-bars for rest days that look like data errors.
+          if (!isToday && calorieValue < 50) {
+            calorieValue = 0;
           }
+          console.log(`[HealthService] Android calorie: ${originalValue} total - ${bmrToSubtract} resting${isToday ? ` (${Math.round(minutesElapsedToday)}min)` : ' (full day)'} = ${calorieValue} active`);
+        }
 
-          getOrCreate(date).calories += calorieValue;
+        getOrCreate(date).calories += calorieValue;
+      }
+
+      // Reconcile with per-workout calorie samples: take the MAX so we never
+      // *under*-report on days where Health Connect's aggregate query missed
+      // the workout-level data (a known Samsung Health quirk).
+      for (const [date, wcal] of Array.from(workoutCaloriesByDate.entries())) {
+        const cur = getOrCreate(date);
+        if (wcal > cur.calories) {
+          console.log(`[HealthService] Reconcile ${date}: aggregated=${cur.calories} → workout-derived=${wcal} (using workout sum)`);
+          cur.calories = wcal;
         }
       }
 
-      // Process workouts - count them, and use their calories if fallback is needed
+      // Count workouts per day
       for (const workout of workoutsData || []) {
         const date = getSampleDate(workout);
         if (!date) continue;
         getOrCreate(date).workouts += 1;
-        
-        // Use workout calories as fallback when aggregated returns 0
-        if (useWorkoutCaloriesFallback) {
-          const workoutCalories = workout?.calories || 0;
-          if (workoutCalories > 0) {
-            getOrCreate(date).calories += Math.round(workoutCalories);
-          }
-        }
       }
 
       const result = Array.from(dataByDate.values()).sort((a, b) => 
