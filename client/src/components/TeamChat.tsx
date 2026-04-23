@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,18 @@ export function TeamChat({ teamId, teamName }: TeamChatProps) {
   };
 
   const sortedMessages = [...messages].reverse();
+
+  // Mark this team's chat as seen whenever we render with at least one
+  // message, so the unread dot on the Teams list disappears.
+  useEffect(() => {
+    if (messages.length === 0) return;
+    try {
+      const newest = messages[0]?.createdAt; // messages come back newest-first
+      if (newest) {
+        window.localStorage.setItem(`fayaflex_team_chat_seen_${teamId}`, newest);
+      }
+    } catch { /* localStorage unavailable */ }
+  }, [teamId, messages]);
 
   return (
     <Card className="flex flex-col h-[500px]" data-testid="card-team-chat">

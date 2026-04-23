@@ -215,6 +215,7 @@ export interface IStorage {
   // Team chat operations
   sendTeamMessage(teamId: string, userId: string, content: string): Promise<TeamMessage>;
   getTeamMessages(teamId: string, limit?: number, before?: string): Promise<(TeamMessage & { user: User })[]>;
+  getLatestMessagePerTeam(teamIds: string[]): Promise<Record<string, { id: string; content: string; createdAt: Date; userFirstName: string | null }>>;
 
   // Feed post operations
   createFeedPost(userId: string, content: string, imageUrl?: string | null): Promise<FeedPost>;
@@ -1739,6 +1740,37 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return message;
+  }
+
+  async getLatestMessagePerTeam(
+    teamIds: string[]
+  ): Promise<Record<string, { id: string; content: string; createdAt: Date; userFirstName: string | null }>> {
+    if (teamIds.length === 0) return {};
+    // One row per team using DISTINCT ON (Postgres) — selects newest message per team.
+    const placeholders = sql.join(teamIds.map(id => sql`${id}`), sql.raw(','));
+    const result: any = await db.execute(sql`
+      SELECT DISTINCT ON (tm.team_id)
+        tm.team_id   AS "teamId",
+        tm.id        AS "id",
+        tm.content   AS "content",
+        tm.created_at AS "createdAt",
+        u.first_name AS "userFirstName"
+      FROM team_messages tm
+      INNER JOIN users u ON u.id = tm.user_id
+      WHERE tm.team_id IN (${placeholders})
+      ORDER BY tm.team_id, tm.created_at DESC
+    `);
+    const rows: any[] = result.rows ?? result;
+    const out: Record<string, { id: string; content: string; createdAt: Date; userFirstName: string | null }> = {};
+    for (const r of rows) {
+      out[r.teamId] = {
+        id: r.id,
+        content: r.content,
+        createdAt: r.createdAt instanceof Date ? r.createdAt : new Date(r.createdAt),
+        userFirstName: r.userFirstName ?? null,
+      };
+    }
+    return out;
   }
 
   async getTeamMessages(teamId: string, limit: number = 50, before?: string): Promise<(TeamMessage & { user: User })[]> {

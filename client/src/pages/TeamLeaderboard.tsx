@@ -206,6 +206,14 @@ export default function TeamLeaderboard() {
         </div>
       </div>
 
+      {/* Team chat — surfaced above the leaderboard so it's the first thing
+          members see when they open the team page. */}
+      {!isError && teamId && (
+        <div id="chat">
+          <TeamChat teamId={teamId} teamName={teamData?.name || 'Team'} />
+        </div>
+      )}
+
       <div className="space-y-3 sm:space-y-4">
         {isError ? (
           <>

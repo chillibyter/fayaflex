@@ -1,11 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, UserPlus, Flame, Footprints, Dumbbell, Users } from "lucide-react";
+import { Trophy, UserPlus, Flame, Footprints, Dumbbell, Users, MessageSquare } from "lucide-react";
 import { Link } from "wouter";
 import { FITNESS_AVATARS } from "@/lib/avatars";
 import { Icon3D } from "@/components/Icon3D";
 import { MAX_TEAM_MEMBERS } from "@shared/schema";
+import { formatDistanceToNow } from "date-fns";
 
 type MemberAvatar = {
   id: string;
@@ -25,6 +26,12 @@ interface TeamCardProps {
   memberAvatars: MemberAvatar[];
   isOwner?: boolean;
   onInvite?: () => void;
+  lastMessage?: {
+    id: string;
+    content: string;
+    createdAt: string;
+    userFirstName: string | null;
+  } | null;
 }
 
 const formatNumber = (num: number): string => {
@@ -95,9 +102,22 @@ export default function TeamCard({
   rank,
   memberAvatars,
   onInvite,
+  lastMessage,
 }: TeamCardProps) {
   const extraMembers = memberCount > 4 ? memberCount - 4 : 0;
   const heroBg = heroGradientForRank(rank);
+
+  // Client-side last-seen tracking so we can show an unread dot when there
+  // are new messages since the user last opened this team's chat.
+  let isUnread = false;
+  if (lastMessage && typeof window !== "undefined") {
+    try {
+      const seenKey = `fayaflex_team_chat_seen_${teamId}`;
+      const seenIso = window.localStorage.getItem(seenKey);
+      const lastMs = new Date(lastMessage.createdAt).getTime();
+      isUnread = !seenIso || lastMs > new Date(seenIso).getTime();
+    } catch { /* localStorage unavailable */ }
+  }
 
   return (
     <Card className="overflow-hidden hover-elevate" data-testid={`card-team-${teamId}`}>
@@ -184,6 +204,43 @@ export default function TeamCard({
             </p>
           </div>
         </div>
+
+        {/* Latest team-chat message preview — surfaces the chat without
+            requiring the user to scroll to the bottom of the team page. */}
+        <Link href={`/teams/${teamId}#chat`}>
+          <div
+            className="flex items-start gap-2 mb-3 p-2.5 rounded-md bg-muted/40 hover-elevate"
+            data-testid={`link-team-chat-${teamId}`}
+          >
+            <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+            <div className="min-w-0 flex-1">
+              {lastMessage ? (
+                <>
+                  <p className="text-xs text-foreground truncate" data-testid={`text-team-last-message-${teamId}`}>
+                    <span className="font-semibold">
+                      {lastMessage.userFirstName || "Teammate"}:
+                    </span>{" "}
+                    {lastMessage.content}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {formatDistanceToNow(new Date(lastMessage.createdAt), { addSuffix: true })}
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Open team chat — no messages yet
+                </p>
+              )}
+            </div>
+            {isUnread && (
+              <span
+                className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5"
+                data-testid={`indicator-unread-team-${teamId}`}
+                aria-label="Unread messages"
+              />
+            )}
+          </div>
+        </Link>
 
         <div className="flex gap-2">
           <Link href={`/teams/${teamId}/victory-wall`} className="flex-1">

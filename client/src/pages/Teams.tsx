@@ -49,6 +49,12 @@ type EnrichedTeam = Team & {
   totalWorkouts: number;
   rank: number;
   memberAvatars: MemberAvatar[];
+  lastMessage: {
+    id: string;
+    content: string;
+    createdAt: string;
+    userFirstName: string | null;
+  } | null;
 };
 
 export default function Teams() {
@@ -268,6 +274,7 @@ export default function Teams() {
                 memberAvatars={team.memberAvatars}
                 isOwner={Boolean(user && typeof user === 'object' && 'id' in user && team.ownerId === (user as any).id)}
                 onInvite={() => handleInviteClick(team)}
+                lastMessage={team.lastMessage}
               />
             ))}
           </div>

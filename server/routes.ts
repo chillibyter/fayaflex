@@ -1367,6 +1367,10 @@ IMPORTANT RULES:
       allTeamStats.sort((a, b) => b.totalCalories - a.totalCalories);
       const rankMap = new Map(allTeamStats.map((t, i) => [t.teamId, i + 1]));
       
+      // Pre-fetch latest message per team so the Teams list can surface
+      // chat activity without an N+1 (or a separate per-card request).
+      const lastMessageByTeam = await storage.getLatestMessagePerTeam(teams.map(t => t.id));
+
       // Enrich user's teams with full data
       const enrichedTeams = await Promise.all(
         teams.map(async (team) => {
@@ -1405,6 +1409,7 @@ IMPORTANT RULES:
             })
           );
           
+          const lm = lastMessageByTeam[team.id];
           return {
             ...team,
             memberCount: members.length,
@@ -1413,6 +1418,14 @@ IMPORTANT RULES:
             totalWorkouts: workoutDates.size,
             rank: rankMap.get(team.id) || 0,
             memberAvatars,
+            lastMessage: lm
+              ? {
+                  id: lm.id,
+                  content: lm.content,
+                  createdAt: lm.createdAt.toISOString(),
+                  userFirstName: lm.userFirstName,
+                }
+              : null,
           };
         })
       );
