@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, type Activity } from "@shared/schema";
+import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, MAX_TEAM_MEMBERS, type Activity } from "@shared/schema";
 
 interface WorkoutSummary {
   notes?: string | null;
@@ -1451,7 +1451,8 @@ IMPORTANT RULES:
         name: team.name,
         description: team.description,
         memberCount: members.length,
-        isFull: members.length >= 20,
+        isFull: members.length >= MAX_TEAM_MEMBERS,
+        maxMembers: MAX_TEAM_MEMBERS,
       });
     } catch (error) {
       console.error("Error fetching team by invite code:", error);
@@ -1493,10 +1494,10 @@ IMPORTANT RULES:
         return res.status(400).json({ message: "Already a member of this team" });
       }
 
-      // Check team member count limit (max 20 members)
+      // Check team member count limit
       const currentMembers = await storage.getTeamMembers(team.id);
-      if (currentMembers.length >= 20) {
-        return res.status(400).json({ message: "Team is full (maximum 20 members)" });
+      if (currentMembers.length >= MAX_TEAM_MEMBERS) {
+        return res.status(400).json({ message: `Team is full (maximum ${MAX_TEAM_MEMBERS} members)` });
       }
 
       await storage.addTeamMember({

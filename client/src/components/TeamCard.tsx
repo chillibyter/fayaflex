@@ -5,6 +5,7 @@ import { Trophy, UserPlus, Flame, Footprints, Dumbbell, Users } from "lucide-rea
 import { Link } from "wouter";
 import { FITNESS_AVATARS } from "@/lib/avatars";
 import { Icon3D } from "@/components/Icon3D";
+import { MAX_TEAM_MEMBERS } from "@shared/schema";
 
 type MemberAvatar = {
   id: string;
@@ -113,7 +114,7 @@ export default function TeamCard({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/60 font-semibold mb-1">
                 <Users className="h-3 w-3" />
-                {memberCount} {memberCount === 1 ? "member" : "members"}
+                {memberCount}/{MAX_TEAM_MEMBERS} members
               </div>
               <h3 className="text-2xl font-extrabold tracking-tight leading-tight truncate" data-testid="text-team-name">
                 {name}

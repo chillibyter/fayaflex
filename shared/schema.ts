@@ -821,3 +821,8 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
   monthlyWinner: true,
   rankChange: true,
 };
+
+// Maximum number of members allowed in a single team. Smaller teams keep
+// daily competition feeling personal — anything over ~20 trends toward
+// anonymity and lower engagement.
+export const MAX_TEAM_MEMBERS = 20;
