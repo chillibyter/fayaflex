@@ -369,6 +369,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // at midnight local time, which is still "yesterday" on the server).
       const serverTodayStr = new Date().toISOString().split('T')[0];
 
+      // Build a map of date → best detailed-workout type so we can replace
+      // the generic "Health Sync (N workout(s))" placeholder with the real
+      // workout type (e.g. "running", "strength training") when available.
+      // Picks the longest workout of the day as representative.
+      const detailedWorkoutTypeByDate = new Map<string, string>();
+      const detailedWorkoutDurationByDate = new Map<string, number>();
+      for (const w of validatedData.workouts ?? []) {
+        if (!w.startedAt || !w.workoutType) continue;
+        const date = w.startedAt.split('T')[0];
+        const dur = w.durationMinutes ?? 0;
+        const prev = detailedWorkoutDurationByDate.get(date) ?? -1;
+        if (dur > prev) {
+          detailedWorkoutDurationByDate.set(date, dur);
+          detailedWorkoutTypeByDate.set(date, w.workoutType);
+        }
+      }
+
       // Transform activities: convert workouts count to workoutType if not already set
       const transformedActivities = validatedData.activities
         .filter(activity => {
@@ -378,14 +395,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           return true;
         })
-        .map(activity => ({
-          date: activity.date,
-          calories: activity.calories,
-          steps: activity.steps,
-          workoutType: activity.workoutType || (activity.workouts && activity.workouts > 0 
-            ? `Health Sync (${activity.workouts} workout${activity.workouts > 1 ? 's' : ''})` 
-            : undefined),
-        }));
+        .map(activity => {
+          // Prefer in order: explicit type from sync → detailed-workout type for that date → placeholder
+          const detailedType = detailedWorkoutTypeByDate.get(activity.date);
+          let workoutType = activity.workoutType;
+          if (!workoutType && detailedType) {
+            workoutType = detailedType;
+          } else if (!workoutType && activity.workouts && activity.workouts > 0) {
+            workoutType = `Health Sync (${activity.workouts} workout${activity.workouts > 1 ? 's' : ''})`;
+          }
+          return {
+            date: activity.date,
+            calories: activity.calories,
+            steps: activity.steps,
+            workoutType,
+          };
+        });
       
       // Structured telemetry: per-sync coverage summary so we can compare
       // Apple vs Android sync quality over time without touching per-day values.

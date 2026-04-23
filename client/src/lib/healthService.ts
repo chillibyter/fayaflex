@@ -38,6 +38,85 @@ interface HuaweiHealthPluginInterface {
 const HealthKit = registerPlugin<HealthKitPluginInterface>('HealthKit');
 const HuaweiHealth = registerPlugin<HuaweiHealthPluginInterface>('HuaweiHealth');
 
+// Maps Health Connect / Capacitor-Health enum strings (e.g. "WORKOUT_TYPE_RUNNING",
+// "EXERCISE_TYPE_BIKING_STATIONARY") to the human-readable names used everywhere
+// else in the app. Keys are normalised: lower-case, no underscores, prefixes stripped.
+const HC_TYPE_ALIASES: Record<string, string> = {
+  running: 'running', run: 'running', jogging: 'running', treadmillrunning: 'running',
+  walking: 'walking', walk: 'walking',
+  hiking: 'hiking',
+  biking: 'cycling', biking2: 'cycling', cycling: 'cycling', bikingstationary: 'cycling',
+  mountainbiking: 'cycling', roadbiking: 'cycling', spinning: 'cycling',
+  swimming: 'swimming', swimmingpool: 'swimming', swimmingopenwater: 'swimming',
+  rowing: 'rowing', rowingmachine: 'rowing',
+  elliptical: 'elliptical',
+  stairclimbing: 'stair climbing', stairclimbingmachine: 'stair climbing',
+  weightlifting: 'weightlifting', strengthtraining: 'strength training',
+  yoga: 'yoga', pilates: 'pilates', meditation: 'mindfulness',
+  hiit: 'HIIT', highintensityintervaltraining: 'HIIT',
+  crossfit: 'crossfit', boxing: 'boxing', kickboxing: 'kickboxing', martialarts: 'martial arts',
+  dancing: 'dance', socialdance: 'dance',
+  basketball: 'basketball', soccer: 'soccer', football: 'football',
+  tennis: 'tennis', tabletennis: 'table tennis', badminton: 'badminton',
+  volleyball: 'volleyball', baseball: 'baseball', cricket: 'cricket', rugby: 'rugby',
+  golf: 'golf', skating: 'skating', skiing: 'skiing', snowboarding: 'snowboarding',
+  surfing: 'surfing', skating2: 'skating', icehockey: 'ice hockey',
+  paddling: 'paddling', skipping: 'jump rope', jumprope: 'jump rope',
+  stretching: 'stretching', warmup: 'warmup', cooldown: 'cooldown',
+  generalfitness: 'cardio', calisthenics: 'calisthenics',
+};
+
+function normalizeRawType(raw: string | null | undefined): string {
+  if (!raw) return '';
+  return String(raw).toLowerCase()
+    .replace(/^workout[_\s]?type[_\s]?/, '')
+    .replace(/^exercise[_\s]?type[_\s]?/, '')
+    .replace(/[_\s]+/g, '');
+}
+
+/**
+ * Returns a clean workout-type label for what Apple/Health-Connect emit.
+ * Falls back to metric-based heuristics when the source type is missing or
+ * generic (e.g. "workout", "OTHER", "WORKOUT_TYPE_OTHER").
+ */
+export function inferWorkoutType(input: {
+  rawType?: string | null;
+  durationMinutes?: number | null;
+  distanceMeters?: number | null;
+  avgHeartRate?: number | null;
+}): string {
+  const norm = normalizeRawType(input.rawType);
+  const aliased = HC_TYPE_ALIASES[norm];
+  // If the source type is meaningful (not "other"/"workout"/empty), trust it.
+  const isGeneric = !norm || norm === 'workout' || norm === 'other' || norm === 'unknown';
+  if (aliased) return aliased;
+  if (!isGeneric) {
+    // Convert "snake_case_thing" → "snake case thing" once for display.
+    return String(input.rawType).toLowerCase().replace(/_/g, ' ').trim();
+  }
+
+  // Heuristic inference from metrics
+  const dur = input.durationMinutes ?? 0;
+  const dist = input.distanceMeters ?? 0;
+  const hr = input.avgHeartRate ?? 0;
+
+  if (dist > 0 && dur > 0) {
+    const paceMinPerKm = dur / (dist / 1000); // minutes per km
+    if (paceMinPerKm < 3.0) return 'cycling';            // <18 km/h pure-pace floor
+    if (paceMinPerKm < 8.5)  return 'running';           // typical jog/run
+    if (paceMinPerKm < 13.0) return 'hiking';            // brisk hike
+    return 'walking';
+  }
+  if (dist > 0 && dur === 0) return 'walking';
+
+  if (hr >= 150) return 'HIIT';
+  if (hr >= 130) return 'strength training';
+  if (hr >= 100 && dur > 0) return 'cardio';
+  if (hr > 0   && hr < 100) return 'yoga';
+
+  return 'workout';
+}
+
 class HealthService {
   private isIOS(): boolean {
     return Capacitor.getPlatform() === 'ios';
@@ -539,16 +618,24 @@ class HealthService {
             const nativeName = typeof w.activityTypeName === 'string' && w.activityTypeName.trim().toLowerCase() !== 'workout'
               ? w.activityTypeName
               : null;
-            const workoutType = nativeName || mappedFromInt || 'workout';
+            const durationMinutes = typeof w.duration === 'number' ? Math.round(w.duration / 60) : null;
+            const distanceMeters = typeof w.distanceMeters === 'number' && w.distanceMeters > 0 ? w.distanceMeters : null;
+            const avgHeartRate = typeof w.avgHeartRate === 'number' && w.avgHeartRate > 0 ? w.avgHeartRate : null;
+            const workoutType = inferWorkoutType({
+              rawType: nativeName || mappedFromInt,
+              durationMinutes,
+              distanceMeters,
+              avgHeartRate,
+            });
             return {
             externalId: String(w.uuid || `${w.startDate}-${w.activityType}`),
             workoutType,
             startedAt: w.startDate || w.start || null,
             calories: typeof w.calories === 'number' ? w.calories : null,
-            durationMinutes: typeof w.duration === 'number' ? Math.round(w.duration / 60) : null,
-            distanceMeters: typeof w.distanceMeters === 'number' && w.distanceMeters > 0 ? w.distanceMeters : null,
+            durationMinutes,
+            distanceMeters,
             elevationGainMeters: typeof w.elevationGainMeters === 'number' && w.elevationGainMeters > 0 ? w.elevationGainMeters : null,
-            avgHeartRate: typeof w.avgHeartRate === 'number' && w.avgHeartRate > 0 ? w.avgHeartRate : null,
+            avgHeartRate,
             };
           });
       }
@@ -576,13 +663,21 @@ class HealthService {
         const avgHr = heartRates.length > 0
           ? Math.round(heartRates.reduce((a, b) => a + b, 0) / heartRates.length)
           : null;
+        const durationMinutes = durationSec ? Math.round(durationSec / 60) : null;
+        const distanceMeters = typeof w?.distance === 'number' && w.distance > 0 ? Math.round(w.distance) : null;
+        const workoutType = inferWorkoutType({
+          rawType: w?.workoutType || w?.type,
+          durationMinutes,
+          distanceMeters,
+          avgHeartRate: avgHr,
+        });
         return {
           externalId,
-          workoutType: String(w?.workoutType || w?.type || 'workout').toLowerCase().replace(/_/g, ' '),
+          workoutType,
           startedAt: start ? new Date(start).toISOString() : null,
           calories: typeof w?.calories === 'number' ? Math.round(w.calories) : null,
-          durationMinutes: durationSec ? Math.round(durationSec / 60) : null,
-          distanceMeters: typeof w?.distance === 'number' && w.distance > 0 ? Math.round(w.distance) : null,
+          durationMinutes,
+          distanceMeters,
           avgHeartRate: avgHr,
           elevationGainMeters: null,
         };
