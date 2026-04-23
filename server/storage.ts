@@ -103,6 +103,7 @@ export interface IStorage {
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
   getTeamMembers(teamId: string): Promise<TeamMember[]>;
   isUserInTeam(userId: string, teamId: string): Promise<boolean>;
+  joinTeamWithCap(teamId: string, userId: string, maxMembers: number): Promise<"joined" | "already_member" | "full">;
   removeTeamMember(userId: string, teamId: string): Promise<void>;
   doUsersShareTeam(userId1: string, userId2: string): Promise<boolean>;
 
@@ -626,6 +627,41 @@ export class DatabaseStorage implements IStorage {
       .from(teamMembers)
       .where(and(eq(teamMembers.userId, userId), eq(teamMembers.teamId, teamId)));
     return !!member;
+  }
+
+  async joinTeamWithCap(
+    teamId: string,
+    userId: string,
+    maxMembers: number,
+  ): Promise<"joined" | "already_member" | "full"> {
+    // Wrap the membership check + count + insert in a single transaction
+    // and lock the team row with `SELECT ... FOR UPDATE` so that two
+    // concurrent joiners can't both pass the count check and exceed the
+    // member cap.
+    return await db.transaction(async (tx) => {
+      // Row-level lock on the team. If the team disappeared between the
+      // route handler's lookup and now, treat as full to fail safely.
+      const lockedTeam = await tx.execute(
+        sql`SELECT id FROM teams WHERE id = ${teamId} FOR UPDATE`,
+      );
+      if ((lockedTeam as any).rows?.length === 0) return "full" as const;
+
+      const [existing] = await tx
+        .select({ id: teamMembers.id })
+        .from(teamMembers)
+        .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+      if (existing) return "already_member" as const;
+
+      const countResult = await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(teamMembers)
+        .where(eq(teamMembers.teamId, teamId));
+      const memberCount = countResult[0]?.count ?? 0;
+      if (memberCount >= maxMembers) return "full" as const;
+
+      await tx.insert(teamMembers).values({ teamId, userId });
+      return "joined" as const;
+    });
   }
 
   async removeTeamMember(userId: string, teamId: string): Promise<void> {

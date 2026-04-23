@@ -4,8 +4,39 @@ import { apiRequest, getApiUrl, getAuthHeaders } from "./queryClient";
 // We dynamically import @capacitor/push-notifications so the web bundle
 // doesn't break if the plugin isn't available in the browser environment.
 
-const STORAGE_KEY = "fayaflex_push_token";
-const STATUS_KEY = "fayaflex_push_status";
+// Push tokens and status are scoped per authenticated user so that on a
+// shared device, switching accounts can't make user B inherit user A's
+// "registered" state (which would otherwise short-circuit registration
+// for user B). The active user's id is set via setActivePushUser(),
+// called from the auth hook on login/logout.
+const TOKEN_KEY_PREFIX = "fayaflex_push_token:";
+const STATUS_KEY_PREFIX = "fayaflex_push_status:";
+const ACTIVE_USER_KEY = "fayaflex_push_active_user";
+
+function activeUserId(): string | null {
+  try {
+    return localStorage.getItem(ACTIVE_USER_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function tokenKey(): string | null {
+  const id = activeUserId();
+  return id ? `${TOKEN_KEY_PREFIX}${id}` : null;
+}
+
+function statusKey(): string | null {
+  const id = activeUserId();
+  return id ? `${STATUS_KEY_PREFIX}${id}` : null;
+}
+
+export function setActivePushUser(userId: string | null) {
+  try {
+    if (userId) localStorage.setItem(ACTIVE_USER_KEY, userId);
+    else localStorage.removeItem(ACTIVE_USER_KEY);
+  } catch {}
+}
 
 export type PushStatus = {
   platform: "ios" | "android" | "web" | "unknown";
@@ -16,8 +47,12 @@ export type PushStatus = {
 };
 
 function readStatus(): PushStatus {
+  const key = statusKey();
+  if (!key) {
+    return { platform: "unknown", permission: "unknown", registered: false, updatedAt: 0 };
+  }
   try {
-    const raw = localStorage.getItem(STATUS_KEY);
+    const raw = localStorage.getItem(key);
     if (raw) return JSON.parse(raw);
   } catch {}
   return {
@@ -29,9 +64,11 @@ function readStatus(): PushStatus {
 }
 
 function writeStatus(patch: Partial<PushStatus>) {
+  const key = statusKey();
+  if (!key) return; // No active user — don't persist status to a global key.
   const next: PushStatus = { ...readStatus(), ...patch, updatedAt: Date.now() };
   try {
-    localStorage.setItem(STATUS_KEY, JSON.stringify(next));
+    localStorage.setItem(key, JSON.stringify(next));
     // Let UI subscribers update without a full reload
     window.dispatchEvent(new CustomEvent("fayaflex:push-status", { detail: next }));
   } catch {}
@@ -53,7 +90,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 async function registerToken(token: string, platform: "ios" | "android" | "web", webSubscription?: any) {
   try {
     await apiRequest("POST", "/api/push/register", { token, platform, webSubscription });
-    localStorage.setItem(STORAGE_KEY, token);
+    const key = tokenKey();
+    if (key) localStorage.setItem(key, token);
     writeStatus({ platform, registered: true, lastError: null });
   } catch (e: any) {
     console.warn("[Push] register failed:", e);
@@ -62,17 +100,20 @@ async function registerToken(token: string, platform: "ios" | "android" | "web",
 }
 
 async function unregisterToken() {
-  const token = localStorage.getItem(STORAGE_KEY);
-  if (!token) return;
-  try {
-    await fetch(getApiUrl(`/api/push/token?token=${encodeURIComponent(token)}`), {
-      method: "DELETE",
-      credentials: "include",
-      headers: getAuthHeaders(),
-    });
-  } catch {}
-  localStorage.removeItem(STORAGE_KEY);
-  writeStatus({ registered: false });
+  const key = tokenKey();
+  const sKey = statusKey();
+  const token = key ? localStorage.getItem(key) : null;
+  if (token) {
+    try {
+      await fetch(getApiUrl(`/api/push/token?token=${encodeURIComponent(token)}`), {
+        method: "DELETE",
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
+    } catch {}
+  }
+  if (key) localStorage.removeItem(key);
+  if (sKey) localStorage.removeItem(sKey);
 }
 
 // ---------------- Native (iOS / Android via FCM/APNs) ----------------
@@ -150,7 +191,8 @@ async function initNativePush() {
     // the issue is visible in `adb logcat` and the settings page.
     if (platform === "android") {
       setTimeout(() => {
-        if (!localStorage.getItem(STORAGE_KEY)) {
+        const k = tokenKey();
+        if (!k || !localStorage.getItem(k)) {
           const msg =
             "Android push token did not arrive within 10s — check google-services.json and FCM project setup.";
           console.warn("[Push]", msg);
@@ -225,10 +267,11 @@ let resumeListenerAttached = false;
 export async function initPushNotifications() {
   if (initInFlight) return;
   // If we already have a token saved AND a previous status confirmed
-  // registration, don't request permission again. We still re-register on
-  // app resume below to recover from server-side token loss.
+  // registration for *this user*, don't request permission again. We still
+  // re-register on app resume below to recover from server-side token loss.
   const status = readStatus();
-  if (status.registered && localStorage.getItem(STORAGE_KEY)) {
+  const key = tokenKey();
+  if (status.registered && key && localStorage.getItem(key)) {
     return;
   }
 
@@ -263,9 +306,11 @@ export async function initPushNotifications() {
   }
 }
 
-// Call on logout to clean up
+// Call on logout to clean up. Clears this user's token + status so a
+// subsequent login on the same device starts fresh.
 export async function disablePushNotifications() {
   await unregisterToken();
+  setActivePushUser(null);
 }
 
 // Re-export so settings UI can request a server-side test

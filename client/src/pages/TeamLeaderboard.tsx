@@ -286,10 +286,6 @@ export default function TeamLeaderboard() {
         )}
       </div>
 
-      {!isError && teamId && (
-        <TeamChat teamId={teamId} teamName={teamData?.name || 'Team'} />
-      )}
-
       {/* Leave Team Dialog */}
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>

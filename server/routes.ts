@@ -1502,21 +1502,16 @@ IMPORTANT RULES:
       
       console.log(`[Teams] Found team: ${team.name} (${team.id})`)
 
-      const isAlreadyMember = await storage.isUserInTeam(userId, team.id);
-      if (isAlreadyMember) {
+      // Atomic join: count + insert in one transaction with row-level lock
+      // on the team. Without this, two concurrent joiners can both pass the
+      // count check and push the team over the MAX_TEAM_MEMBERS cap.
+      const result = await storage.joinTeamWithCap(team.id, userId, MAX_TEAM_MEMBERS);
+      if (result === "already_member") {
         return res.status(400).json({ message: "Already a member of this team" });
       }
-
-      // Check team member count limit
-      const currentMembers = await storage.getTeamMembers(team.id);
-      if (currentMembers.length >= MAX_TEAM_MEMBERS) {
+      if (result === "full") {
         return res.status(400).json({ message: `Team is full (maximum ${MAX_TEAM_MEMBERS} members)` });
       }
-
-      await storage.addTeamMember({
-        teamId: team.id,
-        userId: userId,
-      });
 
       res.json(team);
     } catch (error: any) {

@@ -38,7 +38,7 @@ import ProfileCompletionGate from "@/components/ProfileCompletionGate";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useAutoHealthSync } from "@/hooks/use-auto-health-sync";
 import { useSwipeBack } from "@/hooks/use-swipe-back";
-import { initPushNotifications } from "@/lib/pushNotifications";
+import { initPushNotifications, setActivePushUser } from "@/lib/pushNotifications";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
@@ -167,9 +167,12 @@ function AuthenticatedApp() {
   // Enable swipe-right from left edge to go back
   useSwipeBack();
 
-  // Initialize push notifications once user is authenticated
+  // Initialize push notifications once user is authenticated. We also stamp
+  // the active user id so push token / status keys in localStorage are
+  // scoped per account (prevents cross-account leakage on shared devices).
   useEffect(() => {
     if (user) {
+      setActivePushUser(user.id);
       // Slight delay so we don't request permission the moment the app opens —
       // user has had a chance to see the dashboard first
       const t = setTimeout(() => {
