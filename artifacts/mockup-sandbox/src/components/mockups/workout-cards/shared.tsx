@@ -41,31 +41,49 @@ export function clampIntensity(workoutCals: number, top: number, leader?: boolea
   return Math.max(0.2, Math.min(1, r));
 }
 
-/** Animated, intensity-aware flame.
- *  Renders a stylized SVG flame so it can be scaled, glow-haloed, and flickered via CSS. */
+/** Lively, intensity-aware flame: dual flame layers, conic energy ring,
+ *  glow halo, sparks, and floating embers. */
 export function AnimatedFlame({
   size = 48,
   intensity = 0.5,
   showSparks = true,
+  showRing = true,
+  showEmbers = true,
 }: {
   size?: number;
   intensity?: number;
   showSparks?: boolean;
+  showRing?: boolean;
+  showEmbers?: boolean;
 }) {
   const styleVars = { ["--ff-intensity" as any]: String(intensity) } as React.CSSProperties;
   return (
     <span
-      className="ff-flame"
+      className="ff-flame-wrap"
       style={{ ...styleVars, width: size, height: size }}
       aria-label="flame"
     >
       <span className="ff-flame-glow" />
-      <FlameSvg size={size} intensity={intensity} />
-      {showSparks && intensity > 0.6 && (
+      {showRing && intensity > 0.35 && <span className="ff-flame-ring" />}
+      <span className="ff-flame-back" style={{ width: size, height: size }}>
+        <FlameSvg size={size} intensity={intensity} variant="back" />
+      </span>
+      <span className="ff-flame" style={{ width: size, height: size }}>
+        <FlameSvg size={size} intensity={intensity} />
+      </span>
+      {showSparks && intensity > 0.45 && (
         <>
-          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "-6px", animationDelay: "0s" } as React.CSSProperties} />
-          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "8px",  animationDelay: ".4s" } as React.CSSProperties} />
-          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "0px",  animationDelay: ".9s" } as React.CSSProperties} />
+          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "-7px", animationDelay: "0s" } as React.CSSProperties} />
+          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "9px",  animationDelay: ".35s" } as React.CSSProperties} />
+          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "-2px", animationDelay: ".7s" } as React.CSSProperties} />
+          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "5px",  animationDelay: "1.05s" } as React.CSSProperties} />
+        </>
+      )}
+      {showEmbers && intensity > 0.55 && (
+        <>
+          <span className="ff-ember" style={{ ["--ff-ember-x" as any]: "-12px", animationDelay: ".2s", left: "40%" } as React.CSSProperties} />
+          <span className="ff-ember" style={{ ["--ff-ember-x" as any]: "14px",  animationDelay: ".9s", left: "60%" } as React.CSSProperties} />
+          <span className="ff-ember" style={{ ["--ff-ember-x" as any]: "4px",   animationDelay: "1.5s", left: "50%" } as React.CSSProperties} />
         </>
       )}
     </span>
@@ -73,37 +91,40 @@ export function AnimatedFlame({
 }
 
 /** SVG flame whose inner-flame brightness scales with intensity. */
-export function FlameSvg({ size = 48, intensity = 0.5 }: { size?: number; intensity?: number }) {
-  // Outer color shifts toward yellow-white as intensity rises
+export function FlameSvg({
+  size = 48,
+  intensity = 0.5,
+  variant = "front",
+}: {
+  size?: number;
+  intensity?: number;
+  variant?: "front" | "back";
+}) {
   const outer = `hsl(${20 - intensity * 8}, 95%, ${50 + intensity * 8}%)`;
   const mid   = `hsl(${30 + intensity * 10}, 100%, ${55 + intensity * 10}%)`;
   const core  = `hsl(${50 + intensity * 10}, 100%, ${75 + intensity * 15}%)`;
+  const gradId = `ff-grad-${variant}-${intensity.toFixed(2)}`;
+  const fill = variant === "back" ? outer : `url(#${gradId})`;
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      style={{ position: "relative", zIndex: 1 }}
-    >
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
       <defs>
-        <radialGradient id={`ff-grad-${intensity.toFixed(2)}`} cx="50%" cy="70%" r="60%">
+        <radialGradient id={gradId} cx="50%" cy="70%" r="60%">
           <stop offset="0%"   stopColor={core} />
           <stop offset="45%"  stopColor={mid} />
           <stop offset="100%" stopColor={outer} />
         </radialGradient>
       </defs>
-      {/* Outer flame */}
       <path
         d="M32 60c-11 0-19-7-19-18 0-7 4-13 8-17 1 4 4 6 6 6 1-7-1-12-4-17C30 16 36 9 35 2c8 5 17 16 17 28 0 4-1 7-3 10 1-3 0-7-3-9 1 8-4 14-9 16 5 0 9-2 11-6 1 12-7 19-16 19z"
-        fill={`url(#ff-grad-${intensity.toFixed(2)})`}
+        fill={fill}
       />
-      {/* Inner core gets brighter */}
-      <path
-        d="M32 52c-5 0-9-3-9-9 0-4 3-8 5-10 1 5 5 6 6 4 0-3-1-6-2-9 4 3 9 9 9 15 0 5-4 9-9 9z"
-        fill={core}
-        opacity={0.5 + intensity * 0.5}
-      />
+      {variant === "front" && (
+        <path
+          d="M32 52c-5 0-9-3-9-9 0-4 3-8 5-10 1 5 5 6 6 4 0-3-1-6-2-9 4 3 9 9 9 15 0 5-4 9-9 9z"
+          fill={core}
+          opacity={0.55 + intensity * 0.45}
+        />
+      )}
     </svg>
   );
 }
