@@ -1,4 +1,5 @@
 import "./_group.css";
+import { useId } from "react";
 import { Flame } from "lucide-react";
 
 export interface ParsedWorkout {
@@ -41,64 +42,183 @@ export function clampIntensity(workoutCals: number, top: number, leader?: boolea
   return Math.max(0.2, Math.min(1, r));
 }
 
-/* ===== Realistic flame =====
- *  Three independently-flickering SVG flame tongues + a pulsing ember bed,
- *  a soft glow halo, and a continuous spark stream. Each layer has its own
- *  color, shape and timing so the whole thing reads as actual fire. */
+/* ===== Photorealistic 3D flame =====
+ *  Built from three SVG flame tongues, each warped in real-time by an
+ *  animated `feTurbulence` + `feDisplacementMap` filter so the silhouette
+ *  organically morphs (instead of just scaling). Adds a darker
+ *  pre-combustion fuel pocket near the wick, a tiny blue base where
+ *  fuel meets oxygen, and a specular highlight on the molten core for a
+ *  3D "wet glow" feel. */
 
-/** A single flame-tongue path. The shapes are tuned to feel organic — wider
- *  ember-base, narrowing tip, with a small kink/lick on one shoulder. */
+interface TonguePalette {
+  /** Multi-stop radial gradient (cy near bottom). */
+  stops: { o: number; c: string; a?: number }[];
+  /** SVG path. */
+  d: string;
+  /** Displacement amplitude — how much the edges wobble. */
+  disp: number;
+  /** Turbulence frequency — higher = finer noise. */
+  freq: string;
+  /** Animation duration of the seed sweep. */
+  dur: string;
+  /** Octaves of fractal noise. */
+  octaves: number;
+}
+
+/** A single flame-tongue, warped by an animated turbulence filter. */
 function FlameTongue({
   variant,
   intensity,
+  idPrefix,
 }: {
   variant: "outer" | "mid" | "core";
   intensity: number;
+  idPrefix: string;
 }) {
-  // Color stops by layer (hot core gets nearly white; outer is deep red).
-  const palettes = {
+  // Photometric color stops. 5 stops give a smoother, more volumetric falloff
+  // than a hard 3-stop ramp. Hot center → cooler shoulders → dim deep red base.
+  const palettes: Record<"outer" | "mid" | "core", TonguePalette> = {
     outer: {
-      gradId: `ff-g-out-${intensity.toFixed(2)}`,
       stops: [
-        { o: 0,   c: `hsl(${28 + intensity * 8}, 100%, ${55 + intensity * 8}%)` },
-        { o: 0.55,c: `hsl(${18 + intensity * 5}, 95%,  ${48 + intensity * 6}%)` },
-        { o: 1,   c: `hsl(${5  + intensity * 5}, 95%,  ${30 + intensity * 5}%)` },
+        { o: 0,    c: `hsl(${36 + intensity * 6}, 100%, ${62 + intensity * 8}%)`, a: 0.95 },
+        { o: 0.30, c: `hsl(${24 + intensity * 6}, 100%, ${55 + intensity * 6}%)`, a: 0.95 },
+        { o: 0.55, c: `hsl(${14 + intensity * 5}, 95%,  ${44 + intensity * 6}%)`, a: 0.92 },
+        { o: 0.80, c: `hsl(${4  + intensity * 4}, 92%,  ${30 + intensity * 5}%)`, a: 0.85 },
+        { o: 1,    c: `hsl(${0  + intensity * 4}, 90%,  ${18 + intensity * 4}%)`, a: 0.7  },
       ],
-      // Big, full envelope.
       d: "M32 78 C 14 72, 8 54, 16 36 C 20 42, 26 40, 26 32 C 26 22, 22 12, 30 4 C 34 14, 42 16, 44 30 C 50 50, 48 72, 32 78 Z",
+      disp: 7 + intensity * 4,
+      freq: "0.018 0.045",
+      dur: "9s",
+      octaves: 2,
     },
     mid: {
-      gradId: `ff-g-mid-${intensity.toFixed(2)}`,
       stops: [
-        { o: 0,   c: `hsl(${48 + intensity * 8}, 100%, ${72 + intensity * 12}%)` },
-        { o: 0.55,c: `hsl(${36 + intensity * 8}, 100%, ${58 + intensity * 8}%)` },
-        { o: 1,   c: `hsl(${22 + intensity * 6}, 100%, ${48 + intensity * 5}%)` },
+        { o: 0,    c: `hsl(${56 + intensity * 6}, 100%, ${80 + intensity * 10}%)`, a: 1 },
+        { o: 0.30, c: `hsl(${46 + intensity * 6}, 100%, ${68 + intensity * 10}%)`, a: 1 },
+        { o: 0.55, c: `hsl(${36 + intensity * 6}, 100%, ${56 + intensity * 8}%)`,  a: 0.95 },
+        { o: 0.80, c: `hsl(${24 + intensity * 5}, 100%, ${46 + intensity * 6}%)`,  a: 0.85 },
+        { o: 1,    c: `hsl(${14 + intensity * 4}, 95%,  ${36 + intensity * 4}%)`,  a: 0.6  },
       ],
-      // Slightly narrower with a leftward lick.
       d: "M32 76 C 18 70, 14 54, 22 38 C 24 44, 28 42, 28 34 C 28 24, 26 14, 32 8 C 36 16, 40 20, 41 32 C 46 50, 44 70, 32 76 Z",
+      disp: 4 + intensity * 3,
+      freq: "0.028 0.07",
+      dur: "5.5s",
+      octaves: 2,
     },
     core: {
-      gradId: `ff-g-core-${intensity.toFixed(2)}`,
       stops: [
-        { o: 0,   c: `hsl(56, 100%, ${88 + intensity * 8}%)` },
-        { o: 0.5, c: `hsl(${50 + intensity * 6}, 100%, ${75 + intensity * 12}%)` },
-        { o: 1,   c: `hsl(${36 + intensity * 8}, 100%, ${60 + intensity * 8}%)` },
+        { o: 0,    c: `hsl(58, 100%, ${94 + intensity * 6}%)`, a: 1 },
+        { o: 0.25, c: `hsl(56, 100%, ${88 + intensity * 8}%)`, a: 1 },
+        { o: 0.55, c: `hsl(${50 + intensity * 4}, 100%, ${76 + intensity * 10}%)`, a: 0.97 },
+        { o: 0.85, c: `hsl(${40 + intensity * 6}, 100%, ${62 + intensity * 6}%)`,  a: 0.85 },
+        { o: 1,    c: `hsl(${30 + intensity * 6}, 100%, ${50 + intensity * 4}%)`,  a: 0.5  },
       ],
-      // Small, narrow, taller tongue.
       d: "M32 70 C 24 64, 22 52, 28 40 C 30 44, 32 42, 32 36 C 32 28, 30 20, 33 14 C 36 22, 38 26, 38 36 C 40 50, 38 66, 32 70 Z",
+      disp: 2 + intensity * 2,
+      freq: "0.04 0.09",
+      dur: "3.5s",
+      octaves: 2,
     },
   };
   const p = palettes[variant];
+  const gradId   = `${idPrefix}-grad-${variant}`;
+  const filterId = `${idPrefix}-fil-${variant}`;
+  const seedStart = variant === "outer" ? 1 : variant === "mid" ? 7 : 13;
+
   return (
-    <svg width="100%" height="100%" viewBox="0 0 64 80" fill="none" preserveAspectRatio="xMidYMax meet">
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 64 80"
+      fill="none"
+      preserveAspectRatio="xMidYMax meet"
+    >
       <defs>
-        <radialGradient id={p.gradId} cx="50%" cy="78%" r="65%">
+        {/* Animated turbulence + displacement → organic edge bubbling.
+            The seed sweeps continuously so the noise pattern evolves
+            instead of looping crisply. */}
+        <filter id={filterId} x="-25%" y="-25%" width="150%" height="150%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency={p.freq}
+            numOctaves={p.octaves}
+            seed={seedStart}
+            result="noise"
+          >
+            <animate
+              attributeName="seed"
+              from={seedStart}
+              to={seedStart + 90}
+              dur={p.dur}
+              repeatCount="indefinite"
+            />
+          </feTurbulence>
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale={p.disp}
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+
+        <radialGradient id={gradId} cx="50%" cy="78%" r="68%">
           {p.stops.map((s, i) => (
-            <stop key={i} offset={`${s.o * 100}%`} stopColor={s.c} />
+            <stop
+              key={i}
+              offset={`${s.o * 100}%`}
+              stopColor={s.c}
+              stopOpacity={s.a ?? 1}
+            />
           ))}
         </radialGradient>
       </defs>
-      <path d={p.d} fill={`url(#${p.gradId})`} />
+
+      <g filter={`url(#${filterId})`}>
+        <path d={p.d} fill={`url(#${gradId})`} />
+
+        {/* Specular highlight on the hot core — fakes 3D molten depth.
+            Lives inside the displaced group so it warps with the flame. */}
+        {variant === "core" && (
+          <ellipse
+            cx="30"
+            cy="46"
+            rx="2.6"
+            ry="6"
+            fill="white"
+            opacity={0.45 + intensity * 0.35}
+          />
+        )}
+
+        {/* Pre-combustion "fuel pocket" — slightly darker zone in the lower
+            interior of the outer envelope, the way real torch flames have a
+            shadow above the wick. */}
+        {variant === "outer" && (
+          <ellipse
+            cx="32"
+            cy="62"
+            rx="6"
+            ry="9"
+            fill="black"
+            opacity={0.18 + intensity * 0.1}
+          />
+        )}
+      </g>
+
+      {/* Tiny cool-blue accent at the very wick where fuel meets oxygen.
+          Rendered OUTSIDE the displacement filter so it stays anchored. */}
+      {variant === "outer" && (
+        <ellipse
+          cx="32"
+          cy="76"
+          rx="5"
+          ry="1.6"
+          fill={`hsl(${200 + intensity * 10}, 95%, ${65 + intensity * 10}%)`}
+          opacity={0.55 + intensity * 0.25}
+          style={{ filter: "blur(0.6px)" }}
+        />
+      )}
     </svg>
   );
 }
@@ -124,6 +244,10 @@ export function AnimatedFlame({
   // Render at a 4:5 aspect so the flame has natural vertical proportion.
   const w = size;
   const h = Math.round(size * 1.15);
+  // Stable per-instance ID prefix so each flame's filters/gradients don't
+  // collide across cards on the same page.
+  const rawId = useId();
+  const idPrefix = `ff${rawId.replace(/[^a-zA-Z0-9]/g, "")}`;
 
   // Spawn 6 sparks + 4 embers with varied lateral drift and delay so the
   // stream feels random rather than periodic.
@@ -154,14 +278,18 @@ export function AnimatedFlame({
       <span className="ff-ember-base" />
 
       <span className="ff-flame-layer ff-flame-outer">
-        <FlameTongue variant="outer" intensity={intensity} />
+        <FlameTongue variant="outer" intensity={intensity} idPrefix={idPrefix} />
       </span>
       <span className="ff-flame-layer ff-flame-mid">
-        <FlameTongue variant="mid" intensity={intensity} />
+        <FlameTongue variant="mid" intensity={intensity} idPrefix={idPrefix} />
       </span>
       <span className="ff-flame-layer ff-flame-core">
-        <FlameTongue variant="core" intensity={intensity} />
+        <FlameTongue variant="core" intensity={intensity} idPrefix={idPrefix} />
       </span>
+
+      {/* Heat shimmer band that floats above the flame tip — fakes the
+          refractive air-distortion you see above real fire. */}
+      <span className="ff-heat-shimmer" />
 
       {showSparks && intensity > 0.35 && sparks.map((s, i) => (
         <span
@@ -190,7 +318,7 @@ export function AnimatedFlame({
 }
 
 /** Back-compat re-export so other files that still call FlameSvg directly
- *  keep working — renders the mid tongue as a static SVG. */
+ *  keep working — renders the mid tongue as a single warped SVG. */
 export function FlameSvg({
   size = 48,
   intensity = 0.5,
@@ -199,9 +327,11 @@ export function FlameSvg({
   intensity?: number;
   variant?: "front" | "back";
 }) {
+  const rawId = useId();
+  const idPrefix = `ff${rawId.replace(/[^a-zA-Z0-9]/g, "")}`;
   return (
     <span style={{ display: "inline-block", width: size, height: size }}>
-      <FlameTongue variant="mid" intensity={intensity} />
+      <FlameTongue variant="mid" intensity={intensity} idPrefix={idPrefix} />
     </span>
   );
 }
