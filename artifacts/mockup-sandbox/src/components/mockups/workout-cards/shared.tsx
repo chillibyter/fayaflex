@@ -41,8 +41,72 @@ export function clampIntensity(workoutCals: number, top: number, leader?: boolea
   return Math.max(0.2, Math.min(1, r));
 }
 
-/** Lively, intensity-aware flame: dual flame layers, conic energy ring,
- *  glow halo, sparks, and floating embers. */
+/* ===== Realistic flame =====
+ *  Three independently-flickering SVG flame tongues + a pulsing ember bed,
+ *  a soft glow halo, and a continuous spark stream. Each layer has its own
+ *  color, shape and timing so the whole thing reads as actual fire. */
+
+/** A single flame-tongue path. The shapes are tuned to feel organic — wider
+ *  ember-base, narrowing tip, with a small kink/lick on one shoulder. */
+function FlameTongue({
+  variant,
+  intensity,
+}: {
+  variant: "outer" | "mid" | "core";
+  intensity: number;
+}) {
+  // Color stops by layer (hot core gets nearly white; outer is deep red).
+  const palettes = {
+    outer: {
+      gradId: `ff-g-out-${intensity.toFixed(2)}`,
+      stops: [
+        { o: 0,   c: `hsl(${28 + intensity * 8}, 100%, ${55 + intensity * 8}%)` },
+        { o: 0.55,c: `hsl(${18 + intensity * 5}, 95%,  ${48 + intensity * 6}%)` },
+        { o: 1,   c: `hsl(${5  + intensity * 5}, 95%,  ${30 + intensity * 5}%)` },
+      ],
+      // Big, full envelope.
+      d: "M32 78 C 14 72, 8 54, 16 36 C 20 42, 26 40, 26 32 C 26 22, 22 12, 30 4 C 34 14, 42 16, 44 30 C 50 50, 48 72, 32 78 Z",
+    },
+    mid: {
+      gradId: `ff-g-mid-${intensity.toFixed(2)}`,
+      stops: [
+        { o: 0,   c: `hsl(${48 + intensity * 8}, 100%, ${72 + intensity * 12}%)` },
+        { o: 0.55,c: `hsl(${36 + intensity * 8}, 100%, ${58 + intensity * 8}%)` },
+        { o: 1,   c: `hsl(${22 + intensity * 6}, 100%, ${48 + intensity * 5}%)` },
+      ],
+      // Slightly narrower with a leftward lick.
+      d: "M32 76 C 18 70, 14 54, 22 38 C 24 44, 28 42, 28 34 C 28 24, 26 14, 32 8 C 36 16, 40 20, 41 32 C 46 50, 44 70, 32 76 Z",
+    },
+    core: {
+      gradId: `ff-g-core-${intensity.toFixed(2)}`,
+      stops: [
+        { o: 0,   c: `hsl(56, 100%, ${88 + intensity * 8}%)` },
+        { o: 0.5, c: `hsl(${50 + intensity * 6}, 100%, ${75 + intensity * 12}%)` },
+        { o: 1,   c: `hsl(${36 + intensity * 8}, 100%, ${60 + intensity * 8}%)` },
+      ],
+      // Small, narrow, taller tongue.
+      d: "M32 70 C 24 64, 22 52, 28 40 C 30 44, 32 42, 32 36 C 32 28, 30 20, 33 14 C 36 22, 38 26, 38 36 C 40 50, 38 66, 32 70 Z",
+    },
+  };
+  const p = palettes[variant];
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 64 80" fill="none" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <radialGradient id={p.gradId} cx="50%" cy="78%" r="65%">
+          {p.stops.map((s, i) => (
+            <stop key={i} offset={`${s.o * 100}%`} stopColor={s.c} />
+          ))}
+        </radialGradient>
+      </defs>
+      <path d={p.d} fill={`url(#${p.gradId})`} />
+    </svg>
+  );
+}
+
+/** Realistic, intensity-aware flame.
+ *  Wraps a tall (5:4 height ratio) box that contains: outer halo glow,
+ *  ember bed, three flickering flame layers, and a continuous spark/ember
+ *  stream above the tip. */
 export function AnimatedFlame({
   size = 48,
   intensity = 0.5,
@@ -57,75 +121,88 @@ export function AnimatedFlame({
   showEmbers?: boolean;
 }) {
   const styleVars = { ["--ff-intensity" as any]: String(intensity) } as React.CSSProperties;
+  // Render at a 4:5 aspect so the flame has natural vertical proportion.
+  const w = size;
+  const h = Math.round(size * 1.15);
+
+  // Spawn 6 sparks + 4 embers with varied lateral drift and delay so the
+  // stream feels random rather than periodic.
+  const sparks = [
+    { x: -8, d: 0 },
+    { x: 6,  d: 0.25 },
+    { x: -3, d: 0.5 },
+    { x: 9,  d: 0.8 },
+    { x: -10, d: 1.1 },
+    { x: 4,  d: 1.4 },
+  ];
+  const embers = [
+    { x: -14, d: 0.2,  l: "38%" },
+    { x: 12,  d: 0.7,  l: "58%" },
+    { x: -4,  d: 1.3,  l: "48%" },
+    { x: 8,   d: 1.9,  l: "55%" },
+  ];
+
   return (
     <span
       className="ff-flame-wrap"
-      style={{ ...styleVars, width: size, height: size }}
+      style={{ ...styleVars, width: w, height: h }}
       aria-label="flame"
     >
       <span className="ff-flame-glow" />
-      {showRing && intensity > 0.35 && <span className="ff-flame-ring" />}
-      <span className="ff-flame-back" style={{ width: size, height: size }}>
-        <FlameSvg size={size} intensity={intensity} variant="back" />
+      {showRing && intensity > 0.55 && <span className="ff-flame-ring" />}
+
+      <span className="ff-ember-base" />
+
+      <span className="ff-flame-layer ff-flame-outer">
+        <FlameTongue variant="outer" intensity={intensity} />
       </span>
-      <span className="ff-flame" style={{ width: size, height: size }}>
-        <FlameSvg size={size} intensity={intensity} />
+      <span className="ff-flame-layer ff-flame-mid">
+        <FlameTongue variant="mid" intensity={intensity} />
       </span>
-      {showSparks && intensity > 0.45 && (
-        <>
-          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "-7px", animationDelay: "0s" } as React.CSSProperties} />
-          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "9px",  animationDelay: ".35s" } as React.CSSProperties} />
-          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "-2px", animationDelay: ".7s" } as React.CSSProperties} />
-          <span className="ff-spark" style={{ ["--ff-spark-x" as any]: "5px",  animationDelay: "1.05s" } as React.CSSProperties} />
-        </>
-      )}
-      {showEmbers && intensity > 0.55 && (
-        <>
-          <span className="ff-ember" style={{ ["--ff-ember-x" as any]: "-12px", animationDelay: ".2s", left: "40%" } as React.CSSProperties} />
-          <span className="ff-ember" style={{ ["--ff-ember-x" as any]: "14px",  animationDelay: ".9s", left: "60%" } as React.CSSProperties} />
-          <span className="ff-ember" style={{ ["--ff-ember-x" as any]: "4px",   animationDelay: "1.5s", left: "50%" } as React.CSSProperties} />
-        </>
-      )}
+      <span className="ff-flame-layer ff-flame-core">
+        <FlameTongue variant="core" intensity={intensity} />
+      </span>
+
+      {showSparks && intensity > 0.35 && sparks.map((s, i) => (
+        <span
+          key={`s${i}`}
+          className="ff-spark"
+          style={{
+            ["--ff-spark-x" as any]: `${s.x}px`,
+            animationDelay: `${s.d}s`,
+          } as React.CSSProperties}
+        />
+      ))}
+
+      {showEmbers && intensity > 0.5 && embers.map((e, i) => (
+        <span
+          key={`e${i}`}
+          className="ff-ember"
+          style={{
+            ["--ff-ember-x" as any]: `${e.x}px`,
+            animationDelay: `${e.d}s`,
+            left: e.l,
+          } as React.CSSProperties}
+        />
+      ))}
     </span>
   );
 }
 
-/** SVG flame whose inner-flame brightness scales with intensity. */
+/** Back-compat re-export so other files that still call FlameSvg directly
+ *  keep working — renders the mid tongue as a static SVG. */
 export function FlameSvg({
   size = 48,
   intensity = 0.5,
-  variant = "front",
 }: {
   size?: number;
   intensity?: number;
   variant?: "front" | "back";
 }) {
-  const outer = `hsl(${20 - intensity * 8}, 95%, ${50 + intensity * 8}%)`;
-  const mid   = `hsl(${30 + intensity * 10}, 100%, ${55 + intensity * 10}%)`;
-  const core  = `hsl(${50 + intensity * 10}, 100%, ${75 + intensity * 15}%)`;
-  const gradId = `ff-grad-${variant}-${intensity.toFixed(2)}`;
-  const fill = variant === "back" ? outer : `url(#${gradId})`;
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <defs>
-        <radialGradient id={gradId} cx="50%" cy="70%" r="60%">
-          <stop offset="0%"   stopColor={core} />
-          <stop offset="45%"  stopColor={mid} />
-          <stop offset="100%" stopColor={outer} />
-        </radialGradient>
-      </defs>
-      <path
-        d="M32 60c-11 0-19-7-19-18 0-7 4-13 8-17 1 4 4 6 6 6 1-7-1-12-4-17C30 16 36 9 35 2c8 5 17 16 17 28 0 4-1 7-3 10 1-3 0-7-3-9 1 8-4 14-9 16 5 0 9-2 11-6 1 12-7 19-16 19z"
-        fill={fill}
-      />
-      {variant === "front" && (
-        <path
-          d="M32 52c-5 0-9-3-9-9 0-4 3-8 5-10 1 5 5 6 6 4 0-3-1-6-2-9 4 3 9 9 9 15 0 5-4 9-9 9z"
-          fill={core}
-          opacity={0.55 + intensity * 0.45}
-        />
-      )}
-    </svg>
+    <span style={{ display: "inline-block", width: size, height: size }}>
+      <FlameTongue variant="mid" intensity={intensity} />
+    </span>
   );
 }
 
