@@ -68,8 +68,22 @@ function workoutIcon(type: string): LucideIcon {
 
 const KEYFRAMES = `
 @keyframes wpc-pulseGlow {
-  0%, 100% { box-shadow: 0 0 60px rgba(255,90,0,0.18), 0 12px 48px rgba(0,0,0,0.7); }
-  50%      { box-shadow: 0 0 100px rgba(255,90,0,0.32), 0 12px 48px rgba(0,0,0,0.7); }
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.10),
+      inset 0 -1px 0 rgba(0,0,0,0.6),
+      0 0 60px rgba(255,90,0,0.20),
+      0 18px 48px rgba(0,0,0,0.75),
+      0 30px 80px rgba(0,0,0,0.55);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.12),
+      inset 0 -1px 0 rgba(0,0,0,0.6),
+      0 0 110px rgba(255,90,0,0.36),
+      0 18px 48px rgba(0,0,0,0.75),
+      0 30px 80px rgba(0,0,0,0.55);
+  }
 }
 @keyframes wpc-badgePop {
   0%   { transform: scale(0.6); opacity: 0; }
@@ -231,20 +245,39 @@ function MetricPanel({
   useEffect(() => { const t = setTimeout(() => setVisible(true), delay); return () => clearTimeout(t); }, [delay]);
   return (
     <div
-      className="relative flex-1 rounded-2xl px-3 py-4 text-center border border-white/[0.07]"
+      className="relative flex-1 rounded-2xl px-3 py-4 text-center overflow-hidden"
       style={{
-        background: "linear-gradient(145deg,#2e2e2e,#252525)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 12px rgba(0,0,0,0.4)",
+        background: "linear-gradient(160deg,#343434 0%,#272727 45%,#1c1c1c 100%)",
+        boxShadow:
+          "inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.04), 0 6px 14px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.4)",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(14px)",
         transition: "opacity 500ms ease, transform 500ms ease",
       }}
     >
-      <Icon className={`mx-auto mb-1.5 h-5 w-5 ${emphasized ? "text-orange-400" : "text-zinc-400"}`} aria-hidden="true" />
-      <div className="text-[10px] font-bold tracking-[1.8px] uppercase text-zinc-500 mb-2">{label}</div>
-      <div className="flex items-baseline justify-center gap-[3px]">
-        <span className="text-[24px] font-extrabold leading-none text-white tabular-nums">{value}</span>
-        {unit && <span className="text-xs font-medium text-zinc-500">{unit}</span>}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2"
+        style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0))" }}
+      />
+      <Icon
+        className={`relative mx-auto mb-1.5 h-5 w-5 ${emphasized ? "text-orange-400" : "text-zinc-300"}`}
+        style={{
+          filter: emphasized
+            ? "drop-shadow(0 1px 4px rgba(255,106,0,0.6))"
+            : "drop-shadow(0 1px 0 rgba(0,0,0,0.5))",
+        }}
+        aria-hidden="true"
+      />
+      <div className="relative text-[10px] font-bold tracking-[1.8px] uppercase text-zinc-400 mb-2">{label}</div>
+      <div className="relative flex items-baseline justify-center gap-[3px]">
+        <span
+          className="text-[24px] font-extrabold leading-none text-white tabular-nums"
+          style={{ textShadow: "0 1px 0 rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.4)" }}
+        >
+          {value}
+        </span>
+        {unit && <span className="text-xs font-medium text-zinc-400">{unit}</span>}
       </div>
       {isPB && (
         <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-md ring-1 ring-amber-200/60">
@@ -272,6 +305,13 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
   const pb: PBFlags = personalBests || {};
   const TypeIcon = workoutIcon(parsed.type);
   const typeLabel = parsed.type.replace(/\b\w/g, (c) => c.toUpperCase());
+  const titleLen = typeLabel.length;
+  const titleSize =
+    titleLen <= 8 ? "26px" :
+    titleLen <= 12 ? "22px" :
+    titleLen <= 18 ? "18px" :
+    "16px";
+  const titleLeading = titleLen <= 12 ? 1.1 : 1.15;
 
   const calories = parsed.calories ? splitValueUnit(parsed.calories) : null;
   const duration = parsed.duration ? splitValueUnit(parsed.duration) : null;
@@ -286,9 +326,9 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
     <div className="space-y-3 w-full max-w-[420px]">
       <style>{KEYFRAMES}</style>
       <div
-        className="relative rounded-3xl p-7 text-white border border-white/[0.08]"
+        className="relative rounded-3xl p-7 text-white"
         style={{
-          background: "linear-gradient(160deg, #2b2b2b 0%, #1e1e1e 100%)",
+          background: "linear-gradient(165deg, #353535 0%, #262626 35%, #1a1a1a 100%)",
           animation: cardVisible ? "wpc-pulseGlow 3s ease-in-out infinite" : "none",
           opacity: cardVisible ? 1 : 0,
           transform: cardVisible ? "translateY(0) scale(1)" : "translateY(30px) scale(0.96)",
@@ -296,6 +336,24 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
           overflow: "visible",
         }}
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-6 top-0 h-px"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)",
+            zIndex: 2,
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-3xl mix-blend-overlay opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
+            backgroundSize: "160px 160px",
+            zIndex: 0,
+          }}
+        />
         <div
           aria-hidden="true"
           className="pointer-events-none absolute"
@@ -307,17 +365,35 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
 
         <div className="relative z-[1] flex items-center justify-between gap-3 mb-6">
           <div
-            className="flex items-center justify-center rounded-2xl border border-white/[0.08] flex-shrink-0"
+            className="relative flex items-center justify-center rounded-2xl flex-shrink-0 overflow-hidden"
             style={{
               width: 88, height: 88,
-              background: "linear-gradient(135deg,#2a2a2a,#1a1a1a)",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+              background: "radial-gradient(circle at 30% 22%, #3a3a3a 0%, #232323 55%, #141414 100%)",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.04), 0 8px 22px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5)",
               opacity: cardVisible ? 1 : 0,
               transform: cardVisible ? "translateX(0)" : "translateX(-20px)",
               transition: "opacity 600ms ease 200ms, transform 600ms ease 200ms",
             }}
           >
-            <TypeIcon className="h-12 w-12 text-orange-400" aria-hidden="true" />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(ellipse 70% 40% at 30% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%)",
+              }}
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
+              style={{ background: "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0))" }}
+            />
+            <TypeIcon
+              className="relative h-12 w-12 text-orange-400"
+              style={{ filter: "drop-shadow(0 2px 6px rgba(255,106,0,0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))" }}
+              aria-hidden="true"
+            />
           </div>
 
           <div
@@ -328,7 +404,19 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
               transition: "opacity 600ms ease 300ms, transform 600ms ease 300ms",
             }}
           >
-            <div className="text-[26px] font-black leading-tight tracking-[0.5px] text-white truncate">
+            <div
+              className="font-black tracking-[0.3px] text-white"
+              style={{
+                fontSize: titleSize,
+                lineHeight: titleLeading,
+                wordBreak: "break-word",
+                textShadow: "0 1px 0 rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.45)",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical" as const,
+                overflow: "hidden",
+              }}
+            >
               {typeLabel}
             </div>
             <div
@@ -367,13 +455,26 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
 
         {speed && (
           <div
-            className="relative z-[1] rounded-2xl border border-orange-500/20 px-4 py-4 text-center"
+            className="relative z-[1] rounded-2xl px-4 py-4 text-center overflow-hidden"
             style={{
-              background: "linear-gradient(145deg,#2e2e2e,#252525)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 12px rgba(0,0,0,0.4), 0 0 20px rgba(255,80,0,0.08)",
+              background: "linear-gradient(160deg,#383838 0%,#262626 45%,#1a1a1a 100%)",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,106,0,0.25), 0 8px 18px rgba(0,0,0,0.55), 0 0 28px rgba(255,80,0,0.12)",
               animation: cardVisible ? "wpc-paceSlide 600ms ease 1000ms both" : "none",
             }}
           >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 h-1/2"
+              style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.07), rgba(255,255,255,0))" }}
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-6 bottom-0 h-8"
+              style={{
+                background: "radial-gradient(ellipse at 50% 100%, rgba(255,106,0,0.35), rgba(255,106,0,0) 70%)",
+              }}
+            />
             <Gauge className="mx-auto mb-1.5 h-5 w-5 text-zinc-400" aria-hidden="true" />
             <div className="flex items-baseline justify-center gap-1">
               <span
