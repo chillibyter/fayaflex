@@ -1,6 +1,9 @@
+import { useEffect, useRef, useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   Activity,
   Bike,
+  CheckCircle2,
   Clock,
   Flame,
   Footprints,
@@ -11,7 +14,6 @@ import {
   Sparkles,
   Waves,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 interface ParsedWorkout {
   title: string;
@@ -88,52 +90,236 @@ function workoutIcon(type: string): LucideIcon {
 }
 
 const KEYFRAMES = `
-@keyframes wpc-flicker {
-  0%   { transform: scale(1)    rotate(-2deg); filter: drop-shadow(0 0 10px rgba(255,100,0,0.85)); }
-  50%  { transform: scale(1.08) rotate(1deg);  filter: drop-shadow(0 0 18px rgba(255,140,0,1));    }
-  100% { transform: scale(1.04) rotate(-1deg); filter: drop-shadow(0 0 14px rgba(255,80,0,0.9));   }
+@keyframes wpc-pulseGlow {
+  0%, 100% { box-shadow: 0 0 60px rgba(255,90,0,0.18), 0 12px 48px rgba(0,0,0,0.7); }
+  50%      { box-shadow: 0 0 100px rgba(255,90,0,0.32), 0 12px 48px rgba(0,0,0,0.7); }
 }
-@keyframes wpc-spark {
-  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
-  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.3); }
+@keyframes wpc-badgePop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  70%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
 }
-.wpc-flame { animation: wpc-flicker 1.2s ease-in-out infinite alternate; display:inline-block; }
-.wpc-spark {
-  position: absolute;
-  width: 5px; height: 5px;
-  border-radius: 9999px;
-  background: #ff8a3d;
-  box-shadow: 0 0 6px rgba(255,140,40,0.9);
-  animation: wpc-spark 1s ease-out infinite;
-  pointer-events: none;
+@keyframes wpc-paceSlide {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes wpc-dividerGrow {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wpc-card, .wpc-divider, .wpc-pace, .wpc-badge { animation: none !important; }
 }
 `;
 
-function Sparks({ count = 8 }: { count?: number }) {
-  const sparks = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    tx: `${Math.round(20 + i * 10)}px`,
-    ty: `-${Math.round(30 + (i % 3) * 18)}px`,
-    delay: `${(i * 0.13).toFixed(2)}s`,
-    top: `${30 + (i % 4) * 6}px`,
-    left: `${28 + (i % 5) * 5}px`,
-  }));
+// ── Procedural canvas fire engine ─────────────────────────────────────────────
+type Particle = {
+  x: number; y: number; vx: number; vy: number;
+  life: number; decay: number; size: number;
+  type: "flame" | "spark";
+  gravity?: number; r?: number; g?: number; b?: number;
+};
+
+function FireCanvas({ burst, width = 200, height = 200 }: { burst: number; width?: number; height?: number }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const stateRef = useRef<{ particles: Particle[]; animId: number | null }>({ particles: [], animId: null });
+  const reduced = useRef(false);
+
+  useEffect(() => {
+    reduced.current = typeof window !== "undefined"
+      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const W = width;
+    const H = height;
+    const cx = W * 0.55;
+    const cy = H * 0.62;
+    const s = stateRef.current;
+
+    function makeFlame(): Particle {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.9;
+      const speed = 0.6 + Math.random() * 1.1;
+      return {
+        x: cx + (Math.random() - 0.5) * 18,
+        y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.014,
+        size: 14 + Math.random() * 22,
+        type: "flame",
+      };
+    }
+
+    function makeSpark(big: boolean): Particle {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = big ? 3.5 + Math.random() * 5.5 : 1.2 + Math.random() * 3.2;
+      return {
+        x: cx + (Math.random() - 0.5) * 24,
+        y: cy - 20 + (Math.random() - 0.5) * 20,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (big ? 1.5 : 0.5),
+        life: 1,
+        decay: big ? 0.018 + Math.random() * 0.018 : 0.022 + Math.random() * 0.022,
+        size: big ? 2 + Math.random() * 3.5 : 1 + Math.random() * 2,
+        gravity: 0.07 + Math.random() * 0.05,
+        type: "spark",
+        r: 255,
+        g: Math.floor(200 + Math.random() * 55),
+        b: Math.floor(Math.random() * 60),
+      };
+    }
+
+    function triggerBurst() {
+      for (let i = 0; i < 260; i++) s.particles.push(makeSpark(true));
+      for (let i = 0; i < 120; i++) s.particles.push(makeSpark(false));
+    }
+
+    function drawFlame(p: Particle) {
+      const grad = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+      const a = p.life;
+      grad.addColorStop(0,   `rgba(255,255,200,${(a * 0.95).toFixed(2)})`);
+      grad.addColorStop(0.2, `rgba(255,200,50,${(a * 0.85).toFixed(2)})`);
+      grad.addColorStop(0.5, `rgba(255,100,10,${(a * 0.6).toFixed(2)})`);
+      grad.addColorStop(0.8, `rgba(200,30,0,${(a * 0.3).toFixed(2)})`);
+      grad.addColorStop(1,   `rgba(100,0,0,0)`);
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx!.fillStyle = grad;
+      ctx!.fill();
+    }
+
+    function drawSpark(p: Particle) {
+      const heat = p.life;
+      const r = Math.floor(p.r ?? 255);
+      const g = Math.floor((p.g ?? 220) * heat);
+      const b = Math.floor(p.b ?? 0);
+      const grd = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
+      grd.addColorStop(0,   `rgba(${r},${g},${b},${heat.toFixed(2)})`);
+      grd.addColorStop(0.4, `rgba(${r},${Math.floor(g * 0.5)},0,${(heat * 0.7).toFixed(2)})`);
+      grd.addColorStop(1,   `rgba(100,0,0,0)`);
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+      ctx!.fillStyle = grd;
+      ctx!.fill();
+
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(255,255,220,${(heat * 0.9).toFixed(2)})`;
+      ctx!.fill();
+    }
+
+    function drawGlow() {
+      const grd = ctx!.createRadialGradient(cx, cy - 30, 0, cx, cy - 30, 110);
+      grd.addColorStop(0,   "rgba(255,120,0,0.22)");
+      grd.addColorStop(0.5, "rgba(255,60,0,0.10)");
+      grd.addColorStop(1,   "rgba(0,0,0,0)");
+      ctx!.beginPath();
+      ctx!.arc(cx, cy - 30, 110, 0, Math.PI * 2);
+      ctx!.fillStyle = grd;
+      ctx!.fill();
+    }
+
+    let frame = 0;
+    function loop() {
+      ctx!.clearRect(0, 0, W, H);
+
+      if (frame % 2 === 0) {
+        for (let i = 0; i < 5; i++) s.particles.push(makeFlame());
+      }
+      drawGlow();
+
+      s.particles = s.particles.filter((p) => p.life > 0).slice(-650);
+      for (const p of s.particles) {
+        if (p.type === "flame") {
+          p.x += p.vx + Math.sin(frame * 0.08 + p.size) * 0.4;
+          p.y += p.vy;
+          p.vy -= 0.02;
+          p.life -= p.decay;
+          p.size *= 0.992;
+          drawFlame(p);
+        } else {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity ?? 0.08;
+          p.vx *= 0.985;
+          p.life -= p.decay;
+          drawSpark(p);
+        }
+      }
+      frame++;
+      s.animId = requestAnimationFrame(loop);
+    }
+
+    loop();
+
+    let autoTimer: ReturnType<typeof setTimeout> | null = null;
+    if (!reduced.current) {
+      autoTimer = setTimeout(triggerBurst, 600);
+    }
+
+    return () => {
+      if (s.animId) cancelAnimationFrame(s.animId);
+      if (autoTimer) clearTimeout(autoTimer);
+      s.particles = [];
+    };
+    // We intentionally re-init only on size changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [width, height]);
+
+  // External burst trigger (e.g. tap to celebrate)
+  useEffect(() => {
+    if (!burst || reduced.current) return;
+    const W = width;
+    const H = height;
+    const cx = W * 0.55;
+    const cy = H * 0.62;
+    const s = stateRef.current;
+    function makeSpark(big: boolean): Particle {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = big ? 3.5 + Math.random() * 5.5 : 1.2 + Math.random() * 3.2;
+      return {
+        x: cx + (Math.random() - 0.5) * 24,
+        y: cy - 20,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (big ? 1.5 : 0.5),
+        life: 1,
+        decay: big ? 0.018 + Math.random() * 0.018 : 0.022 + Math.random() * 0.022,
+        size: big ? 2 + Math.random() * 3.5 : 1 + Math.random() * 2,
+        gravity: 0.07 + Math.random() * 0.05,
+        type: "spark",
+        r: 255,
+        g: Math.floor(200 + Math.random() * 55),
+        b: Math.floor(Math.random() * 60),
+      };
+    }
+    for (let i = 0; i < 260; i++) s.particles.push(makeSpark(true));
+    for (let i = 0; i < 120; i++) s.particles.push(makeSpark(false));
+  }, [burst, width, height]);
+
   return (
-    <>
-      {sparks.map((s) => (
-        <span
-          key={s.id}
-          className="wpc-spark"
-          style={{
-            top: s.top,
-            left: s.left,
-            animationDelay: s.delay,
-            ["--tx" as any]: s.tx,
-            ["--ty" as any]: s.ty,
-          }}
-        />
-      ))}
-    </>
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute",
+        top: -30,
+        right: -20,
+        width,
+        height,
+        pointerEvents: "none",
+        zIndex: 10,
+      }}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -142,6 +328,7 @@ function MetricPanel({
   label,
   value,
   unit,
+  delay,
   emphasized,
   isPB,
   testId,
@@ -150,28 +337,45 @@ function MetricPanel({
   label: string;
   value: string;
   unit?: string;
+  delay: number;
   emphasized?: boolean;
   isPB?: boolean;
   testId: string;
 }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+
   return (
     <div
-      className={`relative flex flex-col items-center justify-center rounded-2xl bg-zinc-800/80 px-3 py-3 border border-white/5 ${
-        emphasized ? "ring-1 ring-orange-500/40" : ""
-      }`}
+      className="relative flex-1 rounded-2xl px-3 py-4 text-center border border-white/[0.07]"
+      style={{
+        background: "linear-gradient(145deg,#2e2e2e,#252525)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 12px rgba(0,0,0,0.4)",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(14px)",
+        transition: "opacity 500ms ease, transform 500ms ease",
+      }}
       data-testid={testId}
     >
-      <Icon className={`h-4 w-4 mb-1.5 ${emphasized ? "text-orange-400" : "text-zinc-400"}`} />
-      <div className="text-[10px] font-semibold tracking-widest text-zinc-400 uppercase mb-1">
+      <Icon
+        className={`mx-auto mb-1.5 h-5 w-5 ${emphasized ? "text-orange-400" : "text-zinc-400"}`}
+        aria-hidden="true"
+      />
+      <div className="text-[10px] font-bold tracking-[1.8px] uppercase text-zinc-500 mb-2">
         {label}
       </div>
-      <div className="flex items-baseline">
-        <span className="text-xl font-extrabold text-white tabular-nums">{value}</span>
-        {unit && <span className="ml-1 text-xs font-medium text-zinc-400">{unit}</span>}
+      <div className="flex items-baseline justify-center gap-[3px]">
+        <span className="text-[24px] font-extrabold leading-none text-white tabular-nums">
+          {value}
+        </span>
+        {unit && <span className="text-xs font-medium text-zinc-500">{unit}</span>}
       </div>
       {isPB && (
         <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-md ring-1 ring-amber-200/60">
-          <Sparkles className="h-2.5 w-2.5" />
+          <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
           PB
         </div>
       )}
@@ -180,7 +384,6 @@ function MetricPanel({
 }
 
 function splitValueUnit(raw: string): { value: string; unit?: string } {
-  // Durations like "1h 45m" or "30 min" already contain unit letters — keep whole.
   if (/\d+\s*h\s*\d+\s*m/i.test(raw) || /\bmin\b/i.test(raw)) {
     return { value: raw };
   }
@@ -196,6 +399,14 @@ export function WorkoutPostCard({
   content: string;
   personalBests?: PBFlags;
 }) {
+  const [cardVisible, setCardVisible] = useState(false);
+  const [burstCount, setBurstCount] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setCardVisible(true), 100);
+    return () => clearTimeout(t);
+  }, []);
+
   const parsed = parseWorkoutPost(content);
   if (!parsed) {
     return <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>;
@@ -210,84 +421,127 @@ export function WorkoutPostCard({
   const distance = parsed.distance ? splitValueUnit(parsed.distance) : null;
   const speed = parsed.speed ? splitValueUnit(parsed.speed) : null;
 
-  const extras: Array<{ icon: LucideIcon; label: string; raw: string; pbKey: keyof PBFlags }> = [];
-  if (parsed.avgHr) extras.push({ icon: Heart, label: "Avg HR", raw: parsed.avgHr, pbKey: "duration" });
-  if (parsed.steps) extras.push({ icon: Footprints, label: "Steps", raw: parsed.steps, pbKey: "steps" });
-  if (parsed.elevation) extras.push({ icon: Mountain, label: "Elev", raw: parsed.elevation, pbKey: "elevation" });
+  const extras: Array<{ icon: LucideIcon; label: string; raw: string }> = [];
+  if (parsed.avgHr) extras.push({ icon: Heart, label: "Avg HR", raw: parsed.avgHr });
+  if (parsed.steps) extras.push({ icon: Footprints, label: "Steps", raw: parsed.steps });
+  if (parsed.elevation) extras.push({ icon: Mountain, label: "Elev", raw: parsed.elevation });
 
   return (
     <div className="space-y-3" data-testid="workout-post-card">
       <style>{KEYFRAMES}</style>
 
       <div
-        className="relative overflow-hidden rounded-3xl text-white p-5 sm:p-6"
+        className="wpc-card relative rounded-3xl p-6 sm:p-7 text-white border border-white/[0.08]"
         style={{
-          background: "#2a2a2a",
-          boxShadow:
-            "0 0 60px rgba(255,100,0,0.22), 0 8px 32px rgba(0,0,0,0.5)",
+          background: "linear-gradient(160deg, #2b2b2b 0%, #1e1e1e 100%)",
+          animation: cardVisible ? "wpc-pulseGlow 3s ease-in-out infinite" : "none",
+          opacity: cardVisible ? 1 : 0,
+          transform: cardVisible ? "translateY(0) scale(1)" : "translateY(30px) scale(0.96)",
+          transition:
+            "opacity 700ms cubic-bezier(.22,1,.36,1), transform 700ms cubic-bezier(.22,1,.36,1)",
+          overflow: "visible",
         }}
       >
-        {/* Orange corner glow */}
+        {/* Right-side orange glow bleed */}
         <div
-          className="pointer-events-none absolute top-0 right-0"
+          aria-hidden="true"
+          className="pointer-events-none absolute"
           style={{
-            width: 220,
-            height: 220,
+            top: -20,
+            right: -20,
+            width: 260,
+            height: 260,
             background:
-              "radial-gradient(circle at top right, rgba(255,100,0,0.40) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(255,100,0,0.28) 0%, rgba(255,60,0,0.10) 50%, transparent 75%)",
+            borderRadius: "50%",
+            zIndex: 0,
           }}
         />
 
-        {/* Top row: workout icon | title | animated flame */}
-        <div className="relative flex items-center justify-between gap-3 mb-5">
+        {/* TOP SECTION */}
+        <div className="relative z-[1] flex items-center justify-between gap-3 mb-6">
+          {/* Workout-type icon tile */}
           <div
-            className="flex items-center justify-center rounded-2xl bg-zinc-800/80 border border-white/5"
-            style={{ width: 72, height: 72 }}
+            className="flex items-center justify-center rounded-2xl border border-white/[0.08] flex-shrink-0"
+            style={{
+              width: 88,
+              height: 88,
+              background: "linear-gradient(135deg,#2a2a2a,#1a1a1a)",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+              opacity: cardVisible ? 1 : 0,
+              transform: cardVisible ? "translateX(0)" : "translateX(-20px)",
+              transition: "opacity 600ms ease 200ms, transform 600ms ease 200ms",
+            }}
             data-testid="workout-type-badge"
           >
-            <TypeIcon className="h-9 w-9 text-orange-400" />
+            <TypeIcon className="h-12 w-12 text-orange-400" aria-hidden="true" />
           </div>
 
-          <div className="flex-1 text-center px-2 min-w-0">
-            <p
-              className="text-xl font-extrabold tracking-wide text-white truncate"
+          {/* Title block */}
+          <div
+            className="flex-1 px-4 min-w-0"
+            style={{
+              opacity: cardVisible ? 1 : 0,
+              transform: cardVisible ? "translateY(0)" : "translateY(-10px)",
+              transition: "opacity 600ms ease 300ms, transform 600ms ease 300ms",
+            }}
+          >
+            <div
+              className="text-[26px] font-black leading-tight tracking-[0.5px] text-white truncate"
               data-testid="text-workout-title"
             >
               {typeLabel}
-            </p>
-            <p className="text-[11px] font-semibold tracking-[2px] text-orange-500 uppercase mt-1">
+            </div>
+            <div
+              className="wpc-badge mt-1.5 inline-flex items-center gap-1 rounded-full border border-orange-500/30 bg-orange-500/10 px-2.5 py-[3px] text-[10px] font-bold tracking-[2px] uppercase text-orange-500"
+              style={{
+                animation: cardVisible ? "wpc-badgePop 500ms ease 800ms both" : "none",
+              }}
+            >
+              <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
               Workout Completed
-            </p>
+            </div>
           </div>
 
-          <div
-            className="relative flex items-center justify-center"
-            style={{ width: 72, height: 72 }}
-            aria-hidden="true"
+          {/* Fire canvas tile */}
+          <button
+            type="button"
+            className="relative flex-shrink-0 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500/50"
+            style={{ width: 88, height: 88 }}
+            title="Tap to celebrate"
+            aria-label="Celebrate with sparks"
+            onClick={() => setBurstCount((n) => n + 1)}
+            data-testid="button-celebrate"
           >
-            <Flame
-              className="wpc-flame text-orange-500"
-              style={{ width: 48, height: 48 }}
-              fill="currentColor"
-            />
-            <Sparks count={8} />
-          </div>
+            <FireCanvas burst={burstCount} />
+          </button>
         </div>
 
-        {/* Three metric panels */}
-        <div className="relative grid grid-cols-3 gap-3 mb-3">
+        {/* Divider */}
+        <div
+          className="wpc-divider relative z-[1] mx-auto mb-5 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, rgba(255,106,0,0.4), transparent)",
+            animation: cardVisible ? "wpc-dividerGrow 800ms ease 600ms both" : "none",
+          }}
+        />
+
+        {/* METRICS ROW */}
+        <div className="relative z-[1] flex gap-2.5 mb-3.5">
           {calories ? (
             <MetricPanel
               icon={Flame}
               label="Calories"
               value={calories.value}
               unit={calories.unit ?? "cal"}
+              delay={500}
               emphasized
               isPB={!!pb.calories}
               testId="metric-calories"
             />
           ) : (
-            <div />
+            <div className="flex-1" />
           )}
           {duration ? (
             <MetricPanel
@@ -295,11 +549,12 @@ export function WorkoutPostCard({
               label="Time"
               value={duration.value}
               unit={duration.unit}
+              delay={650}
               isPB={!!pb.duration}
               testId="metric-time"
             />
           ) : (
-            <div />
+            <div className="flex-1" />
           )}
           {distance ? (
             <MetricPanel
@@ -307,35 +562,48 @@ export function WorkoutPostCard({
               label="Distance"
               value={distance.value}
               unit={distance.unit ?? "km"}
+              delay={800}
               isPB={!!pb.distance}
               testId="metric-distance"
             />
           ) : (
-            <div />
+            <div className="flex-1" />
           )}
         </div>
 
-        {/* Bottom pace strip */}
+        {/* PACE PANEL */}
         {speed && (
           <div
-            className="relative rounded-2xl bg-zinc-800/80 border border-white/5 px-4 py-4 flex flex-col items-center"
+            className="wpc-pace relative z-[1] rounded-2xl border border-orange-500/20 px-4 py-4 text-center"
+            style={{
+              background: "linear-gradient(145deg,#2e2e2e,#252525)",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 12px rgba(0,0,0,0.4), 0 0 20px rgba(255,80,0,0.08)",
+              animation: cardVisible ? "wpc-paceSlide 600ms ease 1000ms both" : "none",
+            }}
             data-testid="metric-pace"
           >
-            <Gauge className="h-5 w-5 text-zinc-400 mb-1" />
-            <div className="flex items-baseline">
-              <span className="text-3xl font-extrabold text-orange-500 tabular-nums">
+            <Gauge className="mx-auto mb-1.5 h-5 w-5 text-zinc-400" aria-hidden="true" />
+            <div className="flex items-baseline justify-center gap-1">
+              <span
+                className="text-[36px] font-black leading-none tabular-nums"
+                style={{
+                  color: "#ff6a00",
+                  textShadow: "0 0 20px rgba(255,106,0,0.5)",
+                }}
+              >
                 {speed.value}
               </span>
-              <span className="ml-1 text-sm font-medium text-zinc-400">
+              <span className="text-base font-semibold text-zinc-400">
                 {speed.unit ?? "km/h"}
               </span>
             </div>
-            <div className="text-[10px] font-semibold tracking-[2px] text-zinc-400 uppercase mt-1">
+            <div className="mt-1 text-[10px] font-bold tracking-[2.5px] uppercase text-zinc-500">
               Pace
             </div>
             {pb.speed && (
               <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-md ring-1 ring-amber-200/60">
-                <Sparkles className="h-2.5 w-2.5" />
+                <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
                 PB
               </div>
             )}
@@ -343,7 +611,7 @@ export function WorkoutPostCard({
         )}
       </div>
 
-      {/* Optional secondary metrics (HR / Steps / Elevation) — only when present */}
+      {/* Optional secondary metrics */}
       {extras.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
           {extras.map((e) => {
@@ -354,7 +622,7 @@ export function WorkoutPostCard({
                 className="flex flex-col items-center justify-center rounded-md bg-muted/40 px-2 py-2.5"
                 data-testid={`metric-extra-${e.label.toLowerCase().replace(/\s+/g, "-")}`}
               >
-                <e.icon className="h-4 w-4 text-muted-foreground mb-1" />
+                <e.icon className="h-4 w-4 text-muted-foreground mb-1" aria-hidden="true" />
                 <span className="text-sm font-bold leading-tight">
                   {sv.value}
                   {sv.unit && (
