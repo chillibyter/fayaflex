@@ -51,20 +51,24 @@ export function useAutoHealthSync() {
       startDate.setHours(0, 0, 0, 0); // midnight today
 
       console.log('[TodaySync] Fetching today\'s health data...');
-      const healthData = await healthService.getHealthData(startDate, endDate, (user as any)?.bmr);
+      const [healthData, detailedWorkouts] = await Promise.all([
+        healthService.getHealthData(startDate, endDate, (user as any)?.bmr),
+        healthService.getDetailedWorkouts(1).catch(() => [] as any[]),
+      ]);
 
-      if (healthData.length === 0) {
+      if (healthData.length === 0 && detailedWorkouts.length === 0) {
         console.log('[TodaySync] No data for today yet');
         return;
       }
 
       const syncResponse = await apiRequest('POST', '/api/devices/sync', {
         provider,
-        activities: healthData
+        activities: healthData,
+        workouts: detailedWorkouts,
       });
 
       if (syncResponse.ok) {
-        console.log('[TodaySync] Today\'s data updated:', JSON.stringify(healthData));
+        console.log('[TodaySync] Today\'s data updated. days=' + healthData.length + ' workouts=' + detailedWorkouts.length);
         invalidateTodayQueries();
       }
     } catch (error) {
@@ -100,18 +104,22 @@ export function useAutoHealthSync() {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 7);
 
-      const healthData = await healthService.getHealthData(startDate, endDate, (user as any)?.bmr);
+      const [healthData, detailedWorkouts] = await Promise.all([
+        healthService.getHealthData(startDate, endDate, (user as any)?.bmr),
+        healthService.getDetailedWorkouts(7).catch(() => [] as any[]),
+      ]);
 
-      if (healthData.length === 0) {
+      if (healthData.length === 0 && detailedWorkouts.length === 0) {
         console.log('[FullSync] No health data');
         localStorage.setItem(LAST_FULL_SYNC_KEY, Date.now().toString());
         return;
       }
 
-      console.log('[FullSync] Syncing', healthData.length, 'days');
+      console.log('[FullSync] Syncing', healthData.length, 'days,', detailedWorkouts.length, 'workouts');
       const syncResponse = await apiRequest('POST', '/api/devices/sync', {
         provider,
-        activities: healthData
+        activities: healthData,
+        workouts: detailedWorkouts,
       });
 
       if (syncResponse.ok) {
