@@ -59,7 +59,7 @@ function displayName(u: FeedUser) {
 
 // ── Individual post card ────────────────────────────────────────────────────
 
-function FeedCard({ post, currentUserId }: { post: FeedPost; currentUserId: string }) {
+function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; currentUserId: string; isTopBurner?: boolean }) {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
@@ -130,7 +130,10 @@ function FeedCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
   };
 
   return (
-    <Card className="overflow-hidden" data-testid={`feed-card-${post.id}`}>
+    <Card
+      className="overflow-visible [&>img]:rounded-none"
+      data-testid={`feed-card-${post.id}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-3">
@@ -168,7 +171,7 @@ function FeedCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
 
       {/* Content */}
       <div className="px-4 py-3">
-        <WorkoutPostCard content={post.content} />
+        <WorkoutPostCard content={post.content} isTopBurner={isTopBurner} />
       </div>
 
       <Separator />
@@ -485,6 +488,23 @@ export default function ForYou() {
     refetchInterval: 30_000,
   });
 
+  // Identify the post with the highest burned-calorie count in the visible feed
+  // so we can render a dramatically larger flame on it (dopamine + engagement).
+  const topBurnerPostId = (() => {
+    const calRe = /(\d+)\s*cal/i;
+    let maxCal = 0;
+    let id: string | null = null;
+    for (const p of posts) {
+      const m = p.content?.match(calRe);
+      if (!m) continue;
+      const cal = parseInt(m[1], 10);
+      if (!Number.isFinite(cal)) continue;
+      if (cal > maxCal) { maxCal = cal; id = p.id; }
+    }
+    // Only celebrate if the leader actually burned something noteworthy.
+    return maxCal >= 50 ? id : null;
+  })();
+
   if (!user) return null;
 
   return (
@@ -526,7 +546,12 @@ export default function ForYou() {
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (
-              <FeedCard key={post.id} post={post} currentUserId={user.id} />
+              <FeedCard
+                key={post.id}
+                post={post}
+                currentUserId={user.id}
+                isTopBurner={post.id === topBurnerPostId}
+              />
             ))}
           </div>
         )}

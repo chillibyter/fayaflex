@@ -24,7 +24,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Search, Users, Share2, Flame, ArrowLeft, Trophy } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
-import { SiWhatsapp, SiApple } from "react-icons/si";
+import { SiWhatsapp, SiApple, SiFacebook, SiX, SiTiktok } from "react-icons/si";
 import { QRCodeSVG } from "qrcode.react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -125,11 +125,49 @@ export default function Teams() {
     }
   };
 
+  const buildShareMessage = (team: EnrichedTeam) =>
+    `Join my fitness team "${team.name}" on FayaFlex!\n\nTap to join instantly: ${getInviteLink(team)}\n\nGet the app: ${APP_STORE_URL}`;
+
   const shareViaWhatsApp = () => {
     if (!selectedTeam?.inviteCode) return;
+    const message = buildShareMessage(selectedTeam);
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
+  };
+
+  const shareViaFacebook = () => {
+    if (!selectedTeam?.inviteCode) return;
     const link = getInviteLink(selectedTeam);
-    const message = `Join my fitness team "${selectedTeam.name}" on FayaFlex!\n\nTap to join instantly: ${link}\n\nGet the app: ${APP_STORE_URL}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    const quote = `Join my fitness team "${selectedTeam.name}" on FayaFlex!`;
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}&quote=${encodeURIComponent(quote)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const shareViaX = () => {
+    if (!selectedTeam?.inviteCode) return;
+    const link = getInviteLink(selectedTeam);
+    const text = `Join my fitness team "${selectedTeam.name}" on FayaFlex! Compete, sweat, win together.`;
+    window.open(
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const shareViaTikTok = () => {
+    if (!selectedTeam?.inviteCode) return;
+    // TikTok has no public web "share a URL" intent — the standard pattern is
+    // to copy the link so the user can paste it into a TikTok bio, comment,
+    // or DM, then open the TikTok app/site for them.
+    const link = getInviteLink(selectedTeam);
+    navigator.clipboard.writeText(link).catch(() => {});
+    toast({
+      title: "Link copied!",
+      description: "Paste it into your TikTok bio, comment, or DM to invite your followers.",
+    });
+    window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
   };
 
   const shareViaGeneric = async () => {
@@ -319,14 +357,29 @@ export default function Teams() {
                 </Button>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={shareViaWhatsApp} variant="outline" data-testid="button-share-whatsapp">
-                <SiWhatsapp className="h-4 w-4 mr-2 text-green-600" />
-                WhatsApp
-              </Button>
-              <Button onClick={shareViaGeneric} variant="outline" data-testid="button-share-generic">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Share to</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button onClick={shareViaWhatsApp} variant="outline" data-testid="button-share-whatsapp">
+                  <SiWhatsapp className="h-4 w-4 mr-2 text-green-600" />
+                  WhatsApp
+                </Button>
+                <Button onClick={shareViaFacebook} variant="outline" data-testid="button-share-facebook">
+                  <SiFacebook className="h-4 w-4 mr-2 text-blue-600" />
+                  Facebook
+                </Button>
+                <Button onClick={shareViaX} variant="outline" data-testid="button-share-x">
+                  <SiX className="h-4 w-4 mr-2" />
+                  X
+                </Button>
+                <Button onClick={shareViaTikTok} variant="outline" data-testid="button-share-tiktok">
+                  <SiTiktok className="h-4 w-4 mr-2" />
+                  TikTok
+                </Button>
+              </div>
+              <Button onClick={shareViaGeneric} variant="outline" className="w-full" data-testid="button-share-generic">
                 <Share2 className="h-4 w-4 mr-2" />
-                Share
+                More share options
               </Button>
             </div>
 

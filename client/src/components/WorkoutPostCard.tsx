@@ -156,7 +156,21 @@ type Particle = {
   twinkle?: number;
 };
 
-function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width?: number; height?: number }) {
+function FireCanvas({
+  burst,
+  width = 220,
+  height = 240,
+  intensity = 1,
+  top = -90,
+  right = -40,
+}: {
+  burst: number;
+  width?: number;
+  height?: number;
+  intensity?: number;
+  top?: number;
+  right?: number;
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<{ particles: Particle[]; animId: number | null; running: boolean }>({
     particles: [], animId: null, running: true,
@@ -187,15 +201,15 @@ function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width
     // Tall flame body — strong upward velocity, narrow horizontal spread
     function makeFlame(): Particle {
       const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.32;
-      const speed = 1.6 + Math.random() * 1.4;
+      const speed = (1.6 + Math.random() * 1.4) * intensity;
       return {
-        x: cx + (Math.random() - 0.5) * 14,
+        x: cx + (Math.random() - 0.5) * 14 * intensity,
         y: cy + Math.random() * 4,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         life: 1,
         decay: 0.018 + Math.random() * 0.012,
-        size: 11 + Math.random() * 9,
+        size: (11 + Math.random() * 9) * intensity,
         type: "flame",
       };
     }
@@ -203,13 +217,13 @@ function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width
     // Hot white-yellow core at the base — short-lived bright blobs
     function makeCore(): Particle {
       return {
-        x: cx + (Math.random() - 0.5) * 10,
+        x: cx + (Math.random() - 0.5) * 10 * intensity,
         y: cy + (Math.random() - 0.5) * 4,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: -0.6 - Math.random() * 0.9,
+        vx: (Math.random() - 0.5) * 0.4 * intensity,
+        vy: (-0.6 - Math.random() * 0.9) * intensity,
         life: 1,
         decay: 0.05 + Math.random() * 0.03,
-        size: 7 + Math.random() * 5,
+        size: (7 + Math.random() * 5) * intensity,
         type: "core",
       };
     }
@@ -300,12 +314,14 @@ function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width
 
     function drawGlow() {
       // Warm halo behind flame for dramatic torch look
-      const grd = ctx!.createRadialGradient(cx, cy - 25, 0, cx, cy - 25, 95);
+      const haloR = 95 * intensity;
+      const haloY = cy - 25 * intensity;
+      const grd = ctx!.createRadialGradient(cx, haloY, 0, cx, haloY, haloR);
       grd.addColorStop(0,    "rgba(255,140,30,0.28)");
       grd.addColorStop(0.45, "rgba(255,80,0,0.13)");
       grd.addColorStop(1,    "rgba(0,0,0,0)");
       ctx!.beginPath();
-      ctx!.arc(cx, cy - 25, 95, 0, Math.PI * 2);
+      ctx!.arc(cx, haloY, haloR, 0, Math.PI * 2);
       ctx!.fillStyle = grd;
       ctx!.fill();
     }
@@ -319,12 +335,16 @@ function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width
       ctx!.clearRect(0, 0, W, H);
 
       // Continuously spawn dense flame body, hot core, and ember rain
-      for (let i = 0; i < 6; i++) s.particles.push(makeFlame());
+      // Spawn counts scale with intensity so a "top burner" gets a bigger, denser flame
+      const flameCount = Math.round(6 * intensity);
+      const coreCount = Math.round(3 * intensity);
+      const sparkCount = Math.round(5 * intensity);
+      for (let i = 0; i < flameCount; i++) s.particles.push(makeFlame());
       if (frame % 2 === 0) {
-        for (let i = 0; i < 3; i++) s.particles.push(makeCore());
+        for (let i = 0; i < coreCount; i++) s.particles.push(makeCore());
       }
       // Continuous ember spray (matches the video's persistent sparkle)
-      for (let i = 0; i < 5; i++) s.particles.push(makeSpark(Math.random() < 0.4));
+      for (let i = 0; i < sparkCount; i++) s.particles.push(makeSpark(Math.random() < 0.4));
 
       // Glow first (under everything)
       drawGlow();
@@ -332,7 +352,7 @@ function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width
       // Use additive blending for that magical glowing fire look
       ctx!.globalCompositeOperation = "lighter";
 
-      s.particles = s.particles.filter((p) => p.life > 0).slice(-900);
+      s.particles = s.particles.filter((p) => p.life > 0).slice(-Math.floor(900 * intensity));
       for (const p of s.particles) {
         if (p.type === "flame") {
           p.x += p.vx + Math.sin(frame * 0.09 + p.size) * 0.45;
@@ -431,8 +451,8 @@ function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width
       ref={canvasRef}
       style={{
         position: "absolute",
-        top: -90,
-        right: -40,
+        top,
+        right,
         width,
         height,
         pointerEvents: "none",
@@ -534,9 +554,12 @@ function splitValueUnit(raw: string): { value: string; unit?: string } {
 export function WorkoutPostCard({
   content,
   personalBests,
+  isTopBurner,
 }: {
   content: string;
   personalBests?: PBFlags;
+  /** When true, renders a dramatically larger flame to celebrate the top calorie-burner in the feed. */
+  isTopBurner?: boolean;
 }) {
   const [cardVisible, setCardVisible] = useState(false);
   const [burstCount, setBurstCount] = useState(0);
@@ -739,12 +762,29 @@ export function WorkoutPostCard({
             type="button"
             className="relative flex-shrink-0 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500/50"
             style={{ width: 88, height: 88 }}
-            title="Tap to celebrate"
-            aria-label="Celebrate with sparks"
+            title={isTopBurner ? "Top calorie burner — tap to celebrate" : "Tap to celebrate"}
+            aria-label={isTopBurner ? "Top burner — celebrate with sparks" : "Celebrate with sparks"}
             onClick={() => setBurstCount((n) => n + 1)}
             data-testid="button-celebrate"
           >
-            <FireCanvas burst={burstCount} />
+            <FireCanvas
+              burst={burstCount}
+              width={isTopBurner ? 280 : 220}
+              height={isTopBurner ? 320 : 240}
+              intensity={isTopBurner ? 1.5 : 1}
+              top={isTopBurner ? -130 : -90}
+              right={isTopBurner ? -65 : -40}
+            />
+            {isTopBurner && (
+              <div
+                className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-2 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-lg ring-1 ring-amber-200/70"
+                style={{ animation: cardVisible ? "wpc-badgePop 500ms ease 600ms both" : "none" }}
+                data-testid="badge-top-burner"
+              >
+                <Flame className="h-2.5 w-2.5" aria-hidden="true" />
+                TOP BURNER
+              </div>
+            )}
           </button>
         </div>
 
