@@ -15,11 +15,11 @@ import {
   Sparkles,
   Waves,
 } from "lucide-react";
-import sneakerImg from "../../../../../../client/src/assets/icons-3d/sneaker.png";
-import dumbbellImg from "../../../../../../client/src/assets/icons-3d/dumbbell.png";
-import boxingImg from "../../../../../../client/src/assets/icons-3d/boxing.png";
-import bicycleImg from "../../../../../../client/src/assets/icons-3d/bicycle.png";
-import mountainImg from "../../../../../../client/src/assets/icons-3d/mountain.png";
+import sneakerImg from "../../../../../../client/src/assets/icons-3d/sneaker.webp";
+import dumbbellImg from "../../../../../../client/src/assets/icons-3d/dumbbell.webp";
+import boxingImg from "../../../../../../client/src/assets/icons-3d/boxing.webp";
+import bicycleImg from "../../../../../../client/src/assets/icons-3d/bicycle.webp";
+import mountainImg from "../../../../../../client/src/assets/icons-3d/mountain.webp";
 
 interface ParsedWorkout {
   title: string;
@@ -121,13 +121,14 @@ const KEYFRAMES = `
 type Particle = {
   x: number; y: number; vx: number; vy: number;
   life: number; decay: number; size: number;
-  type: "flame" | "spark";
+  type: "flame" | "core" | "spark";
   gravity?: number; r?: number; g?: number; b?: number;
+  twinkle?: number;
 };
 
-function FireCanvas({ burst, width = 200, height = 200 }: { burst: number; width?: number; height?: number }) {
+function FireCanvas({ burst, width = 220, height = 240 }: { burst: number; width?: number; height?: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const stateRef = useRef<{ particles: Particle[]; animId: number | null }>({ particles: [], animId: null });
+  const stateRef = useRef<{ particles: Particle[]; animId: number | null; running: boolean }>({ particles: [], animId: null, running: true });
 
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
@@ -135,119 +136,162 @@ function FireCanvas({ burst, width = 200, height = 200 }: { burst: number; width
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = width * dpr; canvas.height = height * dpr; ctx.scale(dpr, dpr);
     const W = width, H = height;
-    const cx = W * 0.55, cy = H * 0.62;
+    const cx = W * 0.55, cy = H * 0.78;
     const s = stateRef.current;
 
     const makeFlame = (): Particle => {
-      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.9;
-      const speed = 0.6 + Math.random() * 1.1;
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.32;
+      const speed = 1.6 + Math.random() * 1.4;
       return {
-        x: cx + (Math.random() - 0.5) * 18, y: cy,
+        x: cx + (Math.random() - 0.5) * 14, y: cy + Math.random() * 4,
         vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-        life: 1, decay: 0.012 + Math.random() * 0.014,
-        size: 14 + Math.random() * 22, type: "flame",
+        life: 1, decay: 0.018 + Math.random() * 0.012,
+        size: 11 + Math.random() * 9, type: "flame",
       };
     };
-    const makeSpark = (big: boolean): Particle => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = big ? 3.5 + Math.random() * 5.5 : 1.2 + Math.random() * 3.2;
+    const makeCore = (): Particle => ({
+      x: cx + (Math.random() - 0.5) * 10, y: cy + (Math.random() - 0.5) * 4,
+      vx: (Math.random() - 0.5) * 0.4, vy: -0.6 - Math.random() * 0.9,
+      life: 1, decay: 0.05 + Math.random() * 0.03,
+      size: 7 + Math.random() * 5, type: "core",
+    });
+    const makeSpark = (intense: boolean): Particle => {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
+      const speed = intense ? 2.8 + Math.random() * 4.5 : 1.0 + Math.random() * 2.4;
       return {
-        x: cx + (Math.random() - 0.5) * 24,
-        y: cy - 20 + (Math.random() - 0.5) * 20,
+        x: cx + (Math.random() - 0.5) * 10,
+        y: cy - 6 + (Math.random() - 0.5) * 8,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - (big ? 1.5 : 0.5),
-        life: 1, decay: big ? 0.018 + Math.random() * 0.018 : 0.022 + Math.random() * 0.022,
-        size: big ? 2 + Math.random() * 3.5 : 1 + Math.random() * 2,
-        gravity: 0.07 + Math.random() * 0.05, type: "spark",
-        r: 255, g: Math.floor(200 + Math.random() * 55), b: Math.floor(Math.random() * 60),
+        vy: Math.sin(angle) * speed - 0.6,
+        life: 1, decay: intense ? 0.012 + Math.random() * 0.014 : 0.018 + Math.random() * 0.02,
+        size: intense ? 1.4 + Math.random() * 1.8 : 0.8 + Math.random() * 1.2,
+        gravity: 0.05 + Math.random() * 0.05, type: "spark",
+        r: 255, g: Math.floor(180 + Math.random() * 70), b: Math.floor(Math.random() * 50),
+        twinkle: Math.random() * Math.PI * 2,
       };
     };
     const triggerBurst = () => {
-      for (let i = 0; i < 260; i++) s.particles.push(makeSpark(true));
-      for (let i = 0; i < 120; i++) s.particles.push(makeSpark(false));
+      for (let i = 0; i < 220; i++) s.particles.push(makeSpark(true));
+      for (let i = 0; i < 140; i++) s.particles.push(makeSpark(false));
     };
     const drawFlame = (p: Particle) => {
-      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+      const a = p.life; const stretch = 1.7; const rad = p.size;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.scale(1, stretch);
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, rad);
+      grad.addColorStop(0,    `rgba(255,240,180,${(a * 0.55).toFixed(2)})`);
+      grad.addColorStop(0.25, `rgba(255,180,40,${(a * 0.5).toFixed(2)})`);
+      grad.addColorStop(0.55, `rgba(255,90,0,${(a * 0.35).toFixed(2)})`);
+      grad.addColorStop(0.85, `rgba(180,30,0,${(a * 0.18).toFixed(2)})`);
+      grad.addColorStop(1,    `rgba(80,0,0,0)`);
+      ctx.beginPath(); ctx.arc(0, 0, rad, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill();
+      ctx.restore();
+    };
+    const drawCore = (p: Particle) => {
       const a = p.life;
-      grad.addColorStop(0, `rgba(255,255,200,${(a * 0.95).toFixed(2)})`);
-      grad.addColorStop(0.2, `rgba(255,200,50,${(a * 0.85).toFixed(2)})`);
-      grad.addColorStop(0.5, `rgba(255,100,10,${(a * 0.6).toFixed(2)})`);
-      grad.addColorStop(0.8, `rgba(200,30,0,${(a * 0.3).toFixed(2)})`);
-      grad.addColorStop(1, `rgba(100,0,0,0)`);
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+      grad.addColorStop(0,   `rgba(255,255,235,${(a * 0.95).toFixed(2)})`);
+      grad.addColorStop(0.4, `rgba(255,220,140,${(a * 0.7).toFixed(2)})`);
+      grad.addColorStop(1,   `rgba(255,140,0,0)`);
       ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill();
     };
-    const drawSpark = (p: Particle) => {
+    const drawSpark = (p: Particle, frame: number) => {
       const heat = p.life;
       const r = Math.floor(p.r ?? 255);
-      const g = Math.floor((p.g ?? 220) * heat);
+      const g = Math.floor((p.g ?? 220) * Math.max(0.5, heat));
       const b = Math.floor(p.b ?? 0);
-      const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
-      grd.addColorStop(0, `rgba(${r},${g},${b},${heat.toFixed(2)})`);
-      grd.addColorStop(0.4, `rgba(${r},${Math.floor(g * 0.5)},0,${(heat * 0.7).toFixed(2)})`);
-      grd.addColorStop(1, `rgba(100,0,0,0)`);
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2); ctx.fillStyle = grd; ctx.fill();
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,220,${(heat * 0.9).toFixed(2)})`; ctx.fill();
+      const tw = 0.85 + 0.15 * Math.sin(frame * 0.35 + (p.twinkle ?? 0));
+      const haloR = p.size * 2.2;
+      const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, haloR);
+      grd.addColorStop(0,   `rgba(${r},${g},${Math.min(180, b + 60)},${(heat * tw).toFixed(2)})`);
+      grd.addColorStop(0.4, `rgba(${r},${Math.floor(g * 0.5)},0,${(heat * 0.5 * tw).toFixed(2)})`);
+      grd.addColorStop(1,   `rgba(120,0,0,0)`);
+      ctx.beginPath(); ctx.arc(p.x, p.y, haloR, 0, Math.PI * 2); ctx.fillStyle = grd; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,250,220,${(heat * tw * 0.95).toFixed(2)})`; ctx.fill();
     };
     const drawGlow = () => {
-      const grd = ctx.createRadialGradient(cx, cy - 30, 0, cx, cy - 30, 110);
-      grd.addColorStop(0, "rgba(255,120,0,0.22)");
-      grd.addColorStop(0.5, "rgba(255,60,0,0.10)");
-      grd.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.beginPath(); ctx.arc(cx, cy - 30, 110, 0, Math.PI * 2); ctx.fillStyle = grd; ctx.fill();
+      const grd = ctx.createRadialGradient(cx, cy - 25, 0, cx, cy - 25, 95);
+      grd.addColorStop(0,    "rgba(255,140,30,0.28)");
+      grd.addColorStop(0.45, "rgba(255,80,0,0.13)");
+      grd.addColorStop(1,    "rgba(0,0,0,0)");
+      ctx.beginPath(); ctx.arc(cx, cy - 25, 95, 0, Math.PI * 2); ctx.fillStyle = grd; ctx.fill();
     };
 
     let frame = 0;
     const loop = () => {
+      if (!s.running) { s.animId = requestAnimationFrame(loop); return; }
       ctx.clearRect(0, 0, W, H);
-      if (frame % 2 === 0) for (let i = 0; i < 5; i++) s.particles.push(makeFlame());
+      for (let i = 0; i < 6; i++) s.particles.push(makeFlame());
+      if (frame % 2 === 0) for (let i = 0; i < 3; i++) s.particles.push(makeCore());
+      for (let i = 0; i < 5; i++) s.particles.push(makeSpark(Math.random() < 0.4));
       drawGlow();
-      s.particles = s.particles.filter((p) => p.life > 0).slice(-650);
+      ctx.globalCompositeOperation = "lighter";
+      s.particles = s.particles.filter((p) => p.life > 0).slice(-900);
       for (const p of s.particles) {
         if (p.type === "flame") {
-          p.x += p.vx + Math.sin(frame * 0.08 + p.size) * 0.4;
-          p.y += p.vy; p.vy -= 0.02; p.life -= p.decay; p.size *= 0.992;
+          p.x += p.vx + Math.sin(frame * 0.09 + p.size) * 0.45;
+          p.y += p.vy; p.vy -= 0.025; p.life -= p.decay; p.size *= 0.988;
           drawFlame(p);
+        } else if (p.type === "core") {
+          p.x += p.vx; p.y += p.vy; p.life -= p.decay; p.size *= 0.96;
+          drawCore(p);
         } else {
           p.x += p.vx; p.y += p.vy; p.vy += p.gravity ?? 0.08;
-          p.vx *= 0.985; p.life -= p.decay;
-          drawSpark(p);
+          p.vx *= 0.988; p.life -= p.decay;
+          drawSpark(p, frame);
         }
       }
+      ctx.globalCompositeOperation = "source-over";
       frame++; s.animId = requestAnimationFrame(loop);
     };
     loop();
-    const autoTimer = setTimeout(triggerBurst, 600);
+    const autoTimer = setTimeout(triggerBurst, 500);
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            s.running = e.isIntersecting;
+            if (!e.isIntersecting) s.particles = [];
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(canvas);
+    }
+
     return () => {
       if (s.animId) cancelAnimationFrame(s.animId);
-      clearTimeout(autoTimer); s.particles = [];
+      clearTimeout(autoTimer); observer?.disconnect(); s.particles = [];
     };
   }, [width, height]);
 
   useEffect(() => {
     if (!burst) return;
-    const W = width, H = height; const cx = W * 0.55, cy = H * 0.62;
+    const W = width, H = height; const cx = W * 0.55, cy = H * 0.78;
     const s = stateRef.current;
-    const makeSpark = (big: boolean): Particle => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = big ? 3.5 + Math.random() * 5.5 : 1.2 + Math.random() * 3.2;
+    const makeSpark = (intense: boolean): Particle => {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
+      const speed = intense ? 2.8 + Math.random() * 4.5 : 1.0 + Math.random() * 2.4;
       return {
-        x: cx + (Math.random() - 0.5) * 24, y: cy - 20,
-        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - (big ? 1.5 : 0.5),
-        life: 1, decay: big ? 0.018 + Math.random() * 0.018 : 0.022 + Math.random() * 0.022,
-        size: big ? 2 + Math.random() * 3.5 : 1 + Math.random() * 2,
-        gravity: 0.07 + Math.random() * 0.05, type: "spark",
-        r: 255, g: Math.floor(200 + Math.random() * 55), b: Math.floor(Math.random() * 60),
+        x: cx + (Math.random() - 0.5) * 10, y: cy - 6,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 0.6,
+        life: 1, decay: intense ? 0.012 + Math.random() * 0.014 : 0.018 + Math.random() * 0.02,
+        size: intense ? 1.4 + Math.random() * 1.8 : 0.8 + Math.random() * 1.2,
+        gravity: 0.05 + Math.random() * 0.05, type: "spark",
+        r: 255, g: Math.floor(180 + Math.random() * 70), b: Math.floor(Math.random() * 50),
+        twinkle: Math.random() * Math.PI * 2,
       };
     };
-    for (let i = 0; i < 260; i++) s.particles.push(makeSpark(true));
-    for (let i = 0; i < 120; i++) s.particles.push(makeSpark(false));
+    for (let i = 0; i < 240; i++) s.particles.push(makeSpark(true));
+    for (let i = 0; i < 140; i++) s.particles.push(makeSpark(false));
   }, [burst, width, height]);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "absolute", top: -30, right: -20, width, height, pointerEvents: "none", zIndex: 10 }}
+      style={{ position: "absolute", top: -90, right: -40, width, height, pointerEvents: "none", zIndex: 10 }}
       aria-hidden="true"
     />
   );
