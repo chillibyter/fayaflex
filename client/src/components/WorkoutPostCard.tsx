@@ -80,6 +80,8 @@ function parseWorkoutPost(content: string): ParsedWorkout | null {
 
   const speed = metrics.match(/([\d.]+)\s*km\/h/);
   if (speed) out.speed = `${speed[1]} km/h`;
+  const pace = metrics.match(/(\d+:\d{2})\s*min\/km/);
+  if (pace) out.speed = `${pace[1]} min/km`;
 
   const blankIdx = lines.findIndex((l, i) => i > 0 && l.trim() === "");
   if (blankIdx > -1) {
@@ -557,6 +559,10 @@ function MetricPanel({
 }
 
 function splitValueUnit(raw: string): { value: string; unit?: string } {
+  // Running pace, e.g. "5:30 min/km" → value "5:30", unit "min/km"
+  const paceM = raw.match(/^(\d+:\d{2})\s*(min\/km)$/i);
+  if (paceM) return { value: paceM[1], unit: paceM[2] };
+  // Duration formats like "1h 30m" or "30 min" — keep as-is, no separate unit.
   if (/\d+\s*h\s*\d+\s*m/i.test(raw) || /\bmin\b/i.test(raw)) {
     return { value: raw };
   }
