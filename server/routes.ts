@@ -46,9 +46,22 @@ function formatWorkoutFeedPost(workout: WorkoutSummary): string {
     stats.push(`${workout.steps.toLocaleString()} steps`);
   }
   if (workout.distanceMeters && workout.durationMinutes && workout.durationMinutes > 0) {
-    const speedKmh = (workout.distanceMeters / 1000) / (workout.durationMinutes / 60);
-    if (speedKmh > 0 && isFinite(speedKmh)) {
-      stats.push(`${speedKmh.toFixed(1)} km/h avg`);
+    const wtLower = String(workout.workoutType || "").toLowerCase();
+    const isRunning = wtLower.includes("run") || wtLower.includes("jog");
+    if (isRunning) {
+      // Running pace as minutes per kilometre, e.g. "5:30 min/km"
+      const paceMinPerKm = workout.durationMinutes / (workout.distanceMeters / 1000);
+      if (paceMinPerKm > 0 && isFinite(paceMinPerKm)) {
+        let mins = Math.floor(paceMinPerKm);
+        let secs = Math.round((paceMinPerKm - mins) * 60);
+        if (secs === 60) { mins += 1; secs = 0; }
+        stats.push(`${mins}:${secs.toString().padStart(2, "0")} min/km`);
+      }
+    } else {
+      const speedKmh = (workout.distanceMeters / 1000) / (workout.durationMinutes / 60);
+      if (speedKmh > 0 && isFinite(speedKmh)) {
+        stats.push(`${speedKmh.toFixed(1)} km/h avg`);
+      }
     }
   }
   if (stats.length > 0) {
