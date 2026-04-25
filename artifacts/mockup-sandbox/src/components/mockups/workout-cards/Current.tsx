@@ -15,6 +15,11 @@ import {
   Sparkles,
   Waves,
 } from "lucide-react";
+import sneakerImg from "../../../../../../client/src/assets/icons-3d/sneaker.png";
+import dumbbellImg from "../../../../../../client/src/assets/icons-3d/dumbbell.png";
+import boxingImg from "../../../../../../client/src/assets/icons-3d/boxing.png";
+import bicycleImg from "../../../../../../client/src/assets/icons-3d/bicycle.png";
+import mountainImg from "../../../../../../client/src/assets/icons-3d/mountain.png";
 
 interface ParsedWorkout {
   title: string;
@@ -64,6 +69,19 @@ function workoutIcon(type: string): LucideIcon {
   if (t.includes("swim") || t.includes("pool")) return Waves;
   if (t.includes("hik") || t.includes("trail") || t.includes("mountain")) return Mountain;
   return Activity;
+}
+
+function workoutImage(type: string): string | null {
+  const t = type.toLowerCase();
+  if (t.includes("box") || t.includes("kickbox") || t.includes("spar") || t.includes("mma") || t.includes("fight")) return boxingImg;
+  if (
+    t.includes("strength") || t.includes("weight") || t.includes("lift") ||
+    t.includes("dumb") || t.includes("gym") || t.includes("crossfit") || t.includes("resist")
+  ) return dumbbellImg;
+  if (t.includes("cycl") || t.includes("bike") || t.includes("ride") || t.includes("spin")) return bicycleImg;
+  if (t.includes("hik") || t.includes("climb") || t.includes("trail") || t.includes("mountain")) return mountainImg;
+  if (t.includes("run") || t.includes("walk") || t.includes("jog")) return sneakerImg;
+  return null;
 }
 
 const KEYFRAMES = `
@@ -304,6 +322,7 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
   if (!parsed) return null;
   const pb: PBFlags = personalBests || {};
   const TypeIcon = workoutIcon(parsed.type);
+  const typeImg = workoutImage(parsed.type);
   const typeLabel = parsed.type.replace(/\b\w/g, (c) => c.toUpperCase());
   const titleLen = typeLabel.length;
   const titleSize =
@@ -376,6 +395,18 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
               transition: "opacity 600ms ease 200ms, transform 600ms ease 200ms",
             }}
           >
+            {typeImg ? (
+              <img
+                src={typeImg}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-contain"
+                style={{
+                  filter:
+                    "brightness(1.18) contrast(1.12) saturate(1.08) drop-shadow(0 4px 10px rgba(0,0,0,0.7))",
+                }}
+              />
+            ) : null}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"
@@ -389,11 +420,22 @@ function WorkoutPostCard({ content, personalBests }: { content: string; personal
               className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
               style={{ background: "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0))" }}
             />
-            <TypeIcon
-              className="relative h-12 w-12 text-orange-400"
-              style={{ filter: "drop-shadow(0 2px 6px rgba(255,106,0,0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))" }}
-              aria-hidden="true"
-            />
+            {typeImg ? (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-2xl"
+                style={{
+                  boxShadow:
+                    "inset 0 0 0 1px rgba(255,106,0,0.18), inset 0 0 24px rgba(255,90,0,0.10)",
+                }}
+              />
+            ) : (
+              <TypeIcon
+                className="relative h-12 w-12 text-orange-400"
+                style={{ filter: "drop-shadow(0 2px 6px rgba(255,106,0,0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))" }}
+                aria-hidden="true"
+              />
+            )}
           </div>
 
           <div

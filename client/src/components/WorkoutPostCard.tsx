@@ -14,6 +14,11 @@ import {
   Sparkles,
   Waves,
 } from "lucide-react";
+import sneakerImg from "@/assets/icons-3d/sneaker.png";
+import dumbbellImg from "@/assets/icons-3d/dumbbell.png";
+import boxingImg from "@/assets/icons-3d/boxing.png";
+import bicycleImg from "@/assets/icons-3d/bicycle.png";
+import mountainImg from "@/assets/icons-3d/mountain.png";
 
 interface ParsedWorkout {
   title: string;
@@ -87,6 +92,21 @@ function workoutIcon(type: string): LucideIcon {
   if (t.includes("swim") || t.includes("pool")) return Waves;
   if (t.includes("hik") || t.includes("climb") || t.includes("trail") || t.includes("mountain")) return Mountain;
   return Activity;
+}
+
+// 3D photoreal product images for the icon tile.
+// When a match exists the image fills the tile; otherwise we fall back to the Lucide icon above.
+function workoutImage(type: string): string | null {
+  const t = type.toLowerCase();
+  if (t.includes("box") || t.includes("kickbox") || t.includes("spar") || t.includes("mma") || t.includes("fight")) return boxingImg;
+  if (
+    t.includes("strength") || t.includes("weight") || t.includes("lift") ||
+    t.includes("dumb") || t.includes("gym") || t.includes("crossfit") || t.includes("resist")
+  ) return dumbbellImg;
+  if (t.includes("cycl") || t.includes("bike") || t.includes("ride") || t.includes("spin")) return bicycleImg;
+  if (t.includes("hik") || t.includes("climb") || t.includes("trail") || t.includes("mountain")) return mountainImg;
+  if (t.includes("run") || t.includes("walk") || t.includes("jog")) return sneakerImg;
+  return null;
 }
 
 const KEYFRAMES = `
@@ -469,6 +489,7 @@ export function WorkoutPostCard({
 
   const pb: PBFlags = personalBests || {};
   const TypeIcon = workoutIcon(parsed.type);
+  const typeImg = workoutImage(parsed.type);
   const typeLabel = parsed.type.replace(/\b\w/g, (c) => c.toUpperCase());
   // Auto-fit title: shrink font as label grows so it never truncates
   const titleLen = typeLabel.length;
@@ -545,7 +566,7 @@ export function WorkoutPostCard({
 
         {/* TOP SECTION */}
         <div className="relative z-[1] flex items-center justify-between gap-3 mb-6">
-          {/* Workout-type icon tile — beveled 3D look */}
+          {/* Workout-type icon tile — beveled 3D look (3D photo when type matches, else Lucide glyph) */}
           <div
             className="relative flex items-center justify-center rounded-2xl flex-shrink-0 overflow-hidden"
             style={{
@@ -561,7 +582,19 @@ export function WorkoutPostCard({
             }}
             data-testid="workout-type-badge"
           >
-            {/* Specular highlight */}
+            {typeImg ? (
+              <img
+                src={typeImg}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-contain"
+                style={{
+                  filter:
+                    "brightness(1.18) contrast(1.12) saturate(1.08) drop-shadow(0 4px 10px rgba(0,0,0,0.7))",
+                }}
+              />
+            ) : null}
+            {/* Specular highlight (sits above image to keep glossy 3D feel) */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"
@@ -579,11 +612,26 @@ export function WorkoutPostCard({
                   "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0))",
               }}
             />
-            <TypeIcon
-              className="relative h-12 w-12 text-orange-400"
-              style={{ filter: "drop-shadow(0 2px 6px rgba(255,106,0,0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))" }}
-              aria-hidden="true"
-            />
+            {/* Subtle warm rim glow when using a 3D image */}
+            {typeImg ? (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-2xl"
+                style={{
+                  boxShadow:
+                    "inset 0 0 0 1px rgba(255,106,0,0.18), inset 0 0 24px rgba(255,90,0,0.10)",
+                }}
+              />
+            ) : (
+              <TypeIcon
+                className="relative h-12 w-12 text-orange-400"
+                style={{
+                  filter:
+                    "drop-shadow(0 2px 6px rgba(255,106,0,0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))",
+                }}
+                aria-hidden="true"
+              />
+            )}
           </div>
 
           {/* Title block */}
