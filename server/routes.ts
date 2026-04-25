@@ -80,8 +80,8 @@ async function autoPostSyncedWorkouts(
   // "workout" — only post meaningful sessions. Specific-type workouts use
   // the regular threshold; generic-type sessions (e.g. Apple Health auto-
   // detected "Workout") need a higher bar to filter out micro-movements.
-  const MIN_DURATION_MIN = 10;
-  const MIN_CALORIES = 75;
+  const MIN_DURATION_MIN = 15;
+  const MIN_CALORIES = 100;
   const MIN_DISTANCE_M = 1000;
   const MIN_STEPS = 1500;
   const GENERIC_MIN_DURATION_MIN = 20;

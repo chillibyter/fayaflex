@@ -2,8 +2,8 @@ import { db } from "./db";
 import { feedPosts, syncedWorkouts } from "@shared/schema";
 import { and, gte, like, eq, isNotNull, notInArray, sql } from "drizzle-orm";
 
-const MIN_DURATION_MIN = 10;
-const MIN_CALORIES = 75;
+const MIN_DURATION_MIN = 15;
+const MIN_CALORIES = 100;
 const MIN_DISTANCE_M = 1000;
 const MIN_STEPS = 1500;
 const GENERIC_MIN_DURATION_MIN = 20;
