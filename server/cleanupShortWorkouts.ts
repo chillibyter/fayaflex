@@ -2,10 +2,14 @@ import { db } from "./db";
 import { feedPosts, syncedWorkouts } from "@shared/schema";
 import { and, gte, like, eq, isNotNull, notInArray, sql } from "drizzle-orm";
 
-const MIN_DURATION_MIN = 15;
-const MIN_CALORIES = 100;
+const MIN_DURATION_MIN = 10;
+const MIN_CALORIES = 75;
 const MIN_DISTANCE_M = 1000;
 const MIN_STEPS = 1500;
+const GENERIC_MIN_DURATION_MIN = 20;
+const GENERIC_MIN_CALORIES = 150;
+const GENERIC_MIN_DISTANCE_M = 2000;
+const GENERIC_MIN_STEPS = 3000;
 
 interface ParsedMetrics {
   durationMinutes: number | null;
@@ -44,6 +48,15 @@ function meetsThreshold(m: ParsedMetrics): boolean {
   );
 }
 
+function meetsGenericThreshold(m: ParsedMetrics): boolean {
+  return (
+    (m.durationMinutes ?? 0) >= GENERIC_MIN_DURATION_MIN ||
+    (m.calories ?? 0) >= GENERIC_MIN_CALORIES ||
+    (m.distanceMeters ?? 0) >= GENERIC_MIN_DISTANCE_M ||
+    (m.steps ?? 0) >= GENERIC_MIN_STEPS
+  );
+}
+
 /**
  * Removes auto-generated workout feed posts from the last 7 days that don't
  * meet the new quality threshold. Idempotent — safe to run on every startup.
@@ -69,10 +82,17 @@ export async function cleanupShortAutoPostedWorkouts(): Promise<void> {
       const metricsLine = lines[1] || "";
       const metrics = parseMetricsLine(metricsLine);
 
-      // Always remove generic / unknown-type auto-posts (e.g. Apple Health
-      // auto-detected sessions tagged as "Workout").
-      const isGeneric = /^Completed a (workout|other|unknown|fitness) workout/i.test(firstLine);
-      if (!isGeneric && meetsThreshold(metrics)) continue;
+      // Generic-type auto-posts (e.g. Apple Health auto-detected sessions
+      // tagged as "Workout") are kept only if they meet the higher threshold.
+      // Specific-type posts use the regular threshold.
+      const isGeneric =
+        /^Completed a workout session/i.test(firstLine) ||
+        /^Completed a (workout|other|unknown|fitness) workout/i.test(firstLine);
+      if (isGeneric) {
+        if (meetsGenericThreshold(metrics)) continue;
+      } else {
+        if (meetsThreshold(metrics)) continue;
+      }
 
       await db.delete(syncedWorkouts).where(eq(syncedWorkouts.feedPostId, post.id));
       await db.delete(feedPosts).where(eq(feedPosts.id, post.id));

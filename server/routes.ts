@@ -15,10 +15,14 @@ interface WorkoutSummary {
   steps?: number | null;
 }
 
+const GENERIC_WORKOUT_TYPES = new Set(["", "workout", "other", "unknown", "fitness"]);
+
 function formatWorkoutFeedPost(workout: WorkoutSummary): string {
   const wt = (workout.workoutType || "workout").replace(/_/g, " ").toLowerCase();
+  const isGeneric = GENERIC_WORKOUT_TYPES.has(wt.trim());
   const title = wt.charAt(0).toUpperCase() + wt.slice(1);
-  const lines: string[] = [`Completed a ${title} workout`];
+  const headline = isGeneric ? "Completed a workout session" : `Completed a ${title} workout`;
+  const lines: string[] = [headline];
   const stats: string[] = [];
   if (workout.durationMinutes && workout.durationMinutes > 0) {
     const h = Math.floor(workout.durationMinutes / 60);
@@ -73,40 +77,42 @@ async function autoPostSyncedWorkouts(
   // Only auto-post workouts that started within the last 24 hours.
   const cutoffMs = Date.now() - 24 * 60 * 60 * 1000;
   // Skip noise from health platforms that flag every short movement as a
-  // "workout" — only post meaningful sessions (>= 15 min, or with calories,
-  // distance, or steps that look like a real workout).
-  const MIN_DURATION_MIN = 15;
-  const MIN_CALORIES = 100;
+  // "workout" — only post meaningful sessions. Specific-type workouts use
+  // the regular threshold; generic-type sessions (e.g. Apple Health auto-
+  // detected "Workout") need a higher bar to filter out micro-movements.
+  const MIN_DURATION_MIN = 10;
+  const MIN_CALORIES = 75;
   const MIN_DISTANCE_M = 1000;
   const MIN_STEPS = 1500;
-  // Generic / unknown workout types (e.g. Apple Health auto-detected
-  // sessions with no specific activity tag) — never auto-post these.
-  const GENERIC_TYPES = new Set(["", "workout", "other", "unknown", "fitness"]);
+  const GENERIC_MIN_DURATION_MIN = 20;
+  const GENERIC_MIN_CALORIES = 150;
+  const GENERIC_MIN_DISTANCE_M = 2000;
+  const GENERIC_MIN_STEPS = 3000;
   for (const w of workouts) {
-    const dbg = `type=${w.workoutType} dur=${w.durationMinutes} cal=${w.calories} dist=${w.distanceMeters} startedAt=${w.startedAt}`;
+    const dbg = `type=${w.workoutType} dur=${w.durationMinutes} cal=${w.calories} dist=${w.distanceMeters} steps=${w.steps} startedAt=${w.startedAt}`;
     if (!w.externalId || !w.workoutType) {
       console.log(`[Feed] skip (missing id/type) ${dbg}`);
       skipped++;
       continue;
     }
     const normalizedType = String(w.workoutType).trim().toLowerCase();
-    if (GENERIC_TYPES.has(normalizedType)) {
-      console.log(`[Feed] skip (generic type) ${dbg}`);
-      skipped++;
-      continue;
-    }
+    const isGeneric = GENERIC_WORKOUT_TYPES.has(normalizedType);
     const startedAtMs = w.startedAt ? new Date(w.startedAt).getTime() : NaN;
     if (!isFinite(startedAtMs) || startedAtMs < cutoffMs) {
       console.log(`[Feed] skip (>24h or no startedAt) ${dbg}`);
       skipped++;
       continue;
     }
-    const durationOk = (w.durationMinutes ?? 0) >= MIN_DURATION_MIN;
-    const caloriesOk = (w.calories ?? 0) >= MIN_CALORIES;
-    const distanceOk = (w.distanceMeters ?? 0) >= MIN_DISTANCE_M;
-    const stepsOk = (w.steps ?? 0) >= MIN_STEPS;
+    const minDur = isGeneric ? GENERIC_MIN_DURATION_MIN : MIN_DURATION_MIN;
+    const minCal = isGeneric ? GENERIC_MIN_CALORIES : MIN_CALORIES;
+    const minDist = isGeneric ? GENERIC_MIN_DISTANCE_M : MIN_DISTANCE_M;
+    const minSteps = isGeneric ? GENERIC_MIN_STEPS : MIN_STEPS;
+    const durationOk = (w.durationMinutes ?? 0) >= minDur;
+    const caloriesOk = (w.calories ?? 0) >= minCal;
+    const distanceOk = (w.distanceMeters ?? 0) >= minDist;
+    const stepsOk = (w.steps ?? 0) >= minSteps;
     if (!durationOk && !caloriesOk && !distanceOk && !stepsOk) {
-      console.log(`[Feed] skip (below threshold) ${dbg}`);
+      console.log(`[Feed] skip (below ${isGeneric ? "generic " : ""}threshold) ${dbg}`);
       skipped++;
       continue;
     }
