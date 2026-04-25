@@ -35,6 +35,20 @@ interface ParsedWorkout {
 
 const WORKOUT_RE = /^Completed an?\s+(.+?)\s+workout$/i;
 
+export function isAutoWorkoutPost(content: string | null | undefined): boolean {
+  if (!content) return false;
+  const firstLine = content.split("\n")[0] ?? "";
+  return WORKOUT_RE.test(firstLine.trim());
+}
+
+export function getWorkoutSummary(content: string | null | undefined): string {
+  if (!content) return "";
+  const lines = content.split("\n");
+  const head = lines[0]?.trim() ?? "";
+  const metrics = lines[1]?.trim() ?? "";
+  return [head, metrics].filter(Boolean).join(" — ");
+}
+
 function parseWorkoutPost(content: string): ParsedWorkout | null {
   if (!content) return null;
   const lines = content.split("\n");

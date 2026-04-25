@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { WorkoutPostCard } from "@/components/WorkoutPostCard";
+import { WorkoutPostCard, isAutoWorkoutPost, getWorkoutSummary } from "@/components/WorkoutPostCard";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -20,7 +20,15 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  Share2,
 } from "lucide-react";
+import { SiWhatsapp, SiFacebook, SiX as SiXIcon, SiTiktok } from "react-icons/si";
+
+// Public App Store / Play Store fallback link the share buttons route to. We
+// link to the iOS App Store listing (the canonical "get the app" surface);
+// the marketing site at fayaflex.com also redirects native visitors to the
+// correct store.
+const APP_STORE_URL = "https://apps.apple.com/us/app/fayaflex/id6757204288";
 
 interface FeedUser {
   id: string;
@@ -129,6 +137,66 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
     setTimeout(() => commentInputRef.current?.focus(), 150);
   };
 
+  // Share helpers — only rendered for auto-generated workout posts owned by
+  // the current user. Every share routes recipients to the App Store via the
+  // APP_STORE_URL link.
+  const isOwner = post.userId === currentUserId;
+  const isWorkout = isAutoWorkoutPost(post.content);
+  const canShare = isOwner && isWorkout;
+
+  const buildWorkoutShareText = () => {
+    const summary = getWorkoutSummary(post.content);
+    const tail = `Get FayaFlex and join me: ${APP_STORE_URL}`;
+    return summary ? `${summary}\n\n${tail}` : `Just crushed a workout on FayaFlex!\n\n${tail}`;
+  };
+
+  const shareWorkoutWhatsApp = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(buildWorkoutShareText())}`, "_blank", "noopener,noreferrer");
+  };
+  const shareWorkoutFacebook = () => {
+    const quote = getWorkoutSummary(post.content) || "Just crushed a workout on FayaFlex!";
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_STORE_URL)}&quote=${encodeURIComponent(quote)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+  const shareWorkoutX = () => {
+    const text = getWorkoutSummary(post.content) || "Just crushed a workout on FayaFlex!";
+    window.open(
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(APP_STORE_URL)}&text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+  const shareWorkoutTikTok = () => {
+    // TikTok has no public web share intent — copy the App Store link so the
+    // user can drop it in their bio, comment, or DM, then open TikTok.
+    navigator.clipboard.writeText(`${getWorkoutSummary(post.content)}\n${APP_STORE_URL}`).catch(() => {});
+    toast({
+      title: "Link copied!",
+      description: "Paste it into your TikTok bio, comment, or DM.",
+    });
+    window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
+  };
+  const shareWorkoutNative = async () => {
+    const text = buildWorkoutShareText();
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: "My FayaFlex workout", text, url: APP_STORE_URL });
+        return;
+      } catch {
+        /* user cancelled — fall through */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied to clipboard", description: "Paste it anywhere to share." });
+    } catch {
+      toast({ title: "Could not share", variant: "destructive" });
+    }
+  };
+
   return (
     <Card
       className="overflow-visible [&>img]:rounded-none"
@@ -206,6 +274,77 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           )}
         </Button>
+
+        {canShare && (
+          <div className="ml-auto">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5 px-2"
+                  data-testid={`button-share-workout-${post.id}`}
+                >
+                  <Share2 className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm">Share</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64 p-3">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Share your workout — friends will be sent to the App Store.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    onClick={shareWorkoutWhatsApp}
+                    variant="outline"
+                    size="sm"
+                    data-testid={`button-share-workout-whatsapp-${post.id}`}
+                  >
+                    <SiWhatsapp className="h-4 w-4 mr-2 text-green-600" />
+                    WhatsApp
+                  </Button>
+                  <Button
+                    onClick={shareWorkoutFacebook}
+                    variant="outline"
+                    size="sm"
+                    data-testid={`button-share-workout-facebook-${post.id}`}
+                  >
+                    <SiFacebook className="h-4 w-4 mr-2 text-blue-600" />
+                    Facebook
+                  </Button>
+                  <Button
+                    onClick={shareWorkoutX}
+                    variant="outline"
+                    size="sm"
+                    data-testid={`button-share-workout-x-${post.id}`}
+                  >
+                    <SiXIcon className="h-4 w-4 mr-2" />
+                    X
+                  </Button>
+                  <Button
+                    onClick={shareWorkoutTikTok}
+                    variant="outline"
+                    size="sm"
+                    data-testid={`button-share-workout-tiktok-${post.id}`}
+                  >
+                    <SiTiktok className="h-4 w-4 mr-2" />
+                    TikTok
+                  </Button>
+                </div>
+                <Button
+                  onClick={shareWorkoutNative}
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2"
+                  data-testid={`button-share-workout-more-${post.id}`}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  More options
+                </Button>
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
       </div>
 
       {/* Comments section */}
