@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, getAuthHeaders, getApiUrl } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
@@ -144,10 +144,92 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
   const isWorkout = isAutoWorkoutPost(post.content);
   const canShare = isOwner && isWorkout;
 
-  const buildWorkoutShareText = () => {
+  // Ref to the wrapper around the rendered workout card — we screenshot this
+  // element (using html-to-image) so the share sheet attaches an actual
+  // visual of the workout, not just text.
+  const cardCaptureRef = useRef<HTMLDivElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  const buildWorkoutShareText = useCallback(() => {
     const summary = getWorkoutSummary(post.content);
     const tail = `Get FayaFlex and join me: ${APP_STORE_URL}`;
     return summary ? `${summary}\n\n${tail}` : `Just crushed a workout on FayaFlex!\n\n${tail}`;
+  }, [post.content]);
+
+  const captureCardAsFile = useCallback(async (): Promise<File | null> => {
+    if (!cardCaptureRef.current) return null;
+    const { toPng } = await import("html-to-image");
+    // Use the page's actual background so the screenshot looks consistent
+    // in both light and dark mode.
+    const bg =
+      getComputedStyle(document.body).backgroundColor &&
+      getComputedStyle(document.body).backgroundColor !== "rgba(0, 0, 0, 0)"
+        ? getComputedStyle(document.body).backgroundColor
+        : "#ffffff";
+    const dataUrl = await toPng(cardCaptureRef.current, {
+      cacheBust: true,
+      pixelRatio: 2,
+      backgroundColor: bg,
+    });
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    return new File([blob], "fayaflex-workout.png", { type: "image/png" });
+  }, []);
+
+  // Primary share path: capture the workout card as an image and hand it to
+  // the OS-native share sheet (mobile) so users can post the visual to any
+  // app — WhatsApp, Instagram, Messages, etc. Falls back to text-only share
+  // when the platform can't accept files.
+  const shareWorkoutWithImage = async () => {
+    setIsCapturing(true);
+    try {
+      const text = buildWorkoutShareText();
+      const file = await captureCardAsFile().catch((err) => {
+        console.warn("[Share] image capture failed, falling back to text", err);
+        return null;
+      });
+
+      const nav = navigator as any;
+      // Best path: native share with the image file attached.
+      if (file && nav.canShare && nav.canShare({ files: [file] })) {
+        try {
+          await nav.share({
+            title: "My FayaFlex workout",
+            text,
+            files: [file],
+          });
+          return;
+        } catch (err: any) {
+          if (err?.name === "AbortError") return; // user dismissed sheet
+          console.warn("[Share] native file share failed, trying text-only", err);
+        }
+      }
+
+      // Next best: native share without image.
+      if (nav.share) {
+        try {
+          await nav.share({ title: "My FayaFlex workout", text, url: APP_STORE_URL });
+          return;
+        } catch (err: any) {
+          if (err?.name === "AbortError") return;
+          console.warn("[Share] native text share failed, trying clipboard", err);
+        }
+      }
+
+      // Last resort on desktop: copy to clipboard.
+      try {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Copied to clipboard", description: "Paste it anywhere to share." });
+      } catch {
+        toast({
+          title: "Sharing not supported here",
+          description: "Try one of the quick-link buttons below instead.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsCapturing(false);
+    }
   };
 
   const shareWorkoutWhatsApp = () => {
@@ -178,23 +260,6 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       description: "Paste it into your TikTok bio, comment, or DM.",
     });
     window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
-  };
-  const shareWorkoutNative = async () => {
-    const text = buildWorkoutShareText();
-    if (typeof navigator !== "undefined" && (navigator as any).share) {
-      try {
-        await (navigator as any).share({ title: "My FayaFlex workout", text, url: APP_STORE_URL });
-        return;
-      } catch {
-        /* user cancelled — fall through */
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      toast({ title: "Copied to clipboard", description: "Paste it anywhere to share." });
-    } catch {
-      toast({ title: "Could not share", variant: "destructive" });
-    }
   };
 
   return (
@@ -238,7 +303,7 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       )}
 
       {/* Content */}
-      <div className="px-4 py-3">
+      <div ref={cardCaptureRef} className="px-4 py-3">
         <WorkoutPostCard content={post.content} isTopBurner={isTopBurner} />
       </div>
 
@@ -289,10 +354,28 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
                   <span className="text-sm">Share</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-64 p-3">
+              <PopoverContent align="end" className="w-72 p-3">
                 <p className="text-xs text-muted-foreground mb-2">
-                  Share your workout — friends will be sent to the App Store.
+                  Share your workout card. Friends who tap the link will be
+                  sent to the App Store.
                 </p>
+                <Button
+                  onClick={shareWorkoutWithImage}
+                  size="sm"
+                  className="w-full"
+                  disabled={isCapturing}
+                  data-testid={`button-share-workout-image-${post.id}`}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  {isCapturing ? "Preparing image…" : "Share workout image"}
+                </Button>
+                <div className="my-3 flex items-center gap-2">
+                  <Separator className="flex-1" />
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Quick links
+                  </span>
+                  <Separator className="flex-1" />
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     onClick={shareWorkoutWhatsApp}
@@ -331,16 +414,10 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
                     TikTok
                   </Button>
                 </div>
-                <Button
-                  onClick={shareWorkoutNative}
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-2"
-                  data-testid={`button-share-workout-more-${post.id}`}
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  More options
-                </Button>
+                <p className="text-[10px] text-muted-foreground mt-2 leading-snug">
+                  Quick links share text only. Use “Share workout image” to
+                  attach the card to a post or message.
+                </p>
               </PopoverContent>
             </Popover>
           </div>

@@ -75,6 +75,7 @@
     "express-session": "^1.18.1",
     "firebase-admin": "^13.8.0",
     "framer-motion": "^11.18.2",
+    "html-to-image": "^1.11.13",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.453.0",
