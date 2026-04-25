@@ -152,7 +152,7 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
 
   const buildWorkoutShareText = useCallback(() => {
     const summary = getWorkoutSummary(post.content);
-    const tail = `Get FayaFlex and join me: ${APP_STORE_URL}`;
+    const tail = `Tap the link to join me on FayaFlex: ${APP_STORE_URL}`;
     return summary ? `${summary}\n\n${tail}` : `Just crushed a workout on FayaFlex!\n\n${tail}`;
   }, [post.content]);
 
@@ -356,8 +356,8 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
               </PopoverTrigger>
               <PopoverContent align="end" className="w-72 p-3">
                 <p className="text-xs text-muted-foreground mb-2">
-                  Share your workout card. Friends who tap the link will be
-                  sent to the App Store.
+                  Share your workout card image. Friends who tap the link in
+                  the message will be invited to join you on FayaFlex.
                 </p>
                 <Button
                   onClick={shareWorkoutWithImage}
