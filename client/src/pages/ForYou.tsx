@@ -232,10 +232,42 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
     }
   };
 
-  const shareWorkoutWhatsApp = () => {
+  // Try the native share sheet (with the workout card image attached) first —
+  // on mobile this lets the user pick WhatsApp / IG / Messages and the image
+  // travels with the message. Returns true if the native share fired (or the
+  // user cancelled it), false if we should fall back to the platform URL.
+  const tryNativeImageShare = async (): Promise<boolean> => {
+    const nav = navigator as any;
+    if (!nav.share || !nav.canShare) return false;
+    setIsCapturing(true);
+    try {
+      const text = buildWorkoutShareText();
+      const file = await captureCardAsFile().catch((err) => {
+        console.warn("[Share] image capture failed", err);
+        return null;
+      });
+      if (file && nav.canShare({ files: [file] })) {
+        try {
+          await nav.share({ title: "My FayaFlex workout", text, files: [file] });
+          return true;
+        } catch (err: any) {
+          if (err?.name === "AbortError") return true; // user dismissed
+          console.warn("[Share] native file share failed", err);
+        }
+      }
+      return false;
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
+  const shareWorkoutWhatsApp = async () => {
+    if (await tryNativeImageShare()) return;
+    // Desktop fallback: WhatsApp web intent (text only).
     window.open(`https://wa.me/?text=${encodeURIComponent(buildWorkoutShareText())}`, "_blank", "noopener,noreferrer");
   };
-  const shareWorkoutFacebook = () => {
+  const shareWorkoutFacebook = async () => {
+    if (await tryNativeImageShare()) return;
     const quote = getWorkoutSummary(post.content) || "Just crushed a workout on FayaFlex!";
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_STORE_URL)}&quote=${encodeURIComponent(quote)}`,
@@ -243,7 +275,8 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       "noopener,noreferrer"
     );
   };
-  const shareWorkoutX = () => {
+  const shareWorkoutX = async () => {
+    if (await tryNativeImageShare()) return;
     const text = getWorkoutSummary(post.content) || "Just crushed a workout on FayaFlex!";
     window.open(
       `https://twitter.com/intent/tweet?url=${encodeURIComponent(APP_STORE_URL)}&text=${encodeURIComponent(text)}`,
@@ -251,9 +284,11 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       "noopener,noreferrer"
     );
   };
-  const shareWorkoutTikTok = () => {
-    // TikTok has no public web share intent — copy the App Store link so the
-    // user can drop it in their bio, comment, or DM, then open TikTok.
+  const shareWorkoutTikTok = async () => {
+    if (await tryNativeImageShare()) return;
+    // Desktop fallback: TikTok has no public web share intent — copy the App
+    // Store link so the user can drop it in their bio, comment, or DM, then
+    // open TikTok.
     navigator.clipboard.writeText(`${getWorkoutSummary(post.content)}\n${APP_STORE_URL}`).catch(() => {});
     toast({
       title: "Link copied!",
