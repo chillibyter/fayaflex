@@ -30,21 +30,24 @@ export default function ProfileCompletionGate({ user }: Props) {
   );
 
   const needsName = !user.firstName;
-  const needsCity = !user.townId;
-  const open = needsName || needsCity;
+  // City is now optional at the gate. We still ASK for it (because it powers
+  // location-based leaderboards and nearby-team matching), but the user is
+  // never trapped: if they can't find their town, they can skip and finish
+  // it later from Profile settings.
+  const wantsCity = !user.townId;
+  const open = needsName || wantsCity;
 
   const trimmedFirst = firstName.trim();
-  const canSave =
-    (!needsName || trimmedFirst.length >= 1) &&
-    (!needsCity || (!!location && !!location.townId));
+  // Only the first name is a hard requirement now.
+  const canSave = !needsName || trimmedFirst.length >= 1;
 
   const mutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts: { skipCity?: boolean } = {}) => {
       const data: Record<string, string> = {};
       if (trimmedFirst) data.firstName = trimmedFirst;
       const trimmedLast = lastName.trim();
       if (trimmedLast) data.lastName = trimmedLast;
-      if (location) {
+      if (!opts.skipCity && location) {
         if (location.continentId) data.continentId = location.continentId;
         if (location.countryId) data.countryId = location.countryId;
         if (location.regionId) data.regionId = location.regionId;
@@ -120,11 +123,9 @@ export default function ProfileCompletionGate({ user }: Props) {
               </div>
             </div>
           )}
-          {needsCity && (
+          {wantsCity && (
             <div className="space-y-1.5">
-              <Label>
-                Your city <span className="text-destructive">*</span>
-              </Label>
+              <Label>Your city</Label>
               <CitySearch
                 onSelect={(loc) => {
                   if (!loc.townId) {
@@ -139,23 +140,38 @@ export default function ProfileCompletionGate({ user }: Props) {
                   });
                 }}
               />
-              {location && (
+              {location ? (
                 <p className="text-xs text-muted-foreground" data-testid="text-gate-city-selected">
                   City selected
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Can't find your city? You can skip this and add it later from Profile settings.
                 </p>
               )}
             </div>
           )}
-          <div className="pt-1">
+          <div className="pt-1 space-y-2">
             <Button
               className="w-full rounded-[10px]"
-              onClick={() => mutation.mutate()}
+              onClick={() => mutation.mutate({ skipCity: false })}
               disabled={!canSave || mutation.isPending}
               data-testid="button-save-profile-gate"
             >
               {mutation.isPending ? "Saving…" : "Continue"}
             </Button>
-            <p className="text-[11px] text-muted-foreground text-center pt-2">
+            {wantsCity && (
+              <Button
+                variant="ghost"
+                className="w-full rounded-[10px]"
+                onClick={() => mutation.mutate({ skipCity: true })}
+                disabled={!canSave || mutation.isPending}
+                data-testid="button-skip-city-gate"
+              >
+                Skip city for now
+              </Button>
+            )}
+            <p className="text-[11px] text-muted-foreground text-center pt-1">
               You can edit these later in Profile settings.
             </p>
           </div>
