@@ -4629,6 +4629,47 @@ IMPORTANT RULES:
     }
   });
 
+  // Today's top calorie burner across the user's teams. Returns the userId of
+  // the teammate (or self) who burned the most calories today, plus the
+  // calorie total. The client uses this to highlight that user's most recent
+  // post on the feed with the special "top burner" flame.
+  app.get("/api/feed/top-burner-today", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const today = new Date().toISOString().split("T")[0];
+
+      const userTeams = await storage.getUserTeams(userId);
+      const seen = new Set<string>();
+      let topUserId: string | null = null;
+      let topCalories = 0;
+
+      for (const team of userTeams) {
+        const members = await storage.getTeamMembers(team.id);
+        for (const member of members) {
+          if (seen.has(member.userId)) continue;
+          seen.add(member.userId);
+          const acts = await storage.getUserActivitiesForDate(member.userId, today);
+          // Take the max single-source calories for the day to avoid double
+          // counting overlapping syncs (mirrors the personal leaderboard rule).
+          const dayCals = acts.reduce((m, a) => Math.max(m, a.calories || 0), 0);
+          if (dayCals > topCalories) {
+            topCalories = dayCals;
+            topUserId = member.userId;
+          }
+        }
+      }
+
+      // Only celebrate if someone actually burned a meaningful amount today.
+      if (topCalories < 50) {
+        return res.json({ userId: null, calories: 0 });
+      }
+      res.json({ userId: topUserId, calories: topCalories });
+    } catch (err) {
+      console.error("[Feed] GET /api/feed/top-burner-today error:", err);
+      res.status(500).json({ message: "Failed to compute top burner" });
+    }
+  });
+
   // POST /api/feed/posts — create a new post
   app.post("/api/feed/posts", isAuthenticated, async (req: any, res) => {
     try {

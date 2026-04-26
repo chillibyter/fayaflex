@@ -743,21 +743,26 @@ export default function ForYou() {
   // when the user taps "Show more" — keeps the initial feed light.
   const [visibleCount, setVisibleCount] = useState(6);
 
-  // Identify the post with the highest burned-calorie count in the visible feed
-  // so we can render a dramatically larger flame on it (dopamine + engagement).
+  // Today's top calorie burner across the user's teams. The server figures
+  // out who burned most today across everyone the user shares a team with;
+  // we then highlight that user's most recent post on the feed (if any).
+  const { data: topBurner } = useQuery<{ userId: string | null; calories: number }>({
+    queryKey: ["/api/feed/top-burner-today"],
+    queryFn: () => apiRequest("GET", "/api/feed/top-burner-today").then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
+
   const topBurnerPostId = (() => {
-    const calRe = /(\d+)\s*cal/i;
-    let maxCal = 0;
-    let id: string | null = null;
+    const burnerId = topBurner?.userId;
+    if (!burnerId) return null;
+    // Find the most recent post by the top burner that was created today.
+    const today = new Date().toISOString().split("T")[0];
     for (const p of posts) {
-      const m = p.content?.match(calRe);
-      if (!m) continue;
-      const cal = parseInt(m[1], 10);
-      if (!Number.isFinite(cal)) continue;
-      if (cal > maxCal) { maxCal = cal; id = p.id; }
+      if (p.userId !== burnerId) continue;
+      if (p.createdAt && !p.createdAt.startsWith(today)) continue;
+      return p.id;
     }
-    // Only celebrate if the leader actually burned something noteworthy.
-    return maxCal >= 50 ? id : null;
+    return null;
   })();
 
   if (!user) return null;
