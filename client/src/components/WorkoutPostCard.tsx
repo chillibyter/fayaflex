@@ -598,14 +598,46 @@ export function WorkoutPostCard({
   const TypeIcon = workoutIcon(parsed.type);
   const typeImg = workoutImage(parsed.type);
   const typeLabel = parsed.type.replace(/\b\w/g, (c) => c.toUpperCase());
-  // Auto-fit title: shrink font as label grows so it never truncates
+  // Auto-fit title: start at the size suggested by length, then measure the
+  // actual rendered width and shrink until the label fits on a single line in
+  // the available container. Min size 12px so it stays legible.
   const titleLen = typeLabel.length;
-  const titleSize =
-    titleLen <= 8 ? "26px" :
-    titleLen <= 12 ? "22px" :
-    titleLen <= 18 ? "18px" :
-    "16px";
-  const titleLeading = titleLen <= 12 ? 1.1 : 1.15;
+  const initialTitleSize =
+    titleLen <= 8 ? 26 :
+    titleLen <= 12 ? 22 :
+    titleLen <= 18 ? 18 :
+    16;
+  const [titleSizePx, setTitleSizePx] = useState<number>(initialTitleSize);
+  const titleRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    setTitleSizePx(initialTitleSize);
+  }, [initialTitleSize, typeLabel]);
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    let cancelled = false;
+    const fit = () => {
+      if (cancelled) return;
+      let size = initialTitleSize;
+      el.style.fontSize = `${size}px`;
+      const minSize = 12;
+      // Shrink until the text fits inside its container on one line.
+      while (size > minSize && el.scrollWidth > el.clientWidth + 0.5) {
+        size -= 1;
+        el.style.fontSize = `${size}px`;
+      }
+      setTitleSizePx(size);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => {
+      cancelled = true;
+      ro.disconnect();
+    };
+  }, [typeLabel, initialTitleSize]);
+  const titleSize = `${titleSizePx}px`;
+  const titleLeading = titleSizePx >= 22 ? 1.1 : 1.15;
 
   const calories = parsed.calories ? splitValueUnit(parsed.calories) : null;
   const duration = parsed.duration ? splitValueUnit(parsed.duration) : null;
@@ -751,16 +783,15 @@ export function WorkoutPostCard({
             }}
           >
             <div
+              ref={titleRef}
               className="font-black tracking-[0.3px] text-white"
               style={{
                 fontSize: titleSize,
                 lineHeight: titleLeading,
-                wordBreak: "break-word",
-                textShadow: "0 1px 0 rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.45)",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical" as const,
+                whiteSpace: "nowrap",
                 overflow: "hidden",
+                textOverflow: "ellipsis",
+                textShadow: "0 1px 0 rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.45)",
               }}
               data-testid="text-workout-title"
             >

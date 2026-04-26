@@ -739,6 +739,10 @@ export default function ForYou() {
     refetchInterval: 30_000,
   });
 
+  // Show the latest 6 posts by default and reveal older ones in batches of 6
+  // when the user taps "Show more" — keeps the initial feed light.
+  const [visibleCount, setVisibleCount] = useState(6);
+
   // Identify the post with the highest burned-calorie count in the visible feed
   // so we can render a dramatically larger flame on it (dopamine + engagement).
   const topBurnerPostId = (() => {
@@ -796,7 +800,7 @@ export default function ForYou() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {posts.map((post) => (
+            {posts.slice(0, visibleCount).map((post) => (
               <FeedCard
                 key={post.id}
                 post={post}
@@ -804,6 +808,18 @@ export default function ForYou() {
                 isTopBurner={post.id === topBurnerPostId}
               />
             ))}
+            {posts.length > visibleCount && (
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setVisibleCount((c) => c + 6)}
+                  data-testid="button-show-more-feed"
+                >
+                  Show more
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
