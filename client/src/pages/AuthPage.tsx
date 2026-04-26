@@ -11,6 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWithPasskey } from "@/lib/passkey";
 import RotatingBanner, { defaultBannerMessages } from "@/components/RotatingBanner";
+import SocialAuthButtons from "@/components/SocialAuthButtons";
 
 // ── Password strength ────────────────────────────────────────────────────────
 type StrengthLevel = "weak" | "fair" | "strong" | "very_strong";
@@ -355,6 +356,7 @@ export default function AuthPage() {
               </>
             ) : (
               <>
+                <SocialAuthButtons mode="login" />
                 <form onSubmit={handleLogin} className="space-y-4">
                   {loginError && (
                     <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800" data-testid="error-login-banner">
@@ -458,6 +460,7 @@ export default function AuthPage() {
           ) : (
             /* ── REGISTER VIEW ──────────────────────────────────────────── */
             <>
+              <SocialAuthButtons mode="signup" />
               <form onSubmit={handleRegister} className="space-y-4">
                 {registerErrors.general && (
                   <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800" data-testid="error-register-banner">

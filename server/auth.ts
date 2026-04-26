@@ -5,11 +5,42 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 import { storage } from "./storage";
 import { User, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import connectPg from "connect-pg-simple";
 import { sendPasswordResetEmail } from "./emailService";
+
+// Google ID-token verifier. We accept tokens issued for the web Google
+// Identity Services client. The audience is the Google OAuth client ID.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "";
+const googleAuthClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
+if (!GOOGLE_CLIENT_ID) {
+  console.warn("[Auth] GOOGLE_CLIENT_ID not set — Google sign-in disabled.");
+}
+
+// Build a unique username from a Google email. Falls back to incrementing
+// numeric suffixes if the base is already taken.
+async function generateUniqueUsernameFromEmail(email: string): Promise<string> {
+  const base = email
+    .split("@")[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "")
+    .slice(0, 20) || "user";
+  let candidate = base;
+  let suffix = 0;
+  // Cap attempts to avoid runaway loops; collisions are rare.
+  while (await storage.getUserByUsername(candidate)) {
+    suffix += 1;
+    candidate = `${base}${suffix}`;
+    if (suffix > 9999) {
+      candidate = `${base}${Math.floor(Math.random() * 1_000_000)}`;
+      break;
+    }
+  }
+  return candidate;
+}
 
 declare global {
   namespace Express {
@@ -315,6 +346,85 @@ export function setupAuth(app: Express) {
       if (err) return next(err);
       res.sendStatus(200);
     });
+  });
+
+  // ── Google Sign-In ────────────────────────────────────────────────────────
+  // Accepts a Google ID token from the client (issued by Google Identity
+  // Services on web, or by the Capacitor Google Auth plugin on native), then:
+  //   - Verifies it against our GOOGLE_CLIENT_ID
+  //   - Looks up an existing user by email (creates one if not found)
+  //   - Logs the user in via passport session + JWT
+  app.post("/api/auth/google", async (req, res, next) => {
+    try {
+      if (!googleAuthClient) {
+        return res
+          .status(503)
+          .json({ message: "Google sign-in is not configured on this server." });
+      }
+      const schema = z.object({ idToken: z.string().min(10) });
+      const parsed = schema.safeParse(req.body);
+      if (!parsed.success) {
+        return res
+          .status(400)
+          .json({ message: "Missing Google ID token." });
+      }
+      const ticket = await googleAuthClient.verifyIdToken({
+        idToken: parsed.data.idToken,
+        audience: GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        return res
+          .status(401)
+          .json({ message: "Could not verify Google account." });
+      }
+      if (payload.email_verified === false) {
+        return res
+          .status(401)
+          .json({ message: "Your Google email is not verified." });
+      }
+      const email = payload.email.toLowerCase();
+      let user = await storage.getUserByEmail(email);
+      if (!user) {
+        const username = await generateUniqueUsernameFromEmail(email);
+        // Social-login users have no password — passport-local won't accept
+        // them on the username/password endpoint, which is what we want.
+        user = await storage.createUser({
+          username,
+          email,
+          password: null,
+          firstName: payload.given_name ?? undefined,
+          lastName: payload.family_name ?? undefined,
+          profileImageUrl: payload.picture ?? undefined,
+        });
+        console.log(`[Auth] Google sign-in created new user: ${username} <${email}>`);
+      } else {
+        console.log(`[Auth] Google sign-in matched existing user: ${user.username} <${email}>`);
+      }
+      req.login(user, (err) => {
+        if (err) {
+          console.error("[Auth] req.login after Google sign-in failed:", err);
+          return next(err);
+        }
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("[Auth] session save after Google sign-in failed:", saveErr);
+            return next(saveErr);
+          }
+          const token = generateAuthToken(user!.id);
+          res.status(200).json({ ...sanitizeUser(user!), token });
+        });
+      });
+    } catch (error: any) {
+      console.error("[Auth] Google sign-in error:", error?.message || error);
+      const msg = String(error?.message || "");
+      if (msg.toLowerCase().includes("token used too late") || msg.toLowerCase().includes("invalid token")) {
+        return res.status(401).json({ message: "Google sign-in expired. Please try again." });
+      }
+      return res
+        .status(401)
+        .json({ message: "Google sign-in failed. Please try again." });
+    }
   });
 
   app.post("/api/migrate-account", async (req, res, next) => {
