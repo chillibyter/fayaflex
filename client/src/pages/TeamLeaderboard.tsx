@@ -81,12 +81,22 @@ export default function TeamLeaderboard() {
     retry: false,
   });
 
-  const { data: teamData } = useQuery({
-    queryKey: ['/api/teams'],
-    select: (teams: any[]) => teams.find(t => t.id === teamId),
+  // Fetch the specific team directly so we always have fresh ownerId data —
+  // relying on the cached /api/teams listing was unreliable on direct page
+  // loads or right after creating/joining a team, which left the dropdown
+  // menu hidden because teamData was undefined.
+  const { data: teamData } = useQuery<{ id: string; name?: string; ownerId?: string } | null>({
+    queryKey: ['/api/teams', teamId],
+    queryFn: async () => {
+      if (!teamId) return null;
+      const res = await apiRequest("GET", `/api/teams/${teamId}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!teamId,
   });
 
-  const isOwner = teamData?.ownerId === user?.id;
+  const isOwner = !!(teamData?.ownerId && user?.id && teamData.ownerId === user.id);
 
   const leaveTeamMutation = useMutation({
     mutationFn: async () => {
