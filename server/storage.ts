@@ -175,6 +175,8 @@ export interface IStorage {
 
   // Password reset operations
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByAppleId(appleId: string): Promise<User | undefined>;
+  setUserAppleId(userId: string, appleId: string): Promise<void>;
   createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(tokenId: string): Promise<void>;
@@ -1367,6 +1369,21 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(sql`LOWER(${users.email}) = LOWER(${email})`);
     return user;
+  }
+
+  async getUserByAppleId(appleId: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.appleId, appleId));
+    return user;
+  }
+
+  async setUserAppleId(userId: string, appleId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ appleId, updatedAt: new Date() })
+      .where(eq(users.id, userId));
   }
 
   async createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {

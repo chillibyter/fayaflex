@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor/android": "^7.4.3",
     "@capacitor/app": "^7.1.0",
     "@capacitor/camera": "^7.0.2",
@@ -55,6 +56,7 @@
     "@radix-ui/react-tooltip": "^1.2.0",
     "@simplewebauthn/browser": "^13.2.2",
     "@simplewebauthn/server": "^13.2.2",
+    "@southdevs/capacitor-google-auth": "^7.0.0",
     "@tanstack/react-query": "^5.60.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/memoizee": "^0.4.12",
@@ -79,6 +81,7 @@
     "html-to-image": "^1.11.13",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^4.0.1",
     "lucide-react": "^0.453.0",
     "memoizee": "^0.4.17",
     "memorystore": "^1.6.7",

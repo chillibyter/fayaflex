@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
+import jwksClient from "jwks-rsa";
 import { storage } from "./storage";
 import { User, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -18,6 +19,46 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE
 const googleAuthClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 if (!GOOGLE_CLIENT_ID) {
   console.warn("[Auth] GOOGLE_CLIENT_ID not set — Google sign-in disabled.");
+}
+
+// Apple Sign-In identity-token verifier. Apple issues identity tokens signed
+// with rotating RSA keys exposed at https://appleid.apple.com/auth/keys.
+// We accept tokens whose audience is either our native iOS bundle ID
+// (com.fayaflex.app) or our web Service ID (set via APPLE_SIGN_IN_SERVICE_ID).
+const APPLE_BUNDLE_ID = "com.fayaflex.app";
+const APPLE_SERVICE_ID = process.env.APPLE_SIGN_IN_SERVICE_ID || "";
+const ALLOWED_APPLE_AUDIENCES = [APPLE_BUNDLE_ID, APPLE_SERVICE_ID].filter(Boolean);
+const appleJwksClient = jwksClient({
+  jwksUri: "https://appleid.apple.com/auth/keys",
+  cache: true,
+  cacheMaxAge: 24 * 60 * 60 * 1000,
+  rateLimit: true,
+});
+function getAppleSigningKey(kid: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    appleJwksClient.getSigningKey(kid, (err, key) => {
+      if (err || !key) return reject(err || new Error("Apple signing key not found"));
+      resolve(key.getPublicKey());
+    });
+  });
+}
+async function verifyAppleIdentityToken(idToken: string): Promise<{
+  sub: string;
+  email?: string;
+  email_verified?: boolean | string;
+}> {
+  const decodedHeader = jwt.decode(idToken, { complete: true });
+  if (!decodedHeader || typeof decodedHeader === "string" || !decodedHeader.header.kid) {
+    throw new Error("Invalid Apple identity token (no kid).");
+  }
+  const publicKey = await getAppleSigningKey(decodedHeader.header.kid as string);
+  const verified = jwt.verify(idToken, publicKey, {
+    algorithms: ["RS256"],
+    issuer: "https://appleid.apple.com",
+    audience: ALLOWED_APPLE_AUDIENCES,
+  }) as { sub: string; email?: string; email_verified?: boolean | string };
+  if (!verified.sub) throw new Error("Apple identity token missing subject.");
+  return verified;
 }
 
 // Build a unique username from a Google email. Falls back to incrementing
@@ -424,6 +465,92 @@ export function setupAuth(app: Express) {
       return res
         .status(401)
         .json({ message: "Google sign-in failed. Please try again." });
+    }
+  });
+
+  // ── Apple Sign-In ─────────────────────────────────────────────────────────
+  // Accepts an Apple identity token from the client (issued by the native
+  // Capacitor Apple Sign-In plugin on iOS, or AppleID.auth on the web after
+  // a Service ID is configured). The token is verified against Apple's JWKS,
+  // then we lookup-or-create a user by Apple sub (and email when present).
+  app.post("/api/auth/apple", async (req, res, next) => {
+    try {
+      const schema = z.object({
+        identityToken: z.string().min(20),
+        // Apple only sends name on the FIRST sign-in. The native plugin
+        // surfaces it in `givenName` / `familyName`; web in `user.name`.
+        givenName: z.string().optional().nullable(),
+        familyName: z.string().optional().nullable(),
+      });
+      const parsed = schema.safeParse(req.body);
+      if (!parsed.success) {
+        return res
+          .status(400)
+          .json({ message: "Missing Apple identity token." });
+      }
+      const claims = await verifyAppleIdentityToken(parsed.data.identityToken);
+      const appleSub = claims.sub;
+      const claimEmail = claims.email?.toLowerCase();
+
+      // Prefer Apple sub for lookup (stable across sign-ins, present even
+      // when Apple omits email on subsequent sign-ins).
+      let user = await storage.getUserByAppleId(appleSub);
+
+      // First-time sign-in path: try email, otherwise create a fresh user
+      // using Apple's private-relay email (always present on first auth).
+      if (!user && claimEmail) {
+        user = await storage.getUserByEmail(claimEmail);
+        if (user && !user.appleId) {
+          await storage.setUserAppleId(user.id, appleSub);
+        }
+      }
+      if (!user) {
+        if (!claimEmail) {
+          return res.status(400).json({
+            message:
+              "Apple did not return an email for this account. Please sign out of FayaFlex on your Apple ID, then try again.",
+          });
+        }
+        const username = await generateUniqueUsernameFromEmail(claimEmail);
+        user = await storage.createUser({
+          username,
+          email: claimEmail,
+          password: null,
+          firstName: parsed.data.givenName ?? undefined,
+          lastName: parsed.data.familyName ?? undefined,
+        });
+        await storage.setUserAppleId(user.id, appleSub);
+        console.log(`[Auth] Apple sign-in created new user: ${username} <${claimEmail}>`);
+      } else {
+        console.log(`[Auth] Apple sign-in matched existing user: ${user.username}`);
+      }
+
+      req.login(user, (err) => {
+        if (err) {
+          console.error("[Auth] req.login after Apple sign-in failed:", err);
+          return next(err);
+        }
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("[Auth] session save after Apple sign-in failed:", saveErr);
+            return next(saveErr);
+          }
+          const token = generateAuthToken(user!.id);
+          res.status(200).json({ ...sanitizeUser(user!), token });
+        });
+      });
+    } catch (error: any) {
+      console.error("[Auth] Apple sign-in error:", error?.message || error);
+      const msg = String(error?.message || "");
+      if (msg.toLowerCase().includes("jwt expired")) {
+        return res.status(401).json({ message: "Apple sign-in expired. Please try again." });
+      }
+      if (msg.toLowerCase().includes("jwt audience")) {
+        return res.status(401).json({ message: "Apple sign-in misconfigured (audience mismatch)." });
+      }
+      return res
+        .status(401)
+        .json({ message: "Apple sign-in failed. Please try again." });
     }
   });
 

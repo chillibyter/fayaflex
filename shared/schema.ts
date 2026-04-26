@@ -32,6 +32,7 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 100 }).unique().notNull(),
   password: text("password"),
   email: varchar("email").unique().notNull(),
+  appleId: varchar("apple_id").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
