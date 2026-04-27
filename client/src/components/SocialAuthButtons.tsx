@@ -11,11 +11,42 @@ import { Loader2 } from "lucide-react";
 declare global {
   interface Window {
     google?: any;
+    AppleID?: any;
   }
 }
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 const GSI_SRC = "https://accounts.google.com/gsi/client";
+
+// The web Apple Service ID (NOT the iOS bundle ID). This must match the
+// APPLE_SIGN_IN_SERVICE_ID secret on the server, which is what the server
+// uses to validate the audience claim of identity tokens issued for web.
+const APPLE_SERVICE_ID = "com.fayaflex.app.web";
+const APPLE_REDIRECT_URI = `${typeof window !== "undefined" ? window.location.origin : ""}/api/auth/apple/callback`;
+const APPLE_JS_SRC = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+
+let appleLoadingPromise: Promise<void> | null = null;
+function loadAppleIdScript(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.AppleID?.auth) return Promise.resolve();
+  if (appleLoadingPromise) return appleLoadingPromise;
+  appleLoadingPromise = new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${APPLE_JS_SRC}"]`);
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("Failed to load Apple sign-in")));
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = APPLE_JS_SRC;
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Failed to load Apple sign-in"));
+    document.head.appendChild(s);
+  });
+  return appleLoadingPromise;
+}
 
 const isNativePlatform = Capacitor.isNativePlatform();
 const platform = Capacitor.getPlatform();
@@ -235,13 +266,42 @@ export default function SocialAuthButtons({ mode = "login" }: Props) {
       return;
     }
 
-    // Web path — requires Apple Service ID + return URL config in your
-    // Apple Developer account. Until that's wired, surface a clear note.
-    setAppleBusy(false);
-    toast({
-      title: "Sign in with Apple is coming soon",
-      description: "Available in our iOS app — we're enabling it on the web shortly.",
-    });
+    // Web path — Apple JS SDK in popup mode returns the identity token
+    // directly without going through a server-side OAuth code exchange.
+    try {
+      await loadAppleIdScript();
+      if (!window.AppleID?.auth) throw new Error("Apple sign-in unavailable.");
+      window.AppleID.auth.init({
+        clientId: APPLE_SERVICE_ID,
+        scope: "name email",
+        redirectURI: APPLE_REDIRECT_URI,
+        usePopup: true,
+      });
+      const data = await window.AppleID.auth.signIn();
+      const identityToken: string | undefined = data?.authorization?.id_token;
+      if (!identityToken) throw new Error("No identity token returned by Apple.");
+      // `data.user` is only present on first sign-in (Apple convention).
+      const givenName = data?.user?.name?.firstName ?? null;
+      const familyName = data?.user?.name?.lastName ?? null;
+      await postSocialLogin("/api/auth/apple", {
+        identityToken,
+        givenName,
+        familyName,
+      });
+    } catch (err: any) {
+      const errCode = err?.error || "";
+      const errMsg = String(err?.message || err || "");
+      // Apple uses error codes like 'popup_closed_by_user' / 'user_cancelled_authorize'.
+      if (!/cancel|popup_closed/i.test(errCode + " " + errMsg)) {
+        toast({
+          title: "Apple sign-in failed",
+          description: errMsg || "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setAppleBusy(false);
+    }
   }
 
   // On native, we always render the buttons. On web, hide the entire block

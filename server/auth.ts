@@ -28,6 +28,23 @@ if (!GOOGLE_CLIENT_ID) {
 const APPLE_BUNDLE_ID = "com.fayaflex.app";
 const APPLE_SERVICE_ID = process.env.APPLE_SIGN_IN_SERVICE_ID || "";
 const ALLOWED_APPLE_AUDIENCES = [APPLE_BUNDLE_ID, APPLE_SERVICE_ID].filter(Boolean);
+
+// Normalize a PEM-encoded private key that may have been pasted into the
+// secrets manager with newlines collapsed to spaces or to literal "\n".
+// Returns the original string if it already contains real newlines.
+export function normalizePemPrivateKey(raw: string | undefined): string {
+  if (!raw) return "";
+  if (raw.includes("\n")) return raw;
+  if (raw.includes("\\n")) return raw.replace(/\\n/g, "\n");
+  // Spaces-as-newlines fallback: rebuild line breaks around BEGIN/END markers
+  // and reflow the base64 body into 64-char lines as openssl emits.
+  const m = raw.match(/-----BEGIN ([^-]+?)-----\s*([A-Za-z0-9+/=\s]+?)\s*-----END \1-----/);
+  if (!m) return raw;
+  const label = m[1].trim();
+  const body = m[2].replace(/\s+/g, "");
+  const wrapped = body.match(/.{1,64}/g)?.join("\n") ?? body;
+  return `-----BEGIN ${label}-----\n${wrapped}\n-----END ${label}-----\n`;
+}
 const appleJwksClient = jwksClient({
   jwksUri: "https://appleid.apple.com/auth/keys",
   cache: true,
