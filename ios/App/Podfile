@@ -22,7 +22,11 @@ end
 
 target 'App' do
   capacitor_pods
-  # Add your Pods here
+  # Force modern GoogleSignIn (and its deps) so each ships an Apple
+  # privacy manifest. Required to pass App Store ITMS-91061 review.
+  pod 'GoogleSignIn',       '~> 7.1'
+  pod 'GTMSessionFetcher',  '~> 3.4'
+  pod 'GTMAppAuth',         '~> 4.1'
 end
 
 post_install do |installer|

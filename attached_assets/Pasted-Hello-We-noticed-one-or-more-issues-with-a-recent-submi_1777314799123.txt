@@ -1,0 +1,11 @@
+Hello,
+We noticed one or more issues with a recent submission for TestFlight review for the following app:
+FayaFlex
+App Apple ID 6757204288
+Version 2.0.1
+Build 4
+Please correct the following issues and upload a new binary to App Store Connect.
+ITMS-91061: Missing privacy manifest - Your app includes “Frameworks/GTMAppAuth.framework/GTMAppAuth”, which includes GTMAppAuth, an SDK that was identified in the documentation as a commonly used third-party SDK. If a new app includes a commonly used third-party SDK, or an app update adds a new commonly used third-party SDK, the SDK must include a privacy manifest file. Please contact the provider of the SDK that includes this file to get an updated SDK version with a privacy manifest. For more details about this policy, including a list of SDKs that are required to include signatures and manifests, visit: https://developer.apple.com/support/third-party-SDK-requirements.
+ITMS-91061: Missing privacy manifest - Your app includes “Frameworks/GTMSessionFetcher.framework/GTMSessionFetcher”, which includes GTMSessionFetcher, an SDK that was identified in the documentation as a commonly used third-party SDK. If a new app includes a commonly used third-party SDK, or an app update adds a new commonly used third-party SDK, the SDK must include a privacy manifest file. Please contact the provider of the SDK that includes this file to get an updated SDK version with a privacy manifest. For more details about this policy, including a list of SDKs that are required to include signatures and manifests, visit: https://developer.apple.com/support/third-party-SDK-requirements.
+ITMS-91061: Missing privacy manifest - Your app includes “Frameworks/GoogleSignIn.framework/GoogleSignIn”, which includes GoogleSignIn, an SDK that was identified in the documentation as a commonly used third-party SDK. If a new app includes a commonly used third-party SDK, or an app update adds a new commonly used third-party SDK, the SDK must include a privacy manifest file. Please contact the provider of the SDK that includes this file to get an updated SDK version with a privacy manifest. For more details about this policy, including a list of SDKs that are required to include signatures and manifests, visit: https://developer.apple.com/support/third-party-SDK-requirements.
+Apple Developer Relations

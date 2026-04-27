@@ -1,0 +1,111 @@
+diff --git a/node_modules/@southdevs/capacitor-google-auth/SouthdevsCapacitorGoogleAuth.podspec b/node_modules/@southdevs/capacitor-google-auth/SouthdevsCapacitorGoogleAuth.podspec
+index 28d5e6d..7b4646b 100644
+--- a/node_modules/@southdevs/capacitor-google-auth/SouthdevsCapacitorGoogleAuth.podspec
++++ b/node_modules/@southdevs/capacitor-google-auth/SouthdevsCapacitorGoogleAuth.podspec
+@@ -10,6 +10,6 @@
+     s.source_files = 'ios/Plugin/**/*.{swift,h,m,c,cc,mm,cpp}'
+     s.ios.deployment_target  = '12.0'
+     s.dependency 'Capacitor'
+-    s.dependency 'GoogleSignIn', '~> 6.2.4'
++    s.dependency 'GoogleSignIn', '~> 7.1'
+     s.static_framework = true
+   end
+diff --git a/node_modules/@southdevs/capacitor-google-auth/ios/Plugin/Plugin.swift b/node_modules/@southdevs/capacitor-google-auth/ios/Plugin/Plugin.swift
+index 26d5407..9236ce9 100644
+--- a/node_modules/@southdevs/capacitor-google-auth/ios/Plugin/Plugin.swift
++++ b/node_modules/@southdevs/capacitor-google-auth/ios/Plugin/Plugin.swift
+@@ -23,6 +23,7 @@ public class GoogleAuth: CAPPlugin {
+         let serverClientId = getServerClientIdValue();
+ 
+         googleSignInConfiguration = GIDConfiguration.init(clientID: customClientId, serverClientID: serverClientId)
++        googleSignIn.configuration = googleSignInConfiguration
+ 
+         // these are scopes granted by default by the signIn method
+         let defaultGrantedScopes = ["email", "profile", "openid"];
+@@ -73,11 +74,11 @@ public class GoogleAuth: CAPPlugin {
+         DispatchQueue.main.async {
+             if self.googleSignIn.hasPreviousSignIn() && !self.forceAuthCode {
+                 self.googleSignIn.restorePreviousSignIn() { user, error in
+-                if let error = error {
+-                    self.signInCall?.reject(error.localizedDescription);
+-                    return;
+-                }
+-                self.resolveSignInCallWith(user: user!)
++                    if let error = error {
++                        self.signInCall?.reject(error.localizedDescription);
++                        return;
++                    }
++                    self.resolveSignInCallWith(user: user!)
+                 }
+             } else {
+                 let presentingVc = self.bridge!.viewController!;
+@@ -89,17 +90,19 @@ public class GoogleAuth: CAPPlugin {
+                     NSLog("no client id found in config")
+                     return;
+                 }
+-                guard let serverClientId = call.getString("serverClientId") else {
+-                    NSLog("no server client id found in config")
+-                    return;
+-                }
++                let serverClientId = call.getString("serverClientId") ?? self.getServerClientIdValue()
+                 let googleSignInConfiguration = GIDConfiguration.init(clientID: clientId, serverClientID: serverClientId)
+-                self.googleSignIn.signIn(with: googleSignInConfiguration, presenting: presentingVc, hint: nil, additionalScopes: additionalScopes) { user, error in
++                self.googleSignIn.configuration = googleSignInConfiguration
++                self.googleSignIn.signIn(withPresenting: presentingVc, hint: nil, additionalScopes: additionalScopes) { signInResult, error in
+                     if let error = error {
+                         self.signInCall?.reject(error.localizedDescription, "\(error._code)");
+                         return;
+                     }
+-                    self.resolveSignInCallWith(user: user!);
++                    guard let user = signInResult?.user else {
++                        self.signInCall?.reject("Sign in failed: missing user");
++                        return;
++                    }
++                    self.resolveSignInCallWith(user: user);
+                 };
+             }
+         }
+@@ -108,19 +111,23 @@ public class GoogleAuth: CAPPlugin {
+     @objc
+     func refresh(_ call: CAPPluginCall) {
+         DispatchQueue.main.async {
+-            if self.googleSignIn.currentUser == nil {
++            guard let currentUser = self.googleSignIn.currentUser else {
+                 call.reject("User not logged in.");
+                 return
+             }
+-            self.googleSignIn.currentUser!.authentication.do { (authentication, error) in
+-                guard let authentication = authentication else {
+-                    call.reject(error?.localizedDescription ?? "Something went wrong.");
++            currentUser.refreshTokensIfNeeded { user, error in
++                if let error = error {
++                    call.reject(error.localizedDescription);
++                    return;
++                }
++                guard let user = user else {
++                    call.reject("Something went wrong.");
+                     return;
+                 }
+                 let authenticationData: [String: Any] = [
+-                    "accessToken": authentication.accessToken,
+-                    "idToken": authentication.idToken ?? NSNull(),
+-                    "refreshToken": authentication.refreshToken
++                    "accessToken": user.accessToken.tokenString,
++                    "idToken": user.idToken?.tokenString ?? NSNull(),
++                    "refreshToken": user.refreshToken.tokenString
+                 ]
+                 call.resolve(authenticationData);
+             }
+@@ -176,9 +183,9 @@ public class GoogleAuth: CAPPlugin {
+     func resolveSignInCallWith(user: GIDGoogleUser) {
+         var userData: [String: Any] = [
+             "authentication": [
+-                "accessToken": user.authentication.accessToken,
+-                "idToken": user.authentication.idToken,
+-                "refreshToken": user.authentication.refreshToken
++                "accessToken": user.accessToken.tokenString,
++                "idToken": user.idToken?.tokenString ?? NSNull(),
++                "refreshToken": user.refreshToken.tokenString
+             ],
+             "serverAuthCode": user.serverAuthCode ?? NSNull(),
+             "email": user.profile?.email ?? NSNull(),
