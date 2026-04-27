@@ -187,7 +187,12 @@ export default function SocialAuthButtons({ mode = "login" }: Props) {
         } catch {
           // initialize() is a no-op on iOS where config comes from plist
         }
-        const result = await GoogleAuth.signIn();
+        // The iOS native plugin requires `scopes` to be passed at signIn()
+        // time (not just via initialize/config). See plugin source:
+        // node_modules/@southdevs/capacitor-google-auth/ios/Plugin/Plugin.swift:84
+        const result = await GoogleAuth.signIn({
+          scopes: ["profile", "email"],
+        });
         const idToken: string | undefined =
           result?.authentication?.idToken || result?.idToken;
         if (!idToken) throw new Error("No ID token from Google.");
