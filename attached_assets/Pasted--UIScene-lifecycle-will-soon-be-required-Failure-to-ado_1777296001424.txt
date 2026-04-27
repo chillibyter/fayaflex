@@ -1,0 +1,50 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/3CCE5EB4-8AFE-4F48-96B1-C1EB00ED6226/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at https://fayaflex.com...
+Networking process (0x112050100) took 2.268625 seconds to launch
+0x1120e80c0 - [PID=3938] WebProcessProxy::didBecomeUnresponsive:
+0x106b9ce18 - [pageProxyID=7, webPageID=8, PID=3938] WebPageProxy::processDidBecomeUnresponsive:
+Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+WebContent[3938] Unable to hide query parameters from script (missing data)
+⚡️  To Native ->  Preferences get 87336101
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 87336102
+⚡️  To Native ->  App addListener 87336103
+⚡️  To Native ->  CapacitorHttp request 87336104
+⚡️  To Native ->  SplashScreen hide 87336105
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/auth\/user","data":{"message":"Not authenticated"},"status":401,"headers":{"date":"Mon, 27 Apr 2026 13:19:12 GMT","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-powered-by":"Express","etag":"W\/\"1f-+
+⚡️  [log] - [API] Native response: 401
+WebContent[3938] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  Preferences get 18570641
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 18570642
+⚡️  To Native ->  App addListener 18570643
+⚡️  To Native ->  CapacitorHttp request 18570644
+⚡️  To Native ->  SplashScreen hide 18570645
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"status":401,"data":{"message":"Not authenticated"},"headers":{"date":"Mon, 27 Apr 2026 13:19:15 GMT","via":"1.1 google","content-type":"application\/json; charset=utf-8","x-cloud-trace-context":"565e5d46b4dc9fb577777c4bcf4358f0","etag":"W\/\"1f-+6QzNnV5e
+⚡️  [log] - [API] Native response: 401
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  SignInWithApple authorize 18570646
+Authorization failed: Error Domain=AKAuthenticationError Code=-7026 "(null)" UserInfo={AKClientBundleID=com.fayaflex.app}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Failed to get application extension record: Error Domain=NSOSStatusErrorDomain Code=-54 "(null)"
+ASAuthorizationController credential request failed with error: Error Domain=com.apple.AuthenticationServices.AuthorizationError Code=1000 "(null)"
+ERROR MESSAGE:  {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [error] - {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  To Native ->  GoogleAuth initialize 18570647
+⚡️  TO JS undefined
+⚡️  To Native ->  GoogleAuth signIn 18570648
+ERROR MESSAGE:  {"errorMessage":"Must provide scopes","message":"Must provide scopes"}
+⚡️  [error] - {"errorMessage":"Must provide scopes","message":"Must provide scopes"}
