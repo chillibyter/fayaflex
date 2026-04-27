@@ -1,0 +1,48 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/786E5333-DF43-4D1F-B015-83A6F073B1F2/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at https://fayaflex.com...
+Networking process (0x112054100) took 2.614776 seconds to launch
+WebContent process (0x1120e80c0) took 3.109103 seconds to launch
+WebContent[4398] Unable to hide query parameters from script (missing data)
+⚡️  To Native ->  Preferences get 26721535
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 26721536
+⚡️  To Native ->  App addListener 26721537
+⚡️  To Native ->  CapacitorHttp request 26721538
+⚡️  To Native ->  SplashScreen hide 26721539
+⚡️  TO JS undefined
+quic_crypto_queue_append not enqueing more packets (max 5 reached)
+⚡️  WebView loaded
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/auth\/user","data":{"message":"Not authenticated"},"headers":{"via":"1.1 google","strict-transport-security":"max-age=63072000; includeSubDomains","server":"Google Frontend","x-cloud-trace-context":"a05e2a18326739e6867b
+⚡️  [log] - [API] Native response: 401
+WebContent[4398] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  Preferences get 53681913
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 53681914
+⚡️  To Native ->  App addListener 53681915
+⚡️  To Native ->  CapacitorHttp request 53681916
+⚡️  To Native ->  SplashScreen hide 53681917
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/auth\/user","data":{"message":"Not authenticated"},"headers":{"server":"Google Frontend","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","strict-transport-security":"max-age=63072000; includeSubDomains","
+⚡️  [log] - [API] Native response: 401
+⚡️  To Native ->  SignInWithApple authorize 53681918
+Authorization failed: Error Domain=AKAuthenticationError Code=-7026 "(null)" UserInfo={AKClientBundleID=com.fayaflex.app}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Failed to get application extension record: Error Domain=NSOSStatusErrorDomain Code=-54 "(null)"
+ASAuthorizationController credential request failed with error: Error Domain=com.apple.AuthenticationServices.AuthorizationError Code=1000 "(null)"
+ERROR MESSAGE:  {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [error] - {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  GoogleAuth initialize 53681919
+⚡️  TO JS undefined
+⚡️  To Native ->  GoogleAuth signIn 53681920
+no server client id found in config
