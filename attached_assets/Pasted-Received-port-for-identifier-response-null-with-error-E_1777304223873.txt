@@ -1,0 +1,56 @@
+Received port for identifier response: <(null)> with error:Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.process-state, NSLocalizedFailureReason=Client not entitled, RBSPermanent=false}
+elapsedCPUTimeForFrontBoard couldn't generate a task port
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+⚡️  TO JS {"isActive":false}
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will hide notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will hide notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will hide notification, but keyboard was not even present.
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"authentication":{"idToken":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5Y2FhZWNkZThmNDg1ZThmNTkzOGY0OGFiYTBjZTdhMzU4MWYwMjciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzODk2NTMyNjI5MzItajJkdDVqajdlbWxmOTcyanRxcXY4dDZpNWpkcnQ3b2UuYXB
+⚡️  To Native ->  CapacitorHttp request 44798810
+⚡️  [log] - [API] POST https://fayaflex.com/api/auth/google (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/auth/google
+⚡️  TO JS {"headers":{"x-powered-by":"Express","etag":"W\/\"36-9k8X9vFtmxBq2XiJMJtz5IhpEbQ\"","via":"1.1 google","content-length":"54","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000","server":"Google Frontend","date":"Mon, 27 Ap
+⚡️  [log] - [API] Native response: 401
+[MADService] Client XPC connection invalidated
+⚡️  To Native ->  GoogleAuth initialize 44798811
+⚡️  TO JS undefined
+⚡️  To Native ->  GoogleAuth signIn 44798812
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"authentication":{"accessToken":"ya29.a0AQvPyIMeNtnL2jE3yQLFesOV_01V5MJNXuR0SHzSbLliHgsFo6DMTFyvWD128JPiCg5zIia1ntEFbXASEyBQLmovf4TDMN6r76pKSevKWxJpwsLpdLZyVVNWaCptUFNFVQolbn2xXU6N6ocnQMJGHUG4a5dH1vmcrhapUIue8urDOBDpgOkSzrutrbpTdYML_qXABU4aCgYKARYSARMSFQH
+⚡️  To Native ->  ⚡️  [log] - [API] POST https://fayaflex.com/api/auth/google (native: true)
+CapacitorHttp request 44798813
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/auth/google
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/auth\/google","status":401,"data":{"message":"Google sign-in failed. Please try again."},"headers":{"x-powered-by":"Express","etag":"W\/\"36-9k8X9vFtmxBq2XiJMJtz5IhpEbQ\"","via":"1.1 google","content-length":"54","conte
+⚡️  [log] - [API] Native response: 401
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)

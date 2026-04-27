@@ -13,9 +13,16 @@ import { z } from "zod";
 import connectPg from "connect-pg-simple";
 import { sendPasswordResetEmail } from "./emailService";
 
-// Google ID-token verifier. We accept tokens issued for the web Google
-// Identity Services client. The audience is the Google OAuth client ID.
+// Google ID-token verifier. We accept tokens issued for any of our Google
+// OAuth clients: the Web client (used by Google Identity Services on the
+// web) and the iOS client (used by the native Capacitor Google Auth plugin).
+// Google's iOS SDK issues idTokens whose `aud` is the iOS client ID even
+// when a serverClientID is supplied, so the server must accept either.
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_IOS_CLIENT_ID = "389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com";
+const GOOGLE_AUDIENCES = Array.from(
+  new Set([GOOGLE_CLIENT_ID, GOOGLE_IOS_CLIENT_ID].filter(Boolean)),
+);
 const googleAuthClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 if (!GOOGLE_CLIENT_ID) {
   console.warn("[Auth] GOOGLE_CLIENT_ID not set — Google sign-in disabled.");
@@ -428,7 +435,7 @@ export function setupAuth(app: Express) {
       }
       const ticket = await googleAuthClient.verifyIdToken({
         idToken: parsed.data.idToken,
-        audience: GOOGLE_CLIENT_ID,
+        audience: GOOGLE_AUDIENCES,
       });
       const payload = ticket.getPayload();
       if (!payload || !payload.email) {
