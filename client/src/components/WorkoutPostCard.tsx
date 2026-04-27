@@ -579,14 +579,24 @@ function MetricPanel({
       <div className="relative text-[10px] font-bold tracking-[1.8px] uppercase text-zinc-400 mb-2">
         {label}
       </div>
-      <div className="relative flex items-baseline justify-center gap-[3px]">
+      <div className="relative flex items-baseline justify-center gap-[3px] min-w-0">
         <span
-          className="text-[24px] font-extrabold leading-none text-white tabular-nums"
-          style={{ textShadow: "0 1px 0 rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.4)" }}
+          className="font-extrabold leading-none text-white tabular-nums whitespace-nowrap"
+          style={{
+            textShadow: "0 1px 0 rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.4)",
+            fontSize:
+              value.length >= 8
+                ? "16px"
+                : value.length >= 6
+                  ? "19px"
+                  : value.length >= 5
+                    ? "21px"
+                    : "24px",
+          }}
         >
           {value}
         </span>
-        {unit && <span className="text-xs font-medium text-zinc-400">{unit}</span>}
+        {unit && <span className="text-xs font-medium text-zinc-400 whitespace-nowrap">{unit}</span>}
       </div>
       {isPB && (
         <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-md ring-1 ring-amber-200/60">
