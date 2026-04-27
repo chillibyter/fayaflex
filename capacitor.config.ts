@@ -45,12 +45,14 @@ const config: CapacitorConfig = {
       permissions: ['camera', 'photos'],
     },
     GoogleAuth: {
-      // The web/server-side OAuth client ID — Google requires this on
-      // native so the returned ID token can be verified by our backend.
-      // Set GOOGLE_CLIENT_ID for both web and native (use the Web client ID
-      // from Google Cloud, NOT the iOS/Android client ID).
       scopes: ['profile', 'email'],
-      serverClientId: process.env.GOOGLE_CLIENT_ID,
+      // iOS client ID from Google Cloud Console (matches the reversed URL
+      // scheme + GIDClientID we set in ios/App/App/Info.plist).
+      iosClientId: '389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com',
+      // Web/server-side OAuth client ID. Used by the backend to verify
+      // the ID token's audience. Falls back to GOOGLE_CLIENT_ID env var
+      // if set at sync time.
+      serverClientId: process.env.GOOGLE_CLIENT_ID || '389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },
   },

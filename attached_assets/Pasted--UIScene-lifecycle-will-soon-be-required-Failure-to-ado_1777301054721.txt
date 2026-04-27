@@ -1,0 +1,55 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/CF834D96-7118-4BE3-A2B9-88F66800A016/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at https://fayaflex.com...
+Networking process (0x115060100) took 3.395361 seconds to launch
+0x1150ec0c0 - [PID=4277] WebProcessProxy::didBecomeUnresponsive:
+0x13a394e18 - [pageProxyID=7, webPageID=8, PID=4277] WebPageProxy::processDidBecomeUnresponsive:
+WebContent[4277] Unable to hide query parameters from script (missing data)
+⚡️  To Native ->  Preferences get 4417957
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 4417958
+⚡️  To Native ->  App addListener 4417959
+⚡️  To Native ->  CapacitorHttp request 4417960
+⚡️  To Native ->  SplashScreen hide 4417961
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"data":{"message":"Not authenticated"},"headers":{"x-cloud-trace-context":"2d7074e4050f092af9b189f3239adf48","etag":"W\/\"1f-+6QzNnV5epxAIN04tcijgCAz6Yw\"","x-powered-by":"Express","strict-transport-security":"max-age=63072000; includeSubDomains","via":"1
+⚡️  [log] - [API] Native response: 401
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+WebContent[4277] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  To Native ->  Preferences get 86947253
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  To Native ->  App addListener 86947254
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 86947255
+⚡️  To Native ->  CapacitorHttp request 86947256
+⚡️  To Native ->  SplashScreen hide 86947257
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"status":401,"headers":{"x-powered-by":"Express","etag":"W\/\"1f-+6QzNnV5epxAIN04tcijgCAz6Yw\"","strict-transport-security":"max-age=63072000; includeSubDomains","via":"1.1 google","server":"Google Frontend","content-type":"application\/json; charset=utf-
+⚡️  [log] - [API] Native response: 401
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  SignInWithApple authorize 86947258
+Authorization failed: Error Domain=AKAuthenticationError Code=-7026 "(null)" UserInfo={AKClientBundleID=com.fayaflex.app}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Failed to get application extension record: Error Domain=NSOSStatusErrorDomain Code=-54 "(null)"
+ASAuthorizationController credential request failed with error: Error Domain=com.apple.AuthenticationServices.AuthorizationError Code=1000 "(null)"
+ERROR MESSAGE:  {"message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [error] - {"message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  GoogleAuth initialize 86947259
+⚡️  TO JS undefined
+⚡️  To Native ->  GoogleAuth signIn 86947260
+no client id found in config
+quic_conn_setup_pmtud [C1.1.1.1:2] [-eef2ecf78a09b166] unable to query remote endpoint, assuming IPv6
