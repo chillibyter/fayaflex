@@ -82,6 +82,16 @@
                                 <string>fayaflex</string>
                         </array>
                 </dict>
+                <dict>
+                        <key>CFBundleURLName</key>
+                        <string>Google Sign-In</string>
+                        <key>CFBundleURLSchemes</key>
+                        <array>
+                                <string>com.googleusercontent.apps.389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe</string>
+                        </array>
+                </dict>
         </array>
+        <key>GIDClientID</key>
+        <string>389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com</string>
 </dict>
 </plist>
