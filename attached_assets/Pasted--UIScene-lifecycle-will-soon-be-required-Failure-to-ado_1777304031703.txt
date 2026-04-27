@@ -1,0 +1,349 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/46E5CECB-BFDE-4C55-AD30-5335E779AD4E/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at https://fayaflex.com...
+Networking process (0x112050100) took 2.166551 seconds to launch
+WebContent process (0x1120e40c0) took 3.113520 seconds to launch
+WebContent[4438] Unable to hide query parameters from script (missing data)
+⚡️  WebView loaded
+⚡️  To Native ->  Preferences get 78697355
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 78697356
+⚡️  To Native ->  App addListener 78697357
+⚡️  To Native ->  CapacitorHttp request 78697358
+⚡️  To Native ->  SplashScreen hide 78697359
+⚡️  TO JS undefined
+⚡️  TO JS {"data":{"message":"Not authenticated"},"status":401,"url":"https:\/\/fayaflex.com\/api\/auth\/user","headers":{"x-cloud-trace-context":"0cdc1b75898e3b6dff65e1cc725ba1c4","server":"Google Frontend","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=259200
+⚡️  [log] - [API] Native response: 401
+WebContent[4438] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  Preferences get 63039766
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 63039767
+⚡️  To Native ->  App addListener 63039768
+⚡️  To Native ->  CapacitorHttp request 63039769
+⚡️  To Native ->  SplashScreen hide 63039770
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"headers":{"x-cloud-trace-context":"2cf250a2d5505072ff65e1cc725ba868","server":"Google Frontend","x-powered-by":"Express","alt-svc":"h3=\":443\"; ma=2592000","content-type":"application\/json; charset=utf-8","etag":"W\/\"1f-+6QzNnV5epxAIN04tcijgCAz6Yw\"",
+⚡️  [log] - [API] Native response: 401
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  SignInWithApple authorize 63039771
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+Authorization failed: Error Domain=AKAuthenticationError Code=-7003 "(null)" UserInfo={AKClientBundleID=com.fayaflex.app}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Failed to get application extension record: Error Domain=NSOSStatusErrorDomain Code=-54 "(null)"
+ASAuthorizationController credential request failed with error: Error Domain=com.apple.AuthenticationServices.AuthorizationError Code=1001 "(null)"
+ERROR MESSAGE:  {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1001.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1001.)"}
+⚡️  [error] - {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1001.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1001.)"}
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  SignInWithApple authorize 63039772
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"response":{"familyName":"Myakayaka","email":"lanyard@me.com","identityToken":"eyJraWQiOiI1UkZPU2lOSVVtIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmZheWFmbGV4LmFwcCIsImV4cCI6MTc3NzM5MDI2NCwiaWF0IjoxNzc3MzAzODY0LCJzd
+⚡️  [log] - [API] POST https://fayaflex.com/api/auth/apple (native: true)
+⚡️  To Native ->  CapacitorHttp ⚡️  [log] - [API] Native POST https://fayaflex.com/api/auth/apple
+request 63039773
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/auth\/apple","status":200,"headers":{"etag":"W\/\"14b82-qSaWjUCFXkjs8g1+sHCdV1fYnJ4\"","via":"1.1 google","server":"Google Frontend","expires":"Mon, 27 Apr 2026 15:31:08 GMT","content-type":"application\/json; charset=u
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  Preferences set 63039774
+⚡️  TO JS undefined
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  CapacitorHttp request 63039775
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/teams
+⚡️  To Native ->  CapacitorHttp request 63039776
+⚡️  To Native ->  App addListener 63039777
+⚡️  To Native ->  App removeListener 63039778
+⚡️  TO JS {"status":200,"data":{"avatarId":"weightlifter","id":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","notificationPrefs":null,"lastName":"Myakayaka","lastKnownGlobalRank":null,"continentId":"continent_af","updatedAt":"2026-04-27T15:31:08.249Z","firstName":"Lanyard"
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  App addListener 63039779
+⚡️  To Native ->  App removeListener 63039780
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/teams","headers":{"server":"Google Frontend","x-cloud-trace-context":"bd6d5fc1a31ee80c1e61b1b59163c01b","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","eta
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/ai-coach/suggestions
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/town_8030233
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=town&locationId=town_8030233
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+WebContent[4438] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+WebContent[4438] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+WebContent[4438] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  To Native ->  CapacitorHttp request 63039781
+⚡️  To Native ->  CapacitorHttp request 63039782
+⚡️  To Native ->  CapacitorHttp request 63039783
+⚡️  To Native ->  CapacitorHttp request 63039784
+⚡️  To Native ->  ⚡️  [log] - [API] Native GET https://fayaflex.com/api/notifications
+CapacitorHttp request 63039785
+⚡️  To Native ->  CapacitorHttp request 63039786
+⚡️  To Native ->  CapacitorHttp request 63039787
+⚡️  To Native ->  CapacitorHttp request 63039788
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  To Native ->  CapacitorHttp request 63039789
+WebContent[4438] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  TO JS {"headers":{"server":"Google Frontend","x-cloud-trace-context":"8879ce0b5219b0a51e61b1b59163c1b7","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","etag":"W\/\"72-v7sznRRupx5Kyr++FacGXAj10ek\"",
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"server":"Google Frontend","x-cloud-trace-context":"206efaf864d2d1dc1e61b1b59163ce7a","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","etag":"W\/\"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w\"","
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"status":200,"headers":{"server":"Google Frontend","x-cloud-trace-context":"27f5e409ca4c2e5d1e61b1b59163cae7","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","etag":"W\/\"13549-g9g2f\/CuFmgcrI
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"server":"Google Frontend","x-cloud-trace-context":"e2130f7c4d6591321e61b1b59163c20d","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","etag":"W\/\"278-2pV2hTYPFz3qrbSXH\/88VjScNHI\"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"headers":{"server":"Google Frontend","x-cloud-trace-context":"97af63115d0afe3d1e61b1b59163cc45","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","content-type":"application\/json; charset=utf-8","etag":"W\/\"120-H\/KV3bIvXwTx90ZU99m+40g1zRg\"
+⚡️  To Native ->  HealthKit isAvailable 63039790
+⚡️  [log] - [FullSync] Starting 7-day health sync...
+⚡️  TO JS {"available":true}
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-20T15:31:11.877Z to 2026-04-27T15:31:11.877Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 63039791
+⚡️  To Native ->  HealthKit getWorkouts 63039792
+⚡️  TO JS {"headers":{"content-length":"137","date":"Mon, 27 Apr 2026 15:31:11 GMT","strict-transport-security":"max-age=63072000; includeSubDomains","content-type":"application\/json; charset=utf-8","x-cloud-trace-context":"3ebb58fcb0d6b1c51e61b1b59163ce4f","etag":
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[{"date":"2026-04-20","workouts":0,"calories":192,"steps":3132},{"steps":9384,"calories":1257,"date":"2026-04-21","workouts":1},{"calories":985,"workouts":1,"steps":7714,"date":"2026-04-22"},{"workouts":1,"calories":1051,"steps":7910,"date":"2026-0
+⚡️  [log] - [HealthService] iOS HealthKit data: 8 days
+⚡️  TO JS {"headers":{"server":"Google Frontend","content-length":"20","x-cloud-trace-context":"6437ce7f744500491e61b1b59163cabc","etag":"W\/\"14-Wch7iYZeEKyWFEciwo84C0RboW8\"","strict-transport-security":"max-age=63072000; includeSubDomains","content-type":"applica
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"workouts":[{"endDate":"2026-04-27T06:37:21Z","elevationGainMeters":0,"avgHeartRate":137,"duration":1777.9050680398941,"distanceMeters":0,"maxHeartRate":167,"calories":329,"uuid":"42835262-0E52-4A03-A1EB-792D2BD456C4","startDate":"2026-04-27T06:07:43Z","a
+⚡️  [log] - [FullSync] Syncing 8 days, 7 workouts
+⚡️  [log] - [API] POST https://fayaflex.com/api/devices/sync (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/devices/sync
+⚡️  To Native ->  CapacitorHttp request 63039793
+⚡️  TO JS {"status":200,"url":"https:\/\/fayaflex.com\/api\/dashboard\/stats","headers":{"strict-transport-security":"max-age=63072000; includeSubDomains","server":"Google Frontend","date":"Mon, 27 Apr 2026 15:31:12 GMT","alt-svc":"h3=\":443\"; ma=2592000","x-powere
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  PushNotifications checkPermissions 63039794
+⚡️  TO JS {"receive":"granted"}
+⚡️  To Native ->  PushNotifications addListener 63039795
+⚡️  To Native ->  PushNotifications addListener 63039796
+⚡️  To Native ->  PushNotifications addListener 63039797
+⚡️  To Native ->  PushNotifications addListener 63039798
+⚡️  To Native ->  PushNotifications register 63039799
+⚡️  TO JS undefined
+⚡️  To Native ->  App addListener 63039800
+⚡️  TO JS {"headers":{"etag":"W\/\"4e-KAlIS1edjWvnm2v2+fgkLV5itL8\"","via":"1.1 google","server":"Google Frontend","expires":"Mon, 27 Apr 2026 15:31:13 GMT","content-length":"78","date":"Mon, 27 Apr 2026 15:31:13 GMT","alt-svc":"h3=\":443\"; ma=2592000","x-powered-b
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [FullSync] Sync complete
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  To Native ->  CapacitorHttp request 63039801
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  To Native ->  CapacitorHttp request 63039802
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  To Native ->  CapacitorHttp request 63039803
+⚡️  To Native ->  CapacitorHttp request 63039804
+⚡️  To Native ->  CapacitorHttp request 63039805
+⚡️  To Native ->  HealthKit isAvailable 63039806
+⚡️  TO JS {"available":true}
+⚡️  [log] - [HealthService] iOS HealthKit available: true
+⚡️  [log] - [TodaySync] Fetching today's health data...
+⚡️  [log] - [HealthService] Fetching health data from 2026-04-26T22:00:00.000Z to 2026-04-27T15:31:13.346Z
+⚡️  [log] - [HealthService] iOS - Using native HealthKit plugin
+⚡️  To Native ->  HealthKit getHealthData 63039807
+⚡️  To Native ->  HealthKit getWorkouts 63039808
+⚡️  TO JS {"data":[{"steps":17315,"date":"2026-04-27","workouts":2,"calories":1518}]}
+⚡️  [log] - [HealthService] iOS HealthKit data: 1 days
+⚡️  TO JS {"workouts":[{"maxHeartRate":167,"endDate":"2026-04-27T06:37:21Z","calories":329,"startDate":"2026-04-27T06:07:43Z","elevationGainMeters":0,"avgHeartRate":137,"activityType":63,"activityTypeName":"HIIT","distanceMeters":0,"duration":1777.9050680398941,"uui
+⚡️  To Native ->  CapacitorHttp request 63039809
+⚡️  [log] - [API] POST https://fayaflex.com/api/devices/sync (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/devices/sync
+⚡️  TO JS {"data":[{"refreshToken":null,"accessToken":null,"isConnected":true,"lastSyncAt":"2026-04-27T15:31:13.033Z","createdAt":"2025-12-31T19:47:30.798Z","userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","id":"94da883b-bf43-479b-b92e-0e24d6e7a6b3","provider":"apple
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[{"calories":7024,"date":"Week 4"},{"calories":7462,"date":"Week 3"},{"calories":7110,"date":"Week 2"},{"calories":7903,"date":"Week 1"}],"url":"https:\/\/fayaflex.com\/api\/progress\/chart","status":200,"headers":{"content-length":"137","x-cloud-t
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"averages":{"steps":12458,"calories":1057,"workoutsPerWeek":7},"todayProgress":{"hasWorkout":true,"calories":1518,"steps":17315},"activityLevel":"athlete","activityDescription":"Athlete Level","suggestedGoals":{"weeklyWorkouts":7,"dailySteps":1450
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"created":0,"feedPosted":0,"updated":0,"success":true,"skipped":1,"synced":0},"url":"https:\/\/fayaflex.com\/api\/devices\/sync","status":200,"headers":{"x-powered-by":"Express","via":"1.1 google","x-cloud-trace-context":"f5ac9a9f39146e831e61b1b59
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [TodaySync] Today's data updated. days=1 workouts=2
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/devices
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/activities
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/dashboard/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/progress/chart
+⚡️  To Native ->  CapacitorHttp request 63039810
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/goals/suggested
+⚡️  To Native ->  CapacitorHttp request 63039811
+⚡️  To Native ->  CapacitorHttp request 63039812
+⚡️  To Native ->  CapacitorHttp request 63039813
+⚡️  To Native ->  CapacitorHttp request 63039814
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"data":[{"source":"apple_health","steps":17315,"distanceMeters":null,"durationMinutes":null,"attachmentUrl":null,"notes":null,"elevationGainMeters":null,"createdAt":"2026-04-27T02:32:22.759Z","id":"25a7421d-79c1-4edc-bcfc-6070d729badc","userId":"daeefa3a-
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[{"accessToken":null,"isConnected":true,"provider":"apple_health","createdAt":"2025-12-31T19:47:30.798Z","userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","id":"94da883b-bf43-479b-b92e-0e24d6e7a6b3","lastSyncAt":"2026-04-27T15:31:13.723Z","refreshTok
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"averages":{"workoutsPerWeek":7,"steps":12458,"calories":1057},"todayProgress":{"steps":17315,"hasWorkout":true,"calories":1518},"activityLevel":"athlete","activityDescription":"Athlete Level","suggestedGoals":{"weeklyWorkouts":7,"dailySteps":1450
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[{"calories":7024,"date":"Week 4"},{"calories":7462,"date":"Week 3"},{"calories":7110,"date":"Week 2"},{"calories":7903,"date":"Week 1"}],"url":"https:\/\/fayaflex.com\/api\/progress\/chart","status":200,"headers":{"strict-transport-security":"max-
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":[{"source":"apple_health","steps":17315,"distanceMeters":null,"durationMinutes":null,"attachmentUrl":null,"notes":null,"elevationGainMeters":null,"createdAt":"2026-04-27T02:32:22.759Z","id":"25a7421d-79c1-4edc-bcfc-6070d729badc","userId":"daeefa3a-
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"totalActiveUsers":13,"calories":29459,"workouts":27,"stepsTrend":31,"caloriesTrend":-11,"rank":1,"personalBests":{"daily_score":27658,"daily_calories":1926,"daily_steps":25922},"currentYear":2026,"steps":344556,"percentile":8,"currentMonth":4,"ba
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"badgeCount":7,"workouts":27,"personalBests":{"daily_steps":25922,"daily_calories":1926,"daily_score":27658},"stepsTrend":31,"calories":29459,"steps":344556,"currentMonth":4,"currentYear":2026,"rank":1,"totalActiveUsers":13,"percentile":8,"calorie
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"value":"ACC0074614026BCCD3E737CEE0E26EE5AC4C5B1744D5D22373146D51401748A0"}
+⚡️  To Native ->  CapacitorHttp request 63039815
+⚡️  [log] - [API] POST https://fayaflex.com/api/push/register (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/push/register
+⚡️  TO JS {"data":{"id":"8eb42041-af94-48a8-aa91-ea7a80036a4b","success":true},"url":"https:\/\/fayaflex.com\/api\/push\/register","status":200,"headers":{"content-length":"60","x-cloud-trace-context":"7664cb21e612b3661e61b1b59163ccda","etag":"W\/\"3c-zxVKYz4O8WPsFp
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [Push] ios token registered
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/region_za_gauteng (native: true)
+⚡️  To Native ->  CapacitorHttp request 63039816
+⚡️  To Native ->  CapacitorHttp request 63039817
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/region_za_gauteng
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng
+⚡️  TO JS {"data":{"sortOrder":0,"id":"region_za_gauteng","isoCode":null,"parentId":"country_za","type":"region","name":"Gauteng"},"url":"https:\/\/fayaflex.com\/api\/locations\/region_za_gauteng","status":200,"headers":{"etag":"W\/\"70-6X20ugmZphKJBI61rQIKbOjRYuA\"
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"rank":1,"total":9},"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=region&locationId=region_za_gauteng","status":200,"headers":{"content-length":"20","set-cookie":"GAESA=CpwBMDA4YzE1ZmYwODFmYjhhYmVjZDM0NWJkMjI1Y
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"data":{"workoutSuggestion":{"duration":"40 min","workoutType":"hiit","intensity":"high","calorieEstimate":350,"exercises":[{"key":"pushup","reps":"10-12","duration":null,"sets":3},{"key":"lunge","reps":"10-12","duration":null,"sets":3},{"sets":3,"duratio
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/country_za (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/country_za
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=country&locationId=country_za
+⚡️  To Native ->  CapacitorHttp request 63039818
+⚡️  To Native ->  CapacitorHttp request 63039819
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/country_za","status":200,"headers":{"etag":"W\/\"71-Qu7L4RZlA\/HdWo2zAUYp9kABbEs\"","via":"1.1 google","server":"Google Frontend","expires":"Tue, 21 Apr 2026 11:31:06 GMT","content-length":"113","date":"Mon, 
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=country&locationId=country_za","status":200,"headers":{"etag":"W\/\"14-t7WF5yM\/U4x9DbwkjztZXi5Sfmo\"","via":"1.1 google","server":"Google Frontend","expires":"Sat, 25 Apr 
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] GET https://fayaflex.com/api/locations/continent_af (native: true)
+⚡️  To Native ->  CapacitorHttp request 63039820
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/locations/continent_af
+⚡️  To Native ->  CapacitorHttp request 63039821
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026&scope=continent&locationId=continent_af
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/locations\/continent_af","headers":{"content-length":"101","set-cookie":"GAESA=Cp4BMDA4YzE1ZmYwOGNhZTQ2ODI2ZWM1ZTViMmJjZTdjYmEyZjZkOTE4YjYyYWQ0YjA2OGQ4MDU2YjQ1OTY4YmJkZjIyYmMwYzU2N2U3ODJmZGViZTk4YTNlMzNmZWRiNTRmM2Q5OGMz
+⚡️  [log] - [API] Native response: 200
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026&scope=continent&locationId=continent_af","headers":{"content-length":"20","set-cookie":"GAESA=Cp4BMDA4YzE1ZmYwOGNhZTQ2ODI2ZWM1ZTViMmJjZTdjYmEyZjZkOTE4YjYyYWQ0YjA2OGQ4MDU2YjQ1OTY4
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  CapacitorHttp request 63039822
+⚡️  [log] - [API] GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026 (native: true)
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/leaderboard/user-rank?month=4&year=2026
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/leaderboard\/user-rank?month=4&year=2026","headers":{"content-length":"21","set-cookie":"GAESA=Cp4BMDA4YzE1ZmYwODAyNmNiZjQyMmNhNjkzOGNjMWEzYTUzMDRmNjM5NmQ0YTVmNzAxMWQ4OGM4Y2RhYzQwNThlNjVjMGQ1ZGIzOGI3MmUwNDhkYjMzZmMzYTVi
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/badges/check
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/profile/stats
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/app-notifications/unread-count
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/challenges
+⚡️  To Native ->  CapacitorHttp request 63039823
+⚡️  To Native ->  CapacitorHttp request 63039824
+⚡️  To Native ->  CapacitorHttp request 63039825
+⚡️  To Native ->  CapacitorHttp request 63039826
+⚡️  To Native ->  CapacitorHttp request 63039827
+⚡️  TO JS {"data":[{"badgeType":"workouts_10","id":"1fa881cf-4df5-45bd-9731-e4f4e79c6d55","metadata":{"workouts":17},"userId":"daeefa3a-8fae-46d1-aea7-af609e5b27bd","earnedAt":"2025-12-31T19:49:45.749Z"},{"badgeType":"calories_1k","id":"1e25abca-a205-4484-b098-291ff
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/profile\/stats","data":{"currentStreak":148,"totalWorkouts":148,"totalCalories":29499,"totalSteps":344556},"headers":{"date":"Mon, 27 Apr 2026 15:31:36 GMT","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","
+⚡️  TO JS {"headers":{"date":"Mon, 27 Apr 2026 15:31:36 GMT","set-cookie":"GAESA=CpwBMDA4YzE1ZmYwODFmYjhhYmVjZDM0NWJkMjI1YjA0ZTc0OWEyZTRiODVjMjQyNDg3NTNiZjhjOGFlMjJiZjRkZGI2MGY2NDJmYmQyOTkzMTk0ZThlMzNlMWJkNTlkMzcyZTJlYWFiY2FlZmU1YmZkOWE5ODhhNDg2OGY1OGIxN2MwM2U0NWFkM
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/badges\/check","status":200,"data":{"totalBadges":7,"newBadges":[]},"headers":{"strict-transport-security":"max-age=63072000; includeSubDomains","alt-svc":"h3=\":443\"; ma=2592000","x-powered-by":"Express","server":"Goo
+⚡️  TO JS {"status":200,"headers":{"server":"Google Frontend","etag":"W\/\"29b8f-bdki7+MluZYdonGZ6DJ9xtzxlQQ\"","content-type":"application\/json; charset=utf-8","content-length":"170895","date":"Mon, 27 Apr 2026 15:31:36 GMT","via":"1.1 google","strict-transport-se
+WebContent[4438] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  [log] - [API] Native response: 200
+⚡️  [warn] - Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+⚡️  To Native ->  CapacitorHttp request 63039828
+⚡️  TO JS {"status":200,"data":{"success":true},"headers":{"x-cloud-trace-context":"d99d9baf82983e0b318c2f4b89f988e7;o=1","content-length":"16","expires":"Mon, 27 Apr 2026 15:31:51 GMT","cache-control":"private","content-type":"application\/json; charset=utf-8","set
+⚡️  [log] - [API] POST https://fayaflex.com/api/logout (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/logout
+⚡️  To Native ->  CapacitorHttp request 63039829
+⚡️  [warn] - Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+⚡️  TO JS {"status":200,"data":"OK","headers":{"x-cloud-trace-context":"d818e685a7079e12318c2f4b89f9870b","content-length":"2","expires":"Mon, 27 Apr 2026 15:31:52 GMT","cache-control":"private","content-type":"text\/plain; charset=utf-8","set-cookie":"connect.sid=s
+⚡️  [log] - [API] Native response: 200
+⚡️  To Native ->  Preferences remove 63039830
+⚡️  TO JS undefined
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  To Native ->  App addListener 63039831
+⚡️  To Native ->  App removeListener 63039832
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  Preferences get 44798803
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  To Native ->  App addListener ⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+44798804
+⚡️  To Native ->  App addListener 44798805
+⚡️  To Native ->  CapacitorHttp request 44798806
+⚡️  To Native ->  SplashScreen hide 44798807
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"status":401,"url":"https:\/\/fayaflex.com\/api\/auth\/user","headers":{"server":"Google Frontend","etag":"W\/\"1f-+6QzNnV5epxAIN04tcijgCAz6Yw\"","content-type":"application\/json; charset=utf-8","content-length":"31","date":"Mon, 27 Apr 2026 15:31:55 GMT
+⚡️  [log] - [API] Native response: 401
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  GoogleAuth initialize 44798808
+⚡️  TO JS undefined
+⚡️  To Native ->  GoogleAuth signIn 44798809
+(501) Invalidation handler invoked, clearing connection
+(501) personaAttributesForPersonaType for type:0 failed with error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process." UserInfo={NSDebugDescription=The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process.}
+Received port for identifier response: <(null)> with error:Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.process-state, NSLocalizedFailureReason=Client not entitled, RBSPermanent=false}
+elapsedCPUTimeForFrontBoard couldn't generate a task port
+Received port for identifier response: <(null)> with error:Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.process-state, NSLocalizedFailureReason=Client not entitled, RBSPermanent=false}
+elapsedCPUTimeForFrontBoard couldn't generate a task port
+Received port for identifier response: <(null)> with error:Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.process-state, NSLocalizedFailureReason=Client not entitled, RBSPermanent=false}
+elapsedCPUTimeForFrontBoard couldn't generate a task port
+Received port for identifier response: <(null)> with error:Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.process-state, NSLocalizedFailureReason=Client not entitled, RBSPermanent=false}
+elapsedCPUTimeForFrontBoard couldn't generate a task port
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+⚡️  TO JS {"isActive":false}
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will hide notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will hide notification, but keyboard was not even present.
+Got a keyboard will change frame notification, but keyboard was not even present.
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+Got a keyboard will change frame notification, but keyboard was not even present.
+Got a keyboard will hide notification, but keyboard was not even present.
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  TO JS {"authentication":{"idToken":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5Y2FhZWNkZThmNDg1ZThmNTkzOGY0OGFiYTBjZTdhMzU4MWYwMjciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzODk2NTMyNjI5MzItajJkdDVqajdlbWxmOTcyanRxcXY4dDZpNWpkcnQ3b2UuYXB
+⚡️  To Native ->  CapacitorHttp request 44798810
+⚡️  [log] - [API] POST https://fayaflex.com/api/auth/google (native: true)
+⚡️  [log] - [API] Native POST https://fayaflex.com/api/auth/google
+⚡️  TO JS {"headers":{"x-powered-by":"Express","etag":"W\/\"36-9k8X9vFtmxBq2XiJMJtz5IhpEbQ\"","via":"1.1 google","content-length":"54","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000","server":"Google Frontend","date":"Mon, 27 Ap
+⚡️  [log] - [API] Native response: 401
