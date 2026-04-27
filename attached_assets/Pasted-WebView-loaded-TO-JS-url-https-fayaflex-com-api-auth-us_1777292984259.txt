@@ -1,0 +1,27 @@
+WebView loaded
+⚡️  TO JS {"url":"https:\/\/fayaflex.com\/api\/auth\/user","status":401,"headers":{"etag":"W\/\"1f-+6QzNnV5epxAIN04tcijgCAz6Yw\"","date":"Mon, 27 Apr 2026 12:28:44 GMT","x-cloud-trace-context":"1afda8924c01caa75dc571b8b908191c","x-powered-by":"Express","via":"1.1 go
+⚡️  [log] - [API] Native response: 401
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  SignInWithApple authorize 65331552
+Authorization failed: Error Domain=AKAuthenticationError Code=-7026 "(null)" UserInfo={AKClientBundleID=com.fayaflex.app}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Failed to get application extension record: Error Domain=NSOSStatusErrorDomain Code=-54 "(null)"
+ASAuthorizationController credential request failed with error: Error Domain=com.apple.AuthenticationServices.AuthorizationError Code=1000 "(null)"
+ERROR MESSAGE:  {"message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [error] - {"message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+Snapshot request 0x1172d4510 complete with error: <NSError: 0x1172d5680; domain: FBSSceneSnapshotErrorDomain; code: 3; "the request was canceled"> {
+    NSLocalizedDescription = an error occurred during a scene snapshotting operation;
+}
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  GoogleAuth initialize 65331553
+⚡️  TO JS undefined
+⚡️  To Native ->  GoogleAuth signIn 65331554
+ERROR MESSAGE:  {"errorMessage":"Must provide scopes","message":"Must provide scopes"}
+⚡️  [error] - {"errorMessage":"Must provide scopes","message":"Must provide scopes"}
