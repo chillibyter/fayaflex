@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { WorkoutPostCard, isAutoWorkoutPost, getWorkoutSummary } from "@/components/WorkoutPostCard";
+import { HighFiveButton } from "@/components/HighFiveButton";
+import { TeamBadge } from "@/components/TeamBadge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -37,6 +39,8 @@ interface FeedUser {
   lastName?: string | null;
   profileImageUrl?: string | null;
   avatarId?: string | null;
+  /** Most-recent team membership; rendered as a tiny chip in the post header. */
+  team?: { id: string; name: string } | null;
 }
 
 interface FeedPost {
@@ -49,6 +53,14 @@ interface FeedPost {
   likeCount: number;
   commentCount: number;
   likedByMe: boolean;
+  /** Set on auto-workout posts whose metric matches the user's all-time max. */
+  personalBests?: {
+    calories?: boolean;
+    distance?: boolean;
+    duration?: boolean;
+    steps?: boolean;
+    elevation?: boolean;
+  };
 }
 
 interface FeedComment {
@@ -303,11 +315,18 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       data-testid={`feed-card-${post.id}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-2">
+        <div className="flex min-w-0 items-center gap-3">
           <UserAvatar user={post.user} className="h-10 w-10" />
-          <div>
-            <p className="font-semibold text-sm leading-tight">{displayName(post.user)}</p>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <p className="font-semibold text-sm leading-tight" data-testid={`text-author-${post.id}`}>
+                {displayName(post.user)}
+              </p>
+              {post.user.team && (
+                <TeamBadge id={post.user.team.id} name={post.user.team.name} />
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               @{post.user.username} &middot;{" "}
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
@@ -339,24 +358,24 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
 
       {/* Content */}
       <div ref={cardCaptureRef} className="px-4 py-3">
-        <WorkoutPostCard content={post.content} isTopBurner={isTopBurner} />
+        <WorkoutPostCard
+          content={post.content}
+          isTopBurner={isTopBurner}
+          personalBests={post.personalBests}
+        />
       </div>
 
       <Separator />
 
       {/* Actions */}
       <div className="flex items-center gap-1 px-3 py-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          data-testid={`button-like-${post.id}`}
-          onClick={() => likeMutation.mutate()}
+        <HighFiveButton
+          liked={post.likedByMe}
+          count={post.likeCount}
           disabled={likeMutation.isPending}
-        >
-          <Heart
-            className={`h-5 w-5 transition-colors ${post.likedByMe ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
-          />
-        </Button>
+          onClick={() => likeMutation.mutate()}
+          testId={`button-like-${post.id}`}
+        />
         <LikersPopover postId={post.id} count={post.likeCount} />
 
         <Button

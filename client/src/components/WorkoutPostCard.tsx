@@ -125,6 +125,39 @@ function workoutImage(type: string): string | null {
   return null;
 }
 
+// ── Workout-type theme palette ────────────────────────────────────────────────
+// Each workout class gets a distinctive accent so the same card layout reads
+// instantly different for cycling vs. swimming vs. strength etc.
+type WorkoutTheme = {
+  accent: string;     // hex used directly for type icon & pace value
+  accentRgb: string;  // "r,g,b" suitable for `rgba(${rgb}, alpha)` interpolation
+};
+
+export function getWorkoutTheme(type: string): WorkoutTheme {
+  const t = (type || "").toLowerCase();
+  if (t.includes("cycl") || t.includes("bike") || t.includes("ride") || t.includes("spin")) {
+    return { accent: "#3b82f6", accentRgb: "59,130,246" };
+  }
+  if (t.includes("swim") || t.includes("pool") || t.includes("water")) {
+    return { accent: "#06b6d4", accentRgb: "6,182,212" };
+  }
+  if (
+    t.includes("strength") || t.includes("weight") || t.includes("lift") ||
+    t.includes("dumb") || t.includes("gym") || t.includes("crossfit") || t.includes("resist") ||
+    t.includes("box") || t.includes("kickbox") || t.includes("mma") || t.includes("fight")
+  ) {
+    return { accent: "#ef4444", accentRgb: "239,68,68" };
+  }
+  if (t.includes("hik") || t.includes("climb") || t.includes("trail") || t.includes("mountain")) {
+    return { accent: "#10b981", accentRgb: "16,185,129" };
+  }
+  if (t.includes("yoga") || t.includes("stretch") || t.includes("pilates") || t.includes("mobility")) {
+    return { accent: "#a855f7", accentRgb: "168,85,247" };
+  }
+  // Default (running, walking, other cardio) keeps the original orange.
+  return { accent: "#ff6a00", accentRgb: "255,106,0" };
+}
+
 const KEYFRAMES = `
 @keyframes wpc-pulseGlow {
   0%, 100% {
@@ -487,6 +520,8 @@ function MetricPanel({
   delay,
   emphasized,
   isPB,
+  accent,
+  accentRgb,
   testId,
 }: {
   icon: LucideIcon;
@@ -496,6 +531,10 @@ function MetricPanel({
   delay: number;
   emphasized?: boolean;
   isPB?: boolean;
+  /** Hex accent for the emphasized icon. Defaults to orange. */
+  accent?: string;
+  /** "r,g,b" form of the accent for the icon glow. */
+  accentRgb?: string;
   testId: string;
 }) {
   const [visible, setVisible] = useState(false);
@@ -528,10 +567,11 @@ function MetricPanel({
         }}
       />
       <Icon
-        className={`relative mx-auto mb-1.5 h-5 w-5 ${emphasized ? "text-orange-400" : "text-zinc-300"}`}
+        className={`relative mx-auto mb-1.5 h-5 w-5 ${emphasized ? "" : "text-zinc-300"}`}
         style={{
+          color: emphasized ? (accent ?? "#fb923c") : undefined,
           filter: emphasized
-            ? "drop-shadow(0 1px 4px rgba(255,106,0,0.6))"
+            ? `drop-shadow(0 1px 4px rgba(${accentRgb ?? "255,106,0"},0.6))`
             : "drop-shadow(0 1px 0 rgba(0,0,0,0.5))",
         }}
         aria-hidden="true"
@@ -595,6 +635,7 @@ export function WorkoutPostCard({
   }
 
   const pb: PBFlags = personalBests || {};
+  const theme = getWorkoutTheme(parsed.type);
   const TypeIcon = workoutIcon(parsed.type);
   const typeImg = workoutImage(parsed.type);
   const typeLabel = parsed.type.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -687,7 +728,7 @@ export function WorkoutPostCard({
             zIndex: 0,
           }}
         />
-        {/* Right-side orange glow bleed */}
+        {/* Right-side accent glow bleed (themed by workout type) */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute"
@@ -697,7 +738,22 @@ export function WorkoutPostCard({
             width: 260,
             height: 260,
             background:
-              "radial-gradient(circle, rgba(255,100,0,0.28) 0%, rgba(255,60,0,0.10) 50%, transparent 75%)",
+              `radial-gradient(circle, rgba(${theme.accentRgb},0.28) 0%, rgba(${theme.accentRgb},0.10) 50%, transparent 75%)`,
+            borderRadius: "50%",
+            zIndex: 0,
+          }}
+        />
+        {/* Subtle bottom-left ambient wash to balance the right glow */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute"
+          style={{
+            bottom: -40,
+            left: -30,
+            width: 220,
+            height: 220,
+            background:
+              `radial-gradient(circle, rgba(${theme.accentRgb},0.10) 0%, transparent 70%)`,
             borderRadius: "50%",
             zIndex: 0,
           }}
@@ -751,22 +807,23 @@ export function WorkoutPostCard({
                   "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0))",
               }}
             />
-            {/* Subtle warm rim glow when using a 3D image */}
+            {/* Themed rim glow on the icon tile */}
             {typeImg ? (
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 rounded-2xl"
                 style={{
                   boxShadow:
-                    "inset 0 0 0 1px rgba(255,106,0,0.18), inset 0 0 24px rgba(255,90,0,0.10)",
+                    `inset 0 0 0 1px rgba(${theme.accentRgb},0.20), inset 0 0 24px rgba(${theme.accentRgb},0.12)`,
                 }}
               />
             ) : (
               <TypeIcon
-                className="relative h-12 w-12 text-orange-400"
+                className="relative h-12 w-12"
                 style={{
+                  color: theme.accent,
                   filter:
-                    "drop-shadow(0 2px 6px rgba(255,106,0,0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))",
+                    `drop-shadow(0 2px 6px rgba(${theme.accentRgb},0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))`,
                 }}
                 aria-hidden="true"
               />
@@ -798,8 +855,13 @@ export function WorkoutPostCard({
               {typeLabel}
             </div>
             <div
-              className="wpc-badge mt-1.5 inline-flex items-center gap-1 rounded-full border border-orange-500/30 bg-orange-500/10 px-2.5 py-[3px] text-[10px] font-bold tracking-[2px] uppercase text-orange-500"
+              className="wpc-badge mt-1.5 inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[10px] font-bold tracking-[2px] uppercase"
               style={{
+                color: theme.accent,
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: `rgba(${theme.accentRgb},0.32)`,
+                backgroundColor: `rgba(${theme.accentRgb},0.10)`,
                 animation: cardVisible ? "wpc-badgePop 500ms ease 800ms both" : "none",
               }}
             >
@@ -844,7 +906,7 @@ export function WorkoutPostCard({
           className="wpc-divider relative z-[1] mx-auto mb-5 h-px"
           style={{
             background:
-              "linear-gradient(90deg, transparent, rgba(255,106,0,0.4), transparent)",
+              `linear-gradient(90deg, transparent, rgba(${theme.accentRgb},0.45), transparent)`,
             animation: cardVisible ? "wpc-dividerGrow 800ms ease 600ms both" : "none",
           }}
         />
@@ -859,6 +921,8 @@ export function WorkoutPostCard({
               unit={calories.unit ?? "cal"}
               delay={500}
               emphasized
+              accent={theme.accent}
+              accentRgb={theme.accentRgb}
               isPB={!!pb.calories}
               testId="metric-calories"
             />
@@ -901,7 +965,7 @@ export function WorkoutPostCard({
               background:
                 "linear-gradient(160deg,#383838 0%,#262626 45%,#1a1a1a 100%)",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,106,0,0.25), 0 8px 18px rgba(0,0,0,0.55), 0 0 28px rgba(255,80,0,0.12)",
+                `inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 0 0 1px rgba(${theme.accentRgb},0.28), 0 8px 18px rgba(0,0,0,0.55), 0 0 28px rgba(${theme.accentRgb},0.14)`,
               animation: cardVisible ? "wpc-paceSlide 600ms ease 1000ms both" : "none",
             }}
             data-testid="metric-pace"
@@ -915,13 +979,13 @@ export function WorkoutPostCard({
                   "linear-gradient(to bottom, rgba(255,255,255,0.07), rgba(255,255,255,0))",
               }}
             />
-            {/* Orange floor glow */}
+            {/* Themed floor glow */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-6 bottom-0 h-8"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 100%, rgba(255,106,0,0.35), rgba(255,106,0,0) 70%)",
+                  `radial-gradient(ellipse at 50% 100%, rgba(${theme.accentRgb},0.38), rgba(${theme.accentRgb},0) 70%)`,
               }}
             />
             <Gauge className="mx-auto mb-1.5 h-5 w-5 text-zinc-400" aria-hidden="true" />
@@ -929,8 +993,8 @@ export function WorkoutPostCard({
               <span
                 className="text-[36px] font-black leading-none tabular-nums"
                 style={{
-                  color: "#ff6a00",
-                  textShadow: "0 0 20px rgba(255,106,0,0.5)",
+                  color: theme.accent,
+                  textShadow: `0 0 20px rgba(${theme.accentRgb},0.55)`,
                 }}
               >
                 {speed.value}

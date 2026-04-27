@@ -69,11 +69,68 @@ import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
 import { randomBytes } from "crypto";
 
+export interface FeedPostUser extends User {
+  /** Single team chip displayed next to the user's name in the feed.
+   *  When the user belongs to multiple teams we surface their most-recent one. */
+  team?: { id: string; name: string } | null;
+}
+
+export interface FeedPostPBFlags {
+  calories?: boolean;
+  distance?: boolean;
+  duration?: boolean;
+  steps?: boolean;
+  elevation?: boolean;
+}
+
 export interface FeedPostWithMeta extends FeedPost {
-  user: User;
+  user: FeedPostUser;
   likeCount: number;
   commentCount: number;
   likedByMe: boolean;
+  /** Per-metric flags marking values that are this user's all-time PR for the
+   *  workout type encoded in the post content. Only present on auto-posted
+   *  workout cards where at least one metric is a PR. */
+  personalBests?: FeedPostPBFlags;
+}
+
+// ── Auto-workout content parsing (mirrors client/src/components/WorkoutPostCard.tsx) ──
+// We re-parse server-side so we can compute PB flags by comparing against the
+// activities table. Keeping this here (rather than imported from a shared file)
+// makes the read path zero-roundtrip and matches the post format created in
+// server/routes.ts → formatWorkoutFeedPost().
+const FEED_WORKOUT_RE = /^Completed an?\s+(.+?)\s+workout$/i;
+interface ParsedFeedWorkout {
+  type: string;
+  caloriesNum?: number;
+  distanceM?: number;
+  durationMin?: number;
+  steps?: number;
+  elevationM?: number;
+}
+function parseFeedWorkoutContent(content: string | null | undefined): ParsedFeedWorkout | null {
+  if (!content) return null;
+  const lines = content.split("\n");
+  const m = lines[0]?.match(FEED_WORKOUT_RE);
+  if (!m) return null;
+  const out: ParsedFeedWorkout = { type: m[1] };
+  const stats = lines[1] || "";
+  const h = stats.match(/(\d+)h\s+(\d+)m/);
+  const min = stats.match(/(\d+)\s*min(?!\w)/);
+  if (h) out.durationMin = parseInt(h[1]) * 60 + parseInt(h[2]);
+  else if (min) out.durationMin = parseInt(min[1]);
+  const km = stats.match(/([\d.]+)\s*km/);
+  if (km) out.distanceM = Math.round(parseFloat(km[1]) * 1000);
+  const cal = stats.match(/(\d+)\s*cal/);
+  if (cal) out.caloriesNum = parseInt(cal[1]);
+  const steps = stats.match(/([\d,]+)\s*steps/);
+  if (steps) out.steps = parseInt(steps[1].replace(/,/g, ""));
+  const elev = stats.match(/(\d+)\s*m\s*elevation/);
+  if (elev) out.elevationM = parseInt(elev[1]);
+  return out;
+}
+function normalizeWorkoutType(t: string | null | undefined): string {
+  return (t || "").toLowerCase().trim().replace(/_/g, " ").replace(/\s+/g, " ");
 }
 
 export interface IStorage {
@@ -1926,12 +1983,122 @@ export class DatabaseStorage implements IStorage {
 
     const likedSet = new Set(myLikes.map((l) => l.postId));
 
+    // ── Fetch each post author's primary team (most recent membership) ──
+    // We want a tiny "team chip" next to the user's name on every feed card.
+    // One round-trip joins team_members → teams for all visible authors, then
+    // we reduce to the freshest team per user in JS.
+    const authorIds = Array.from(new Set(posts.map((p) => p.user.id)));
+    const teamRows = await db
+      .select({
+        userId: teamMembers.userId,
+        teamId: teams.id,
+        teamName: teams.name,
+        teamCreatedAt: teams.createdAt,
+      })
+      .from(teamMembers)
+      .innerJoin(teams, eq(teamMembers.teamId, teams.id))
+      .where(and(
+        inArray(teamMembers.userId, authorIds),
+        eq(teams.status, "active"),
+      ));
+    const teamMap = new Map<string, { id: string; name: string }>();
+    for (const r of teamRows) {
+      const existing = teamMap.get(r.userId);
+      const isFresher = !existing
+        || (r.teamCreatedAt && (!existing || (existing as any)._ts < r.teamCreatedAt.getTime()));
+      if (!existing || isFresher) {
+        teamMap.set(r.userId, {
+          id: r.teamId,
+          name: r.teamName,
+          // Stash the timestamp on the object for the next iteration's
+          // freshness comparison; stripped before the response goes out.
+          ...({ _ts: r.teamCreatedAt?.getTime?.() ?? 0 } as any),
+        });
+      }
+    }
+    // Strip the internal _ts marker
+    teamMap.forEach((v) => { delete (v as any)._ts; });
+
+    // ── Compute per-post personal-best flags for auto-workout posts ──
+    // A metric is "PB" when its value matches the user's all-time max for the
+    // same workout type in the activities table. Computing at read time means
+    // a value that was once a PR will lose its badge when the user beats it.
+    const pbMap = new Map<string, FeedPostPBFlags>();
+
+    // 1. Parse all auto-workout posts in this page
+    const parsedByPost = new Map<string, ParsedFeedWorkout>();
+    const userIdsWithWorkouts = new Set<string>();
+    for (const { post } of posts) {
+      const parsed = parseFeedWorkoutContent(post.content);
+      if (!parsed) continue;
+      parsedByPost.set(post.id, parsed);
+      userIdsWithWorkouts.add(post.userId);
+    }
+
+    if (userIdsWithWorkouts.size > 0) {
+      // 2. Pull every relevant activity for those users (one query) so we can
+      //    compute max(metric) per (userId, workoutType) in JS.
+      const acts = await db
+        .select({
+          userId: activities.userId,
+          workoutType: activities.workoutType,
+          calories: activities.calories,
+          steps: activities.steps,
+          durationMinutes: activities.durationMinutes,
+          distanceMeters: activities.distanceMeters,
+          elevationGainMeters: activities.elevationGainMeters,
+        })
+        .from(activities)
+        .where(and(
+          inArray(activities.userId, Array.from(userIdsWithWorkouts)),
+          sql`${activities.workoutType} IS NOT NULL`,
+        ));
+
+      type Maxes = { calories: number; distanceM: number; durationMin: number; steps: number; elevationM: number };
+      const maxByKey = new Map<string, Maxes>();
+      for (const a of acts) {
+        const key = `${a.userId}::${normalizeWorkoutType(a.workoutType)}`;
+        const cur: Maxes = maxByKey.get(key) ?? { calories: 0, distanceM: 0, durationMin: 0, steps: 0, elevationM: 0 };
+        if ((a.calories ?? 0) > cur.calories) cur.calories = a.calories ?? 0;
+        if ((a.distanceMeters ?? 0) > cur.distanceM) cur.distanceM = a.distanceMeters ?? 0;
+        if ((a.durationMinutes ?? 0) > cur.durationMin) cur.durationMin = a.durationMinutes ?? 0;
+        if ((a.steps ?? 0) > cur.steps) cur.steps = a.steps ?? 0;
+        if ((a.elevationGainMeters ?? 0) > cur.elevationM) cur.elevationM = a.elevationGainMeters ?? 0;
+        maxByKey.set(key, cur);
+      }
+
+      // 3. For each parsed post, mark each metric a PB when the post value
+      //    matches (within a small tolerance) the user's all-time max.
+      for (const { post } of posts) {
+        const parsed = parsedByPost.get(post.id);
+        if (!parsed) continue;
+        const key = `${post.userId}::${normalizeWorkoutType(parsed.type)}`;
+        const max = maxByKey.get(key);
+        if (!max) continue;
+        const flags: FeedPostPBFlags = {};
+        // Tolerances absorb tiny rounding drift between the DB integer values
+        // and the human-readable strings we baked into the post content.
+        if (parsed.caloriesNum != null && max.calories > 0
+          && Math.abs(parsed.caloriesNum - max.calories) <= 1) flags.calories = true;
+        if (parsed.distanceM != null && max.distanceM > 0
+          && Math.abs(parsed.distanceM - max.distanceM) <= 50) flags.distance = true;
+        if (parsed.durationMin != null && max.durationMin > 0
+          && Math.abs(parsed.durationMin - max.durationMin) <= 1) flags.duration = true;
+        if (parsed.steps != null && max.steps > 0
+          && Math.abs(parsed.steps - max.steps) <= 50) flags.steps = true;
+        if (parsed.elevationM != null && max.elevationM > 0
+          && Math.abs(parsed.elevationM - max.elevationM) <= 5) flags.elevation = true;
+        if (Object.keys(flags).length > 0) pbMap.set(post.id, flags);
+      }
+    }
+
     return posts.map(({ post, user }) => ({
       ...post,
-      user,
+      user: { ...user, team: teamMap.get(user.id) ?? null } as FeedPostUser,
       likeCount: likeCountMap.get(post.id) ?? 0,
       commentCount: commentCountMap.get(post.id) ?? 0,
       likedByMe: likedSet.has(post.id),
+      personalBests: pbMap.get(post.id),
     }));
   }
 
