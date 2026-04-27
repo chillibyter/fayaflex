@@ -70,12 +70,12 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         return types
     }
     
-    @objc func isAvailable(_ call: CAPPluginCall) {
+    @objc public func isAvailable(_ call: CAPPluginCall) {
         let available = HKHealthStore.isHealthDataAvailable()
         call.resolve(["available": available])
     }
     
-    @objc func requestPermissions(_ call: CAPPluginCall) {
+    @objc public override func requestPermissions(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.resolve(["granted": false, "error": "HealthKit not available"])
             return
@@ -92,7 +92,7 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
     
-    @objc func getDailyTotals(_ call: CAPPluginCall) {
+    @objc public func getDailyTotals(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.reject("HealthKit not available")
             return
@@ -137,7 +137,7 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
     
-    @objc func getWorkouts(_ call: CAPPluginCall) {
+    @objc public func getWorkouts(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.reject("HealthKit not available")
             return
@@ -211,7 +211,7 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         healthStore.execute(query)
     }
     
-    @objc func getHealthData(_ call: CAPPluginCall) {
+    @objc public func getHealthData(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.reject("HealthKit not available")
             return
@@ -326,3 +326,4 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 }
+
