@@ -70,7 +70,7 @@
     "cmdk": "^1.1.1",
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
-    "drizzle-orm": "^0.39.1",
+    "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.7.1",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.21.2",
@@ -88,7 +88,7 @@
     "multer": "^2.0.2",
     "next-themes": "^0.4.6",
     "node-cron": "^4.2.1",
-    "nodemailer": "^7.0.12",
+    "nodemailer": "^8.0.7",
     "oauth-1.0a": "^2.2.6",
     "openai": "^6.15.0",
     "openid-client": "^6.8.1",
@@ -133,13 +133,13 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.20",
-    "drizzle-kit": "^0.31.4",
+    "drizzle-kit": "^0.31.10",
     "esbuild": "^0.25.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.5",
     "typescript": "5.6.3",
-    "vite": "^5.4.20"
+    "vite": "^8.0.10"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

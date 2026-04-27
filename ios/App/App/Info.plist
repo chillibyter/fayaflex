@@ -2,99 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-
-        <key>CFBundleDevelopmentRegion</key>
-        <string>en</string>
-        <key>CFBundleDisplayName</key>
-        <string>FayaFlex</string>
-        <key>CFBundleExecutable</key>
-        <string>$(EXECUTABLE_NAME)</string>
-        <key>CFBundleIdentifier</key>
-        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        <key>CFBundleInfoDictionaryVersion</key>
-        <string>6.0</string>
-        <key>CFBundleName</key>
-        <string>$(PRODUCT_NAME)</string>
-        <key>CFBundlePackageType</key>
-        <string>APPL</string>
-        <key>CFBundleShortVersionString</key>
-        <string>$(MARKETING_VERSION)</string>
-        <key>CFBundleVersion</key>
-        <string>$(CURRENT_PROJECT_VERSION)</string>
-        <key>LSRequiresIPhoneOS</key>
-        <true/>
-        <key>UILaunchStoryboardName</key>
-        <string>LaunchScreen</string>
-        <key>UIRequiredDeviceCapabilities</key>
-        <array>
-                <string>arm64</string>
-        </array>
-        <key>UISupportedInterfaceOrientations</key>
-        <array>
-                <string>UIInterfaceOrientationPortrait</string>
-                <string>UIInterfaceOrientationLandscapeLeft</string>
-                <string>UIInterfaceOrientationLandscapeRight</string>
-        </array>
-        <key>UISupportedInterfaceOrientations~ipad</key>
-        <array>
-                <string>UIInterfaceOrientationPortrait</string>
-                <string>UIInterfaceOrientationPortraitUpsideDown</string>
-                <string>UIInterfaceOrientationLandscapeLeft</string>
-                <string>UIInterfaceOrientationLandscapeRight</string>
-        </array>
-        <key>UIViewControllerBasedStatusBarAppearance</key>
-        <true/>
-        <key>NSAppTransportSecurity</key>
-        <dict>
-                <key>NSAllowsArbitraryLoads</key>
-                <false/>
-                <key>NSExceptionDomains</key>
-                <dict>
-                        <key>fayaflex.com</key>
-                        <dict>
-                                <key>NSIncludesSubdomains</key>
-                                <true/>
-                                <key>NSExceptionAllowsInsecureHTTPLoads</key>
-                                <false/>
-                                <key>NSExceptionRequiresForwardSecrecy</key>
-                                <true/>
-                                <key>NSExceptionMinimumTLSVersion</key>
-                                <string>TLSv1.2</string>
-                        </dict>
-                </dict>
-        </dict>
-        <key>NSHealthShareUsageDescription</key>
-        <string>FayaFlex needs access to read your health data (steps, calories, workouts) to track your fitness progress and compete with your team.</string>
-        <key>NSHealthUpdateUsageDescription</key>
-        <string>FayaFlex needs access to save workout data to Apple Health.</string>
-        <key>NSPhotoLibraryUsageDescription</key>
-        <string>FayaFlex needs access to your photo library to let you choose a profile picture.</string>
-        <key>NSCameraUsageDescription</key>
-        <string>FayaFlex needs access to your camera to take a profile photo or capture workout evidence.</string>
-        <key>ITSAppUsesNonExemptEncryption</key>
-        <false/>
-        <key>CFBundleURLTypes</key>
-        <array>
-                <dict>
-                        <key>CFBundleURLName</key>
-                        <string>com.fayaflex.app</string>
-                        <key>CFBundleURLSchemes</key>
-                        <array>
-                                <string>fayaflex</string>
-                        </array>
-                </dict>
-                <dict>
-                        <key>CFBundleURLName</key>
-                        <string>Google Sign-In</string>
-                        <key>CFBundleURLSchemes</key>
-                        <array>
-                                <string>com.googleusercontent.apps.389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe</string>
-                        </array>
-                </dict>
-        </array>
-        <key>GIDClientID</key>
-        <string>389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com</string>
-
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -121,9 +28,31 @@
 				<string>fayaflex</string>
 			</array>
 		</dict>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Google Sign-In</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>GIDClientID</key>
+	<string>389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com</string>
+=======
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+>>>>>>> Stashed changes
+=======
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+>>>>>>> Stashed changes
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -155,10 +84,19 @@
 	<string>FayaFlex needs access to save workout data to Apple Health.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>FayaFlex needs access to your photo library to let you choose a profile picture.</string>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
 	</array>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -180,6 +118,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-edd6572 (app icons)
 </dict>
 </plist>

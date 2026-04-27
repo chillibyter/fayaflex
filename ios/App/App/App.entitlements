@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         <key>aps-environment</key>
         <string>production</string>
@@ -20,6 +22,14 @@
 
 	<key>aps-environment</key>
 	<string>production</string>
+=======
+	<key>aps-environment</key>
+	<string>development</string>
+>>>>>>> Stashed changes
+=======
+	<key>aps-environment</key>
+	<string>development</string>
+>>>>>>> Stashed changes
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:fayaflex.com</string>
@@ -28,6 +38,12 @@
 	<true/>
 	<key>com.apple.developer.healthkit.access</key>
 	<array/>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 edd6572 (app icons)
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 </dict>
 </plist>
