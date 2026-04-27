@@ -1,0 +1,64 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/B1570386-90FC-413F-B975-7ECF1F57C813/App.app'
+HealthKitPlugin: Registered in capacitorDidLoad
+⚡️  Loading app at https://fayaflex.com...
+Networking process (0x110050100) took 3.120677 seconds to launch
+0x1100e40c0 - [PID=3793] WebProcessProxy::didBecomeUnresponsive:
+0x15c37ce18 - [pageProxyID=7, webPageID=8, PID=3793] WebPageProxy::processDidBecomeUnresponsive:
+WebContent[3793] Unable to hide query parameters from script (missing data)
+⚡️  To Native ->  Preferences get 123668257
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 123668258
+⚡️  To Native ->  App addListener 123668259
+⚡️  To Native ->  CapacitorHttp request 123668260
+⚡️  To Native ->  SplashScreen hide 123668261
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"status":401,"data":{"message":"Not authenticated"},"url":"https:\/\/fayaflex.com\/api\/auth\/user","headers":{"content-length":"31","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","x-powered-by":"Express","content-type":"application\/json;
+⚡️  [log] - [API] Native response: 401
+WebContent[3793] makeImagePlus:3798: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  Preferences get 97356134
+⚡️  TO JS {"value":null}
+⚡️  [log] - [Auth] Token initialized: none
+⚡️  To Native ->  App addListener 97356135
+⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
+⚡️  To Native ->  App addListener 97356136
+⚡️  To Native ->  CapacitorHttp request 97356137
+⚡️  To Native ->  SplashScreen hide 97356138
+⚡️  TO JS undefined
+⚡️  WebView loaded
+⚡️  TO JS {"data":{"message":"Not authenticated"},"headers":{"x-powered-by":"Express","content-length":"31","content-type":"application\/json; charset=utf-8","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","date":"Mon, 27 Apr 2026 12:45:37 GMT","via":
+⚡️  [log] - [API] Native response: 401
+⚡️  To Native ->  SignInWithApple authorize 97356139
+Authorization failed: Error Domain=AKAuthenticationError Code=-7026 "(null)" UserInfo={AKClientBundleID=com.fayaflex.app}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Failed to get application extension record: Error Domain=NSOSStatusErrorDomain Code=-54 "(null)"
+ASAuthorizationController credential request failed with error: Error Domain=com.apple.AuthenticationServices.AuthorizationError Code=1000 "(null)"
+ERROR MESSAGE:  {"message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [error] - {"message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  SignInWithApple authorize 97356140
+Authorization failed: Error Domain=AKAuthenticationError Code=-7026 "(null)" UserInfo={AKClientBundleID=com.fayaflex.app}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Failed to get application extension record: Error Domain=NSOSStatusErrorDomain Code=-54 "(null)"
+ASAuthorizationController credential request failed with error: Error Domain=com.apple.AuthenticationServices.AuthorizationError Code=1000 "(null)"
+ERROR MESSAGE:  {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  [error] - {"errorMessage":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)","message":"The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)"}
+⚡️  TO JS {"isActive":false}
+⚡️  [log] - [AutoSync] App backgrounded — pausing poll
+⚡️  [log] - [TodaySync] Polling paused (app in background)
+⚡️  TO JS {"isActive":true}
+⚡️  [log] - [AutoSync] App foregrounded
+⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
+⚡️  To Native ->  GoogleAuth initialize 97356141
+⚡️  TO JS undefined
+⚡️  To Native ->  GoogleAuth signIn 97356142
+ERROR MESSAGE:  {"errorMessage":"Must provide scopes","message":"Must provide scopes"}
+⚡️  [error] - {"errorMessage":"Must provide scopes","message":"Must provide scopes"}
