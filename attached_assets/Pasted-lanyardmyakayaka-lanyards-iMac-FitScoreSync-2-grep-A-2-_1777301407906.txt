@@ -1,0 +1,76 @@
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % grep -A 2 iosClientId ios/App/App/capacitor.config.json
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % grep -n "iosClientId\|GoogleAuth" capacitor.config.ts
+47:    GoogleAuth: {
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % git log --oneline -3 -- capacitor.config.ts
+c6944e6 Add Apple sign-in functionality for seamless user authentication
+3f17518 Update application identifier to match Xcode bundle ID
+56075de Add encryption declaration and remove unused Google authentication config
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % cat ios/App/App/capacitor.config.json
+{
+	"appId": "com.fayaflex.app",
+	"appName": "FayaFlex",
+	"webDir": "empty-web-dir",
+	"server": {
+		"url": "https://fayaflex.com",
+		"androidScheme": "https",
+		"iosScheme": "capacitor",
+		"allowNavigation": [
+			"*.fayaflex.com"
+		]
+	},
+	"ios": {
+		"contentInset": "automatic",
+		"limitsNavigationsToAppBoundDomains": false
+	},
+	"android": {
+		"backgroundColor": "#0f172a"
+	},
+	"plugins": {
+		"CapacitorHttp": {
+			"enabled": true
+		},
+		"SplashScreen": {
+			"launchShowDuration": 0,
+			"launchAutoHide": false,
+			"backgroundColor": "#10A37F",
+			"androidSplashResourceName": "splash",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": true,
+			"androidSpinnerStyle": "large",
+			"iosSpinnerStyle": "small",
+			"spinnerColor": "#FFFFFF",
+			"splashFullScreen": true,
+			"splashImmersive": true
+		},
+		"StatusBar": {
+			"style": "dark",
+			"backgroundColor": "#0f172a"
+		},
+		"Camera": {
+			"permissions": [
+				"camera",
+				"photos"
+			]
+		},
+		"GoogleAuth": {
+			"scopes": [
+				"profile",
+				"email"
+			],
+			"serverClientId": "389653262932-XXXXXXXX.apps.googleusercontent.com",
+			"forceCodeForRefreshToken": true
+		}
+	},
+	"packageClassList": [
+		"SignInWithApple",
+		"AppPlugin",
+		"CAPCameraPlugin",
+		"PreferencesPlugin",
+		"PushNotificationsPlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"GoogleAuth",
+		"HealthPlugin"
+	]
+}
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % 
