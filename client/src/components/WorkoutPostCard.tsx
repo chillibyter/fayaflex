@@ -1,24 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
   Bike,
   CheckCircle2,
-  Clock,
+  Dumbbell,
   Flame,
   Footprints,
-  Gauge,
-  Heart,
-  MapPin,
   Mountain,
   Sparkles,
   Waves,
+  Wind,
+  Zap,
 } from "lucide-react";
 import sneakerImg from "@/assets/icons-3d/sneaker.webp";
 import dumbbellImg from "@/assets/icons-3d/dumbbell.webp";
 import boxingImg from "@/assets/icons-3d/boxing.webp";
 import bicycleImg from "@/assets/icons-3d/bicycle.webp";
 import mountainImg from "@/assets/icons-3d/mountain.webp";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ParsedWorkout {
   title: string;
@@ -32,6 +33,46 @@ interface ParsedWorkout {
   speed?: string;
   notes?: string;
 }
+
+interface PBFlags {
+  calories?: boolean;
+  distance?: boolean;
+  duration?: boolean;
+  steps?: boolean;
+  elevation?: boolean;
+  speed?: boolean;
+}
+
+type WorkoutCategory =
+  | "running"
+  | "cycling"
+  | "swimming"
+  | "strength"
+  | "yoga"
+  | "hiit"
+  | "hiking"
+  | "other";
+
+// Theme returned by getWorkoutTheme. Signature is preserved for back-compat
+// (still includes accent + accentRgb) but extended with the tinted-dashboard
+// palette so the component can render light/dark surfaces consistently.
+type WorkoutTheme = {
+  accent: string;        // hex used for ring, bar gradient end, badge bg
+  accentRgb: string;     // "r,g,b" for rgba() interpolation (e.g. glows)
+  category: WorkoutCategory;
+  label: string;         // "Running", "Cycling", etc — human-friendly
+  tint: string;          // light-mode card tint (hex)
+  border: string;        // light-mode border (hex)
+  darkTint: string;      // dark-mode card surface (hex)
+  darkBorder: string;    // dark-mode border (hex)
+  gradStart: string;     // avatar/ring gradient start
+  gradEnd: string;       // avatar/ring gradient end
+  barFrom: string;       // bar gradient start
+  barTo: string;         // bar gradient end
+  Icon: LucideIcon;      // icon for the type badge
+};
+
+// ── Parsing ───────────────────────────────────────────────────────────────────
 
 const WORKOUT_RE = /^Completed an?\s+(.+?)\s+workout$/i;
 
@@ -92,527 +133,138 @@ function parseWorkoutPost(content: string): ParsedWorkout | null {
   return out;
 }
 
-interface PBFlags {
-  calories?: boolean;
-  distance?: boolean;
-  duration?: boolean;
-  steps?: boolean;
-  elevation?: boolean;
-  speed?: boolean;
-}
+// ── Theme catalogue ───────────────────────────────────────────────────────────
 
-function workoutIcon(type: string): LucideIcon {
-  const t = type.toLowerCase();
-  if (t.includes("run") || t.includes("walk") || t.includes("jog")) return Footprints;
-  if (t.includes("cycl") || t.includes("bike") || t.includes("ride")) return Bike;
-  if (t.includes("swim") || t.includes("pool")) return Waves;
-  if (t.includes("hik") || t.includes("climb") || t.includes("trail") || t.includes("mountain")) return Mountain;
-  return Activity;
-}
-
-// 3D photoreal product images for the icon tile.
-// When a match exists the image fills the tile; otherwise we fall back to the Lucide icon above.
-function workoutImage(type: string): string | null {
-  const t = type.toLowerCase();
-  if (t.includes("box") || t.includes("kickbox") || t.includes("spar") || t.includes("mma") || t.includes("fight")) return boxingImg;
-  if (
-    t.includes("strength") || t.includes("weight") || t.includes("lift") ||
-    t.includes("dumb") || t.includes("gym") || t.includes("crossfit") || t.includes("resist")
-  ) return dumbbellImg;
-  if (t.includes("cycl") || t.includes("bike") || t.includes("ride") || t.includes("spin")) return bicycleImg;
-  if (t.includes("hik") || t.includes("climb") || t.includes("trail") || t.includes("mountain")) return mountainImg;
-  if (t.includes("run") || t.includes("walk") || t.includes("jog")) return sneakerImg;
-  return null;
-}
-
-// ── Workout-type theme palette ────────────────────────────────────────────────
-// Each workout class gets a distinctive accent so the same card layout reads
-// instantly different for cycling vs. swimming vs. strength etc.
-type WorkoutTheme = {
-  accent: string;     // hex used directly for type icon & pace value
-  accentRgb: string;  // "r,g,b" suitable for `rgba(${rgb}, alpha)` interpolation
-};
-
-export function getWorkoutTheme(type: string): WorkoutTheme {
+function classifyWorkout(type: string): WorkoutCategory {
   const t = (type || "").toLowerCase();
-  if (t.includes("cycl") || t.includes("bike") || t.includes("ride") || t.includes("spin")) {
-    return { accent: "#3b82f6", accentRgb: "59,130,246" };
-  }
-  if (t.includes("swim") || t.includes("pool") || t.includes("water")) {
-    return { accent: "#06b6d4", accentRgb: "6,182,212" };
-  }
+  if (t.includes("hiit") || t.includes("tabata") || t.includes("interval") || t.includes("circuit")) return "hiit";
+  if (t.includes("cycl") || t.includes("bike") || t.includes("ride") || t.includes("spin")) return "cycling";
+  if (t.includes("swim") || t.includes("pool") || t.includes("water")) return "swimming";
+  if (t.includes("yoga") || t.includes("stretch") || t.includes("pilates") || t.includes("mobility") || t.includes("meditat")) return "yoga";
+  if (t.includes("hik") || t.includes("trail") || t.includes("mountain")) return "hiking";
   if (
     t.includes("strength") || t.includes("weight") || t.includes("lift") ||
     t.includes("dumb") || t.includes("gym") || t.includes("crossfit") || t.includes("resist") ||
     t.includes("box") || t.includes("kickbox") || t.includes("mma") || t.includes("fight")
-  ) {
-    return { accent: "#ef4444", accentRgb: "239,68,68" };
-  }
-  if (t.includes("hik") || t.includes("climb") || t.includes("trail") || t.includes("mountain")) {
-    return { accent: "#10b981", accentRgb: "16,185,129" };
-  }
-  if (t.includes("yoga") || t.includes("stretch") || t.includes("pilates") || t.includes("mobility")) {
-    return { accent: "#a855f7", accentRgb: "168,85,247" };
-  }
-  // Default (running, walking, other cardio) keeps the original orange.
-  return { accent: "#ff6a00", accentRgb: "255,106,0" };
+  ) return "strength";
+  if (t.includes("run") || t.includes("walk") || t.includes("jog")) return "running";
+  return "other";
 }
 
-const KEYFRAMES = `
-@keyframes wpc-pulseGlow {
-  0%, 100% {
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.10),
-      inset 0 -1px 0 rgba(0,0,0,0.6),
-      0 0 60px rgba(255,90,0,0.20),
-      0 18px 48px rgba(0,0,0,0.75),
-      0 30px 80px rgba(0,0,0,0.55);
-  }
-  50% {
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.12),
-      inset 0 -1px 0 rgba(0,0,0,0.6),
-      0 0 110px rgba(255,90,0,0.36),
-      0 18px 48px rgba(0,0,0,0.75),
-      0 30px 80px rgba(0,0,0,0.55);
-  }
-}
-@keyframes wpc-badgePop {
-  0%   { transform: scale(0.6); opacity: 0; }
-  70%  { transform: scale(1.12); opacity: 1; }
-  100% { transform: scale(1); }
-}
-@keyframes wpc-paceSlide {
-  from { opacity: 0; transform: scale(0.85); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes wpc-dividerGrow {
-  from { width: 0; }
-  to   { width: 100%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .wpc-card, .wpc-divider, .wpc-pace, .wpc-badge { animation: none !important; }
-}
-`;
-
-// ── Procedural canvas fire engine ─────────────────────────────────────────────
-// Torch-style tall tapered flame with continuous bright ember spray.
-type Particle = {
-  x: number; y: number; vx: number; vy: number;
-  life: number; decay: number; size: number;
-  type: "flame" | "core" | "spark";
-  gravity?: number; r?: number; g?: number; b?: number;
-  twinkle?: number;
+const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "label">> = {
+  running: {
+    accent: "#16a34a", accentRgb: "22,163,74",
+    tint: "#f0fdf4", border: "#dcfce7",
+    darkTint: "#0a1f12", darkBorder: "#14532d",
+    gradStart: "#22c55e", gradEnd: "#15803d",
+    barFrom: "#15803d", barTo: "#4ade80",
+    Icon: Footprints,
+  },
+  hiking: {
+    accent: "#0d9488", accentRgb: "13,148,136",
+    tint: "#f0fdfa", border: "#ccfbf1",
+    darkTint: "#062925", darkBorder: "#115e59",
+    gradStart: "#14b8a6", gradEnd: "#0f766e",
+    barFrom: "#0f766e", barTo: "#5eead4",
+    Icon: Mountain,
+  },
+  cycling: {
+    accent: "#2563eb", accentRgb: "37,99,235",
+    tint: "#eff6ff", border: "#bfdbfe",
+    darkTint: "#0a1733", darkBorder: "#1e40af",
+    gradStart: "#3b82f6", gradEnd: "#1d4ed8",
+    barFrom: "#1d4ed8", barTo: "#60a5fa",
+    Icon: Bike,
+  },
+  swimming: {
+    accent: "#0891b2", accentRgb: "8,145,178",
+    tint: "#ecfeff", border: "#a5f3fc",
+    darkTint: "#062b34", darkBorder: "#155e75",
+    gradStart: "#06b6d4", gradEnd: "#0e7490",
+    barFrom: "#0e7490", barTo: "#67e8f9",
+    Icon: Waves,
+  },
+  strength: {
+    accent: "#dc2626", accentRgb: "220,38,38",
+    tint: "#fef2f2", border: "#fecaca",
+    darkTint: "#2a0d0d", darkBorder: "#991b1b",
+    gradStart: "#ef4444", gradEnd: "#b91c1c",
+    barFrom: "#b91c1c", barTo: "#f87171",
+    Icon: Dumbbell,
+  },
+  yoga: {
+    accent: "#9333ea", accentRgb: "147,51,234",
+    tint: "#faf5ff", border: "#e9d5ff",
+    darkTint: "#1c0d2e", darkBorder: "#6b21a8",
+    gradStart: "#a855f7", gradEnd: "#7c3aed",
+    barFrom: "#7c3aed", barTo: "#c084fc",
+    Icon: Wind,
+  },
+  hiit: {
+    accent: "#ea580c", accentRgb: "234,88,12",
+    tint: "#fff7ed", border: "#fed7aa",
+    darkTint: "#2a1305", darkBorder: "#9a3412",
+    gradStart: "#f97316", gradEnd: "#c2410c",
+    barFrom: "#c2410c", barTo: "#fb923c",
+    Icon: Zap,
+  },
+  other: {
+    accent: "#475569", accentRgb: "71,85,105",
+    tint: "#f8fafc", border: "#e2e8f0",
+    darkTint: "#101826", darkBorder: "#334155",
+    gradStart: "#64748b", gradEnd: "#334155",
+    barFrom: "#334155", barTo: "#94a3b8",
+    Icon: Activity,
+  },
 };
 
-function FireCanvas({
-  burst,
-  width = 220,
-  height = 240,
-  intensity = 1,
-  top = -90,
-  right = -40,
-}: {
-  burst: number;
-  width?: number;
-  height?: number;
-  intensity?: number;
-  top?: number;
-  right?: number;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const stateRef = useRef<{ particles: Particle[]; animId: number | null; running: boolean }>({
-    particles: [], animId: null, running: true,
-  });
-  const reduced = useRef(false);
+const CATEGORY_LABELS: Record<WorkoutCategory, string> = {
+  running: "Running",
+  hiking: "Hiking",
+  cycling: "Cycling",
+  swimming: "Swimming",
+  strength: "Strength",
+  yoga: "Yoga",
+  hiit: "HIIT",
+  other: "Workout",
+};
 
-  useEffect(() => {
-    reduced.current = typeof window !== "undefined"
-      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+const CATEGORY_TAGLINES: Record<WorkoutCategory, string> = {
+  running: "Outdoor activity",
+  hiking: "Trail activity",
+  cycling: "Outdoor activity",
+  swimming: "Pool session",
+  strength: "Strength session",
+  yoga: "Mind & body session",
+  hiit: "High-intensity session",
+  other: "Workout completed",
+};
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.scale(dpr, dpr);
-
-    const W = width;
-    const H = height;
-    // Anchor flame near bottom-center so it has room to rise tall
-    const cx = W * 0.55;
-    const cy = H * 0.78;
-    const s = stateRef.current;
-
-    // Tall flame body — strong upward velocity, narrow horizontal spread
-    function makeFlame(): Particle {
-      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.32;
-      const speed = (1.6 + Math.random() * 1.4) * intensity;
-      return {
-        x: cx + (Math.random() - 0.5) * 14 * intensity,
-        y: cy + Math.random() * 4,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 1,
-        decay: 0.018 + Math.random() * 0.012,
-        size: (11 + Math.random() * 9) * intensity,
-        type: "flame",
-      };
-    }
-
-    // Hot white-yellow core at the base — short-lived bright blobs
-    function makeCore(): Particle {
-      return {
-        x: cx + (Math.random() - 0.5) * 10 * intensity,
-        y: cy + (Math.random() - 0.5) * 4,
-        vx: (Math.random() - 0.5) * 0.4 * intensity,
-        vy: (-0.6 - Math.random() * 0.9) * intensity,
-        life: 1,
-        decay: 0.05 + Math.random() * 0.03,
-        size: (7 + Math.random() * 5) * intensity,
-        type: "core",
-      };
-    }
-
-    // Bright crisp ember — small dot of light shooting outward
-    function makeSpark(intense: boolean): Particle {
-      // Bias upward and outward (hemispherical, weighted up)
-      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
-      const speed = intense ? 2.8 + Math.random() * 4.5 : 1.0 + Math.random() * 2.4;
-      return {
-        x: cx + (Math.random() - 0.5) * 10,
-        y: cy - 6 + (Math.random() - 0.5) * 8,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 0.6,
-        life: 1,
-        decay: intense ? 0.012 + Math.random() * 0.014 : 0.018 + Math.random() * 0.02,
-        size: intense ? 1.4 + Math.random() * 1.8 : 0.8 + Math.random() * 1.2,
-        gravity: 0.05 + Math.random() * 0.05,
-        type: "spark",
-        r: 255,
-        g: Math.floor(180 + Math.random() * 70),
-        b: Math.floor(Math.random() * 50),
-        twinkle: Math.random() * Math.PI * 2,
-      };
-    }
-
-    function triggerBurst() {
-      for (let i = 0; i < 220; i++) s.particles.push(makeSpark(true));
-      for (let i = 0; i < 140; i++) s.particles.push(makeSpark(false));
-    }
-
-    // Tall vertically-stretched flame ellipse for that tapered torch shape
-    function drawFlame(p: Particle) {
-      const a = p.life;
-      const stretch = 1.7; // vertical elongation
-      const rad = p.size;
-      ctx!.save();
-      ctx!.translate(p.x, p.y);
-      ctx!.scale(1, stretch);
-      const grad = ctx!.createRadialGradient(0, 0, 0, 0, 0, rad);
-      grad.addColorStop(0,    `rgba(255,240,180,${(a * 0.55).toFixed(2)})`);
-      grad.addColorStop(0.25, `rgba(255,180,40,${(a * 0.5).toFixed(2)})`);
-      grad.addColorStop(0.55, `rgba(255,90,0,${(a * 0.35).toFixed(2)})`);
-      grad.addColorStop(0.85, `rgba(180,30,0,${(a * 0.18).toFixed(2)})`);
-      grad.addColorStop(1,    `rgba(80,0,0,0)`);
-      ctx!.beginPath();
-      ctx!.arc(0, 0, rad, 0, Math.PI * 2);
-      ctx!.fillStyle = grad;
-      ctx!.fill();
-      ctx!.restore();
-    }
-
-    function drawCore(p: Particle) {
-      const a = p.life;
-      const grad = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-      grad.addColorStop(0,   `rgba(255,255,235,${(a * 0.95).toFixed(2)})`);
-      grad.addColorStop(0.4, `rgba(255,220,140,${(a * 0.7).toFixed(2)})`);
-      grad.addColorStop(1,   `rgba(255,140,0,0)`);
-      ctx!.beginPath();
-      ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx!.fillStyle = grad;
-      ctx!.fill();
-    }
-
-    function drawSpark(p: Particle, frame: number) {
-      const heat = p.life;
-      const r = Math.floor(p.r ?? 255);
-      const g = Math.floor((p.g ?? 220) * Math.max(0.5, heat));
-      const b = Math.floor(p.b ?? 0);
-      // Twinkle: subtle brightness modulation per particle
-      const tw = 0.85 + 0.15 * Math.sin(frame * 0.35 + (p.twinkle ?? 0));
-      const haloR = p.size * 2.2;
-      const grd = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, haloR);
-      grd.addColorStop(0,   `rgba(${r},${g},${Math.min(180, b + 60)},${(heat * tw).toFixed(2)})`);
-      grd.addColorStop(0.4, `rgba(${r},${Math.floor(g * 0.5)},0,${(heat * 0.5 * tw).toFixed(2)})`);
-      grd.addColorStop(1,   `rgba(120,0,0,0)`);
-      ctx!.beginPath();
-      ctx!.arc(p.x, p.y, haloR, 0, Math.PI * 2);
-      ctx!.fillStyle = grd;
-      ctx!.fill();
-
-      // Bright pinpoint center
-      ctx!.beginPath();
-      ctx!.arc(p.x, p.y, p.size * 0.55, 0, Math.PI * 2);
-      ctx!.fillStyle = `rgba(255,250,220,${(heat * tw * 0.95).toFixed(2)})`;
-      ctx!.fill();
-    }
-
-    function drawGlow() {
-      // Warm halo behind flame for dramatic torch look
-      const haloR = 95 * intensity;
-      const haloY = cy - 25 * intensity;
-      const grd = ctx!.createRadialGradient(cx, haloY, 0, cx, haloY, haloR);
-      grd.addColorStop(0,    "rgba(255,140,30,0.28)");
-      grd.addColorStop(0.45, "rgba(255,80,0,0.13)");
-      grd.addColorStop(1,    "rgba(0,0,0,0)");
-      ctx!.beginPath();
-      ctx!.arc(cx, haloY, haloR, 0, Math.PI * 2);
-      ctx!.fillStyle = grd;
-      ctx!.fill();
-    }
-
-    let frame = 0;
-    function loop() {
-      if (!s.running) {
-        s.animId = requestAnimationFrame(loop);
-        return;
-      }
-      ctx!.clearRect(0, 0, W, H);
-
-      // Continuously spawn dense flame body, hot core, and ember rain
-      // Spawn counts scale with intensity so a "top burner" gets a bigger, denser flame
-      const flameCount = Math.round(6 * intensity);
-      const coreCount = Math.round(3 * intensity);
-      const sparkCount = Math.round(5 * intensity);
-      for (let i = 0; i < flameCount; i++) s.particles.push(makeFlame());
-      if (frame % 2 === 0) {
-        for (let i = 0; i < coreCount; i++) s.particles.push(makeCore());
-      }
-      // Continuous ember spray (matches the video's persistent sparkle)
-      for (let i = 0; i < sparkCount; i++) s.particles.push(makeSpark(Math.random() < 0.4));
-
-      // Glow first (under everything)
-      drawGlow();
-
-      // Use additive blending for that magical glowing fire look
-      ctx!.globalCompositeOperation = "lighter";
-
-      s.particles = s.particles.filter((p) => p.life > 0).slice(-Math.floor(900 * intensity));
-      for (const p of s.particles) {
-        if (p.type === "flame") {
-          p.x += p.vx + Math.sin(frame * 0.09 + p.size) * 0.45;
-          p.y += p.vy;
-          p.vy -= 0.025;
-          p.life -= p.decay;
-          p.size *= 0.988;
-          drawFlame(p);
-        } else if (p.type === "core") {
-          p.x += p.vx;
-          p.y += p.vy;
-          p.life -= p.decay;
-          p.size *= 0.96;
-          drawCore(p);
-        } else {
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += p.gravity ?? 0.08;
-          p.vx *= 0.988;
-          p.life -= p.decay;
-          drawSpark(p, frame);
-        }
-      }
-
-      ctx!.globalCompositeOperation = "source-over";
-
-      frame++;
-      s.animId = requestAnimationFrame(loop);
-    }
-
-    loop();
-
-    let autoTimer: ReturnType<typeof setTimeout> | null = null;
-    if (!reduced.current) {
-      autoTimer = setTimeout(triggerBurst, 500);
-    }
-
-    // Pause RAF when card scrolls offscreen (saves battery in feed)
-    let observer: IntersectionObserver | null = null;
-    if (typeof IntersectionObserver !== "undefined") {
-      observer = new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) {
-            s.running = e.isIntersecting;
-            if (!e.isIntersecting) s.particles = [];
-          }
-        },
-        { threshold: 0 }
-      );
-      observer.observe(canvas);
-    }
-
-    return () => {
-      if (s.animId) cancelAnimationFrame(s.animId);
-      if (autoTimer) clearTimeout(autoTimer);
-      observer?.disconnect();
-      s.particles = [];
-    };
-    // We intentionally re-init only on size changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height]);
-
-  // External burst trigger (e.g. tap to celebrate)
-  useEffect(() => {
-    if (!burst || reduced.current) return;
-    const W = width;
-    const H = height;
-    const cx = W * 0.55;
-    const cy = H * 0.78;
-    const s = stateRef.current;
-    function makeSpark(intense: boolean): Particle {
-      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
-      const speed = intense ? 2.8 + Math.random() * 4.5 : 1.0 + Math.random() * 2.4;
-      return {
-        x: cx + (Math.random() - 0.5) * 10,
-        y: cy - 6,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 0.6,
-        life: 1,
-        decay: intense ? 0.012 + Math.random() * 0.014 : 0.018 + Math.random() * 0.02,
-        size: intense ? 1.4 + Math.random() * 1.8 : 0.8 + Math.random() * 1.2,
-        gravity: 0.05 + Math.random() * 0.05,
-        type: "spark",
-        r: 255,
-        g: Math.floor(180 + Math.random() * 70),
-        b: Math.floor(Math.random() * 50),
-        twinkle: Math.random() * Math.PI * 2,
-      };
-    }
-    for (let i = 0; i < 240; i++) s.particles.push(makeSpark(true));
-    for (let i = 0; i < 140; i++) s.particles.push(makeSpark(false));
-  }, [burst, width, height]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "absolute",
-        top,
-        right,
-        width,
-        height,
-        pointerEvents: "none",
-        zIndex: 10,
-      }}
-      aria-hidden="true"
-    />
-  );
+export function getWorkoutTheme(type: string): WorkoutTheme {
+  const category = classifyWorkout(type);
+  return {
+    ...CATEGORY_THEMES[category],
+    category,
+    label: CATEGORY_LABELS[category],
+  };
 }
 
-function MetricPanel({
-  icon: Icon,
-  label,
-  value,
-  unit,
-  delay,
-  emphasized,
-  isPB,
-  accent,
-  accentRgb,
-  testId,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  unit?: string;
-  delay: number;
-  emphasized?: boolean;
-  isPB?: boolean;
-  /** Hex accent for the emphasized icon. Defaults to orange. */
-  accent?: string;
-  /** "r,g,b" form of the accent for the icon glow. */
-  accentRgb?: string;
-  testId: string;
-}) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-  return (
-    <div
-      className="relative flex-1 rounded-2xl px-3 py-4 text-center overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(160deg,#343434 0%,#272727 45%,#1c1c1c 100%)",
-        boxShadow:
-          "inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.04), 0 6px 14px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.4)",
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(14px)",
-        transition: "opacity 500ms ease, transform 500ms ease",
-      }}
-      data-testid={testId}
-    >
-      {/* Glossy top sheen */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-1/2"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0))",
-        }}
-      />
-      <Icon
-        className={`relative mx-auto mb-1.5 h-5 w-5 ${emphasized ? "" : "text-zinc-300"}`}
-        style={{
-          color: emphasized ? (accent ?? "#fb923c") : undefined,
-          filter: emphasized
-            ? `drop-shadow(0 1px 4px rgba(${accentRgb ?? "255,106,0"},0.6))`
-            : "drop-shadow(0 1px 0 rgba(0,0,0,0.5))",
-        }}
-        aria-hidden="true"
-      />
-      <div className="relative text-[10px] font-bold tracking-[1.8px] uppercase text-zinc-400 mb-2">
-        {label}
-      </div>
-      <div className="relative flex items-baseline justify-center gap-[3px] min-w-0">
-        <span
-          className="font-extrabold leading-none text-white tabular-nums whitespace-nowrap"
-          style={{
-            textShadow: "0 1px 0 rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.4)",
-            fontSize:
-              value.length >= 8
-                ? "16px"
-                : value.length >= 6
-                  ? "19px"
-                  : value.length >= 5
-                    ? "21px"
-                    : "24px",
-          }}
-        >
-          {value}
-        </span>
-        {unit && <span className="text-xs font-medium text-zinc-400 whitespace-nowrap">{unit}</span>}
-      </div>
-      {isPB && (
-        <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-md ring-1 ring-amber-200/60">
-          <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
-          PB
-        </div>
-      )}
-    </div>
-  );
+function workoutImage(category: WorkoutCategory): string | null {
+  switch (category) {
+    case "running": return sneakerImg;
+    case "cycling": return bicycleImg;
+    case "hiking": return mountainImg;
+    case "strength": return dumbbellImg;
+    case "hiit":     return boxingImg;
+    default:         return null;
+  }
 }
 
 function splitValueUnit(raw: string): { value: string; unit?: string } {
-  // Running pace, e.g. "5:30 min/km" → value "5:30", unit "min/km"
   const paceM = raw.match(/^(\d+:\d{2})\s*(min\/km)$/i);
   if (paceM) return { value: paceM[1], unit: paceM[2] };
-  // Duration formats like "1h 30m" or "30 min" — keep as-is, no separate unit.
   if (/\d+\s*h\s*\d+\s*m/i.test(raw) || /\bmin\b/i.test(raw)) {
     return { value: raw };
   }
@@ -621,23 +273,282 @@ function splitValueUnit(raw: string): { value: string; unit?: string } {
   return { value: m[1].trim(), unit: m[2]?.trim() };
 }
 
+// Convert a parsed metric string into a numeric value the bar can scale on.
+function toMagnitude(raw: string | undefined, kind: MetricKind): number | null {
+  if (!raw) return null;
+  if (kind === "duration") {
+    const h = raw.match(/(\d+)\s*h\s*(\d+)\s*m/);
+    if (h) return parseInt(h[1], 10) * 60 + parseInt(h[2], 10);
+    const m = raw.match(/(\d+)\s*min/);
+    if (m) return parseInt(m[1], 10);
+    return null;
+  }
+  if (kind === "pace") {
+    // Lower is better; encode "5:30" → 5.5
+    const p = raw.match(/(\d+):(\d{2})/);
+    if (p) return parseInt(p[1], 10) + parseInt(p[2], 10) / 60;
+    const km = raw.match(/([\d.]+)/);
+    return km ? parseFloat(km[1]) : null;
+  }
+  const n = raw.match(/([\d.,]+)/);
+  if (!n) return null;
+  return parseFloat(n[1].replace(/,/g, ""));
+}
+
+type MetricKind = "calories" | "duration" | "distance" | "speed" | "pace" | "hr" | "elevation" | "steps";
+
+// Visual scales — picked to look good across typical workout values, not
+// claimed as absolute ceilings.
+const METRIC_SCALE: Record<MetricKind, number> = {
+  calories: 800,
+  duration: 120,   // minutes
+  distance: 30,    // km
+  speed: 45,       // km/h
+  pace: 7,         // min/km — inverted below
+  hr: 200,
+  elevation: 800,
+  steps: 20000,
+};
+
+function barWidth(value: number, kind: MetricKind): number {
+  const scale = METRIC_SCALE[kind];
+  if (kind === "pace") {
+    // Faster pace (smaller number) → fuller bar. 3:00 → 100%, 7:00 → 30%.
+    const pct = 1 - (value - 3) / (scale - 3);
+    return Math.max(20, Math.min(100, pct * 100));
+  }
+  return Math.max(15, Math.min(100, (value / scale) * 100));
+}
+
+// Stable hash so HIIT interval bars look "personalized" but consistent
+// across renders for the same workout content.
+function hashString(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function ProgressRing({
+  value,
+  unit,
+  fillPct,
+  accent,
+  border,
+  size = 72,
+}: {
+  value: string;
+  unit?: string;
+  fillPct: number; // 0-100
+  accent: string;
+  border: string;
+  size?: number;
+}) {
+  const r = 29;
+  const c = 2 * Math.PI * r;
+  const offsetTarget = c - (Math.max(0, Math.min(100, fillPct)) / 100) * c;
+  const [offset, setOffset] = useState(c);
+  useEffect(() => {
+    const t = setTimeout(() => setOffset(offsetTarget), 50);
+    return () => clearTimeout(t);
+  }, [offsetTarget]);
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg
+        viewBox="0 0 72 72"
+        width={size}
+        height={size}
+        style={{ transform: "rotate(-90deg)" }}
+        aria-hidden="true"
+      >
+        <circle cx="36" cy="36" r={r} fill="none" stroke={border} strokeWidth="6" />
+        <circle
+          cx="36"
+          cy="36"
+          r={r}
+          fill="none"
+          stroke={accent}
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 900ms cubic-bezier(.22,1,.36,1)" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          className="font-mono font-bold leading-none tabular-nums"
+          style={{ color: accent, fontSize: value.length >= 4 ? 14 : 16 }}
+        >
+          {value}
+        </span>
+        {unit && (
+          <span className="text-[8px] uppercase tracking-wide text-muted-foreground mt-0.5">
+            {unit}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MetricBarRow({
+  label,
+  value,
+  unit,
+  pct,
+  accent,
+  border,
+  barFrom,
+  barTo,
+  emphasized,
+  isPB,
+  delay,
+  testId,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  pct: number;
+  accent: string;
+  border: string;
+  barFrom: string;
+  barTo: string;
+  emphasized?: boolean;
+  isPB?: boolean;
+  delay: number;
+  testId: string;
+}) {
+  const [filled, setFilled] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setFilled(pct), delay);
+    return () => clearTimeout(t);
+  }, [pct, delay]);
+  return (
+    <div
+      className="flex items-center gap-2 py-1.5 border-t first:border-t-0"
+      style={{ borderColor: border }}
+      data-testid={testId}
+    >
+      <div className="text-[9px] font-semibold tracking-wider uppercase text-muted-foreground w-[62px] flex-shrink-0">
+        {label}
+      </div>
+      <div
+        className="flex-1 h-[3px] rounded-full overflow-hidden min-w-[20px]"
+        style={{ background: border }}
+      >
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${filled}%`,
+            background: `linear-gradient(90deg, ${barFrom}, ${barTo})`,
+            transition: "width 900ms cubic-bezier(.22,1,.36,1)",
+          }}
+        />
+      </div>
+      <div className="flex items-baseline gap-1 flex-shrink-0">
+        <span
+          className="font-mono text-[12px] font-bold tabular-nums text-right"
+          style={{
+            color: emphasized ? accent : undefined,
+            minWidth: 48,
+            display: "inline-block",
+          }}
+        >
+          {value}
+        </span>
+        {unit && (
+          <span className="text-[8px] text-muted-foreground w-[30px]">
+            {unit}
+          </span>
+        )}
+        {isPB && (
+          <Sparkles
+            className="h-3 w-3 ml-0.5 text-amber-500"
+            aria-label="Personal best"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HiitIntervals({
+  seed,
+  accent,
+  barTo,
+  count = 14,
+}: {
+  seed: number;
+  accent: string;
+  barTo: string;
+  count?: number;
+}) {
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 200);
+    return () => clearTimeout(t);
+  }, []);
+  // Deterministic alternating tall/short pattern from the seed.
+  const heights = useMemo(() => {
+    const out: number[] = [];
+    let s = seed || 1;
+    for (let i = 0; i < count; i++) {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      const isWork = i % 2 === 0;
+      const base = isWork ? 28 : 12;
+      const jitter = ((s % 12) - 6);
+      out.push(Math.max(6, base + jitter));
+    }
+    return out;
+  }, [seed, count]);
+  return (
+    <div
+      className="flex items-end gap-[3px] mb-2 h-[44px]"
+      role="img"
+      aria-label="High-intensity interval pattern"
+    >
+      {heights.map((h, i) => (
+        <div
+          key={i}
+          className="flex-1 rounded-t"
+          style={{
+            height: animated ? h : 4,
+            background: `linear-gradient(180deg, ${accent}, ${barTo})`,
+            transition: `height 600ms cubic-bezier(.22,1,.36,1) ${i * 30}ms`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+interface WorkoutPostCardProps {
+  content: string;
+  personalBests?: PBFlags;
+  /** When true, marks this card as the calorie leader of the feed. */
+  isTopBurner?: boolean;
+}
+
 export function WorkoutPostCard({
   content,
   personalBests,
   isTopBurner,
-}: {
-  content: string;
-  personalBests?: PBFlags;
-  /** When true, renders a dramatically larger flame to celebrate the top calorie-burner in the feed. */
-  isTopBurner?: boolean;
-}) {
-  const [cardVisible, setCardVisible] = useState(false);
-  const [burstCount, setBurstCount] = useState(0);
-
+}: WorkoutPostCardProps) {
+  // ── Hooks (must run on every render before any conditional return) ─────────
+  const seed = useMemo(() => hashString(content), [content]);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setCardVisible(true), 100);
+    const t = setTimeout(() => setVisible(true), 50);
     return () => clearTimeout(t);
   }, []);
+  const [celebrate, setCelebrate] = useState(0);
 
   const parsed = parseWorkoutPost(content);
   if (!parsed) {
@@ -646,423 +557,226 @@ export function WorkoutPostCard({
 
   const pb: PBFlags = personalBests || {};
   const theme = getWorkoutTheme(parsed.type);
-  const TypeIcon = workoutIcon(parsed.type);
-  const typeImg = workoutImage(parsed.type);
-  const typeLabel = parsed.type.replace(/\b\w/g, (c) => c.toUpperCase());
-  // Auto-fit title: start at the size suggested by length, then measure the
-  // actual rendered width and shrink until the label fits on a single line in
-  // the available container. Min size 12px so it stays legible.
-  const titleLen = typeLabel.length;
-  const initialTitleSize =
-    titleLen <= 8 ? 26 :
-    titleLen <= 12 ? 22 :
-    titleLen <= 18 ? 18 :
-    16;
-  const [titleSizePx, setTitleSizePx] = useState<number>(initialTitleSize);
-  const titleRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    setTitleSizePx(initialTitleSize);
-  }, [initialTitleSize, typeLabel]);
-  useEffect(() => {
-    const el = titleRef.current;
-    if (!el) return;
-    let cancelled = false;
-    const fit = () => {
-      if (cancelled) return;
-      let size = initialTitleSize;
-      el.style.fontSize = `${size}px`;
-      const minSize = 12;
-      // Shrink until the text fits inside its container on one line.
-      while (size > minSize && el.scrollWidth > el.clientWidth + 0.5) {
-        size -= 1;
-        el.style.fontSize = `${size}px`;
-      }
-      setTitleSizePx(size);
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    ro.observe(el);
-    return () => {
-      cancelled = true;
-      ro.disconnect();
-    };
-  }, [typeLabel, initialTitleSize]);
-  const titleSize = `${titleSizePx}px`;
-  const titleLeading = titleSizePx >= 22 ? 1.1 : 1.15;
+  const TypeIcon = theme.Icon;
+  const productImg = workoutImage(theme.category);
+  const tagline = CATEGORY_TAGLINES[theme.category];
 
-  const calories = parsed.calories ? splitValueUnit(parsed.calories) : null;
-  const duration = parsed.duration ? splitValueUnit(parsed.duration) : null;
-  const distance = parsed.distance ? splitValueUnit(parsed.distance) : null;
-  const speed = parsed.speed ? splitValueUnit(parsed.speed) : null;
+  // Pick the metric that headlines the ring.
+  const ring = (() => {
+    if (
+      (theme.category === "running" || theme.category === "cycling" ||
+        theme.category === "hiking" || theme.category === "swimming") &&
+      parsed.distance
+    ) {
+      const sv = splitValueUnit(parsed.distance);
+      const mag = toMagnitude(parsed.distance, "distance") ?? 0;
+      return { value: sv.value, unit: sv.unit ?? "km", pct: barWidth(mag, "distance") };
+    }
+    if (parsed.duration) {
+      const sv = splitValueUnit(parsed.duration);
+      const mag = toMagnitude(parsed.duration, "duration") ?? 0;
+      return { value: sv.value, unit: sv.unit ?? (mag >= 60 ? "h:mm" : "min"), pct: barWidth(mag, "duration") };
+    }
+    if (parsed.calories) {
+      const sv = splitValueUnit(parsed.calories);
+      const mag = toMagnitude(parsed.calories, "calories") ?? 0;
+      return { value: sv.value, unit: sv.unit ?? "cal", pct: barWidth(mag, "calories") };
+    }
+    return { value: "—", unit: undefined, pct: 0 };
+  })();
 
-  const extras: Array<{ icon: LucideIcon; label: string; raw: string }> = [];
-  if (parsed.avgHr) extras.push({ icon: Heart, label: "Avg HR", raw: parsed.avgHr });
-  if (parsed.steps) extras.push({ icon: Footprints, label: "Steps", raw: parsed.steps });
-  if (parsed.elevation) extras.push({ icon: Mountain, label: "Elev", raw: parsed.elevation });
+  // Build the metric bar list.
+  const speedKind: MetricKind = parsed.speed?.includes("min/km") ? "pace" : "speed";
+  type Row = {
+    key: string;
+    label: string;
+    raw: string;
+    kind: MetricKind;
+    emphasized?: boolean;
+    isPB?: boolean;
+    testId: string;
+    delay: number;
+  };
+  const rows: Row[] = [];
+  let delayBase = 250;
+  if (parsed.duration) rows.push({ key: "dur", label: "Duration", raw: parsed.duration, kind: "duration", isPB: !!pb.duration, testId: "metric-time", delay: delayBase += 80 });
+  if (parsed.calories) rows.push({ key: "cal", label: "Calories", raw: parsed.calories, kind: "calories", emphasized: true, isPB: !!pb.calories, testId: "metric-calories", delay: delayBase += 80 });
+  if (parsed.distance) rows.push({ key: "dist", label: "Distance", raw: parsed.distance, kind: "distance", isPB: !!pb.distance, testId: "metric-distance", delay: delayBase += 80 });
+  if (parsed.speed)    rows.push({ key: "spd", label: speedKind === "pace" ? "Avg Pace" : "Avg Speed", raw: parsed.speed, kind: speedKind, isPB: !!pb.speed, testId: "metric-pace", delay: delayBase += 80 });
+  if (parsed.avgHr)    rows.push({ key: "hr", label: "Avg HR", raw: parsed.avgHr, kind: "hr", testId: "metric-extra-avg-hr", delay: delayBase += 80 });
+  if (parsed.elevation) rows.push({ key: "elev", label: "Elevation", raw: parsed.elevation, kind: "elevation", isPB: !!pb.elevation, testId: "metric-extra-elev", delay: delayBase += 80 });
+  if (parsed.steps)    rows.push({ key: "steps", label: "Steps", raw: parsed.steps, kind: "steps", isPB: !!pb.steps, testId: "metric-extra-steps", delay: delayBase += 80 });
+
+  const showHiitIntervals = theme.category === "hiit";
 
   return (
-    <div className="space-y-3" data-testid="workout-post-card">
-      <style>{KEYFRAMES}</style>
-
+    <div
+      className="rounded-2xl overflow-hidden border bg-[var(--wpc-tint)] dark:bg-[var(--wpc-tint-dark)] border-[var(--wpc-border)] dark:border-[var(--wpc-border-dark)] shadow-sm"
+      style={{
+        ["--wpc-tint" as any]: theme.tint,
+        ["--wpc-border" as any]: theme.border,
+        ["--wpc-tint-dark" as any]: theme.darkTint,
+        ["--wpc-border-dark" as any]: theme.darkBorder,
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(8px)",
+        transition: "opacity 400ms ease, transform 400ms ease",
+      }}
+      data-testid="workout-post-card"
+    >
+      {/* HEADER STRIP */}
       <div
-        className="wpc-card relative rounded-3xl p-6 sm:p-7 text-white"
-        style={{
-          background:
-            "linear-gradient(165deg, #353535 0%, #262626 35%, #1a1a1a 100%)",
-          animation: cardVisible ? "wpc-pulseGlow 3s ease-in-out infinite" : "none",
-          opacity: cardVisible ? 1 : 0,
-          transform: cardVisible ? "translateY(0) scale(1)" : "translateY(30px) scale(0.96)",
-          transition:
-            "opacity 700ms cubic-bezier(.22,1,.36,1), transform 700ms cubic-bezier(.22,1,.36,1)",
-          overflow: "visible",
-        }}
+        className="flex items-center justify-between gap-2 px-4 py-2.5 border-b bg-white/60 dark:bg-white/5"
+        style={{ borderColor: "var(--wpc-border)" }}
       >
-        {/* Top edge highlight */}
+        <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <CheckCircle2 className="h-3.5 w-3.5" style={{ color: theme.accent }} aria-hidden="true" />
+          Workout Completed
+        </div>
         <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-6 top-0 h-px"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)",
-            zIndex: 2,
-          }}
-        />
-        {/* Subtle grain noise for photoreal texture */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-3xl mix-blend-overlay opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
-            backgroundSize: "160px 160px",
-            zIndex: 0,
-          }}
-        />
-        {/* Right-side accent glow bleed (themed by workout type) */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          style={{
-            top: -20,
-            right: -20,
-            width: 260,
-            height: 260,
-            background:
-              `radial-gradient(circle, rgba(${theme.accentRgb},0.28) 0%, rgba(${theme.accentRgb},0.10) 50%, transparent 75%)`,
-            borderRadius: "50%",
-            zIndex: 0,
-          }}
-        />
-        {/* Subtle bottom-left ambient wash to balance the right glow */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute"
-          style={{
-            bottom: -40,
-            left: -30,
-            width: 220,
-            height: 220,
-            background:
-              `radial-gradient(circle, rgba(${theme.accentRgb},0.10) 0%, transparent 70%)`,
-            borderRadius: "50%",
-            zIndex: 0,
-          }}
-        />
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[9px] font-bold tracking-wider uppercase text-white"
+          style={{ background: theme.accent }}
+          data-testid="workout-type-badge"
+        >
+          <TypeIcon className="h-3 w-3" aria-hidden="true" />
+          {theme.label}
+        </div>
+      </div>
 
-        {/* TOP SECTION */}
-        <div className="relative z-[1] flex items-center justify-between gap-3 mb-6">
-          {/* Workout-type icon tile — beveled 3D look (3D photo when type matches, else Lucide glyph) */}
-          <div
-            className="relative flex items-center justify-center rounded-2xl flex-shrink-0 overflow-hidden"
-            style={{
-              width: 88,
-              height: 88,
-              background:
-                "radial-gradient(circle at 30% 22%, #3a3a3a 0%, #232323 55%, #141414 100%)",
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.04), 0 8px 22px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5)",
-              opacity: cardVisible ? 1 : 0,
-              transform: cardVisible ? "translateX(0)" : "translateX(-20px)",
-              transition: "opacity 600ms ease 200ms, transform 600ms ease 200ms",
-            }}
-            data-testid="workout-type-badge"
-          >
-            {typeImg ? (
-              <img
-                src={typeImg}
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 h-full w-full object-contain"
-                style={{
-                  filter:
-                    "brightness(1.18) contrast(1.12) saturate(1.08) drop-shadow(0 4px 10px rgba(0,0,0,0.7))",
-                }}
-              />
-            ) : null}
-            {/* Specular highlight (sits above image to keep glossy 3D feel) */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(ellipse 70% 40% at 30% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%)",
-              }}
+      {/* BODY */}
+      <div className="p-4">
+        <div className="flex gap-3.5 items-start">
+          {/* LEFT — ring + product tile */}
+          <div className="flex flex-col items-center gap-2 flex-shrink-0">
+            <ProgressRing
+              value={ring.value}
+              unit={ring.unit}
+              fillPct={ring.pct}
+              accent={theme.accent}
+              border={theme.border}
             />
-            {/* Bottom shadow ridge */}
             <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
-              style={{
-                background:
-                  "linear-gradient(to top, rgba(0,0,0,0.45), rgba(0,0,0,0))",
-              }}
-            />
-            {/* Themed rim glow on the icon tile */}
-            {typeImg ? (
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 rounded-2xl"
-                style={{
-                  boxShadow:
-                    `inset 0 0 0 1px rgba(${theme.accentRgb},0.20), inset 0 0 24px rgba(${theme.accentRgb},0.12)`,
-                }}
-              />
-            ) : (
-              <TypeIcon
-                className="relative h-12 w-12"
-                style={{
-                  color: theme.accent,
-                  filter:
-                    `drop-shadow(0 2px 6px rgba(${theme.accentRgb},0.55)) drop-shadow(0 1px 0 rgba(0,0,0,0.6))`,
-                }}
-                aria-hidden="true"
-              />
-            )}
+              className="w-10 h-10 rounded-lg flex items-center justify-center bg-white dark:bg-zinc-800/70 border"
+              style={{ borderColor: theme.border }}
+            >
+              {productImg ? (
+                <img
+                  src={productImg}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-7 w-7 object-contain"
+                />
+              ) : (
+                <TypeIcon className="h-5 w-5" style={{ color: theme.accent }} aria-hidden="true" />
+              )}
+            </div>
           </div>
 
-          {/* Title block */}
-          <div
-            className="flex-1 px-4 min-w-0"
-            style={{
-              opacity: cardVisible ? 1 : 0,
-              transform: cardVisible ? "translateY(0)" : "translateY(-10px)",
-              transition: "opacity 600ms ease 300ms, transform 600ms ease 300ms",
-            }}
-          >
-            <div
-              ref={titleRef}
-              className="font-black tracking-[0.3px] text-white"
-              style={{
-                fontSize: titleSize,
-                lineHeight: titleLeading,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                textShadow: "0 1px 0 rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.45)",
-              }}
+          {/* RIGHT — title, subtitle, optional PB, optional intervals, metric rows */}
+          <div className="flex-1 min-w-0">
+            <h3
+              className="text-base font-extrabold tracking-tight text-foreground truncate"
               data-testid="text-workout-title"
             >
-              {typeLabel}
-            </div>
-            <div
-              className="wpc-badge mt-1.5 inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[10px] font-bold tracking-[2px] uppercase"
-              style={{
-                color: theme.accent,
-                borderWidth: 1,
-                borderStyle: "solid",
-                borderColor: `rgba(${theme.accentRgb},0.32)`,
-                backgroundColor: `rgba(${theme.accentRgb},0.10)`,
-                animation: cardVisible ? "wpc-badgePop 500ms ease 800ms both" : "none",
-              }}
-            >
-              <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-              Workout Completed
-            </div>
-          </div>
+              {theme.label}
+            </h3>
+            <p className="text-[10px] text-muted-foreground mb-2">
+              {tagline}
+            </p>
 
-          {/* Fire canvas tile */}
-          <button
-            type="button"
-            className="relative flex-shrink-0 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500/50"
-            style={{ width: 88, height: 88 }}
-            title={isTopBurner ? "Top calorie burner — tap to celebrate" : "Tap to celebrate"}
-            aria-label={isTopBurner ? "Top burner — celebrate with sparks" : "Celebrate with sparks"}
-            onClick={() => setBurstCount((n) => n + 1)}
-            data-testid="button-celebrate"
-          >
-            <FireCanvas
-              burst={burstCount}
-              width={isTopBurner ? 280 : 220}
-              height={isTopBurner ? 320 : 240}
-              intensity={isTopBurner ? 1.5 : 1}
-              top={isTopBurner ? -130 : -90}
-              right={isTopBurner ? -65 : -40}
-            />
-            {isTopBurner && (
+            {Object.values(pb).some(Boolean) && (
               <div
-                className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-2 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-lg ring-1 ring-amber-200/70"
-                style={{ animation: cardVisible ? "wpc-badgePop 500ms ease 600ms both" : "none" }}
-                data-testid="badge-top-burner"
+                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-amber-950 mb-2"
+                style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}
+                data-testid="badge-personal-best"
               >
-                <Flame className="h-2.5 w-2.5" aria-hidden="true" />
-                TOP BURNER
+                <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
+                Personal Best
               </div>
             )}
+
+            {showHiitIntervals && (
+              <HiitIntervals seed={seed} accent={theme.accent} barTo={theme.barTo} />
+            )}
+
+            <div>
+              {rows.map((r) => {
+                const sv = splitValueUnit(r.raw);
+                const mag = toMagnitude(r.raw, r.kind) ?? 0;
+                return (
+                  <MetricBarRow
+                    key={r.key}
+                    label={r.label}
+                    value={sv.value}
+                    unit={sv.unit}
+                    pct={barWidth(mag, r.kind)}
+                    accent={theme.accent}
+                    border={theme.border}
+                    barFrom={theme.barFrom}
+                    barTo={theme.barTo}
+                    emphasized={r.emphasized}
+                    isPB={r.isPB}
+                    delay={r.delay}
+                    testId={r.testId}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div
+          className="flex items-center gap-2 px-4 py-2.5 border-t bg-white/50 dark:bg-white/5"
+          style={{ borderColor: "var(--wpc-border)" }}
+        >
+          {isTopBurner && (
+            <span
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400"
+              data-testid="badge-top-burner"
+            >
+              <Flame className="h-3 w-3" aria-hidden="true" />
+              Top Burner
+            </span>
+          )}
+          {parsed.notes && (
+            <span
+              className="flex-1 text-[11px] italic text-muted-foreground truncate min-w-0"
+              data-testid="text-workout-notes"
+            >
+              {parsed.notes}
+            </span>
+          )}
+          <button
+            type="button"
+            className="ml-auto h-7 w-7 rounded-md flex items-center justify-center text-white outline-none focus-visible:ring-2 focus-visible:ring-offset-1 hover-elevate active-elevate-2 flex-shrink-0"
+            style={{ background: theme.accent }}
+            onClick={() => setCelebrate((n) => n + 1)}
+            aria-label={isTopBurner ? "Top burner — celebrate" : "Celebrate"}
+            data-testid="button-celebrate"
+          >
+            <Flame
+              key={celebrate}
+              className="h-3.5 w-3.5"
+              style={{
+                animation: celebrate > 0 ? "wpc-celebrate-pop 380ms ease-out" : undefined,
+              }}
+              aria-hidden="true"
+            />
           </button>
         </div>
 
-        {/* Divider */}
-        <div
-          className="wpc-divider relative z-[1] mx-auto mb-5 h-px"
-          style={{
-            background:
-              `linear-gradient(90deg, transparent, rgba(${theme.accentRgb},0.45), transparent)`,
-            animation: cardVisible ? "wpc-dividerGrow 800ms ease 600ms both" : "none",
-          }}
-        />
-
-        {/* METRICS ROW */}
-        <div className="relative z-[1] flex gap-2.5 mb-3.5">
-          {calories ? (
-            <MetricPanel
-              icon={Flame}
-              label="Calories"
-              value={calories.value}
-              unit={calories.unit ?? "cal"}
-              delay={500}
-              emphasized
-              accent={theme.accent}
-              accentRgb={theme.accentRgb}
-              isPB={!!pb.calories}
-              testId="metric-calories"
-            />
-          ) : (
-            <div className="flex-1" />
-          )}
-          {duration ? (
-            <MetricPanel
-              icon={Clock}
-              label="Time"
-              value={duration.value}
-              unit={duration.unit}
-              delay={650}
-              isPB={!!pb.duration}
-              testId="metric-time"
-            />
-          ) : (
-            <div className="flex-1" />
-          )}
-          {distance ? (
-            <MetricPanel
-              icon={MapPin}
-              label="Distance"
-              value={distance.value}
-              unit={distance.unit ?? "km"}
-              delay={800}
-              isPB={!!pb.distance}
-              testId="metric-distance"
-            />
-          ) : (
-            <div className="flex-1" />
-          )}
-        </div>
-
-        {/* PACE PANEL */}
-        {speed && (
-          <div
-            className="wpc-pace relative z-[1] rounded-2xl px-4 py-4 text-center overflow-hidden"
-            style={{
-              background:
-                "linear-gradient(160deg,#383838 0%,#262626 45%,#1a1a1a 100%)",
-              boxShadow:
-                `inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 0 0 1px rgba(${theme.accentRgb},0.28), 0 8px 18px rgba(0,0,0,0.55), 0 0 28px rgba(${theme.accentRgb},0.14)`,
-              animation: cardVisible ? "wpc-paceSlide 600ms ease 1000ms both" : "none",
-            }}
-            data-testid="metric-pace"
-          >
-            {/* Top sheen */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 h-1/2"
-              style={{
-                background:
-                  "linear-gradient(to bottom, rgba(255,255,255,0.07), rgba(255,255,255,0))",
-              }}
-            />
-            {/* Themed floor glow */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-6 bottom-0 h-8"
-              style={{
-                background:
-                  `radial-gradient(ellipse at 50% 100%, rgba(${theme.accentRgb},0.38), rgba(${theme.accentRgb},0) 70%)`,
-              }}
-            />
-            <Gauge className="mx-auto mb-1.5 h-5 w-5 text-zinc-400" aria-hidden="true" />
-            <div className="flex items-baseline justify-center gap-1">
-              <span
-                className="text-[36px] font-black leading-none tabular-nums"
-                style={{
-                  color: theme.accent,
-                  textShadow: `0 0 20px rgba(${theme.accentRgb},0.55)`,
-                }}
-              >
-                {speed.value}
-              </span>
-              <span className="text-base font-semibold text-zinc-400">
-                {speed.unit ?? "km/h"}
-              </span>
-            </div>
-            <div className="mt-1 text-[10px] font-bold tracking-[2.5px] uppercase text-zinc-500">
-              Pace
-            </div>
-            {pb.speed && (
-              <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-950 shadow-md ring-1 ring-amber-200/60">
-                <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
-                PB
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Optional secondary metrics */}
-      {extras.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {extras.map((e) => {
-            const sv = splitValueUnit(e.raw);
-            return (
-              <div
-                key={e.label}
-                className="flex flex-col items-center justify-center rounded-md bg-muted/40 px-2 py-2.5"
-                data-testid={`metric-extra-${e.label.toLowerCase().replace(/\s+/g, "-")}`}
-              >
-                <e.icon className="h-4 w-4 text-muted-foreground mb-1" aria-hidden="true" />
-                <span className="text-sm font-bold leading-tight">
-                  {sv.value}
-                  {sv.unit && (
-                    <span className="ml-1 text-xs font-normal text-muted-foreground">
-                      {sv.unit}
-                    </span>
-                  )}
-                </span>
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  {e.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {parsed.notes && (
-        <p
-          className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground"
-          data-testid="text-workout-notes"
-        >
-          {parsed.notes}
-        </p>
-      )}
+      <style>{`
+        @keyframes wpc-celebrate-pop {
+          0% { transform: scale(1); }
+          40% { transform: scale(1.45) rotate(-12deg); }
+          70% { transform: scale(0.92); }
+          100% { transform: scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-testid="workout-post-card"] * { transition: none !important; animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

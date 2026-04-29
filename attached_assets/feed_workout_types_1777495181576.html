@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* FayaFlex greens */
+      --ff-900: #0d2818;
+      --ff-800: #14532d;
+      --ff-700: #166534;
+      --ff-600: #15803d;
+      --ff-500: #16a34a;
+      --ff-400: #22c55e;
+      --ff-300: #4ade80;
+      --ff-200: #86efac;
+      --ff-100: #dcfce7;
+      --ff-50:  #f0fdf4;
+
+      /* Workout type accents */
+      --running: #16a34a;
+      --running-light: #f0fdf4;
+      --running-border: #dcfce7;
+
+      --strength: #dc2626;
+      --strength-light: #fef2f2;
+      --strength-border: #fecaca;
+
+      --cycling: #2563eb;
+      --cycling-light: #eff6ff;
+      --cycling-border: #bfdbfe;
+
+      --yoga: #9333ea;
+      --yoga-light: #faf5ff;
+      --yoga-border: #e9d5ff;
+
+      --hiit: #ea580c;
+      --hiit-light: #fff7ed;
+      --hiit-border: #fed7aa;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f5f5;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* ── Feed Shell ── */
+    .feed-shell {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #fafafa;
+      min-height: 100vh;
+      padding: 16px 12px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .feed-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 6px 8px;
+    }
+    .feed-header .logo {
+      font-size: 18px; font-weight: 800; color: var(--ff-700);
+      letter-spacing: -.02em;
+    }
+    .feed-header .tab-row { display: flex; gap: 4px; }
+    .feed-header .tab {
+      font-size: 11px; font-weight: 600; padding: 5px 12px;
+      border-radius: 100px; background: #fff; color: #666;
+      border: 1px solid #e5e5e5;
+    }
+    .feed-header .tab.active {
+      background: var(--ff-600); color: #fff; border-color: var(--ff-600);
+    }
+
+    /* ══════════════════════════════════════════════════
+       BASE CARD STYLES (shared)
+    ══════════════════════════════════════════════════ */
+    .wcard {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    .wcard-header {
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .wcard-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .wcard-user { flex: 1; }
+    .wcard-user .name { font-size: 12px; font-weight: 600; color: #1a1a1a; }
+    .wcard-user .time { font-size: 10px; color: rgba(0,0,0,0.4); margin-top: 1px; }
+    .wcard-type-badge {
+      display: flex; align-items: center; gap: 4px;
+      border-radius: 6px; padding: 4px 8px;
+      font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    }
+
+    .wcard-body { padding: 14px 16px; }
+
+    .wcard-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .wcard-title { font-size: 16px; font-weight: 800; letter-spacing: -.02em; color: #1a1a1a; }
+    .wcard-subtitle { font-size: 10px; color: rgba(0,0,0,0.4); margin-bottom: 10px; }
+
+    .wcard-pb {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #000; font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      border-radius: 4px; padding: 2px 6px; margin-bottom: 10px;
+    }
+
+    .wcard-footer {
+      padding: 10px 16px 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wcard-top-burner {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #ef4444;
+    }
+    .wcard-notes { font-size: 11px; color: rgba(0,0,0,0.35); font-style: italic; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wcard-celebrate {
+      width: 28px; height: 28px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+    }
+
+    /* Metric rows */
+    .metric-row {
+      display: flex; align-items: center; padding: 6px 0; gap: 8px;
+    }
+    .metric-row + .metric-row { border-top: 1px solid rgba(0,0,0,0.04); }
+    .mr-label {
+      font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: rgba(0,0,0,0.35); width: 62px; flex-shrink: 0;
+    }
+    .mr-bar-wrap { flex: 1; height: 3px; border-radius: 100px; overflow: hidden; }
+    .mr-bar { height: 100%; border-radius: 100px; }
+    .mr-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 700; color: #1a1a1a; width: 48px; text-align: right;
+    }
+    .mr-unit { font-size: 8px; color: rgba(0,0,0,0.35); width: 30px; }
+
+    /* Ring */
+    .ring-wrap { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+    .ring-wrap svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke-width: 6; }
+    .ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; }
+    .ring-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .ring-inner .rv {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px; font-weight: 700; line-height: 1;
+    }
+    .ring-inner .ru { font-size: 8px; color: rgba(0,0,0,0.4); margin-top: 1px; }
+
+    /* Product image */
+    .product-img {
+      width: 40px; height: 40px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       RUNNING CARD — Mint Tint + Green Ring
+    ══════════════════════════════════════════════════ */
+    .wcard.running {
+      background: var(--running-light);
+      border-color: var(--running-border);
+    }
+    .wcard.running .wcard-header { border-bottom: 1px solid var(--running-border); background: rgba(255,255,255,0.6); }
+    .wcard.running .wcard-avatar { background: linear-gradient(135deg, var(--ff-500), var(--ff-700)); }
+    .wcard.running .wcard-type-badge { background: var(--ff-600); color: #fff; }
+    .wcard.running .ring-bg { stroke: var(--running-border); }
+    .wcard.running .ring-fill { stroke: var(--running); stroke-dasharray: 180; stroke-dashoffset: 45; }
+    .wcard.running .ring-inner .rv { color: var(--ff-700); }
+    .wcard.running .mr-bar-wrap { background: var(--running-border); }
+    .wcard.running .mr-bar { background: linear-gradient(90deg, var(--ff-700), var(--ff-400)); }
+    .wcard.running .mr-value.accent { color: var(--ff-600); }
+    .wcard.running .product-img { background: #fff; border: 1px solid var(--running-border); }
+    .wcard.running .wcard-footer { border-top: 1px solid var(--running-border); background: rgba(255,255,255,0.5); }
+    .wcard.running .wcard-celebrate { background: var(--ff-600); }
+
+    /* ══════════════════════════════════════════════════
+       STRENGTH CARD — Red tint + Weight plate ring
+    ══════════════════════════════════════════════════ */
+    .wcard.strength {
+      background: var(--strength-light);
+      border-color: var(--strength-border);
+    }
+    .wcard.strength .wcard-header { border-bottom: 1px solid var(--strength-border); background: rgba(255,255,255,0.6); }
+    .wcard.strength .wcard-avatar { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .wcard.strength .wcard-type-badge { background: var(--strength); color: #fff; }
+    .wcard.strength .ring-bg { stroke: var(--strength-border); }
+    .wcard.strength .ring-fill { stroke: var(--strength); stroke-dasharray: 180; stroke-dashoffset: 30; }
+    .wcard.strength .ring-inner .rv { color: #b91c1c; }
+    .wcard.strength .mr-bar-wrap { background: var(--strength-border); }
+    .wcard.strength .mr-bar { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+    .wcard.strength .mr-value.accent { color: var(--strength); }
+    .wcard.strength .product-img { background: #fff; border: 1px solid var(--strength-border); }
+    .wcard.strength .wcard-footer { border-top: 1px solid var(--strength-border); background: rgba(255,255,255,0.5); }
+    .wcard.strength .wcard-celebrate { background: var(--strength); }
+
+    /* Strength-specific: set grid */
+    .strength-sets {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+      margin-bottom: 10px;
+    }
+    .set-chip {
+      text-align: center; padding: 8px 4px;
+      background: #fff; border-radius: 8px; border: 1px solid var(--strength-border);
+    }
+    .set-chip .set-num { font-size: 8px; font-weight: 600; color: rgba(0,0,0,0.4); text-transform: uppercase; letter-spacing: .06em; }
+    .set-chip .set-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1a1a1a; margin-top: 2px; }
+    .set-chip .set-unit { font-size: 8px; color: rgba(0,0,0,0.35); }
+
+    /* ══════════════════════════════════════════════════
+       CYCLING CARD — Blue tint + Speed ring
+    ══════════════════════════════════════════════════ */
+    .wcard.cycling {
+      background: var(--cycling-light);
+      border-color: var(--cycling-border);
+    }
+    .wcard.cycling .wcard-header { border-bottom: 1px solid var(--cycling-border); background: rgba(255,255,255,0.6); }
+    .wcard.cycling .wcard-avatar { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .wcard.cycling .wcard-type-badge { background: var(--cycling); color: #fff; }
+    .wcard.cycling .ring-bg { stroke: var(--cycling-border); }
+    .wcard.cycling .ring-fill { stroke: var(--cycling); stroke-dasharray: 180; stroke-dashoffset: 36; }
+    .wcard.cycling .ring-inner .rv { color: #1d4ed8; }
+    .wcard.cycling .mr-bar-wrap { background: var(--cycling-border); }
+    .wcard.cycling .mr-bar { background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
+    .wcard.cycling .mr-value.accent { color: var(--cycling); }
+    .wcard.cycling .product-img { background: #fff; border: 1px solid var(--cycling-border); }
+    .wcard.cycling .wcard-footer { border-top: 1px solid var(--cycling-border); background: rgba(255,255,255,0.5); }
+    .wcard.cycling .wcard-celebrate { background: var(--cycling); }
+
+    /* ══════════════════════════════════════════════════
+       YOGA CARD — Purple tint + Mindfulness ring
+    ══════════════════════════════════════════════════ */
+    .wcard.yoga {
+      background: var(--yoga-light);
+      border-color: var(--yoga-border);
+    }
+    .wcard.yoga .wcard-header { border-bottom: 1px solid var(--yoga-border); background: rgba(255,255,255,0.6); }
+    .wcard.yoga .wcard-avatar { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+    .wcard.yoga .wcard-type-badge { background: var(--yoga); color: #fff; }
+    .wcard.yoga .ring-bg { stroke: var(--yoga-border); }
+    .wcard.yoga .ring-fill { stroke: var(--yoga); stroke-dasharray: 180; stroke-dashoffset: 54; }
+    .wcard.yoga .ring-inner .rv { color: #7c3aed; }
+    .wcard.yoga .mr-bar-wrap { background: var(--yoga-border); }
+    .wcard.yoga .mr-bar { background: linear-gradient(90deg, #7c3aed, #c084fc); }
+    .wcard.yoga .mr-value.accent { color: var(--yoga); }
+    .wcard.yoga .product-img { background: #fff; border: 1px solid var(--yoga-border); }
+    .wcard.yoga .wcard-footer { border-top: 1px solid var(--yoga-border); background: rgba(255,255,255,0.5); }
+    .wcard.yoga .wcard-celebrate { background: var(--yoga); }
+
+    /* Yoga-specific: breath/pose summary */
+    .yoga-summary {
+      display: flex; gap: 8px; margin-bottom: 10px;
+    }
+    .yoga-stat {
+      flex: 1; text-align: center; padding: 8px 4px;
+      background: #fff; border-radius: 8px; border: 1px solid var(--yoga-border);
+    }
+    .yoga-stat .ys-icon { font-size: 16px; margin-bottom: 2px; }
+    .yoga-stat .ys-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1a1a1a; }
+    .yoga-stat .ys-label { font-size: 8px; color: rgba(0,0,0,0.4); text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ══════════════════════════════════════════════════
+       HIIT CARD — Orange tint + Intensity ring
+    ══════════════════════════════════════════════════ */
+    .wcard.hiit {
+      background: var(--hiit-light);
+      border-color: var(--hiit-border);
+    }
+    .wcard.hiit .wcard-header { border-bottom: 1px solid var(--hiit-border); background: rgba(255,255,255,0.6); }
+    .wcard.hiit .wcard-avatar { background: linear-gradient(135deg, #f97316, #c2410c); }
+    .wcard.hiit .wcard-type-badge { background: var(--hiit); color: #fff; }
+    .wcard.hiit .ring-bg { stroke: var(--hiit-border); }
+    .wcard.hiit .ring-fill { stroke: var(--hiit); stroke-dasharray: 180; stroke-dashoffset: 20; }
+    .wcard.hiit .ring-inner .rv { color: #c2410c; }
+    .wcard.hiit .mr-bar-wrap { background: var(--hiit-border); }
+    .wcard.hiit .mr-bar { background: linear-gradient(90deg, #c2410c, #fb923c); }
+    .wcard.hiit .mr-value.accent { color: var(--hiit); }
+    .wcard.hiit .product-img { background: #fff; border: 1px solid var(--hiit-border); }
+    .wcard.hiit .wcard-footer { border-top: 1px solid var(--hiit-border); background: rgba(255,255,255,0.5); }
+    .wcard.hiit .wcard-celebrate { background: var(--hiit); }
+
+    /* HIIT-specific: intervals */
+    .hiit-intervals {
+      display: flex; gap: 3px; margin-bottom: 10px; align-items: flex-end;
+    }
+    .hiit-bar {
+      flex: 1; border-radius: 3px 3px 0 0; min-height: 8px;
+      background: linear-gradient(180deg, var(--hiit), #fdba74);
+    }
+
+    /* ── Layout helpers ── */
+    .card-content-row {
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .card-left { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+    .card-right { flex: 1; min-width: 0; }
+  </style>
+</head>
+<body>
+
+<div class="feed-shell">
+
+  <!-- Feed header -->
+  <div class="feed-header">
+    <div class="logo">FayaFlex</div>
+    <div class="tab-row">
+      <div class="tab active">Feed</div>
+      <div class="tab">Friends</div>
+      <div class="tab">Me</div>
+    </div>
+  </div>
+
+  <!-- ═══════ 1. RUNNING ═══════ -->
+  <div class="wcard running">
+    <div class="wcard-header">
+      <div class="wcard-avatar">JD</div>
+      <div class="wcard-user">
+        <div class="name">Jordan Davis</div>
+        <div class="time">Today at 7:42 AM</div>
+      </div>
+      <div class="wcard-type-badge">🏃 Running</div>
+    </div>
+    <div class="wcard-body">
+      <div class="card-content-row">
+        <div class="card-left">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="29"/>
+              <circle class="ring-fill" cx="36" cy="36" r="29"/>
+            </svg>
+            <div class="ring-inner">
+              <div class="rv">8.4</div>
+              <div class="ru">km</div>
+            </div>
+          </div>
+          <div class="product-img">👟</div>
+        </div>
+        <div class="card-right">
+          <div class="wcard-title">Morning Run</div>
+          <div class="wcard-subtitle">Outdoor · GPS tracked</div>
+          <div class="wcard-pb">✦ Personal Best</div>
+          <div class="metric-row">
+            <div class="mr-label">Duration</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:72%"></div></div>
+            <div class="mr-value">42:18</div>
+            <div class="mr-unit">h:mm</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Calories</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:65%"></div></div>
+            <div class="mr-value accent">487</div>
+            <div class="mr-unit">kcal</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Avg Pace</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:80%"></div></div>
+            <div class="mr-value">5:02</div>
+            <div class="mr-unit">min/km</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Avg HR</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:58%"></div></div>
+            <div class="mr-value">158</div>
+            <div class="mr-unit">bpm</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Elevation</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:40%"></div></div>
+            <div class="mr-value">+124</div>
+            <div class="mr-unit">m</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wcard-footer">
+      <div class="wcard-top-burner">🔥 Top Burner</div>
+      <div class="wcard-notes">Felt strong today!</div>
+      <div class="wcard-celebrate">🔥</div>
+    </div>
+  </div>
+
+  <!-- ═══════ 2. STRENGTH ═══════ -->
+  <div class="wcard strength">
+    <div class="wcard-header">
+      <div class="wcard-avatar">MK</div>
+      <div class="wcard-user">
+        <div class="name">Mike Khumalo</div>
+        <div class="time">Today at 6:15 AM</div>
+      </div>
+      <div class="wcard-type-badge">🏋️ Strength</div>
+    </div>
+    <div class="wcard-body">
+      <div class="card-content-row">
+        <div class="card-left">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="29"/>
+              <circle class="ring-fill" cx="36" cy="36" r="29"/>
+            </svg>
+            <div class="ring-inner">
+              <div class="rv">12.4</div>
+              <div class="ru">tons</div>
+            </div>
+          </div>
+          <div class="product-img">🧤</div>
+        </div>
+        <div class="card-right">
+          <div class="wcard-title">Upper Body Power</div>
+          <div class="wcard-subtitle">Gym · 6 exercises · 18 sets</div>
+          <div class="strength-sets">
+            <div class="set-chip">
+              <div class="set-num">Bench</div>
+              <div class="set-val">100</div>
+              <div class="set-unit">kg × 4</div>
+            </div>
+            <div class="set-chip">
+              <div class="set-num">OHP</div>
+              <div class="set-val">60</div>
+              <div class="set-unit">kg × 4</div>
+            </div>
+            <div class="set-chip">
+              <div class="set-num">Row</div>
+              <div class="set-val">80</div>
+              <div class="set-unit">kg × 4</div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Duration</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:60%"></div></div>
+            <div class="mr-value">58:30</div>
+            <div class="mr-unit">h:mm</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Calories</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:55%"></div></div>
+            <div class="mr-value accent">412</div>
+            <div class="mr-unit">kcal</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Volume</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:85%"></div></div>
+            <div class="mr-value">12,400</div>
+            <div class="mr-unit">kg</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wcard-footer">
+      <div class="wcard-top-burner">🔥 Top Burner</div>
+      <div class="wcard-notes">New bench PR! 💪</div>
+      <div class="wcard-celebrate">🔥</div>
+    </div>
+  </div>
+
+  <!-- ═══════ 3. CYCLING ═══════ -->
+  <div class="wcard cycling">
+    <div class="wcard-header">
+      <div class="wcard-avatar">SN</div>
+      <div class="wcard-user">
+        <div class="name">Sarah Naidoo</div>
+        <div class="time">Yesterday at 5:30 PM</div>
+      </div>
+      <div class="wcard-type-badge">🚴 Cycling</div>
+    </div>
+    <div class="wcard-body">
+      <div class="card-content-row">
+        <div class="card-left">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="29"/>
+              <circle class="ring-fill" cx="36" cy="36" r="29"/>
+            </svg>
+            <div class="ring-inner">
+              <div class="rv">42.6</div>
+              <div class="ru">km</div>
+            </div>
+          </div>
+          <div class="product-img">🚲</div>
+        </div>
+        <div class="card-right">
+          <div class="wcard-title">Evening Ride</div>
+          <div class="wcard-subtitle">Outdoor · GPS tracked</div>
+          <div class="wcard-pb">✦ Personal Best</div>
+          <div class="metric-row">
+            <div class="mr-label">Duration</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:78%"></div></div>
+            <div class="mr-value">1:32:15</div>
+            <div class="mr-unit">h:mm</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Avg Speed</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:70%"></div></div>
+            <div class="mr-value accent">27.8</div>
+            <div class="mr-unit">km/h</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Calories</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:82%"></div></div>
+            <div class="mr-value">864</div>
+            <div class="mr-unit">kcal</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Elevation</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:55%"></div></div>
+            <div class="mr-value">+380</div>
+            <div class="mr-unit">m</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Avg Power</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:62%"></div></div>
+            <div class="mr-value">218</div>
+            <div class="mr-unit">W</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wcard-footer">
+      <div class="wcard-notes">Beautiful sunset ride along the coast 🌅</div>
+      <div class="wcard-celebrate">🔥</div>
+    </div>
+  </div>
+
+  <!-- ═══════ 4. YOGA ═══════ -->
+  <div class="wcard yoga">
+    <div class="wcard-header">
+      <div class="wcard-avatar">LP</div>
+      <div class="wcard-user">
+        <div class="name">Lerato Pillay</div>
+        <div class="time">Yesterday at 7:00 AM</div>
+      </div>
+      <div class="wcard-type-badge">🧘 Yoga</div>
+    </div>
+    <div class="wcard-body">
+      <div class="card-content-row">
+        <div class="card-left">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="29"/>
+              <circle class="ring-fill" cx="36" cy="36" r="29"/>
+            </svg>
+            <div class="ring-inner">
+              <div class="rv">45</div>
+              <div class="ru">min</div>
+            </div>
+          </div>
+          <div class="product-img">🧘</div>
+        </div>
+        <div class="card-right">
+          <div class="wcard-title">Morning Flow</div>
+          <div class="wcard-subtitle">Home · Vinyasa · Intermediate</div>
+          <div class="yoga-summary">
+            <div class="yoga-stat">
+              <div class="ys-icon">🫁</div>
+              <div class="ys-val">12</div>
+              <div class="ys-label">Breath</div>
+            </div>
+            <div class="yoga-stat">
+              <div class="ys-icon">🤸</div>
+              <div class="ys-val">24</div>
+              <div class="ys-label">Poses</div>
+            </div>
+            <div class="yoga-stat">
+              <div class="ys-icon">💜</div>
+              <div class="ys-val">92</div>
+              <div class="ys-label">Focus %</div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Calories</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:35%"></div></div>
+            <div class="mr-value accent">186</div>
+            <div class="mr-unit">kcal</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Avg HR</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:40%"></div></div>
+            <div class="mr-value">98</div>
+            <div class="mr-unit">bpm</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Flexibility</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:72%"></div></div>
+            <div class="mr-value">+3%</div>
+            <div class="mr-unit">gain</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wcard-footer">
+      <div class="wcard-notes">Feeling centred and calm 🙏</div>
+      <div class="wcard-celebrate">🔥</div>
+    </div>
+  </div>
+
+  <!-- ═══════ 5. HIIT ═══════ -->
+  <div class="wcard hiit">
+    <div class="wcard-header">
+      <div class="wcard-avatar">TM</div>
+      <div class="wcard-user">
+        <div class="name">Thabo Molefe</div>
+        <div class="time">2 days ago</div>
+      </div>
+      <div class="wcard-type-badge">⚡ HIIT</div>
+    </div>
+    <div class="wcard-body">
+      <div class="card-content-row">
+        <div class="card-left">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="29"/>
+              <circle class="ring-fill" cx="36" cy="36" r="29"/>
+            </svg>
+            <div class="ring-inner">
+              <div class="rv">92</div>
+              <div class="ru">score</div>
+            </div>
+          </div>
+          <div class="product-img">🥊</div>
+        </div>
+        <div class="card-right">
+          <div class="wcard-title">Tabata Blitz</div>
+          <div class="wcard-subtitle">Home · 8 rounds · 4 exercises</div>
+          <div class="wcard-pb">✦ Personal Best</div>
+          <!-- Interval bars -->
+          <div class="hiit-intervals">
+            <div class="hiit-bar" style="height:32px"></div>
+            <div class="hiit-bar" style="height:14px"></div>
+            <div class="hiit-bar" style="height:36px"></div>
+            <div class="hiit-bar" style="height:12px"></div>
+            <div class="hiit-bar" style="height:38px"></div>
+            <div class="hiit-bar" style="height:10px"></div>
+            <div class="hiit-bar" style="height:40px"></div>
+            <div class="hiit-bar" style="height:8px"></div>
+            <div class="hiit-bar" style="height:42px"></div>
+            <div class="hiit-bar" style="height:10px"></div>
+            <div class="hiit-bar" style="height:36px"></div>
+            <div class="hiit-bar" style="height:12px"></div>
+            <div class="hiit-bar" style="height:34px"></div>
+            <div class="hiit-bar" style="height:14px"></div>
+            <div class="hiit-bar" style="height:30px"></div>
+            <div class="hiit-bar" style="height:16px"></div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Duration</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:45%"></div></div>
+            <div class="mr-value">24:00</div>
+            <div class="mr-unit">min</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Calories</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:78%"></div></div>
+            <div class="mr-value accent">386</div>
+            <div class="mr-unit">kcal</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Max HR</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:90%"></div></div>
+            <div class="mr-value">184</div>
+            <div class="mr-unit">bpm</div>
+          </div>
+          <div class="metric-row">
+            <div class="mr-label">Avg HR</div>
+            <div class="mr-bar-wrap"><div class="mr-bar" style="width:72%"></div></div>
+            <div class="mr-value">162</div>
+            <div class="mr-unit">bpm</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wcard-footer">
+      <div class="wcard-top-burner">🔥 Top Burner</div>
+      <div class="wcard-notes">Absolutely destroyed! 🥵</div>
+      <div class="wcard-celebrate">🔥</div>
+    </div>
+  </div>
+
+</div><!-- /feed-shell -->
+
+</body>
+</html>

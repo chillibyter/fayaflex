@@ -98,6 +98,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "patch-package": "^8.0.1",
+    "playwright": "^1.59.1",
     "pptxgenjs": "^4.0.1",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
