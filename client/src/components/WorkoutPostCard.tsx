@@ -74,7 +74,9 @@ type WorkoutTheme = {
 
 // ── Parsing ───────────────────────────────────────────────────────────────────
 
-const WORKOUT_RE = /^Completed an?\s+(.+?)\s+workout$/i;
+// Matches both "Completed a running workout" and the server-side generic
+// "Completed a workout session" emitted for synced workouts without a type.
+const WORKOUT_RE = /^Completed an?\s+(?:(.+?)\s+workout|workout session)$/i;
 
 export function isAutoWorkoutPost(content: string | null | undefined): boolean {
   if (!content) return false;
@@ -95,16 +97,19 @@ function parseWorkoutPost(content: string): ParsedWorkout | null {
   const lines = content.split("\n");
   const titleMatch = lines[0]?.match(WORKOUT_RE);
   if (!titleMatch) return null;
-  const type = titleMatch[1];
+  // titleMatch[1] is undefined for the generic "Completed a workout session" branch.
+  const type = titleMatch[1] ?? "workout";
   const metrics = lines[1] || "";
   const out: ParsedWorkout = { title: lines[0], type };
 
   const hMatch = metrics.match(/(\d+)h\s+(\d+)m/);
-  const mMatch = metrics.match(/(\d+)\s*min(?!\w)/);
+  // Exclude "5:23 min/km" (pace) by requiring no following slash.
+  const mMatch = metrics.match(/(\d+)\s*min(?![a-zA-Z/])/);
   if (hMatch) out.duration = `${hMatch[1]}h ${hMatch[2]}m`;
   else if (mMatch) out.duration = `${mMatch[1]} min`;
 
-  const km = metrics.match(/([\d.]+)\s*km/);
+  // Exclude "27.8 km/h" (speed) by requiring no following slash/letter.
+  const km = metrics.match(/([\d.]+)\s*km(?![\w/])/);
   if (km) out.distance = `${km[1]} km`;
 
   const cal = metrics.match(/(\d+)\s*cal/);
@@ -609,9 +614,17 @@ export function WorkoutPostCard({
 
   const showHiitIntervals = theme.category === "hiit";
 
+  // Title: prefer the actual parsed workout type (capitalised) so "Trail Run",
+  // "Kickboxing" etc. survive; fall back to the category label for the generic
+  // "workout session" form.
+  const titleText =
+    parsed.type && parsed.type.toLowerCase() !== "workout"
+      ? parsed.type.replace(/\b\w/g, (c) => c.toUpperCase())
+      : theme.label;
+
   return (
     <div
-      className="rounded-2xl overflow-hidden border bg-[var(--wpc-tint)] dark:bg-[var(--wpc-tint-dark)] border-[var(--wpc-border)] dark:border-[var(--wpc-border-dark)] shadow-sm"
+      className="wpc-card rounded-2xl overflow-hidden border bg-[var(--wpc-tint)] border-[var(--wpc-border)] shadow-sm"
       style={{
         ["--wpc-tint" as any]: theme.tint,
         ["--wpc-border" as any]: theme.border,
@@ -633,7 +646,7 @@ export function WorkoutPostCard({
           Workout Completed
         </div>
         <div
-          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[9px] font-bold tracking-wider uppercase text-white"
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-bold tracking-wide uppercase text-white"
           style={{ background: theme.accent }}
           data-testid="workout-type-badge"
         >
@@ -652,11 +665,11 @@ export function WorkoutPostCard({
               unit={ring.unit}
               fillPct={ring.pct}
               accent={theme.accent}
-              border={theme.border}
+              border="var(--wpc-border)"
             />
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center bg-white dark:bg-zinc-800/70 border"
-              style={{ borderColor: theme.border }}
+              style={{ borderColor: "var(--wpc-border)" }}
             >
               {productImg ? (
                 <img
@@ -677,7 +690,7 @@ export function WorkoutPostCard({
               className="text-base font-extrabold tracking-tight text-foreground truncate"
               data-testid="text-workout-title"
             >
-              {theme.label}
+              {titleText}
             </h3>
             <p className="text-[10px] text-muted-foreground mb-2">
               {tagline}
@@ -710,7 +723,7 @@ export function WorkoutPostCard({
                     unit={sv.unit}
                     pct={barWidth(mag, r.kind)}
                     accent={theme.accent}
-                    border={theme.border}
+                    border="var(--wpc-border)"
                     barFrom={theme.barFrom}
                     barTo={theme.barTo}
                     emphasized={r.emphasized}
@@ -767,6 +780,12 @@ export function WorkoutPostCard({
         </div>
 
       <style>{`
+        /* In dark mode, swap the tint + border CSS vars so every inner element
+           that reads var(--wpc-border) / var(--wpc-tint) auto-adapts. */
+        .dark .wpc-card {
+          --wpc-tint: var(--wpc-tint-dark);
+          --wpc-border: var(--wpc-border-dark);
+        }
         @keyframes wpc-celebrate-pop {
           0% { transform: scale(1); }
           40% { transform: scale(1.45) rotate(-12deg); }
