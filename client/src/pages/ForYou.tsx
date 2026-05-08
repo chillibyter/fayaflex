@@ -182,6 +182,14 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       cacheBust: true,
       pixelRatio: 2,
       backgroundColor: bg,
+      // Skip any element flagged with data-share-hide (e.g. the delete
+      // trash icon) so the screenshot looks clean.
+      filter: (node) => {
+        if (node instanceof HTMLElement && node.dataset.shareHide === "true") {
+          return false;
+        }
+        return true;
+      },
     });
     const res = await fetch(dataUrl);
     const blob = await res.blob();
@@ -314,55 +322,61 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       className="overflow-visible [&>img]:rounded-none"
       data-testid={`feed-card-${post.id}`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-2">
-        <div className="flex min-w-0 items-center gap-3">
-          <UserAvatar user={post.user} className="h-10 w-10" />
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <p className="font-semibold text-sm leading-tight" data-testid={`text-author-${post.id}`}>
-                {displayName(post.user)}
+      {/* Capture region — wraps the author header + workout card so the
+          social-media share screenshot looks like the post in the feed. */}
+      <div ref={cardCaptureRef}>
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-2">
+          <div className="flex min-w-0 items-center gap-3">
+            <UserAvatar user={post.user} className="h-10 w-10" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <p className="font-semibold text-sm leading-tight" data-testid={`text-author-${post.id}`}>
+                  {displayName(post.user)}
+                </p>
+                {post.user.team && (
+                  <TeamBadge id={post.user.team.id} name={post.user.team.name} />
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                @{post.user.username} &middot;{" "}
+                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
               </p>
-              {post.user.team && (
-                <TeamBadge id={post.user.team.id} name={post.user.team.name} />
-              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              @{post.user.username} &middot;{" "}
-              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-            </p>
           </div>
+          {post.userId === currentUserId && (
+            <div data-share-hide="true">
+              <Button
+                size="icon"
+                variant="ghost"
+                data-testid={`button-delete-post-${post.id}`}
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+              >
+                <Trash2 className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </div>
+          )}
         </div>
-        {post.userId === currentUserId && (
-          <Button
-            size="icon"
-            variant="ghost"
-            data-testid={`button-delete-post-${post.id}`}
-            onClick={() => deleteMutation.mutate()}
-            disabled={deleteMutation.isPending}
-          >
-            <Trash2 className="h-4 w-4 text-muted-foreground" />
-          </Button>
+
+        {/* Image */}
+        {post.imageUrl && (
+          <img
+            src={post.imageUrl}
+            alt="Post attachment"
+            className="w-full object-cover max-h-96"
+            data-testid={`img-feed-${post.id}`}
+          />
         )}
-      </div>
 
-      {/* Image */}
-      {post.imageUrl && (
-        <img
-          src={post.imageUrl}
-          alt="Post attachment"
-          className="w-full object-cover max-h-96"
-          data-testid={`img-feed-${post.id}`}
-        />
-      )}
-
-      {/* Content */}
-      <div ref={cardCaptureRef} className="px-4 py-3">
-        <WorkoutPostCard
-          content={post.content}
-          isTopBurner={isTopBurner}
-          personalBests={post.personalBests}
-        />
+        {/* Content */}
+        <div className="px-4 py-3">
+          <WorkoutPostCard
+            content={post.content}
+            isTopBurner={isTopBurner}
+            personalBests={post.personalBests}
+          />
+        </div>
       </div>
 
       <Separator />
