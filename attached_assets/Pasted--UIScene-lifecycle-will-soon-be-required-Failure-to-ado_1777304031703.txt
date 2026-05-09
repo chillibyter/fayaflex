@@ -57,7 +57,7 @@ ERROR MESSAGE:  {"errorMessage":"The operation couldn’t be completed. (com.app
 ⚡️  TO JS {"isActive":false}
 ⚡️  [log] - [AutoSync] App backgrounded — pausing poll
 ⚡️  [log] - [TodaySync] Polling paused (app in background)
-⚡️  TO JS {"response":{"familyName":"Myakayaka","email":"lanyard@me.com","identityToken":"eyJraWQiOiI1UkZPU2lOSVVtIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmZheWFmbGV4LmFwcCIsImV4cCI6MTc3NzM5MDI2NCwiaWF0IjoxNzc3MzAzODY0LCJzd
+⚡️  TO JS {"response":{"familyName":"Myakayaka","email":"lanyard@me.com","identityToken":"[REDACTED-JWT]"...}}
 ⚡️  [log] - [API] POST https://fayaflex.com/api/auth/apple (native: true)
 ⚡️  To Native ->  CapacitorHttp ⚡️  [log] - [API] Native POST https://fayaflex.com/api/auth/apple
 request 63039773
@@ -341,7 +341,7 @@ Got a keyboard will hide notification, but keyboard was not even present.
 ⚡️  TO JS {"isActive":true}
 ⚡️  [log] - [AutoSync] App foregrounded
 ⚡️  [log] - [TodaySync] Starting real-time polling (every 60 s)
-⚡️  TO JS {"authentication":{"idToken":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5Y2FhZWNkZThmNDg1ZThmNTkzOGY0OGFiYTBjZTdhMzU4MWYwMjciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzODk2NTMyNjI5MzItajJkdDVqajdlbWxmOTcyanRxcXY4dDZpNWpkcnQ3b2UuYXB
+⚡️  TO JS {"authentication":{"idToken":"[REDACTED-JWT]"...}}
 ⚡️  To Native ->  CapacitorHttp request 44798810
 ⚡️  [log] - [API] POST https://fayaflex.com/api/auth/google (native: true)
 ⚡️  [log] - [API] Native POST https://fayaflex.com/api/auth/google

@@ -4,7 +4,7 @@ HealthKitPlugin: Registered in capacitorDidLoad
 ⚡️  Loading app at https://fayaflex.com...
 WebContent[5892] Unable to hide query parameters from script (missing data)
 ⚡️  To Native ->  Preferences get 110691881
-⚡️  TO JS {"value":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkYWVlZmEzYS04ZmFlLTQ2ZDEtYWVhNy1hZjYwOWU1YjI3YmQiLCJpYXQiOjE3NzY1MzcyNDgsImV4cCI6MTc3OTEyOTI0OH0.dEIqdMCQq41ZKT8VITx5wEmJrUSjKcpNYuScTEoFAes"}
+⚡️  TO JS {"value":"[REDACTED-JWT]"}
 ⚡️  [log] - [Auth] Token initialized: present
 ⚡️  [log] - [API] Native GET https://fayaflex.com/api/auth/user
 ⚡️  To Native ->  App addListener 110691882

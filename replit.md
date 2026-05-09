@@ -41,6 +41,14 @@ Preferred communication style: Simple, everyday language.
 - **App ID**: com.fayaflex.app
 - **Production Server**: https://fayaflex.com
 
+## Security Notes
+
+### Safe-by-design keys in `attached_assets/`
+The following values look like secrets but are safe to commit. Future secret sweeps should not re-flag them:
+- **Firebase iOS `API_KEY`** in `attached_assets/GoogleService-Info_*.plist` (e.g. values starting with `AIzaSy...`). Firebase iOS API keys are mobile-client identifiers, not secrets — Google expects them to ship inside iOS app bundles. Access is gated by Firebase Security Rules and the iOS bundle ID restriction, not by the key itself.
+
+Anything else that looks like a credential in `attached_assets/` (OAuth tokens, JWTs, Bearer tokens, `AIza...` server keys, GitHub `gh*_` tokens, OpenAI `sk-` keys, Stripe keys, private keys, DB URLs with credentials, etc.) should be treated as a real leak — redact it from the working tree and rotate the underlying secret.
+
 ## External Dependencies
 
 ### Third-Party Services
