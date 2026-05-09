@@ -64,6 +64,80 @@ The local hook only protects contributors who have run `git config core.hooksPat
 
 The CI job and the local hook share an identical `PATTERNS` list and the same `GoogleService-Info*.plist` allowlist. **If you change one, mirror the change in the other** (and update this section if the allowlist changes).
 
+### Historical secret sweep (one-time, May 9 2026)
+The pre-commit hook and CI workflow only catch *new* commits. To close the gap for credentials that may have landed earlier and been removed later, the same `PATTERNS` regex set was run against every blob reachable from any ref in the repo (`git rev-list --all --objects`, ~3.5k unique blobs). Results:
+
+- **`ya29.` Google OAuth access token** — blob `29c7e44d255d953fd6757f554bca6be4815d91f0`, originally committed at path `attached_assets/Pasted-Received-port-for-identifier-response-null-with-error-E_1777304223873.txt` in commit `ca50402` and removed from the working tree in `64ecf33` / `ba78c88`.
+  - **Status: accepted, no rotation required.** `ya29.*` tokens are short-lived Google OAuth *access* tokens with a server-enforced lifetime of ~1 hour. The blob was authored well before this sweep, so the token is already expired and unusable. There is no long-lived refresh token, client secret, or service-account key in the same blob.
+  - The blob still exists in history (reachable via `git log -p` / `git cat-file`). Purging would require a force-push history rewrite (`git filter-repo` / BFG), which is out of scope here because version control is platform-managed. If a future incident requires history rewrite, coordinate with Replit support — do not run `filter-repo` from the agent environment.
+
+- **`-----BEGIN PRIVATE KEY-----` marker in `server/pushService.ts`** — 9 blobs across history, all the same false positive.
+  - **Status: accepted as a false positive, narrowly allowlisted.** The match is a string literal (`const beginMarker = "-----BEGIN PRIVATE KEY-----";`) inside `normalizeApnsKey()`, which reformats an APNs auth key supplied via env var. No actual key material is committed.
+  - To stop this from re-firing on every edit (which would otherwise pressure contributors into using `--no-verify` and erode the protection), a per-rule path allowlist was added: the `PEM private key block` rule is suppressed *only* for the exact paths `server/pushService.ts` (the actual marker) and `replit.md` (this documentation, which has to spell the marker out) in both `.githooks/pre-commit` (`PEM_ALLOWLIST_REGEX`) and `.github/workflows/secret-scan.yml` (same variable). Every other path — including any new file — still fails the build on a real PEM block.
+  - Reproduce the historical sweep at any time with the snippet under "Reproducing the sweep" below. If the allowlist is ever broadened, document it here and mirror the change in both the hook and the workflow.
+
+No other matches across all 9 patterns (Google OAuth, Google API key, OpenAI, GitHub, Slack, Stripe live, AWS, PEM, Postgres-with-password). Firebase iOS `AIza` keys inside `GoogleService-Info*.plist` were correctly filtered by the existing allowlist and are intentionally not listed here.
+
+#### Reproducing the sweep
+The sweep is a one-shot audit, not a CI job — re-run it whenever a new pattern is added or after any bulk history operation. It walks every blob reachable from any ref (not just `HEAD`), so it catches credentials that were committed and later deleted.
+
+```bash
+# From repo root. Streams ~3.5k blobs through `git cat-file --batch`;
+# completes in well under a minute on this repo.
+python3 - <<'PY'
+import subprocess, re, collections, threading
+PATTERNS = {
+    "Google OAuth access token (ya29.*)": rb"ya29\.[A-Za-z0-9_-]{20,}",
+    "Google API key (AIza...)":           rb"AIza[0-9A-Za-z_-]{35}",
+    "OpenAI API key (sk-...)":            rb"sk-(proj-)?[A-Za-z0-9_-]{20,}",
+    "GitHub token":                       rb"gh[pousr]_[A-Za-z0-9]{30,}",
+    "Slack token":                        rb"xox[baprs]-[A-Za-z0-9-]{10,}",
+    "Stripe live secret key":             rb"sk_live_[A-Za-z0-9]{20,}",
+    "AWS access key id":                  rb"AKIA[0-9A-Z]{16}",
+    "PEM private key block":              rb"-----BEGIN ([A-Z]+ )?PRIVATE KEY-----",
+    "Postgres URL with embedded password": rb"postgres(ql)?://[^\s:@\"']+:[^\s:@\"']+@",
+}
+SKIP  = re.compile(r"(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$|\.(png|jpe?g|gif|webp|ico|pdf|zip|gz|tgz|mp4|mov|woff2?|ttf|otf)$")
+ALLOW_AIZA = re.compile(r"GoogleService-Info.*\.plist$")
+ALLOW_PEM  = re.compile(r"^server/pushService\.ts$")
+COMPILED = [(l, re.compile(r)) for l, r in PATTERNS.items()]
+
+objs = subprocess.check_output(["git","rev-list","--all","--objects"]).decode("utf-8","replace")
+blob_paths = {}
+for line in objs.splitlines():
+    if " " not in line: continue
+    sha, path = line.split(" ", 1)
+    if SKIP.search(path): continue
+    blob_paths.setdefault(sha, set()).add(path)
+
+p = subprocess.Popen(["git","cat-file","--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+threading.Thread(target=lambda: (p.stdin.write(("\n".join(blob_paths)+"\n").encode()), p.stdin.close()), daemon=True).start()
+
+groups = collections.defaultdict(list)
+while True:
+    hdr = p.stdout.readline()
+    if not hdr: break
+    parts = hdr.decode().split()
+    if len(parts) < 3: continue
+    sha, typ, size = parts[0], parts[1], int(parts[2])
+    data = p.stdout.read(size); p.stdout.read(1)
+    if typ != "blob" or size > 5_000_000: continue
+    paths = blob_paths.get(sha, set())
+    for label, rx in COMPILED:
+        m = rx.search(data)
+        if not m: continue
+        if label == "Google API key (AIza...)" and paths and all(ALLOW_AIZA.search(x) for x in paths): continue
+        if label == "PEM private key block"   and paths and all(ALLOW_PEM.search(x)  for x in paths): continue
+        groups[(label, m.group(0)[:80])].append(sorted(paths))
+
+for (label, tok), occs in groups.items():
+    print(f"{label}: {tok!r} -> {len(occs)} blob(s), e.g. {occs[0]}")
+print("DONE" if groups else "CLEAN")
+PY
+```
+
+Expected output today: `CLEAN`. Any new line means a credential pattern slipped past both the live hook and any previous sweep — investigate immediately, and treat the blob as compromised even if the file no longer exists in the working tree.
+
 ## External Dependencies
 
 ### Third-Party Services

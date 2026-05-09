@@ -45,6 +45,12 @@ SKIP_REGEX='(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|\.githooks/pre-c
 # Allowlist: Firebase iOS client API keys are documented as safe-to-commit.
 ALLOWLIST_REGEX='GoogleService-Info.*\.plist$'
 
+# Per-rule path allowlist for documented false positives. The marker string
+# "-----BEGIN PRIVATE KEY-----" appears as a literal in normalizeApnsKey()
+# inside server/pushService.ts; it is not key material. See replit.md →
+# Security Notes → "Historical secret sweep" for the audit trail.
+PEM_ALLOWLIST_REGEX='^(server/pushService\.ts|replit\.md)$'
+
 violations=0
 report=""
 
@@ -66,6 +72,11 @@ for file in "${STAGED[@]}"; do
 
     # Apply allowlist for Google API keys inside Firebase plist.
     if [[ "$label" == "Google API key (AIza...)" && "$file" =~ $ALLOWLIST_REGEX ]]; then
+      continue
+    fi
+
+    # Apply per-rule path allowlist for the PEM marker false positive.
+    if [[ "$label" == "PEM private key block" && "$file" =~ $PEM_ALLOWLIST_REGEX ]]; then
       continue
     fi
 
