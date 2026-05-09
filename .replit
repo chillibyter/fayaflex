@@ -55,3 +55,7 @@ GOOGLE_CLIENT_SECRET = ""
 
 [userenv.development]
 VITE_GOOGLE_CLIENT_ID = "389653262932-o11o8g7cv616b3svs0i3h9idkgu3bho7.apps.googleusercontent.com"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
