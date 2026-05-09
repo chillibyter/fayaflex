@@ -49,6 +49,16 @@ The following values look like secrets but are safe to commit. Future secret swe
 
 Anything else that looks like a credential in `attached_assets/` (OAuth tokens, JWTs, Bearer tokens, `AIza...` server keys, GitHub `gh*_` tokens, OpenAI `sk-` keys, Stripe keys, private keys, DB URLs with credentials, etc.) should be treated as a real leak — redact it from the working tree and rotate the underlying secret.
 
+### Pre-commit secret scanning
+A local pre-commit hook at `.githooks/pre-commit` scans staged files for common credential shapes (`ya29.`, `AIza`, `sk-`, `gh[pousr]_`, `xox[baprs]-`, Stripe `sk_live_`, AWS `AKIA`, PEM private keys, Postgres URLs with embedded passwords) and blocks the commit if any are found. Firebase iOS `GoogleService-Info*.plist` files are allowlisted per the note above.
+
+**New contributors must enable it once:**
+```
+git config core.hooksPath .githooks
+```
+
+To bypass for an intentional, documented false positive: `git commit --no-verify`. To extend the rules, edit the `PATTERNS` array in `.githooks/pre-commit`.
+
 ## External Dependencies
 
 ### Third-Party Services
