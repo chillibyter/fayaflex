@@ -59,6 +59,11 @@ git config core.hooksPath .githooks
 
 To bypass for an intentional, documented false positive: `git commit --no-verify`. To extend the rules, edit the `PATTERNS` array in `.githooks/pre-commit`.
 
+### Server-side secret scanning (CI)
+The local hook only protects contributors who have run `git config core.hooksPath .githooks`. A teammate on a fresh checkout, a commit made via the GitHub web UI, or any automation that bypasses local hooks would otherwise slip through. As a backstop, `.github/workflows/secret-scan.yml` re-runs the same regex set on every pull request and on every push to `main`, fails the build if a match is found, and emits per-line GitHub annotations linking straight to the offending file/line.
+
+The CI job and the local hook share an identical `PATTERNS` list and the same `GoogleService-Info*.plist` allowlist. **If you change one, mirror the change in the other** (and update this section if the allowlist changes).
+
 ## External Dependencies
 
 ### Third-Party Services
