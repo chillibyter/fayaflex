@@ -138,6 +138,16 @@ PY
 
 Expected output today: `CLEAN`. Any new line means a credential pattern slipped past both the live hook and any previous sweep — investigate immediately, and treat the blob as compromised even if the file no longer exists in the working tree.
 
+### Dependency vulnerabilities — accepted residuals (May 9 2026)
+After Task #13 (`npm audit fix` + targeted major bumps + an `esbuild` override), the audit went from **96 findings (1 critical, ~60 high, ~30 medium, ~7 low)** to **9 findings (8 low + 1 moderate, 0 high/critical)**. The remaining 9 are documented here as accept-as-risk because every available "fix" is destructive:
+
+- **8 low — `firebase-admin` transitive chain**: `@google-cloud/firestore`, `@google-cloud/storage`, `@tootallnate/once`, `firebase-admin`, `google-gax`, `http-proxy-agent`, `retry-request`, `teeny-request`. `npm audit` proposes downgrading `firebase-admin` from `^13.8.0` to `10.3.0` (a major **downgrade** that loses 3 years of fixes/features used by FCM push). The underlying issues live deep in Google's official SDK and have no upstream patched release that `firebase-admin@13.x` can pull. Re-evaluate when Google ships patched `@google-cloud/*` versions that flow into `firebase-admin`.
+- **1 moderate — `vite` (GHSA-4w7w-66w2-5vf9, "Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling", range `<=6.4.1`)**: pinned to `^5.4.21` which patches every other vite advisory we hit. This specific advisory is only fully resolved in `vite@6.4.2+` / `vite@7.x` / `vite@8.x`, which is a major-major jump (5 → 8) and would force matching upgrades to `@vitejs/plugin-react`, `@tailwindcss/vite`, the three `@replit/vite-plugin-*` packages, and likely `vite.config.ts` rewrites. The vuln is **dev-server only** (not in `vite build` output) so production users are unaffected. Track for a future scheduled framework upgrade.
+
+**Active mitigations also added in this task:**
+- Bumped direct deps: `drizzle-orm ^0.39.1 → ^0.45.2`, `drizzle-kit ^0.31.4 → ^0.31.10`, `nodemailer ^7.0.12 → ^8.0.7`, `vite ^5.4.20 → ^5.4.21`.
+- Added `"overrides": { "esbuild": "^0.25.0" }` in `package.json` to neutralize the `esbuild` dev-server CORS chain coming through `vite`'s and `drizzle-kit`'s bundled copies (fixes GHSA-67mh-4wv8-2f99 across the tree).
+
 ## External Dependencies
 
 ### Third-Party Services
