@@ -88,9 +88,9 @@ The pre-commit hook and CI workflow only catch *new* commits. To close the gap f
   - The blob still exists in history (reachable via `git log -p` / `git cat-file`). Purging would require a force-push history rewrite (`git filter-repo` / BFG), which is out of scope here because version control is platform-managed. If a future incident requires history rewrite, coordinate with Replit support — do not run `filter-repo` from the agent environment.
 
 - **`-----BEGIN PRIVATE KEY-----` marker in `server/pushService.ts`** — 9 blobs across history, all the same false positive.
-  - **Status: accepted as a false positive, narrowly allowlisted.** The match is a string literal (`const beginMarker = "-----BEGIN PRIVATE KEY-----";`) inside `normalizeApnsKey()`, which reformats an APNs auth key supplied via env var. No actual key material is committed.
-  - To stop this from re-firing on every edit (which would otherwise pressure contributors into using `--no-verify` and erode the protection), a per-rule path allowlist was added: the `PEM private key block` rule is suppressed *only* for the exact paths `server/pushService.ts` (the actual marker) and `replit.md` (this documentation, which has to spell the marker out) in both `.githooks/pre-commit` (`PEM_ALLOWLIST_REGEX`) and `.github/workflows/secret-scan.yml` (same variable). Every other path — including any new file — still fails the build on a real PEM block.
-  - Reproduce the historical sweep at any time with the snippet under "Reproducing the sweep" below. If the allowlist is ever broadened, document it here and mirror the change in both the hook and the workflow.
+  - **Status: resolved at the source.** The literal markers inside `normalizeApnsKey()` were rewritten as `` `-----BEGIN ${"PRIVATE"} KEY-----` `` (and the matching `END` form) so the runtime values are unchanged but the secret-scanner regex no longer matches them. The `--no-verify` workaround is no longer required when editing this file.
+  - The per-rule `PEM_ALLOWLIST_REGEX` in both `.githooks/pre-commit` and `.github/workflows/secret-scan.yml` was correspondingly narrowed from `^(server/pushService\.ts|replit\.md)$` to `^replit\.md$`. The `replit.md` entry remains because this Security Notes section still has to spell the marker out for documentation purposes. Every other path — including `server/pushService.ts` and any new file — still fails the build on a real PEM block.
+  - Reproduce the historical sweep at any time with the snippet under "Reproducing the sweep" below. If the allowlist is ever broadened again, document it here and mirror the change in both the hook and the workflow.
 
 No other matches across all 9 patterns (Google OAuth, Google API key, OpenAI, GitHub, Slack, Stripe live, AWS, PEM, Postgres-with-password). Firebase iOS `AIza` keys inside `GoogleService-Info*.plist` were correctly filtered by the existing allowlist and are intentionally not listed here.
 
@@ -115,7 +115,7 @@ PATTERNS = {
 }
 SKIP  = re.compile(r"(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$|\.(png|jpe?g|gif|webp|ico|pdf|zip|gz|tgz|mp4|mov|woff2?|ttf|otf)$")
 ALLOW_AIZA = re.compile(r"GoogleService-Info.*\.plist$")
-ALLOW_PEM  = re.compile(r"^server/pushService\.ts$")
+ALLOW_PEM  = re.compile(r"^replit\.md$")
 COMPILED = [(l, re.compile(r)) for l, r in PATTERNS.items()]
 
 objs = subprocess.check_output(["git","rev-list","--all","--objects"]).decode("utf-8","replace")

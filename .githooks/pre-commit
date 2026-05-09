@@ -45,11 +45,12 @@ SKIP_REGEX='(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|\.githooks/pre-c
 # Allowlist: Firebase iOS client API keys are documented as safe-to-commit.
 ALLOWLIST_REGEX='GoogleService-Info.*\.plist$'
 
-# Per-rule path allowlist for documented false positives. The marker string
-# "-----BEGIN PRIVATE KEY-----" appears as a literal in normalizeApnsKey()
-# inside server/pushService.ts; it is not key material. See replit.md →
-# Security Notes → "Historical secret sweep" for the audit trail.
-PEM_ALLOWLIST_REGEX='^(server/pushService\.ts|replit\.md)$'
+# Per-rule path allowlist for documented false positives. The PEM marker
+# string used to also appear as a literal in normalizeApnsKey() inside
+# server/pushService.ts; that has since been split so the regex no longer
+# matches. The allowlist is therefore scoped to replit.md only, which still
+# has to spell the marker out in its Security Notes documentation.
+PEM_ALLOWLIST_REGEX='^replit\.md$'
 
 violations=0
 report=""
