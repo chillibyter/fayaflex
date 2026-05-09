@@ -162,14 +162,53 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
   const cardCaptureRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
-  const buildWorkoutShareText = useCallback(() => {
+  // Short caption used alongside the image (no URL — the share sheet adds it
+  // separately so we don't end up with a duplicate link in the message).
+  const buildShareCaption = useCallback(() => {
     const summary = getWorkoutSummary(post.content);
-    const tail = `Tap the link to join me on FayaFlex: ${APP_STORE_URL}`;
-    return summary ? `${summary}\n\n${tail}` : `Just crushed a workout on FayaFlex!\n\n${tail}`;
+    return summary || "Just crushed a workout on FayaFlex!";
   }, [post.content]);
+
+  // Caption + URL used when the share has no image attached.
+  const buildShareCaptionWithUrl = useCallback(() => {
+    const caption = buildShareCaption();
+    return `${caption}\n\nTap the link to join me on FayaFlex: ${APP_STORE_URL}`;
+  }, [buildShareCaption]);
+
+  // Wait for every <img> in the capture region to finish loading so the
+  // snapshot doesn't fire while an image is still streaming. We deliberately
+  // do NOT mutate the live DOM image (e.g. force crossOrigin) — html-to-image
+  // re-fetches images itself and falls back to `imagePlaceholder` on failure,
+  // so touching the live element risks blanking a Google profile avatar if
+  // its origin rejects anonymous CORS.
+  const prepareImagesForCapture = async (root: HTMLElement) => {
+    const imgs = Array.from(root.querySelectorAll("img"));
+    await Promise.all(
+      imgs.map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete && img.naturalWidth > 0) {
+              resolve();
+              return;
+            }
+            const done = () => resolve();
+            img.addEventListener("load", done, { once: true });
+            img.addEventListener("error", done, { once: true });
+            // Safety timeout — never let one stuck image block the capture.
+            setTimeout(done, 2500);
+          })
+      )
+    );
+  };
+
+  // 1×1 transparent PNG used as a stand-in for any image that still fails to
+  // load — keeps the capture from blowing up on a single bad src.
+  const TRANSPARENT_PIXEL =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
   const captureCardAsFile = useCallback(async (): Promise<File | null> => {
     if (!cardCaptureRef.current) return null;
+    const node = cardCaptureRef.current;
     const { toPng } = await import("html-to-image");
     // Use the page's actual background so the screenshot looks consistent
     // in both light and dark mode.
@@ -178,19 +217,46 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       getComputedStyle(document.body).backgroundColor !== "rgba(0, 0, 0, 0)"
         ? getComputedStyle(document.body).backgroundColor
         : "#ffffff";
-    const dataUrl = await toPng(cardCaptureRef.current, {
+
+    // Pre-warm images (CORS reload + wait for load) so the canvas isn't
+    // tainted by an avatar from a third-party CDN.
+    await prepareImagesForCapture(node);
+
+    const baseFilter = (n: Node) => {
+      if (n instanceof HTMLElement && n.dataset.shareHide === "true") {
+        return false;
+      }
+      return true;
+    };
+
+    const baseOpts = {
       cacheBust: true,
       pixelRatio: 2,
       backgroundColor: bg,
-      // Skip any element flagged with data-share-hide (e.g. the delete
-      // trash icon) so the screenshot looks clean.
-      filter: (node) => {
-        if (node instanceof HTMLElement && node.dataset.shareHide === "true") {
-          return false;
-        }
-        return true;
-      },
-    });
+      // If any single image fails the inline-fetch, swap in a transparent
+      // pixel instead of throwing the whole capture away.
+      imagePlaceholder: TRANSPARENT_PIXEL,
+      filter: baseFilter,
+    };
+
+    let dataUrl: string;
+    try {
+      dataUrl = await toPng(node, baseOpts);
+    } catch (err) {
+      console.warn("[Share] toPng failed, retrying without <img> elements", err);
+      // Last-chance retry: drop every <img> from the snapshot. The Avatar
+      // fallback (initials) and the rest of the card still render fine and
+      // the user gets a usable image instead of a text-only share.
+      dataUrl = await toPng(node, {
+        ...baseOpts,
+        filter: (n: Node) => {
+          if (!baseFilter(n)) return false;
+          if (n instanceof HTMLImageElement) return false;
+          return true;
+        },
+      });
+    }
+
     const res = await fetch(dataUrl);
     const blob = await res.blob();
     return new File([blob], "fayaflex-workout.png", { type: "image/png" });
@@ -203,19 +269,22 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
   const shareWorkoutWithImage = async () => {
     setIsCapturing(true);
     try {
-      const text = buildWorkoutShareText();
+      const caption = buildShareCaption();
       const file = await captureCardAsFile().catch((err) => {
         console.warn("[Share] image capture failed, falling back to text", err);
         return null;
       });
 
       const nav = navigator as any;
-      // Best path: native share with the image file attached.
+      // Best path: native share with the image file attached. Pass `url`
+      // separately so the share sheet handles it once — putting it in the
+      // text would duplicate the link in some apps (e.g. iOS Messages).
       if (file && nav.canShare && nav.canShare({ files: [file] })) {
         try {
           await nav.share({
             title: "My FayaFlex workout",
-            text,
+            text: caption,
+            url: APP_STORE_URL,
             files: [file],
           });
           return;
@@ -228,7 +297,11 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
       // Next best: native share without image.
       if (nav.share) {
         try {
-          await nav.share({ title: "My FayaFlex workout", text, url: APP_STORE_URL });
+          await nav.share({
+            title: "My FayaFlex workout",
+            text: caption,
+            url: APP_STORE_URL,
+          });
           return;
         } catch (err: any) {
           if (err?.name === "AbortError") return;
@@ -238,7 +311,7 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
 
       // Last resort on desktop: copy to clipboard.
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(buildShareCaptionWithUrl());
         toast({ title: "Copied to clipboard", description: "Paste it anywhere to share." });
       } catch {
         toast({
@@ -261,14 +334,19 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
     if (!nav.share || !nav.canShare) return false;
     setIsCapturing(true);
     try {
-      const text = buildWorkoutShareText();
+      const caption = buildShareCaption();
       const file = await captureCardAsFile().catch((err) => {
         console.warn("[Share] image capture failed", err);
         return null;
       });
       if (file && nav.canShare({ files: [file] })) {
         try {
-          await nav.share({ title: "My FayaFlex workout", text, files: [file] });
+          await nav.share({
+            title: "My FayaFlex workout",
+            text: caption,
+            url: APP_STORE_URL,
+            files: [file],
+          });
           return true;
         } catch (err: any) {
           if (err?.name === "AbortError") return true; // user dismissed
@@ -284,7 +362,7 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
   const shareWorkoutWhatsApp = async () => {
     if (await tryNativeImageShare()) return;
     // Desktop fallback: WhatsApp web intent (text only).
-    window.open(`https://wa.me/?text=${encodeURIComponent(buildWorkoutShareText())}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/?text=${encodeURIComponent(buildShareCaptionWithUrl())}`, "_blank", "noopener,noreferrer");
   };
   const shareWorkoutFacebook = async () => {
     if (await tryNativeImageShare()) return;
