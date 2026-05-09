@@ -100,4 +100,17 @@ EOF
   exit 1
 fi
 
+# Backstop: high-entropy detector for credentials that don't match any known
+# prefix (random session tokens, webhook signing secrets, custom-format keys).
+# Operates on the diff of *staged* changes only - existing repo content has
+# already been audited via the one-shot sweep documented in replit.md, so we
+# only block what this commit introduces. Allowlist + threshold logic lives
+# in .githooks/entropy-scan.py so the local hook and the CI job stay in sync.
+if command -v python3 >/dev/null 2>&1 && [ -f .githooks/entropy-scan.py ]; then
+  if ! git diff --cached -U0 --diff-filter=ACMR -- | \
+       python3 .githooks/entropy-scan.py; then
+    exit 1
+  fi
+fi
+
 exit 0

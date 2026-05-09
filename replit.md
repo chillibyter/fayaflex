@@ -64,6 +64,22 @@ The local hook only protects contributors who have run `git config core.hooksPat
 
 The CI job and the local hook share an identical `PATTERNS` list and the same `GoogleService-Info*.plist` allowlist. **If you change one, mirror the change in the other** (and update this section if the allowlist changes).
 
+### High-entropy backstop (`.githooks/entropy-scan.py`)
+The regex `PATTERNS` list above only fires on credentials with a recognizable prefix (`ya29.`, `AIza`, `sk-`, `gh*_`, `xox[baprs]-`, `sk_live_`, `AKIA`, `-----BEGIN PRIVATE KEY-----`, `postgres://user:pass@`). A bare 40-character random session token, a webhook signing secret, or any custom-format API key would slip through. To close that gap, both the local hook and the CI job pipe the change diff through `.githooks/entropy-scan.py`, which flags any *newly added* line containing a 24+ character base64-ish token whose Shannon entropy is ≥ 4.5 bits/char.
+
+Key design choices (see the docstring at the top of the script for the full rationale):
+- **Diff-only, never full-file.** Existing repo content has already been audited via the one-shot sweep below; re-scanning every blob on every commit would produce a long tail of unfixable historical noise that pressures contributors into `--no-verify`. We only block what *this* commit introduces. As a consequence, the CI job *skips* the entropy backstop on the no-base fallback path (very first push to a brand-new branch, no parent commit to diff against). The regex scan still runs against every tracked file in that case, so known-prefix credentials are not missed; the next push with a real base will exercise the entropy backstop too.
+- **Single source of truth.** Unlike the regex `PATTERNS` list (which is hand-mirrored in two files), the entropy detector lives in one Python module that both the local hook and the CI job invoke. There is no parallel allowlist to keep in sync.
+- **Three-layer allowlist** inside `.githooks/entropy-scan.py`:
+  - `PATH_ALLOWLIST` — skip a file entirely (lockfiles, `.svg`, `.map`, `.min.js`, `.wasm`, `GoogleService-Info*.plist`, the scanner files themselves).
+  - `TOKEN_ALLOWLIST` — skip individual token shapes that look random but are not credentials. Currently covers UUIDs, pure-hex digests (git SHA-1, sha256, sha512), SRI integrity hashes (`sha256-…`), Vite/esbuild chunk hashes, build-artifact identifiers (`App-<long-hex>`), Nix store object names (`<32-char-base32>-<package>`), and Swift mangled symbol names from iOS crash logs (`_TtC…`, `_TtGC…`).
+  - **`allow-secret` pragma** — any added line containing the comment marker `// allow-secret` or `# allow-secret` is skipped. Use this for hand-vetted in-source false positives, with a comment explaining why. This is the per-line equivalent of `--no-verify` and is the preferred escape hatch for one-off cases.
+- **Token regex excludes `/` and `.`** so URLs and dotted identifiers (package names, fully qualified Java class names) don't get captured as one giant token. Real credential formats overwhelmingly use the url-safe alphabet (`-_`) anyway — JWTs, GitHub tokens, OpenAI keys, Stripe keys, and Slack tokens all avoid `/`.
+
+If a future false positive surfaces, prefer (in order): a per-line `allow-secret` comment, then a new entry in `TOKEN_ALLOWLIST` if the same shape appears in many places, then a `PATH_ALLOWLIST` entry only as a last resort. Update this section whenever `TOKEN_ALLOWLIST` or `PATH_ALLOWLIST` is broadened.
+
+**Known historical backlog:** running the entropy scanner against the entire repo (as if every tracked line were freshly added) currently surfaces ~228 hits, all inside `attached_assets/Pasted-*.txt` mobile crash-log paste-ins (HTTP ETag fragments, signed-URL params, and at least one base64 protobuf that looks like a real session blob). These are the tokens being addressed by the sibling task "Invalidate the user session tokens that leaked into the repo" — the right fix is rotation, not allowlisting. Because the entropy scanner only runs on diffs, this backlog does not block ongoing development.
+
 ### Historical secret sweep (one-time, May 9 2026)
 The pre-commit hook and CI workflow only catch *new* commits. To close the gap for credentials that may have landed earlier and been removed later, the same `PATTERNS` regex set was run against every blob reachable from any ref in the repo (`git rev-list --all --objects`, ~3.5k unique blobs). Results:
 
