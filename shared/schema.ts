@@ -45,6 +45,10 @@ export const users = pgTable("users", {
   bmr: integer("bmr"),
   notificationPrefs: jsonb("notification_prefs"),
   lastKnownGlobalRank: integer("last_known_global_rank"),
+  // Default privacy treatment for GPS routes attached to auto-posted workouts.
+  // 'exact' = show the full route, 'fuzzed' = trim ~200m off both ends to hide
+  // start/finish (default), 'hidden' = don't show the route at all.
+  routePrivacyDefault: varchar("route_privacy_default", { length: 16 }).default("fuzzed"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -690,6 +694,13 @@ export const feedPosts = pgTable("feed_posts", {
     .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   imageUrl: text("image_url"),
+  // Google-encoded polyline of the workout's GPS route (HKWorkoutRoute on
+  // iOS). Optional — only present for outdoor workouts that recorded GPS.
+  routePolyline: text("route_polyline"),
+  // Snapshot of the user's privacy preference at the moment of posting, so
+  // changing the default later doesn't retroactively expose old routes.
+  // 'exact' | 'fuzzed' | 'hidden'.
+  routePrivacy: varchar("route_privacy", { length: 16 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

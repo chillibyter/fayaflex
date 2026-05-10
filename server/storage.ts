@@ -278,7 +278,12 @@ export interface IStorage {
   getLatestMessagePerTeam(teamIds: string[]): Promise<Record<string, { id: string; content: string; createdAt: Date; userFirstName: string | null }>>;
 
   // Feed post operations
-  createFeedPost(userId: string, content: string, imageUrl?: string | null): Promise<FeedPost>;
+  createFeedPost(
+    userId: string,
+    content: string,
+    imageUrl?: string | null,
+    extras?: { routePolyline?: string | null; routePrivacy?: string | null },
+  ): Promise<FeedPost>;
   getFeed(userId: string, limit?: number, offset?: number): Promise<FeedPostWithMeta[]>;
   deleteFeedPost(postId: string, userId: string): Promise<void>;
   likeFeedPost(postId: string, userId: string): Promise<void>;
@@ -1919,8 +1924,22 @@ export class DatabaseStorage implements IStorage {
 
   // ── Feed post operations ──────────────────────────────────────────────────
 
-  async createFeedPost(userId: string, content: string, imageUrl?: string | null): Promise<FeedPost> {
-    const [post] = await db.insert(feedPosts).values({ userId, content, imageUrl: imageUrl ?? null }).returning();
+  async createFeedPost(
+    userId: string,
+    content: string,
+    imageUrl?: string | null,
+    extras?: { routePolyline?: string | null; routePrivacy?: string | null },
+  ): Promise<FeedPost> {
+    const [post] = await db
+      .insert(feedPosts)
+      .values({
+        userId,
+        content,
+        imageUrl: imageUrl ?? null,
+        routePolyline: extras?.routePolyline ?? null,
+        routePrivacy: extras?.routePrivacy ?? null,
+      })
+      .returning();
     return post;
   }
 

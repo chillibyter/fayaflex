@@ -16,6 +16,10 @@ export interface DetailedWorkout {
   distanceMeters?: number | null;
   avgHeartRate?: number | null;
   elevationGainMeters?: number | null;
+  // Google-encoded polyline of the GPS route, when the workout had one
+  // (HealthKit HKWorkoutRoute on iOS). Optional and only set on outdoor
+  // workouts where the user granted location access.
+  routePolyline?: string | null;
 }
 
 // iOS HealthKit plugin (custom native Swift plugin)
@@ -636,6 +640,7 @@ class HealthService {
             distanceMeters,
             elevationGainMeters: typeof w.elevationGainMeters === 'number' && w.elevationGainMeters > 0 ? w.elevationGainMeters : null,
             avgHeartRate,
+            routePolyline: typeof w.routePolyline === 'string' && w.routePolyline.length > 0 ? w.routePolyline : null,
             };
           });
       }

@@ -1,6 +1,7 @@
 import Foundation
 import Capacitor
 import HealthKit
+import CoreLocation
 
 @objc(HealthKitPlugin)
 public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -67,7 +68,109 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             types.insert(cycDistType)
         }
         types.insert(HKObjectType.workoutType())
+        // HKSeriesType.workoutRoute() backs the GPS trace for outdoor workouts.
+        // Without it, route queries return an empty result and the feed cards
+        // fall back to no map, even when the workout was recorded outdoors.
+        types.insert(HKSeriesType.workoutRoute())
         return types
+    }
+
+    // Encode an array of CLLocations as a Google encoded polyline string.
+    // We round to 1e5 (≈1.1m precision) to match the standard polyline
+    // algorithm and keep payloads small. Drops invalid/zero coordinates so a
+    // single bad GPS sample doesn't poison the trace.
+    private func encodePolyline(locations: [CLLocation]) -> String {
+        var output = ""
+        var prevLat: Int = 0
+        var prevLng: Int = 0
+        for loc in locations {
+            let coord = loc.coordinate
+            if !CLLocationCoordinate2DIsValid(coord) { continue }
+            if coord.latitude == 0 && coord.longitude == 0 { continue }
+            let lat = Int((coord.latitude * 1e5).rounded())
+            let lng = Int((coord.longitude * 1e5).rounded())
+            output += encodeSignedNumber(lat - prevLat)
+            output += encodeSignedNumber(lng - prevLng)
+            prevLat = lat
+            prevLng = lng
+        }
+        return output
+    }
+
+    private func encodeSignedNumber(_ num: Int) -> String {
+        var sgnNum = num << 1
+        if num < 0 { sgnNum = ~sgnNum }
+        var out = ""
+        while sgnNum >= 0x20 {
+            let nextValue = (0x20 | (sgnNum & 0x1f)) + 63
+            out.append(Character(UnicodeScalar(nextValue)!))
+            sgnNum >>= 5
+        }
+        let last = sgnNum + 63
+        out.append(Character(UnicodeScalar(last)!))
+        return out
+    }
+
+    // Fetch the GPS trace (HKWorkoutRoute) for one workout and resolve to a
+    // Google-encoded polyline string. Returns "" when the workout has no
+    // route (indoor workout, location permission denied, or pre-iOS 11 data).
+    private func fetchEncodedRoute(for workout: HKWorkout, completion: @escaping (String) -> Void) {
+        let routeType = HKSeriesType.workoutRoute()
+        let predicate = HKQuery.predicateForObjects(from: workout)
+        let routeQuery = HKSampleQuery(
+            sampleType: routeType,
+            predicate: predicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: nil
+        ) { [weak self] _, samples, _ in
+            guard let self = self,
+                  let routes = samples as? [HKWorkoutRoute],
+                  !routes.isEmpty else {
+                completion("")
+                return
+            }
+
+            // A single workout can have multiple HKWorkoutRoute samples (e.g.
+            // the OS split the trace across pauses). Concatenate every
+            // sample's locations in chronological order before encoding so
+            // we don't silently drop later segments of the run.
+            let routeLocationsQueue = DispatchQueue(label: "fayaflex.healthkit.routelocs")
+            var perRouteLocations: [Int: [CLLocation]] = [:]
+            let routeGroup = DispatchGroup()
+
+            for (idx, route) in routes.enumerated() {
+                routeGroup.enter()
+                var collected: [CLLocation] = []
+                let routeLocationQuery = HKWorkoutRouteQuery(route: route) { _, locations, done, _ in
+                    if let locs = locations { collected.append(contentsOf: locs) }
+                    if done {
+                        routeLocationsQueue.sync {
+                            perRouteLocations[idx] = collected
+                        }
+                        routeGroup.leave()
+                    }
+                }
+                self.healthStore.execute(routeLocationQuery)
+            }
+
+            routeGroup.notify(queue: .global()) {
+                let merged: [CLLocation] = routeLocationsQueue.sync {
+                    var all: [CLLocation] = []
+                    for i in 0..<routes.count {
+                        if let segment = perRouteLocations[i] { all.append(contentsOf: segment) }
+                    }
+                    return all
+                }
+                // Downsample very long traces to keep the encoded string
+                // bounded (every 3rd point is plenty for a thumbnail).
+                let stride = merged.count > 1500 ? 3 : 1
+                let sampled = stride == 1
+                    ? merged
+                    : merged.enumerated().compactMap { idx, loc in idx % stride == 0 ? loc : nil }
+                completion(self.encodePolyline(locations: sampled))
+            }
+        }
+        healthStore.execute(routeQuery)
     }
     
     @objc public func isAvailable(_ call: CAPPluginCall) {
@@ -161,6 +264,11 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             let formatter = ISO8601DateFormatter()
             let workoutSamples = samples as? [HKWorkout] ?? []
             var results: [[String: Any]] = Array(repeating: [:], count: workoutSamples.count)
+            // Serial queue used to safely mutate `results` from multiple
+            // background HealthKit completion threads. Swift Dictionary is a
+            // value type, so we MUST go through results[idx] (not a captured
+            // copy of the entry dict) when writing partial fields.
+            let resultsQueue = DispatchQueue(label: "fayaflex.healthkit.results")
             let group = DispatchGroup()
             let hrType = HKQuantityType.quantityType(forIdentifier: .heartRate)
             let hrUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
@@ -170,41 +278,59 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 let distanceMeters = workout.totalDistance?.doubleValue(for: HKUnit.meter()) ?? 0
                 let elevation = (workout.metadata?[HKMetadataKeyElevationAscended] as? HKQuantity)?.doubleValue(for: HKUnit.meter()) ?? 0
 
-                var entry: [String: Any] = [
-                    "uuid": workout.uuid.uuidString,
-                    "activityType": workout.workoutActivityType.rawValue,
-                    "activityTypeName": HealthKitPlugin.workoutActivityName(workout.workoutActivityType),
-                    "startDate": formatter.string(from: workout.startDate),
-                    "endDate": formatter.string(from: workout.endDate),
-                    "duration": workout.duration,
-                    "calories": Int(energyKcal),
-                    "distanceMeters": Int(distanceMeters),
-                    "elevationGainMeters": Int(elevation)
-                ]
-
-                guard let hrType = hrType else {
-                    results[idx] = entry
-                    continue
+                // Seed the slot with the synchronous fields. Async lookups
+                // below merge their fields into results[idx] under the
+                // serial queue.
+                resultsQueue.sync {
+                    results[idx] = [
+                        "uuid": workout.uuid.uuidString,
+                        "activityType": workout.workoutActivityType.rawValue,
+                        "activityTypeName": HealthKitPlugin.workoutActivityName(workout.workoutActivityType),
+                        "startDate": formatter.string(from: workout.startDate),
+                        "endDate": formatter.string(from: workout.endDate),
+                        "duration": workout.duration,
+                        "calories": Int(energyKcal),
+                        "distanceMeters": Int(distanceMeters),
+                        "elevationGainMeters": Int(elevation)
+                    ]
                 }
 
+                // Route lookup runs in parallel with heart-rate stats. Both
+                // completion handlers merge into results[idx] via the
+                // serial queue, so partial updates can't clobber each other.
                 group.enter()
-                let predicate = HKQuery.predicateForSamples(withStart: workout.startDate, end: workout.endDate, options: .strictStartDate)
-                let hrQuery = HKStatisticsQuery(quantityType: hrType, quantitySamplePredicate: predicate, options: [.discreteAverage, .discreteMax]) { _, stats, _ in
-                    if let avg = stats?.averageQuantity()?.doubleValue(for: hrUnit) {
-                        entry["avgHeartRate"] = Int(avg.rounded())
+                self.fetchEncodedRoute(for: workout) { polyline in
+                    if !polyline.isEmpty {
+                        resultsQueue.sync {
+                            results[idx]["routePolyline"] = polyline
+                        }
                     }
-                    if let max = stats?.maximumQuantity()?.doubleValue(for: hrUnit) {
-                        entry["maxHeartRate"] = Int(max.rounded())
-                    }
-                    results[idx] = entry
                     group.leave()
                 }
-                healthStoreRef.execute(hrQuery)
+
+                if let hrType = hrType {
+                    group.enter()
+                    let predicate = HKQuery.predicateForSamples(withStart: workout.startDate, end: workout.endDate, options: .strictStartDate)
+                    let hrQuery = HKStatisticsQuery(quantityType: hrType, quantitySamplePredicate: predicate, options: [.discreteAverage, .discreteMax]) { _, stats, _ in
+                        resultsQueue.sync {
+                            if let avg = stats?.averageQuantity()?.doubleValue(for: hrUnit) {
+                                results[idx]["avgHeartRate"] = Int(avg.rounded())
+                            }
+                            if let max = stats?.maximumQuantity()?.doubleValue(for: hrUnit) {
+                                results[idx]["maxHeartRate"] = Int(max.rounded())
+                            }
+                        }
+                        group.leave()
+                    }
+                    healthStoreRef.execute(hrQuery)
+                }
             }
 
             group.notify(queue: .main) {
-                let nonEmpty = results.map { $0.isEmpty ? [String: Any]() : $0 }.filter { !$0.isEmpty }
-                call.resolve(["workouts": nonEmpty])
+                let snapshot: [[String: Any]] = resultsQueue.sync {
+                    return results.filter { !$0.isEmpty }
+                }
+                call.resolve(["workouts": snapshot])
             }
         }
         

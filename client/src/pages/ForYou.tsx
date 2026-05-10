@@ -453,6 +453,8 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
             content={post.content}
             isTopBurner={isTopBurner}
             personalBests={post.personalBests}
+            routePolyline={(post as any).routePolyline}
+            routePrivacy={(post as any).routePrivacy}
           />
         </div>
       </div>

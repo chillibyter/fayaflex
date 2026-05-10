@@ -101,7 +101,7 @@ export default function Profile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string; avatarId?: string; profileImageUrl?: string; bmr?: number | null }) => {
+    mutationFn: async (data: { firstName: string; lastName: string; avatarId?: string; profileImageUrl?: string; bmr?: number | null; routePrivacyDefault?: string }) => {
       return await apiRequest('PATCH', '/api/auth/user', data);
     },
     onSuccess: () => {
@@ -536,6 +536,41 @@ export default function Profile() {
                 <span className="font-medium">Notifications</span>
               </button>
             </Link>
+            <div className="border-t my-2" />
+            <div className="px-2 py-2">
+              <div className="text-sm font-medium mb-1">Route privacy</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Controls how your GPS route appears on auto-posted workouts.
+                Changes only apply to new posts.
+              </p>
+              <div className="flex flex-col gap-1">
+                {[
+                  { value: "exact", label: "Show full route" },
+                  { value: "fuzzed", label: "Hide start &amp; end (recommended)" },
+                  { value: "hidden", label: "Don't show route" },
+                ].map((opt) => {
+                  const current = ((user as any)?.routePrivacyDefault || "fuzzed") as string;
+                  const selected = current === opt.value;
+                  return (
+                    <Button
+                      key={opt.value}
+                      variant={selected ? "default" : "outline"}
+                      className="justify-start"
+                      data-testid={`button-route-privacy-${opt.value}`}
+                      onClick={() => updateProfileMutation.mutate({
+                        firstName: user?.firstName || "",
+                        lastName: user?.lastName || "",
+                        routePrivacyDefault: opt.value,
+                      } as any)}
+                      disabled={updateProfileMutation.isPending}
+                    >
+                      {selected && <Check className="h-3.5 w-3.5 mr-1" />}
+                      <span dangerouslySetInnerHTML={{ __html: opt.label }} />
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="border-t my-2" />
             <Link href="/delete-account" onClick={() => setIsSettingsOpen(false)}>
               <button className="w-full flex items-center gap-3 py-3 px-2 hover:bg-destructive/10 rounded-md transition-colors text-destructive" data-testid="link-delete-account">

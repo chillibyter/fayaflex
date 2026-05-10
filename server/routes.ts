@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, MAX_TEAM_MEMBERS, type Activity } from "@shared/schema";
+import { applyRoutePrivacy, type RoutePrivacy } from "@shared/polyline";
 
 interface WorkoutSummary {
   notes?: string | null;
@@ -79,11 +80,13 @@ interface SyncedWorkoutInput extends WorkoutSummary {
   externalId: string;
   source: string;
   startedAt?: string | null;
+  routePolyline?: string | null;
 }
 
 async function autoPostSyncedWorkouts(
   userId: string,
   workouts: SyncedWorkoutInput[],
+  routePrivacy: string,
 ): Promise<{ posted: number; skipped: number }> {
   let posted = 0;
   let skipped = 0;
@@ -140,7 +143,18 @@ async function autoPostSyncedWorkouts(
       }
       reserved = true;
       const content = formatWorkoutFeedPost(w);
-      const post = await storage.createFeedPost(userId, content, null);
+      // Snapshot the user's current privacy preference onto the post so a
+      // later toggle change doesn't retroactively expose old start points.
+      // Apply the privacy transform here, server-side, so the raw GPS trace
+      // never leaves the server when the user has fuzzing or hidden enabled
+      // — the /api/feed response can then return routePolyline as-is.
+      const storedPolyline = w.routePolyline
+        ? applyRoutePrivacy(w.routePolyline, routePrivacy as RoutePrivacy)
+        : null;
+      const post = await storage.createFeedPost(userId, content, null, {
+        routePolyline: storedPolyline,
+        routePrivacy: storedPolyline ? routePrivacy : null,
+      });
       const postId = (post as any)?.id;
       if (postId) {
         await storage.setSyncedWorkoutFeedPost(userId, w.source, w.externalId, postId);
@@ -247,6 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         regionId: z.string().nullable().optional(),
         townId: z.string().nullable().optional(),
         bmr: z.number().int().min(500).max(5000).nullable().optional(),
+        routePrivacyDefault: z.enum(["exact", "fuzzed", "hidden"]).optional(),
       });
       
       const validatedData = updateUserSchema.parse(req.body);
@@ -375,6 +390,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           distanceMeters: z.number().int().min(0).optional().nullable(),
           avgHeartRate: z.number().int().min(0).optional().nullable(),
           elevationGainMeters: z.number().int().min(0).optional().nullable(),
+          // Google-encoded polyline of the workout's GPS route, when present.
+          // Capped well above the longest realistic ultramarathon trace
+          // (~50 KB) to keep request payloads bounded.
+          routePolyline: z.string().max(100_000).optional().nullable(),
         })).max(100).optional(),
       });
       
@@ -467,9 +486,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Auto-post any newly synced individual workouts to the feed
       let autoPosted = { posted: 0, skipped: 0 };
       if (validatedData.workouts && validatedData.workouts.length > 0) {
+        // Look up the user's current route-privacy preference so each
+        // auto-post locks it in at creation time.
+        const syncingUser = await storage.getUser(userId);
+        const routePrivacy = (syncingUser as any)?.routePrivacyDefault || "fuzzed";
         autoPosted = await autoPostSyncedWorkouts(
           userId,
           validatedData.workouts.map(w => ({ ...w, source: validatedData.provider })),
+          routePrivacy,
         );
         console.log(`[Sync] Feed auto-post: posted=${autoPosted.posted}, skipped=${autoPosted.skipped}`);
       }

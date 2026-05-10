@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { RouteMap } from "@/components/RouteMap";
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
@@ -539,12 +540,18 @@ interface WorkoutPostCardProps {
   personalBests?: PBFlags;
   /** When true, marks this card as the calorie leader of the feed. */
   isTopBurner?: boolean;
+  /** Optional Google-encoded GPS polyline captured by HealthKit. */
+  routePolyline?: string | null;
+  /** 'exact' | 'fuzzed' | 'hidden' — locked in when the post was created. */
+  routePrivacy?: "exact" | "fuzzed" | "hidden" | null;
 }
 
 export function WorkoutPostCard({
   content,
   personalBests,
   isTopBurner,
+  routePolyline,
+  routePrivacy,
 }: WorkoutPostCardProps) {
   // ── Hooks (must run on every render before any conditional return) ─────────
   const seed = useMemo(() => hashString(content), [content]);
@@ -709,6 +716,16 @@ export function WorkoutPostCard({
 
             {showHiitIntervals && (
               <HiitIntervals seed={seed} accent={theme.accent} barTo={theme.barTo} />
+            )}
+
+            {routePolyline && routePrivacy !== "hidden" && (
+              <div className="mb-2">
+                <RouteMap
+                  polyline={routePolyline}
+                  privacy={routePrivacy ?? "fuzzed"}
+                  accent={theme.accent}
+                />
+              </div>
             )}
 
             <div>
