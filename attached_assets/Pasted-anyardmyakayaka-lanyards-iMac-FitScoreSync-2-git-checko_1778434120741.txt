@@ -1,0 +1,108 @@
+anyardmyakayaka@lanyards-iMac FitScoreSync-2 % git checkout -- package-lock.json
+git status
+error: path 'package-lock.json' is unmerged
+On branch main
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+	both modified:   capacitor.config.ts
+	both modified:   ios/App/App/App.entitlements
+	both modified:   package-lock.json
+
+no changes added to commit (use "git add" and/or "git commit -a")
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % git checkout HEAD -- package-lock.json
+git add package-lock.json
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % cat capacitor.config.ts
+cat ios/App/App/App.entitlements
+import type { CapacitorConfig } from '@capacitor/cli';
+const config: CapacitorConfig = {
+  appId: 'com.fayaflex.app',
+  appName: 'FayaFlex',
+  webDir: 'empty-web-dir',
+  server: {
+    url: 'https://fayaflex.com',
+    androidScheme: 'https',
+    iosScheme: 'capacitor',
+    allowNavigation: ['*.fayaflex.com'],
+  },
+  ios: {
+    contentInset: 'automatic',
+    limitsNavigationsToAppBoundDomains: false,
+  },
+  android: {
+    backgroundColor: '#0f172a',
+  },
+  plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
+    SplashScreen: {
+      launchShowDuration: 0,
+      launchAutoHide: false,
+      backgroundColor: "#10A37F",
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: true,
+      androidSpinnerStyle: "large",
+      iosSpinnerStyle: "small",
+      spinnerColor: "#FFFFFF",
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+    StatusBar: {
+      style: 'dark',
+      backgroundColor: '#0f172a',
+    },
+    Camera: {
+      permissions: ['camera', 'photos'],
+    },
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+<<<<<<< Updated upstream
+      // iOS client ID from Google Cloud Console (matches the reversed URL
+      // scheme + GIDClientID we set in ios/App/App/Info.plist).
+      iosClientId: '389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com',
+      // Web/server-side OAuth client ID. Used by the backend to verify
+      // the ID token's audience. Falls back to GOOGLE_CLIENT_ID env var
+      // if set at sync time.
+      serverClientId: process.env.GOOGLE_CLIENT_ID || '389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com',
+=======
+      iosClientId: '389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com',
+      serverClientId: '389653262932-j2dt5jj7emlf972jtqqv8t6i5jdrt7oe.apps.googleusercontent.com',
+>>>>>>> Stashed changes
+      forceCodeForRefreshToken: true,
+    },
+  },
+};
+export default config;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>aps-environment</key>
+	<string>production</string>
+<<<<<<< Updated upstream
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:fayaflex.com</string>
+	</array>
+=======
+>>>>>>> Stashed changes
+	<key>com.apple.developer.healthkit</key>
+	<true/>
+	<key>com.apple.developer.healthkit.access</key>
+	<array/>
+<<<<<<< Updated upstream
+=======
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:fayaflex.com</string>
+	</array>
+>>>>>>> Stashed changes
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 %  
