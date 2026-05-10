@@ -11,22 +11,20 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCommunityAppleSignIn', :path => '../../node_modules/@capacitor-community/apple-sign-in'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorCamera', :path => '../../node_modules/@capacitor/camera'
   pod 'CapacitorPreferences', :path => '../../node_modules/@capacitor/preferences'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
+  pod 'SouthdevsCapacitorGoogleAuth', :path => '../../node_modules/@southdevs/capacitor-google-auth'
   pod 'CapacitorHealth', :path => '../../node_modules/capacitor-health'
 end
 
 target 'App' do
   capacitor_pods
-  # Force modern GoogleSignIn (and its deps) so each ships an Apple
-  # privacy manifest. Required to pass App Store ITMS-91061 review.
-  pod 'GoogleSignIn',       '~> 7.1'
-  pod 'GTMSessionFetcher',  '~> 3.4'
-  pod 'GTMAppAuth',         '~> 4.1'
+  # Add your Pods here
 end
 
 post_install do |installer|
