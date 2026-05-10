@@ -1,0 +1,43 @@
+~/workspace$ bash .local/resolve-merge.sh
+==> Resolving conflicts in package-lock.json (take Mac side)...
+Updated 1 path from the index
+==> Writing clean union App.entitlements...
+==> Staging resolved files...
+==> Verifying no conflict markers remain...
+==> Committing merge...
+[main 2e0669c] Merge origin/main: union entitlements, take Mac-side lockfile
+==> Pushing...
+Enumerating objects: 287, done.
+Counting objects: 100% (264/264), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (210/210), done.
+Writing objects: 100% (223/223), 4.49 MiB | 6.36 MiB/s, done.
+Total 223 (delta 157), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (157/157), completed with 29 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Google OAuth Access Token —————————————————————————
+remote:        locations:
+remote:          - commit: ca504025809ce51043d25db85117b6a623f5f2b0
+remote:            path: attached_assets/Pasted-Received-port-for-identifier-response-null-with-error-E_1777304223873.txt:48
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/chillibyter/fayaflex/security/secret-scanning/unblock-secret/3DXbWdpmXxgNMupWjOmILyJwZsR
+remote:     
+remote: 
+remote: 
+To https://github.com/chillibyter/fayaflex.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/chillibyter/fayaflex.git'
+~/workspace$ 
