@@ -489,7 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Look up the user's current route-privacy preference so each
         // auto-post locks it in at creation time.
         const syncingUser = await storage.getUser(userId);
-        const routePrivacy = (syncingUser as any)?.routePrivacyDefault || "fuzzed";
+        const routePrivacy = syncingUser?.routePrivacyDefault || "fuzzed";
         autoPosted = await autoPostSyncedWorkouts(
           userId,
           validatedData.workouts.map(w => ({ ...w, source: validatedData.provider })),

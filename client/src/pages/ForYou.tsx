@@ -61,6 +61,9 @@ interface FeedPost {
     steps?: boolean;
     elevation?: boolean;
   };
+  /** Google-encoded GPS polyline; already privacy-trimmed server-side. */
+  routePolyline?: string | null;
+  routePrivacy?: "exact" | "fuzzed" | "hidden" | null;
 }
 
 interface FeedComment {
@@ -453,8 +456,8 @@ function FeedCard({ post, currentUserId, isTopBurner }: { post: FeedPost; curren
             content={post.content}
             isTopBurner={isTopBurner}
             personalBests={post.personalBests}
-            routePolyline={(post as any).routePolyline}
-            routePrivacy={(post as any).routePrivacy}
+            routePolyline={post.routePolyline}
+            routePrivacy={post.routePrivacy}
           />
         </div>
       </div>

@@ -549,7 +549,7 @@ export default function Profile() {
                   { value: "fuzzed", label: "Hide start &amp; end (recommended)" },
                   { value: "hidden", label: "Don't show route" },
                 ].map((opt) => {
-                  const current = ((user as any)?.routePrivacyDefault || "fuzzed") as string;
+                  const current = (user?.routePrivacyDefault || "fuzzed") as string;
                   const selected = current === opt.value;
                   return (
                     <Button
@@ -561,7 +561,7 @@ export default function Profile() {
                         firstName: user?.firstName || "",
                         lastName: user?.lastName || "",
                         routePrivacyDefault: opt.value,
-                      } as any)}
+                      })}
                       disabled={updateProfileMutation.isPending}
                     >
                       {selected && <Check className="h-3.5 w-3.5 mr-1" />}
