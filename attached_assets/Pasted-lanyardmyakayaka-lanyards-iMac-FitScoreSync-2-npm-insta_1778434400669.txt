@@ -1,0 +1,55 @@
+lanyardmyakayaka@lanyards-iMac FitScoreSync-2 % npm install
+npx cap sync ios
+cd ios/App && pod install && cd ../..
+
+> rest-express@1.0.0 postinstall
+> patch-package
+
+patch-package 8.0.1
+Applying patches...
+@southdevs/capacitor-google-auth@7.0.0 ✔
+
+added 24 packages, removed 2 packages, and audited 823 packages in 6s
+
+106 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+✔ Copying web assets from empty-web-dir to ios/App/App/public in 1.93ms
+✔ Creating capacitor.config.json in ios/App/App in 758.21μs
+✔ copy ios in 44.21ms
+✔ Updating iOS plugins in 5.47ms
+✖ Updating iOS native dependencies with pod install - failed!
+✖ update ios - failed!
+[error] Analyzing dependencies
+        [!] CocoaPods could not find compatible versions for pod "GoogleSignIn":
+        In snapshot (Podfile.lock):
+        GoogleSignIn (= 6.2.4, ~> 6.2.4)
+        
+        In Podfile:
+        SouthdevsCapacitorGoogleAuth (from `../../node_modules/@southdevs/capacitor-google-auth`) was resolved to 0.0.1,
+        which depends on
+        GoogleSignIn (~> 7.1)
+        
+        
+        You have either:
+        * out-of-date source repos which you can update with `pod repo update` or with `pod install --repo-update`.
+        * changed the constraints of dependency `GoogleSignIn` inside your development pod
+        `SouthdevsCapacitorGoogleAuth`.
+        You should run `pod update GoogleSignIn` to apply changes you've made.
+        
+Analyzing dependencies
+[!] CocoaPods could not find compatible versions for pod "GoogleSignIn":
+  In snapshot (Podfile.lock):
+    GoogleSignIn (= 6.2.4, ~> 6.2.4)
+
+  In Podfile:
+    SouthdevsCapacitorGoogleAuth (from `../../node_modules/@southdevs/capacitor-google-auth`) was resolved to 0.0.1, which depends on
+      GoogleSignIn (~> 7.1)
+
+
+You have either:
+ * out-of-date source repos which you can update with `pod repo update` or with `pod install --repo-update`.
+ * changed the constraints of dependency `GoogleSignIn` inside your development pod `SouthdevsCapacitorGoogleAuth`.
+   You should run `pod update GoogleSignIn` to apply changes you've made.
+lanyardmyakayaka@lanyards-iMac App % 
