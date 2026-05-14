@@ -28,7 +28,7 @@ export function ActiveStake() {
       </div>
 
       <div className="px-4 pb-24 space-y-4">
-        <div className="relative rounded-md overflow-hidden bg-gradient-to-br from-orange-600 via-rose-600 to-rose-700 p-5">
+        <div className="relative rounded-md overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-green-800 p-5">
           <div className="absolute inset-0 opacity-20" style={{
             backgroundImage: "radial-gradient(circle at 80% 20%, rgba(255,200,100,0.6), transparent 50%)"
           }} />
@@ -78,7 +78,7 @@ export function ActiveStake() {
           <div className="px-4 pb-3 space-y-3">
             {members.map((m) => (
               <div key={m.name} className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold ${m.name === "You" ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-300"}`}>
+                <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold ${m.name === "You" ? "bg-emerald-500 text-white" : "bg-zinc-800 text-zinc-300"}`}>
                   {m.avatar}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -130,7 +130,7 @@ export function ActiveStake() {
           { Icon: Bell, label: "Inbox" },
           { Icon: User, label: "Me" },
         ].map(({ Icon, label, active }) => (
-          <div key={label} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${active ? "text-orange-400" : "text-zinc-500"}`}>
+          <div key={label} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${active ? "text-emerald-400" : "text-zinc-500"}`}>
             <Icon className="w-5 h-5" />
             <span className="text-[10px] font-medium">{label}</span>
           </div>

@@ -56,7 +56,7 @@ export function StakeResult() {
           <div className="px-4 pb-3 space-y-2.5">
             {members.map((m) => (
               <div key={m.name} className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold ${m.name === "You" ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-300"}`}>
+                <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold ${m.name === "You" ? "bg-emerald-500 text-white" : "bg-zinc-800 text-zinc-300"}`}>
                   {m.avatar}
                 </div>
                 <div className="flex-1">
@@ -88,18 +88,18 @@ export function StakeResult() {
             <div>
               <div className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Team streak</div>
               <div className="flex items-baseline gap-2">
-                <div className="text-3xl font-bold tabular-nums text-orange-400">7</div>
+                <div className="text-3xl font-bold tabular-nums text-emerald-400">7</div>
                 <div className="text-sm text-zinc-400">stakes in a row</div>
               </div>
             </div>
             <div className="text-right">
               <div className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Multiplier</div>
-              <div className="text-3xl font-bold tabular-nums text-orange-400">3×</div>
+              <div className="text-3xl font-bold tabular-nums text-emerald-400">3×</div>
             </div>
           </div>
         </div>
 
-        <button className="w-full bg-orange-500 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-2">
+        <button className="w-full bg-emerald-500 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-2">
           Start next week's stake
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -113,7 +113,7 @@ export function StakeResult() {
           { Icon: Bell, label: "Inbox" },
           { Icon: User, label: "Me" },
         ].map(({ Icon, label, active }) => (
-          <div key={label} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${active ? "text-orange-400" : "text-zinc-500"}`}>
+          <div key={label} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${active ? "text-emerald-400" : "text-zinc-500"}`}>
             <Icon className="w-5 h-5" />
             <span className="text-[10px] font-medium">{label}</span>
           </div>
