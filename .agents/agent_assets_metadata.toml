@@ -89,3 +89,9 @@ id = "wiKBH02jAaiF9HP56ZvhP"
 uri = "file://exports/FayaFlex-TeamStakes-Review.pptx"
 type = "slides"
 title = "FayaFlex · Team Stakes — Concept Review"
+
+[[outputs]]
+id = "cl0cfh-sUaAUz48fr9UGU"
+uri = "file://exports/FayaFlex-Engagement-Review.pptx"
+type = "slides"
+title = "FayaFlex · Engagement Review (12 slides)"
