@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --emerald-600: #059669;
+  --emerald-500: #10B981;
+  --emerald-400: #34D399;
+  --emerald-300: #6EE7B7;
+  
+  --rose-600: #E11D48;
+  --rose-500: #F43F5E;
+  --rose-400: #FB7185;
+  
+  --amber-600: #D97706;
+  --amber-500: #F59E0B;
+  --amber-400: #FBBF24;
+}
+
+.stakes-led-theme {
+  font-family: var(--font-sans);
+}
