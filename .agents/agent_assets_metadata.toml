@@ -83,3 +83,9 @@ id = "nsHLISl2MMaNHCdTl_sgM"
 uri = "file://exports/FayaFlex_Usage_Report_30d.pptx"
 type = "slides"
 title = "FayaFlex — 30-Day Usage Report"
+
+[[outputs]]
+id = "wiKBH02jAaiF9HP56ZvhP"
+uri = "file://exports/FayaFlex-TeamStakes-Review.pptx"
+type = "slides"
+title = "FayaFlex · Team Stakes — Concept Review"
