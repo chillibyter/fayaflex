@@ -1,7 +1,23 @@
 import { useLocation, Link } from "wouter";
 import { useState } from "react";
-import { Home, User, Trophy, Target, Plus } from "lucide-react";
+import { Home, User, Trophy, Target, Plus, RefreshCw, Loader2 } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+import { useQuery } from "@tanstack/react-query";
 import LogActivityDialog from "@/components/LogActivityDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { healthService } from "@/lib/healthService";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 const leftItems = [
   { path: "/", label: "Home", icon: Home },
@@ -13,14 +29,128 @@ const rightItems = [
   { path: "/profile", label: "Profile", icon: User },
 ];
 
+type DeviceConnection = {
+  provider: "apple_health" | "android_health" | "huawei_health" | "garmin_connect";
+  isConnected: boolean;
+};
+
 export default function BottomNavigation() {
   const [location] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
   const [logOpen, setLogOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [emptyPromptOpen, setEmptyPromptOpen] = useState(false);
+
+  // We only consider the FAB "sync mode" on native platforms where the
+  // health-service is actually wired up. On the web build (and inside the
+  // Replit preview) the FAB always opens the manual log dialog.
+  const isNative = Capacitor.isNativePlatform();
+
+  const { data: devices = [] } = useQuery<DeviceConnection[]>({
+    queryKey: ["/api/devices"],
+    enabled: !!user,
+  });
+
+  const nativeHealthConnected = devices.some(
+    (d) => d.isConnected && d.provider !== "garmin_connect"
+  );
+  const garminConnected = devices.some(
+    (d) => d.isConnected && d.provider === "garmin_connect"
+  );
+  const syncMode = isNative && (nativeHealthConnected || garminConnected);
 
   const isActive = (path: string) => {
     if (path === "/") return location === "/";
     return location.startsWith(path);
   };
+
+  const invalidateTodayQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/devices"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/progress/chart"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/feed"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/stakes/active"] });
+  };
+
+  const runDeviceSync = async () => {
+    setSyncing(true);
+    let foundData = false;
+    try {
+      // Native health (Apple / Android / Huawei): pull today's data via the
+      // health-service and POST to the same /api/devices/sync endpoint used
+      // by the background auto-sync hook.
+      if (nativeHealthConnected) {
+        const available = await healthService.isAvailable();
+        const provider = available ? healthService.getProviderName() : null;
+        if (provider) {
+          const endDate = new Date();
+          const startDate = new Date();
+          startDate.setHours(0, 0, 0, 0);
+
+          const [healthData, detailedWorkouts] = await Promise.all([
+            healthService.getHealthData(startDate, endDate, (user as any)?.bmr),
+            healthService.getDetailedWorkouts(1).catch(() => [] as any[]),
+          ]);
+
+          if (healthData.length > 0 || detailedWorkouts.length > 0) {
+            const res = await apiRequest("POST", "/api/devices/sync", {
+              provider,
+              activities: healthData,
+              workouts: detailedWorkouts,
+            });
+            if (res.ok) foundData = true;
+          }
+        }
+      }
+
+      // Garmin: server-side fetch for the past day.
+      if (garminConnected) {
+        try {
+          const res = await apiRequest("POST", "/api/garmin/sync", { days: 1 });
+          if (res.ok) {
+            const body = await res.json().catch(() => ({} as any));
+            if ((body?.synced ?? body?.created ?? 0) > 0) foundData = true;
+          }
+        } catch {
+          // ignore — fall through to the empty-state prompt
+        }
+      }
+
+      invalidateTodayQueries();
+
+      if (foundData) {
+        toast({
+          title: "Synced",
+          description: "Latest activity pulled from your device.",
+        });
+      } else {
+        // Nothing came back from the device — give the user a manual escape hatch.
+        setEmptyPromptOpen(true);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Sync failed",
+        description: error?.message || "Couldn't reach your device.",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleFabClick = () => {
+    if (syncing) return;
+    if (syncMode) {
+      runDeviceSync();
+    } else {
+      setLogOpen(true);
+    }
+  };
+
+  const FabIcon = syncing ? Loader2 : syncMode ? RefreshCw : Plus;
 
   return (
     <>
@@ -51,19 +181,22 @@ export default function BottomNavigation() {
             );
           })}
 
-          {/* Center FAB — opens the log-activity dialog */}
+          {/* Center FAB — syncs from device when one is connected, otherwise opens the manual log dialog. */}
           <div className="flex flex-col items-center justify-center min-w-[72px]">
             <button
               type="button"
-              onClick={() => setLogOpen(true)}
-              aria-label="Log activity"
+              onClick={handleFabClick}
+              aria-label={syncMode ? "Sync from device" : "Log activity"}
               data-testid="button-log-activity"
-              className="-mt-6 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active-elevate-2"
+              disabled={syncing}
+              className="-mt-6 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active-elevate-2 disabled:opacity-80"
               style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
             >
-              <Plus className="h-7 w-7 stroke-[2.5px]" />
+              <FabIcon className={`h-7 w-7 stroke-[2.5px] ${syncing ? "animate-spin" : ""}`} />
             </button>
-            <span className="text-[10px] text-muted-foreground font-medium mt-0.5">Log</span>
+            <span className="text-[10px] text-muted-foreground font-medium mt-0.5">
+              {syncing ? "Syncing" : syncMode ? "Sync" : "Log"}
+            </span>
           </div>
 
           {rightItems.map((item) => {
@@ -88,6 +221,29 @@ export default function BottomNavigation() {
       </nav>
 
       <LogActivityDialog open={logOpen} onOpenChange={setLogOpen} />
+
+      <AlertDialog open={emptyPromptOpen} onOpenChange={setEmptyPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>No new workout data</AlertDialogTitle>
+            <AlertDialogDescription>
+              We didn't find any new activity on your connected device for today. Want to log it manually?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-empty-cancel">Not now</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setEmptyPromptOpen(false);
+                setLogOpen(true);
+              }}
+              data-testid="button-empty-log-manually"
+            >
+              Log manually
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
