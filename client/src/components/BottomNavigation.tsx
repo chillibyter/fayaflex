@@ -1,6 +1,6 @@
 import { useLocation, Link } from "wouter";
 import { useState } from "react";
-import { Home, User, Trophy, Target, Plus, RefreshCw, Loader2 } from "lucide-react";
+import { Home, User, Trophy, Users, Plus, RefreshCw, Loader2 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { useQuery } from "@tanstack/react-query";
 import LogActivityDialog from "@/components/LogActivityDialog";
@@ -25,7 +25,7 @@ const leftItems = [
 ];
 
 const rightItems = [
-  { path: "/stakes", label: "Stakes", icon: Target },
+  { path: "/teams", label: "Teams", icon: Users },
   { path: "/profile", label: "Profile", icon: User },
 ];
 

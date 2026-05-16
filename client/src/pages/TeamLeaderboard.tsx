@@ -3,8 +3,9 @@ import { useParams, Link, useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ArrowLeft, Lock, Users, MoreVertical, LogOut, Trash2, UserMinus } from "lucide-react";
+import { AlertCircle, ArrowLeft, Lock, Users, MoreVertical, LogOut, Trash2, UserMinus, Target, Plus } from "lucide-react";
 import LeaderboardCard from "@/components/LeaderboardCard";
+import CreateStakeDialog from "@/components/CreateStakeDialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { TeamChat } from "@/components/TeamChat";
 import { format } from "date-fns";
@@ -215,6 +216,39 @@ export default function TeamLeaderboard() {
           )}
         </div>
       </div>
+
+      {/* Stakes shortcut — only shown to confirmed members (leaderboard fetch
+          resolved without a 403). Gated on `!isLoading && !isError` so the
+          CTA never flashes during the initial fetch for non-members. */}
+      {!isLoading && !isError && teamId && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Target className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-tight">Team stakes</p>
+              <p className="text-xs text-muted-foreground">
+                Start a friendly competition with your team or challenge another team.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="ghost" size="sm" asChild data-testid="button-view-all-stakes">
+                <Link href="/stakes">View all</Link>
+              </Button>
+              <CreateStakeDialog
+                teams={[{ id: teamId, name: teamData?.name || "Team" }]}
+                lockedHostTeamId={teamId}
+                trigger={
+                  <Button size="sm" data-testid="button-create-stake-team">
+                    <Plus className="h-4 w-4 mr-1" /> New stake
+                  </Button>
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Team chat — surfaced above the leaderboard so it's the first thing
           members see when they open the team page. */}
