@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check, Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check, Bell, Globe, MapPin, Users, Heart } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { User as UserType, Team, Challenge } from "@shared/schema";
 import { Trophy, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +52,19 @@ type UserStats = {
   totalSteps?: number;
 };
 
-type EnrichedTeam = Team & { memberCount: number };
+type DashboardStats = {
+  calories: number;
+  steps: number;
+  workouts: number;
+  rank: number;
+  totalActiveUsers: number;
+  percentile: number;
+};
+
+type LocationScope = "global" | "continent" | "country" | "region" | "town";
+
+type EnrichedTeam = Team & { memberCount: number; isMember?: boolean };
+type DeviceConnection = { provider: string; isConnected: boolean; lastSyncAt: Date | null };
 
 export default function Profile() {
   const { toast } = useToast();
@@ -91,6 +104,86 @@ export default function Profile() {
   const { data: teams = [] } = useQuery<EnrichedTeam[]>({
     queryKey: ['/api/teams'],
   });
+
+  // ── Dashboard-style headline data (merged in from the old Home page) ────────
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
+  const { data: dashboardStats, isLoading: isLoadingDashboard } = useQuery<DashboardStats>({
+    queryKey: ['/api/dashboard/stats'],
+    staleTime: 30 * 1000,
+  });
+
+  // Rotating location-scope ranking (town → region → country → continent → global)
+  const [currentScopeIndex, setCurrentScopeIndex] = useState(0);
+  const availableScopes = useMemo(() => {
+    const scopes: { scope: LocationScope; locationId: string | null }[] = [];
+    if (user?.townId) scopes.push({ scope: "town", locationId: user.townId });
+    if (user?.regionId) scopes.push({ scope: "region", locationId: user.regionId });
+    if (user?.countryId) scopes.push({ scope: "country", locationId: user.countryId });
+    if (user?.continentId) scopes.push({ scope: "continent", locationId: user.continentId });
+    scopes.push({ scope: "global", locationId: null });
+    return scopes;
+  }, [user?.townId, user?.regionId, user?.countryId, user?.continentId]);
+  const currentScope = availableScopes[currentScopeIndex] || { scope: "global" as LocationScope, locationId: null };
+
+  useEffect(() => {
+    if (availableScopes.length <= 1) return;
+    const id = setInterval(() => setCurrentScopeIndex((p) => (p + 1) % availableScopes.length), 5000);
+    return () => clearInterval(id);
+  }, [availableScopes.length]);
+
+  const { data: locationName } = useQuery<{ id: string; name: string }>({
+    queryKey: ['/api/locations', currentScope.locationId],
+    queryFn: async () => {
+      if (!currentScope.locationId) return null as any;
+      const res = await apiRequest("GET", `/api/locations/${currentScope.locationId}`);
+      if (!res.ok) return null as any;
+      return res.json();
+    },
+    enabled: currentScope.scope !== "global" && !!currentScope.locationId,
+    staleTime: 30 * 60 * 1000,
+  });
+
+  const { data: scopedRankData } = useQuery<{ rank: number; total: number }>({
+    queryKey: ['/api/leaderboard/user-rank', currentScope.scope, currentScope.locationId],
+    queryFn: async () => {
+      const scopeParam = currentScope.scope === "global" || !currentScope.locationId
+        ? ""
+        : `&scope=${currentScope.scope}&locationId=${currentScope.locationId}`;
+      const res = await apiRequest("GET", `/api/leaderboard/user-rank?month=${currentMonth}&year=${currentYear}${scopeParam}`);
+      if (!res.ok) return { rank: 0, total: 0 };
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const myTeams = teams.filter((t) => t.isMember !== false);
+  const primaryTeam = myTeams[0] ?? null;
+
+  const { data: teamRank, isLoading: isLoadingTeamRank } = useQuery<{ rank: number; total: number }>({
+    queryKey: ['/api/leaderboard/team', primaryTeam?.id, 'my-rank', currentMonth, currentYear],
+    queryFn: () =>
+      apiRequest("GET", `/api/leaderboard/team/${primaryTeam!.id}/my-rank?month=${currentMonth}&year=${currentYear}`).then((r) => r.json()),
+    enabled: !!primaryTeam,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: deviceConnections = [] } = useQuery<DeviceConnection[]>({
+    queryKey: ['/api/devices'],
+    staleTime: 60 * 1000,
+  });
+  const hasAppleHealthConnected =
+    Capacitor.getPlatform() === 'ios' &&
+    deviceConnections.some((d) => d.provider === 'apple_health' && d.isConnected);
+
+  const toOrdinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+  const getScopeDisplayName = () =>
+    currentScope.scope === "global" ? "Global" : (locationName?.name || currentScope.scope[0].toUpperCase() + currentScope.scope.slice(1));
 
   interface EnrichedChallenge extends Challenge {
     challenger: UserType | null;
@@ -302,6 +395,8 @@ export default function Profile() {
     return num.toString();
   };
 
+  const [, setWouterLocation] = useWouterLocation();
+
   if (isErrorUser) {
     return (
       <div className="min-h-screen bg-background p-4">
@@ -318,8 +413,6 @@ export default function Profile() {
       </div>
     );
   }
-
-  const [, setWouterLocation] = useWouterLocation();
 
   return (
     <div className="min-h-screen bg-background">
@@ -392,9 +485,165 @@ export default function Profile() {
       </div>
 
       <div className="px-4 mt-4">
-        {/* My Tracking — quick jump into manual logging or device sync. Keeps the
-            Profile usable as the user's personal cockpit per the Pulse Hybrid
-            redesign. */}
+        {/* Snapshot — headline stats, rank and team standing, merged in from the
+            old Home/Dashboard page so the profile doubles as the user's
+            personal cockpit. */}
+        <div className="mb-6 space-y-3">
+          {isLoadingDashboard ? (
+            <div className="grid grid-cols-3 gap-3">
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              <Link href="/daily-chart?metric=calories">
+                <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm border" data-testid="stat-calories">
+                  <Icon3D name="flame" size={36} className="mx-auto mb-1" />
+                  <p className="text-[11px] text-muted-foreground">Total Calories</p>
+                  <p className="text-xl font-bold">{dashboardStats?.calories?.toLocaleString() || 0}</p>
+                  <p className="text-[10px] text-muted-foreground">kcal</p>
+                </div>
+              </Link>
+              <Link href="/daily-chart?metric=steps">
+                <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm border" data-testid="stat-steps">
+                  <Icon3D name="sneaker" size={36} className="mx-auto mb-1" />
+                  <p className="text-[11px] text-muted-foreground">Total Steps</p>
+                  <p className="text-xl font-bold">{dashboardStats?.steps?.toLocaleString() || 0}</p>
+                  <p className="text-[10px] text-muted-foreground">steps</p>
+                </div>
+              </Link>
+              <Link href="/track">
+                <div className="bg-card text-card-foreground rounded-xl p-3 text-center cursor-pointer hover-elevate shadow-sm border" data-testid="stat-workouts">
+                  <Icon3D name="dumbbell" size={36} className="mx-auto mb-1" />
+                  <p className="text-[11px] text-muted-foreground">Workout Days</p>
+                  <p className="text-xl font-bold">{dashboardStats?.workouts || 0}</p>
+                  <p className="text-[10px] text-muted-foreground">days</p>
+                </div>
+              </Link>
+            </div>
+          )}
+
+          {hasAppleHealthConnected && (
+            <Link href="/health-data" data-testid="link-healthkit-attribution">
+              <div className="flex items-center justify-center gap-1.5 py-1.5 rounded-md bg-primary/10">
+                <Heart className="h-3 w-3 text-primary" />
+                <p className="text-xs text-primary font-medium">Stats synced from Apple HealthKit</p>
+              </div>
+            </Link>
+          )}
+
+          {/* Location-scoped ranking — rotates through town/region/country/global */}
+          <Link href="/leaderboard">
+            <Card className="cursor-pointer hover-elevate border-primary/20 transition-all duration-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shrink-0">
+                      {currentScope.scope === "global"
+                        ? <Globe className="h-6 w-6 text-white" />
+                        : <MapPin className="h-6 w-6 text-white" />}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <span className="truncate">{getScopeDisplayName()}</span>
+                        <span className="text-xs text-muted-foreground">Ranking</span>
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {(() => {
+                          const total = scopedRankData?.total || dashboardStats?.totalActiveUsers;
+                          if (!total) return 'View your position';
+                          if (total === 1) return "You're leading! Invite friends to compete";
+                          if (total <= 5) return `Competing with ${total} active users`;
+                          return `Out of ${total} active users`;
+                        })()}
+                      </p>
+                      {availableScopes.length > 1 && (
+                        <div className="flex gap-1 mt-1">
+                          {availableScopes.map((_, idx) => (
+                            <div
+                              key={idx}
+                              className={`h-1 w-4 rounded-full transition-colors ${idx === currentScopeIndex ? 'bg-primary' : 'bg-muted'}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-3xl font-bold text-primary transition-all duration-300" data-testid="text-global-rank">
+                      #{scopedRankData?.rank || dashboardStats?.rank || '-'}
+                    </p>
+                    {dashboardStats?.percentile && dashboardStats.percentile > 0 && currentScope.scope === "global" && (
+                      <Badge variant="secondary" className="mt-1">Top {Math.round(dashboardStats.percentile)}%</Badge>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Team standing */}
+          {primaryTeam ? (
+            <Link href="/teams">
+              <Card className="cursor-pointer hover-elevate" data-testid="widget-team-rank">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shrink-0">
+                        <Users className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Team Standing</p>
+                        {isLoadingTeamRank ? (
+                          <Skeleton className="h-5 w-40 mt-1" />
+                        ) : teamRank ? (
+                          <p className="font-semibold leading-tight truncate" data-testid="text-team-rank-label">
+                            {toOrdinal(teamRank.rank)} in <span className="text-primary">{primaryTeam.name}</span>
+                          </p>
+                        ) : (
+                          <p className="font-semibold leading-tight text-muted-foreground">View team leaderboard</p>
+                        )}
+                        {teamRank && (
+                          <p className="text-xs text-muted-foreground">
+                            of {teamRank.total} {teamRank.total === 1 ? "member" : "members"} this month
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isLoadingTeamRank ? (
+                        <Skeleton className="h-10 w-12 rounded-lg" />
+                      ) : teamRank ? (
+                        <p className="text-3xl font-bold text-primary" data-testid="text-team-rank-number">#{teamRank.rank}</p>
+                      ) : null}
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <Link href="/teams">
+              <Card className="cursor-pointer hover-elevate border-dashed" data-testid="widget-join-team-cta">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center shrink-0">
+                      <Users className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold">Join a team to compete</p>
+                      <p className="text-xs text-muted-foreground">See how you rank against your teammates</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
+        </div>
+
+        {/* My Tracking — quick jump into manual logging or device sync. */}
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
             <ActivityIcon className="h-4 w-4 text-primary" />
@@ -438,33 +687,6 @@ export default function Profile() {
 
         <div className="mb-6">
           <SmartGoals />
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-base font-semibold mb-3">Monthly Stats</h3>
-          <div className="grid grid-cols-3 gap-3">
-            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
-              <CardContent className="py-3 px-3 text-center">
-                <Flame className="h-6 w-6 text-orange-500 mx-auto mb-1" />
-                <p className="text-lg font-bold">{formatNumber(stats?.totalCalories || 0)}</p>
-                <p className="text-xs text-muted-foreground">Total Calories</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
-              <CardContent className="py-3 px-3 text-center">
-                <Footprints className="h-6 w-6 text-green-600 mx-auto mb-1" />
-                <p className="text-lg font-bold">{formatNumber(stats?.totalSteps || 0)}</p>
-                <p className="text-xs text-muted-foreground">Total Steps</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-green-50 dark:bg-green-900/20 border-0">
-              <CardContent className="py-3 px-3 text-center">
-                <Dumbbell className="h-6 w-6 text-green-600 mx-auto mb-1" />
-                <p className="text-lg font-bold">{stats?.totalWorkouts || 0}</p>
-                <p className="text-xs text-muted-foreground">Total Workouts</p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
         <BadgesDisplay />
