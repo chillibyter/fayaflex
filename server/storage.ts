@@ -23,6 +23,8 @@ import {
   pushTokens,
   syncedWorkouts,
   appNotifications,
+  stakes,
+  stakeParticipants,
   type AppNotification,
   type InsertAppNotification,
   type User,
@@ -64,6 +66,9 @@ import {
   type PushToken,
   type InsertPushToken,
   type NotificationPrefs,
+  type Stake,
+  type StakeParticipant,
+  type CreateStakeInput,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, inArray, gte, lte } from "drizzle-orm";
@@ -301,6 +306,24 @@ export interface IStorage {
   updateNotificationPrefs(userId: string, prefs: NotificationPrefs): Promise<User>;
   getUsersWithoutActivityOn(date: string): Promise<User[]>;
   getActivityById(id: string): Promise<Activity | undefined>;
+
+  // Stake operations
+  createStake(input: CreateStakeInput & { creatorId: string }): Promise<Stake>;
+  getStake(id: string): Promise<Stake | undefined>;
+  getStakesForUser(userId: string): Promise<Stake[]>;
+  getStakesForTeam(teamId: string): Promise<Stake[]>;
+  getActiveStakeForUserTeam(userId: string): Promise<Stake | undefined>;
+  joinStake(stakeId: string, userId: string, teamId: string): Promise<StakeParticipant>;
+  leaveStake(stakeId: string, userId: string): Promise<void>;
+  getStakeParticipants(stakeId: string): Promise<(StakeParticipant & { user: User })[]>;
+  acceptInterTeamStake(stakeId: string, accept: boolean): Promise<Stake>;
+  cancelStake(stakeId: string): Promise<Stake>;
+  computeStakeScores(stakeId: string): Promise<{
+    individualScores: Array<{ userId: string; teamId: string; score: number }>;
+    teamTotals: Record<string, number>;
+  }>;
+  getStakesRequiringCompletion(): Promise<Stake[]>;
+  completeStake(stakeId: string): Promise<Stake>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1775,6 +1798,259 @@ export class DatabaseStorage implements IStorage {
     const opponentScore = await getScore(challenge.opponentId);
 
     return { challengerScore, opponentScore };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Stake operations
+  // ──────────────────────────────────────────────────────────────────────
+  async createStake(input: CreateStakeInput & { creatorId: string }): Promise<Stake> {
+    const start = new Date();
+    const end = new Date(start.getTime() + input.durationDays * 24 * 60 * 60 * 1000);
+    const startDate = start.toISOString().split("T")[0];
+    const endDate = end.toISOString().split("T")[0];
+
+    // Intra-team stakes auto-activate on creation; inter-team stakes wait
+    // for the opponent team's owner to accept.
+    const status = input.opponentTeamId ? "pending" : "active";
+
+    const [stake] = await db
+      .insert(stakes)
+      .values({
+        teamId: input.teamId,
+        opponentTeamId: input.opponentTeamId ?? null,
+        creatorId: input.creatorId,
+        title: input.title,
+        description: input.description ?? null,
+        stakeAmount: input.stakeAmount ?? null,
+        metric: input.metric,
+        startDate,
+        endDate,
+        status,
+      })
+      .returning();
+
+    // Creator auto-joins as a participant on their own team's side.
+    await db
+      .insert(stakeParticipants)
+      .values({ stakeId: stake.id, userId: input.creatorId, teamId: input.teamId });
+
+    return stake;
+  }
+
+  async getStake(id: string): Promise<Stake | undefined> {
+    const [s] = await db.select().from(stakes).where(eq(stakes.id, id));
+    return s;
+  }
+
+  async getStakesForUser(userId: string): Promise<Stake[]> {
+    // A stake is "for" a user if they are a participant OR a member of
+    // either host/opponent team (so they can see and opt-in).
+    const userTeamRows = await db
+      .select({ teamId: teamMembers.teamId })
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+    const userTeamIds = userTeamRows.map(r => r.teamId);
+
+    if (userTeamIds.length === 0) return [];
+
+    return await db
+      .select()
+      .from(stakes)
+      .where(
+        sql`${stakes.teamId} IN (${sql.join(userTeamIds.map(id => sql`${id}`), sql`, `)})
+            OR (${stakes.opponentTeamId} IS NOT NULL AND ${stakes.opponentTeamId} IN (${sql.join(userTeamIds.map(id => sql`${id}`), sql`, `)}))`
+      )
+      .orderBy(desc(stakes.createdAt));
+  }
+
+  async getStakesForTeam(teamId: string): Promise<Stake[]> {
+    return await db
+      .select()
+      .from(stakes)
+      .where(sql`${stakes.teamId} = ${teamId} OR ${stakes.opponentTeamId} = ${teamId}`)
+      .orderBy(desc(stakes.createdAt));
+  }
+
+  async getActiveStakeForUserTeam(userId: string): Promise<Stake | undefined> {
+    const userTeamRows = await db
+      .select({ teamId: teamMembers.teamId })
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+    const userTeamIds = userTeamRows.map(r => r.teamId);
+    if (userTeamIds.length === 0) return undefined;
+
+    const [s] = await db
+      .select()
+      .from(stakes)
+      .where(
+        and(
+          eq(stakes.status, "active"),
+          sql`(${stakes.teamId} IN (${sql.join(userTeamIds.map(id => sql`${id}`), sql`, `)})
+            OR ${stakes.opponentTeamId} IN (${sql.join(userTeamIds.map(id => sql`${id}`), sql`, `)}))`
+        )
+      )
+      .orderBy(desc(stakes.createdAt))
+      .limit(1);
+    return s;
+  }
+
+  async joinStake(stakeId: string, userId: string, teamId: string): Promise<StakeParticipant> {
+    // Idempotent: if the user already joined, return the existing row
+    const [existing] = await db
+      .select()
+      .from(stakeParticipants)
+      .where(and(eq(stakeParticipants.stakeId, stakeId), eq(stakeParticipants.userId, userId)));
+    if (existing) return existing;
+
+    const [row] = await db
+      .insert(stakeParticipants)
+      .values({ stakeId, userId, teamId })
+      .returning();
+    return row;
+  }
+
+  async leaveStake(stakeId: string, userId: string): Promise<void> {
+    await db
+      .delete(stakeParticipants)
+      .where(and(eq(stakeParticipants.stakeId, stakeId), eq(stakeParticipants.userId, userId)));
+  }
+
+  async getStakeParticipants(stakeId: string): Promise<(StakeParticipant & { user: User })[]> {
+    const rows = await db
+      .select()
+      .from(stakeParticipants)
+      .where(eq(stakeParticipants.stakeId, stakeId));
+
+    if (rows.length === 0) return [];
+
+    const userIds = rows.map(r => r.userId);
+    const userRows = await db
+      .select()
+      .from(users)
+      .where(inArray(users.id, userIds));
+    const userMap = new Map(userRows.map(u => [u.id, u]));
+
+    return rows
+      .map(r => {
+        const u = userMap.get(r.userId);
+        return u ? { ...r, user: u } : null;
+      })
+      .filter((x): x is StakeParticipant & { user: User } => x !== null);
+  }
+
+  async acceptInterTeamStake(stakeId: string, accept: boolean): Promise<Stake> {
+    const [updated] = await db
+      .update(stakes)
+      .set({ status: accept ? "active" : "declined" })
+      .where(eq(stakes.id, stakeId))
+      .returning();
+    return updated;
+  }
+
+  async cancelStake(stakeId: string): Promise<Stake> {
+    const [updated] = await db
+      .update(stakes)
+      .set({ status: "cancelled" })
+      .where(eq(stakes.id, stakeId))
+      .returning();
+    return updated;
+  }
+
+  async computeStakeScores(stakeId: string): Promise<{
+    individualScores: Array<{ userId: string; teamId: string; score: number }>;
+    teamTotals: Record<string, number>;
+  }> {
+    const stake = await this.getStake(stakeId);
+    if (!stake) throw new Error("Stake not found");
+
+    const participants = await db
+      .select()
+      .from(stakeParticipants)
+      .where(eq(stakeParticipants.stakeId, stakeId));
+
+    const individualScores: Array<{ userId: string; teamId: string; score: number }> = [];
+    const teamTotals: Record<string, number> = {};
+
+    for (const p of participants) {
+      const acts = await db
+        .select()
+        .from(activities)
+        .where(
+          and(
+            eq(activities.userId, p.userId),
+            gte(activities.date, stake.startDate),
+            lte(activities.date, stake.endDate)
+          )
+        );
+
+      // Per-day max-per-metric dedupe — same shape the dashboard and team
+      // leaderboard use to avoid double-counting manual + device entries.
+      const byDate = new Map<string, { calories: number; steps: number; hasWorkout: boolean }>();
+      for (const a of acts) {
+        const cur = byDate.get(a.date) || { calories: 0, steps: 0, hasWorkout: false };
+        cur.calories = Math.max(cur.calories, a.calories || 0);
+        cur.steps = Math.max(cur.steps, a.steps || 0);
+        cur.hasWorkout = cur.hasWorkout || !!a.workoutType;
+        byDate.set(a.date, cur);
+      }
+
+      let score = 0;
+      if (stake.metric === "calories") {
+        Array.from(byDate.values()).forEach(d => { score += d.calories; });
+      } else if (stake.metric === "steps") {
+        Array.from(byDate.values()).forEach(d => { score += d.steps; });
+      } else if (stake.metric === "workouts") {
+        Array.from(byDate.values()).forEach(d => { if (d.hasWorkout) score += 1; });
+      }
+
+      individualScores.push({ userId: p.userId, teamId: p.teamId, score });
+      teamTotals[p.teamId] = (teamTotals[p.teamId] || 0) + score;
+    }
+
+    individualScores.sort((a, b) => b.score - a.score);
+    return { individualScores, teamTotals };
+  }
+
+  async getStakesRequiringCompletion(): Promise<Stake[]> {
+    const today = new Date().toISOString().split("T")[0];
+    return await db
+      .select()
+      .from(stakes)
+      .where(and(eq(stakes.status, "active"), lte(stakes.endDate, today)));
+  }
+
+  async completeStake(stakeId: string): Promise<Stake> {
+    const { individualScores, teamTotals } = await this.computeStakeScores(stakeId);
+    const stake = await this.getStake(stakeId);
+    if (!stake) throw new Error("Stake not found");
+
+    let winnerUserId: string | null = null;
+    let winnerTeamId: string | null = null;
+
+    if (stake.opponentTeamId) {
+      // Inter-team — winner is the team with higher total
+      const hostTotal = teamTotals[stake.teamId] || 0;
+      const oppTotal = teamTotals[stake.opponentTeamId] || 0;
+      if (hostTotal > oppTotal) winnerTeamId = stake.teamId;
+      else if (oppTotal > hostTotal) winnerTeamId = stake.opponentTeamId;
+    } else {
+      // Intra-team — winner is the top-scoring individual
+      if (individualScores.length > 0 && individualScores[0].score > 0) {
+        winnerUserId = individualScores[0].userId;
+      }
+    }
+
+    const [updated] = await db
+      .update(stakes)
+      .set({
+        status: "completed",
+        winnerUserId,
+        winnerTeamId,
+        completedAt: new Date(),
+      })
+      .where(eq(stakes.id, stakeId))
+      .returning();
+    return updated;
   }
 
   // Message operations

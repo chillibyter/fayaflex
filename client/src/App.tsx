@@ -7,6 +7,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import BottomNavigation from "@/components/BottomNavigation";
 import Dashboard from "@/pages/Dashboard";
+import Home from "@/pages/Home";
+import Stakes from "@/pages/Stakes";
+import StakeDetail from "@/pages/StakeDetail";
 import TrackActivity from "@/pages/TrackActivity";
 import Leaderboard from "@/pages/Leaderboard";
 import Teams from "@/pages/Teams";
@@ -108,8 +111,11 @@ function Router() {
   return (
     <Switch>
       <Route path="/auth"><Redirect to="/" /></Route>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={Home} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/feed" component={ForYou} />
+      <Route path="/stakes" component={Stakes} />
+      <Route path="/stakes/:id" component={StakeDetail} />
       <Route path="/join/:code" component={JoinTeam} />
       <Route path="/daily-chart" component={DailyChart} />
       <Route path="/track" component={TrackActivity} />

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, MAX_TEAM_MEMBERS, type Activity } from "@shared/schema";
+import { insertActivitySchema, insertTeamSchema, locations, notificationPrefsSchema, DEFAULT_NOTIFICATION_PREFS, MAX_TEAM_MEMBERS, createStakeSchema, type Activity } from "@shared/schema";
 import { applyRoutePrivacy, type RoutePrivacy } from "@shared/polyline";
 
 interface WorkoutSummary {
@@ -1761,6 +1761,188 @@ IMPORTANT RULES:
     } catch (error) {
       console.error("Error fetching challenge archive:", error);
       res.status(500).json({ message: "Failed to fetch challenge archive" });
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Stakes — intra-team (default) or inter-team competitions.
+  // ──────────────────────────────────────────────────────────────────────
+  app.post("/api/stakes", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const parsed = createStakeSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid stake payload", errors: parsed.error.flatten() });
+      }
+      const data = parsed.data;
+
+      // Creator must be a member of the host team.
+      const isMember = await storage.isUserInTeam(userId, data.teamId);
+      if (!isMember) {
+        return res.status(403).json({ message: "You must be a member of the host team" });
+      }
+
+      // Opponent team (if set) must exist and be different from the host.
+      if (data.opponentTeamId) {
+        if (data.opponentTeamId === data.teamId) {
+          return res.status(400).json({ message: "Opponent team must be different from host team" });
+        }
+        const opp = await storage.getTeam(data.opponentTeamId);
+        if (!opp) return res.status(404).json({ message: "Opponent team not found" });
+      }
+
+      const stake = await storage.createStake({ ...data, creatorId: userId });
+      res.status(201).json(stake);
+    } catch (err) {
+      console.error("Error creating stake:", err);
+      res.status(500).json({ message: "Failed to create stake" });
+    }
+  });
+
+  app.get("/api/stakes", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const stakes = await storage.getStakesForUser(userId);
+      res.json(stakes);
+    } catch (err) {
+      console.error("Error fetching stakes:", err);
+      res.status(500).json({ message: "Failed to fetch stakes" });
+    }
+  });
+
+  app.get("/api/stakes/active", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const stake = await storage.getActiveStakeForUserTeam(userId);
+      if (!stake) return res.json(null);
+      const scores = await storage.computeStakeScores(stake.id);
+      res.json({ stake, ...scores });
+    } catch (err) {
+      console.error("Error fetching active stake:", err);
+      res.status(500).json({ message: "Failed to fetch active stake" });
+    }
+  });
+
+  app.get("/api/stakes/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const stake = await storage.getStake(req.params.id);
+      if (!stake) return res.status(404).json({ message: "Stake not found" });
+
+      // Authorization: caller must be a member of either side.
+      const inHost = await storage.isUserInTeam(userId, stake.teamId);
+      const inOpp = stake.opponentTeamId
+        ? await storage.isUserInTeam(userId, stake.opponentTeamId)
+        : false;
+      if (!inHost && !inOpp) {
+        return res.status(403).json({ message: "Not authorized to view this stake" });
+      }
+
+      const participants = await storage.getStakeParticipants(stake.id);
+      const scores = await storage.computeStakeScores(stake.id);
+      const hostTeam = await storage.getTeam(stake.teamId);
+      const opponentTeam = stake.opponentTeamId ? await storage.getTeam(stake.opponentTeamId) : null;
+
+      res.json({
+        stake,
+        hostTeam,
+        opponentTeam,
+        participants: participants.map(p => ({
+          userId: p.userId,
+          teamId: p.teamId,
+          joinedAt: p.joinedAt,
+          firstName: p.user.firstName,
+          lastName: p.user.lastName,
+          username: p.user.username,
+          avatarId: p.user.avatarId,
+          profileImageUrl: p.user.profileImageUrl,
+        })),
+        ...scores,
+      });
+    } catch (err) {
+      console.error("Error fetching stake detail:", err);
+      res.status(500).json({ message: "Failed to fetch stake" });
+    }
+  });
+
+  app.post("/api/stakes/:id/join", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const stake = await storage.getStake(req.params.id);
+      if (!stake) return res.status(404).json({ message: "Stake not found" });
+
+      // Determine which side the caller belongs to.
+      const inHost = await storage.isUserInTeam(userId, stake.teamId);
+      const inOpp = stake.opponentTeamId
+        ? await storage.isUserInTeam(userId, stake.opponentTeamId)
+        : false;
+      if (!inHost && !inOpp) {
+        return res.status(403).json({ message: "You are not a member of either team" });
+      }
+      const teamId = inHost ? stake.teamId : stake.opponentTeamId!;
+
+      const participant = await storage.joinStake(stake.id, userId, teamId);
+      res.status(201).json(participant);
+    } catch (err) {
+      console.error("Error joining stake:", err);
+      res.status(500).json({ message: "Failed to join stake" });
+    }
+  });
+
+  app.post("/api/stakes/:id/leave", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const stake = await storage.getStake(req.params.id);
+      if (!stake) return res.status(404).json({ message: "Stake not found" });
+      if (stake.creatorId === userId) {
+        return res.status(400).json({ message: "Creator cannot leave their own stake — cancel it instead" });
+      }
+      await storage.leaveStake(stake.id, userId);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error leaving stake:", err);
+      res.status(500).json({ message: "Failed to leave stake" });
+    }
+  });
+
+  app.post("/api/stakes/:id/accept", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const accept = req.body?.accept !== false;
+      const stake = await storage.getStake(req.params.id);
+      if (!stake) return res.status(404).json({ message: "Stake not found" });
+      if (!stake.opponentTeamId) {
+        return res.status(400).json({ message: "Only inter-team stakes need acceptance" });
+      }
+      if (stake.status !== "pending") {
+        return res.status(400).json({ message: "Stake is no longer pending" });
+      }
+      // Only a member of the opponent team can accept/decline.
+      const inOpp = await storage.isUserInTeam(userId, stake.opponentTeamId);
+      if (!inOpp) {
+        return res.status(403).json({ message: "Only the opposing team can respond" });
+      }
+      const updated = await storage.acceptInterTeamStake(stake.id, accept);
+      res.json(updated);
+    } catch (err) {
+      console.error("Error responding to stake:", err);
+      res.status(500).json({ message: "Failed to respond to stake" });
+    }
+  });
+
+  app.post("/api/stakes/:id/cancel", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const stake = await storage.getStake(req.params.id);
+      if (!stake) return res.status(404).json({ message: "Stake not found" });
+      if (stake.creatorId !== userId) {
+        return res.status(403).json({ message: "Only the creator can cancel" });
+      }
+      const updated = await storage.cancelStake(stake.id);
+      res.json(updated);
+    } catch (err) {
+      console.error("Error cancelling stake:", err);
+      res.status(500).json({ message: "Failed to cancel stake" });
     }
   });
 
@@ -4529,6 +4711,36 @@ IMPORTANT RULES:
   // Run challenge completion immediately on startup
   console.log('[Challenges] Running initial challenge completion check...');
   completeChallenges().catch(err => console.error('[Challenges] Initial check failed:', err));
+
+  // ============ STAKE COMPLETION JOB ============
+  // Mirrors the challenge completion job above. Runs hourly to finalise any
+  // active stake whose endDate has passed (intra-team picks top individual,
+  // inter-team picks the team with higher total — see storage.completeStake).
+  const STAKE_CHECK_INTERVAL = 60 * 60 * 1000; // 1 hour
+  console.log('[Stakes] Initializing stake completion job (runs every hour)');
+
+  const completeStakes = async () => {
+    try {
+      const expired = await storage.getStakesRequiringCompletion();
+      if (expired.length > 0) {
+        console.log(`[Stakes] Found ${expired.length} stake(s) to complete`);
+      }
+      for (const s of expired) {
+        try {
+          await storage.completeStake(s.id);
+          console.log(`[Stakes] Completed stake ${s.id}`);
+        } catch (err) {
+          console.error(`[Stakes] Error completing stake ${s.id}:`, err);
+        }
+      }
+    } catch (err) {
+      console.error('[Stakes] Error in stake completion job:', err);
+    }
+  };
+
+  setInterval(completeStakes, STAKE_CHECK_INTERVAL);
+  console.log('[Stakes] Running initial stake completion check...');
+  completeStakes().catch(err => console.error('[Stakes] Initial check failed:', err));
 
   // ============ AUTO MONTHLY WINNER CALCULATION ============
   // Runs every 5 minutes to check if it's time to calculate winners

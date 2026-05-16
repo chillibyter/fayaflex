@@ -838,3 +838,110 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
 // daily competition feeling personal — anything over ~20 trends toward
 // anonymity and lower engagement.
 export const MAX_TEAM_MEMBERS = 20;
+
+// ─────────────────────────────────────────────────────────────────────────
+// Team Stakes
+// Intra-team: members of one team opt in and compete head-to-head as
+// individuals (opponentTeamId IS NULL).
+// Inter-team: one team challenges another; both teams compete as aggregates
+// (opponentTeamId is set; the opponent team owner accepts to start).
+// All stakes are scored on total active calories in [startDate, endDate].
+// ─────────────────────────────────────────────────────────────────────────
+export const stakes = pgTable("stakes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  opponentTeamId: varchar("opponent_team_id")
+    .references(() => teams.id, { onDelete: "cascade" }),
+  creatorId: varchar("creator_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 120 }).notNull(),
+  description: text("description"),
+  stakeAmount: text("stake_amount"), // free-text "what's on the line" (e.g. "Loser buys post-workout smoothies")
+  metric: varchar("metric", { length: 20 }).notNull().default("calories"),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  // pending → active → completed | declined | cancelled
+  winnerUserId: varchar("winner_user_id").references(() => users.id),
+  winnerTeamId: varchar("winner_team_id").references(() => teams.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const stakesRelations = relations(stakes, ({ one, many }) => ({
+  team: one(teams, {
+    fields: [stakes.teamId],
+    references: [teams.id],
+    relationName: "stakeHostTeam",
+  }),
+  opponentTeam: one(teams, {
+    fields: [stakes.opponentTeamId],
+    references: [teams.id],
+    relationName: "stakeOpponentTeam",
+  }),
+  creator: one(users, {
+    fields: [stakes.creatorId],
+    references: [users.id],
+  }),
+  participants: many(stakeParticipants),
+}));
+
+export const stakeParticipants = pgTable("stake_participants", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  stakeId: varchar("stake_id")
+    .notNull()
+    .references(() => stakes.id, { onDelete: "cascade" }),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  teamId: varchar("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+}, (table) => ({
+  stakeUserUnique: uniqueIndex("stake_participants_stake_user_unique").on(table.stakeId, table.userId),
+}));
+
+export const stakeParticipantsRelations = relations(stakeParticipants, ({ one }) => ({
+  stake: one(stakes, {
+    fields: [stakeParticipants.stakeId],
+    references: [stakes.id],
+  }),
+  user: one(users, {
+    fields: [stakeParticipants.userId],
+    references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [stakeParticipants.teamId],
+    references: [teams.id],
+  }),
+}));
+
+export type Stake = typeof stakes.$inferSelect;
+export type StakeParticipant = typeof stakeParticipants.$inferSelect;
+
+export const insertStakeSchema = createInsertSchema(stakes).omit({
+  id: true,
+  status: true,
+  winnerUserId: true,
+  winnerTeamId: true,
+  createdAt: true,
+  completedAt: true,
+});
+export type InsertStake = z.infer<typeof insertStakeSchema>;
+
+// Stake creation payload (validated at the API boundary)
+export const createStakeSchema = z.object({
+  teamId: z.string().min(1, "Team is required"),
+  opponentTeamId: z.string().optional().nullable(),
+  title: z.string().min(3, "Title must be at least 3 characters").max(120),
+  description: z.string().optional(),
+  stakeAmount: z.string().optional(),
+  durationDays: z.number().int().min(1).max(60),
+  // metric is currently fixed to calories but kept here so we can open this up later
+  metric: z.enum(["calories", "steps", "workouts"]).default("calories"),
+});
+export type CreateStakeInput = z.infer<typeof createStakeSchema>;

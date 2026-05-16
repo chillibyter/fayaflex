@@ -35,6 +35,8 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { Icon3D } from "@/components/Icon3D";
 import BadgesDisplay from "@/components/BadgesDisplay";
 import SmartGoals from "@/components/SmartGoals";
+import AICoach from "@/components/AICoach";
+import { Activity as ActivityIcon, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -390,6 +392,50 @@ export default function Profile() {
       </div>
 
       <div className="px-4 mt-4">
+        {/* My Tracking — quick jump into manual logging or device sync. Keeps the
+            Profile usable as the user's personal cockpit per the Pulse Hybrid
+            redesign. */}
+        <div className="mb-6">
+          <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+            <ActivityIcon className="h-4 w-4 text-primary" />
+            My Tracking
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/track">
+              <Card className="hover-elevate cursor-pointer" data-testid="link-profile-track">
+                <CardContent className="p-3 flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Flame className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">Log activity</p>
+                    <p className="text-[11px] text-muted-foreground">Full tracker</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href="/devices">
+              <Card className="hover-elevate cursor-pointer" data-testid="link-profile-devices">
+                <CardContent className="p-3 flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Zap className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">Devices</p>
+                    <p className="text-[11px] text-muted-foreground">Sync &amp; connect</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
+
+        {/* Coach moved here so the user's personalised guidance lives on their
+            personal cockpit instead of the home feed. */}
+        <div className="mb-6">
+          <AICoach />
+        </div>
+
         <div className="mb-6">
           <SmartGoals />
         </div>
