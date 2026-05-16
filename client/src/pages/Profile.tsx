@@ -167,8 +167,8 @@ export default function Profile() {
   const myTeams = teams.filter((t) => t.isMember !== false);
   const primaryTeam = myTeams[0] ?? null;
 
-  // Fetch the user's rank inside every team they belong to so we can show a
-  // standing card per team (not just the primary team).
+  // Fetch the user's rank inside every team they belong to so we can rotate
+  // through one standing card per team (mirrors the location-scope rotation).
   const teamRankQueries = useQueries({
     queries: myTeams.map((t) => ({
       queryKey: ['/api/leaderboard/team', t.id, 'my-rank', currentMonth, currentYear],
@@ -177,6 +177,22 @@ export default function Profile() {
       staleTime: 2 * 60 * 1000,
     })),
   });
+
+  // Rotating team-standing card — cycles through every team the user belongs
+  // to on a 5s timer, with pagination dots, exactly like the location ranking.
+  const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
+  useEffect(() => {
+    if (currentTeamIndex >= myTeams.length) setCurrentTeamIndex(0);
+  }, [myTeams.length, currentTeamIndex]);
+  useEffect(() => {
+    if (myTeams.length <= 1) return;
+    const id = setInterval(() => setCurrentTeamIndex((p) => (p + 1) % myTeams.length), 5000);
+    return () => clearInterval(id);
+  }, [myTeams.length]);
+  const currentTeam = myTeams[currentTeamIndex] ?? null;
+  const currentTeamRankQuery = teamRankQueries[currentTeamIndex];
+  const currentTeamRank = currentTeamRankQuery?.data as { rank: number; total: number } | undefined;
+  const isLoadingCurrentTeamRank = currentTeamRankQuery?.isLoading ?? false;
 
   const { data: deviceConnections = [] } = useQuery<DeviceConnection[]>({
     queryKey: ['/api/devices'],
@@ -592,53 +608,57 @@ export default function Profile() {
             </Card>
           </Link>
 
-          {/* Team standing — one card per team the user belongs to. */}
-          {myTeams.length > 0 ? (
-            myTeams.map((team, idx) => {
-              const q = teamRankQueries[idx];
-              const rankData = q?.data as { rank: number; total: number } | undefined;
-              const isLoadingTeamRank = q?.isLoading ?? false;
-              return (
-                <Link key={team.id} href={`/teams/${team.id}`}>
-                  <Card className="cursor-pointer hover-elevate" data-testid={`widget-team-rank-${team.id}`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shrink-0">
-                            <Users className="h-6 w-6 text-white" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Team Standing</p>
-                            {isLoadingTeamRank ? (
-                              <Skeleton className="h-5 w-40 mt-1" />
-                            ) : rankData ? (
-                              <p className="font-semibold leading-tight truncate" data-testid={`text-team-rank-label-${team.id}`}>
-                                {toOrdinal(rankData.rank)} in <span className="text-primary">{team.name}</span>
-                              </p>
-                            ) : (
-                              <p className="font-semibold leading-tight text-muted-foreground truncate">{team.name}</p>
-                            )}
-                            {rankData && (
-                              <p className="text-xs text-muted-foreground">
-                                of {rankData.total} {rankData.total === 1 ? "member" : "members"} this month
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {isLoadingTeamRank ? (
-                            <Skeleton className="h-10 w-12 rounded-lg" />
-                          ) : rankData ? (
-                            <p className="text-3xl font-bold text-primary" data-testid={`text-team-rank-number-${team.id}`}>#{rankData.rank}</p>
-                          ) : null}
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
+          {/* Team standing — single rotating card cycling through every team
+              the user belongs to, with pagination dots (mirrors location). */}
+          {currentTeam ? (
+            <Link href={`/teams/${currentTeam.id}`}>
+              <Card className="cursor-pointer hover-elevate transition-all duration-500" data-testid="widget-team-rank">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shrink-0">
+                        <Users className="h-6 w-6 text-white" />
                       </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Team Standing</p>
+                        {isLoadingCurrentTeamRank ? (
+                          <Skeleton className="h-5 w-40 mt-1" />
+                        ) : currentTeamRank ? (
+                          <p className="font-semibold leading-tight truncate" data-testid="text-team-rank-label">
+                            {toOrdinal(currentTeamRank.rank)} in <span className="text-primary">{currentTeam.name}</span>
+                          </p>
+                        ) : (
+                          <p className="font-semibold leading-tight text-muted-foreground truncate">{currentTeam.name}</p>
+                        )}
+                        {currentTeamRank && (
+                          <p className="text-xs text-muted-foreground">
+                            of {currentTeamRank.total} {currentTeamRank.total === 1 ? "member" : "members"} this month
+                          </p>
+                        )}
+                        {myTeams.length > 1 && (
+                          <div className="flex gap-1 mt-1">
+                            {myTeams.map((_, idx) => (
+                              <div
+                                key={idx}
+                                className={`h-1 w-4 rounded-full transition-colors ${idx === currentTeamIndex ? 'bg-primary' : 'bg-muted'}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isLoadingCurrentTeamRank ? (
+                        <Skeleton className="h-10 w-12 rounded-lg" />
+                      ) : currentTeamRank ? (
+                        <p className="text-3xl font-bold text-primary transition-all duration-300" data-testid="text-team-rank-number">#{currentTeamRank.rank}</p>
+                      ) : null}
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ) : (
             <Link href="/teams">
               <Card className="cursor-pointer hover-elevate border-dashed" data-testid="widget-join-team-cta">
