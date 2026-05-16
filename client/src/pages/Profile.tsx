@@ -34,7 +34,6 @@ import { format } from "date-fns";
 import { FITNESS_AVATARS, AVATAR_SPRITE_URL } from "@/lib/avatars";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Icon3D } from "@/components/Icon3D";
-import BadgesDisplay from "@/components/BadgesDisplay";
 import SmartGoals from "@/components/SmartGoals";
 import AICoach from "@/components/AICoach";
 import ProgressChart from "@/components/ProgressChart";
@@ -704,8 +703,6 @@ export default function Profile() {
         <div className="mb-6">
           <SmartGoals />
         </div>
-
-        <BadgesDisplay />
 
         {challenges.length > 0 && (
           <div className="mb-6">
