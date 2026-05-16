@@ -9,9 +9,10 @@ interface ChartDataPoint {
 interface ProgressChartProps {
   data: ChartDataPoint[];
   title?: string;
+  showYAxis?: boolean;
 }
 
-export default function ProgressChart({ data, title = "Monthly Progress" }: ProgressChartProps) {
+export default function ProgressChart({ data, title = "Monthly Progress", showYAxis = true }: ProgressChartProps) {
   return (
     <Card>
       <CardHeader>
@@ -26,10 +27,12 @@ export default function ProgressChart({ data, title = "Monthly Progress" }: Prog
               className="text-xs"
               tick={{ fill: "hsl(var(--muted-foreground))" }}
             />
-            <YAxis
-              className="text-xs"
-              tick={{ fill: "hsl(var(--muted-foreground))" }}
-            />
+            {showYAxis && (
+              <YAxis
+                className="text-xs"
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
+              />
+            )}
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(var(--popover))",

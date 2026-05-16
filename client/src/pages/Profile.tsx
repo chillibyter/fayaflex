@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check, Bell, Globe, MapPin, Users, Heart } from "lucide-react";
 import { useLocation as useWouterLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import type { User as UserType, Team, Challenge } from "@shared/schema";
 import { Trophy, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -167,12 +167,15 @@ export default function Profile() {
   const myTeams = teams.filter((t) => t.isMember !== false);
   const primaryTeam = myTeams[0] ?? null;
 
-  const { data: teamRank, isLoading: isLoadingTeamRank } = useQuery<{ rank: number; total: number }>({
-    queryKey: ['/api/leaderboard/team', primaryTeam?.id, 'my-rank', currentMonth, currentYear],
-    queryFn: () =>
-      apiRequest("GET", `/api/leaderboard/team/${primaryTeam!.id}/my-rank?month=${currentMonth}&year=${currentYear}`).then((r) => r.json()),
-    enabled: !!primaryTeam,
-    staleTime: 2 * 60 * 1000,
+  // Fetch the user's rank inside every team they belong to so we can show a
+  // standing card per team (not just the primary team).
+  const teamRankQueries = useQueries({
+    queries: myTeams.map((t) => ({
+      queryKey: ['/api/leaderboard/team', t.id, 'my-rank', currentMonth, currentYear],
+      queryFn: () =>
+        apiRequest("GET", `/api/leaderboard/team/${t.id}/my-rank?month=${currentMonth}&year=${currentYear}`).then((r) => r.json()) as Promise<{ rank: number; total: number }>,
+      staleTime: 2 * 60 * 1000,
+    })),
   });
 
   const { data: deviceConnections = [] } = useQuery<DeviceConnection[]>({
@@ -539,15 +542,6 @@ export default function Profile() {
             </Link>
           )}
 
-          {/* Weekly calorie totals for the current month. */}
-          {isLoadingChart ? (
-            <Skeleton className="h-[360px] w-full rounded-xl" />
-          ) : weeklyChart.length > 0 ? (
-            <div data-testid="chart-weekly-calories">
-              <ProgressChart data={weeklyChart} title="This Month's Calories" />
-            </div>
-          ) : null}
-
           {/* Location-scoped ranking — rotates through town/region/country/global */}
           <Link href="/leaderboard">
             <Card className="cursor-pointer hover-elevate border-primary/20 transition-all duration-500">
@@ -598,46 +592,53 @@ export default function Profile() {
             </Card>
           </Link>
 
-          {/* Team standing */}
-          {primaryTeam ? (
-            <Link href="/teams">
-              <Card className="cursor-pointer hover-elevate" data-testid="widget-team-rank">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shrink-0">
-                        <Users className="h-6 w-6 text-white" />
+          {/* Team standing — one card per team the user belongs to. */}
+          {myTeams.length > 0 ? (
+            myTeams.map((team, idx) => {
+              const q = teamRankQueries[idx];
+              const rankData = q?.data as { rank: number; total: number } | undefined;
+              const isLoadingTeamRank = q?.isLoading ?? false;
+              return (
+                <Link key={team.id} href={`/teams/${team.id}`}>
+                  <Card className="cursor-pointer hover-elevate" data-testid={`widget-team-rank-${team.id}`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shrink-0">
+                            <Users className="h-6 w-6 text-white" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Team Standing</p>
+                            {isLoadingTeamRank ? (
+                              <Skeleton className="h-5 w-40 mt-1" />
+                            ) : rankData ? (
+                              <p className="font-semibold leading-tight truncate" data-testid={`text-team-rank-label-${team.id}`}>
+                                {toOrdinal(rankData.rank)} in <span className="text-primary">{team.name}</span>
+                              </p>
+                            ) : (
+                              <p className="font-semibold leading-tight text-muted-foreground truncate">{team.name}</p>
+                            )}
+                            {rankData && (
+                              <p className="text-xs text-muted-foreground">
+                                of {rankData.total} {rankData.total === 1 ? "member" : "members"} this month
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {isLoadingTeamRank ? (
+                            <Skeleton className="h-10 w-12 rounded-lg" />
+                          ) : rankData ? (
+                            <p className="text-3xl font-bold text-primary" data-testid={`text-team-rank-number-${team.id}`}>#{rankData.rank}</p>
+                          ) : null}
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Team Standing</p>
-                        {isLoadingTeamRank ? (
-                          <Skeleton className="h-5 w-40 mt-1" />
-                        ) : teamRank ? (
-                          <p className="font-semibold leading-tight truncate" data-testid="text-team-rank-label">
-                            {toOrdinal(teamRank.rank)} in <span className="text-primary">{primaryTeam.name}</span>
-                          </p>
-                        ) : (
-                          <p className="font-semibold leading-tight text-muted-foreground">View team leaderboard</p>
-                        )}
-                        {teamRank && (
-                          <p className="text-xs text-muted-foreground">
-                            of {teamRank.total} {teamRank.total === 1 ? "member" : "members"} this month
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {isLoadingTeamRank ? (
-                        <Skeleton className="h-10 w-12 rounded-lg" />
-                      ) : teamRank ? (
-                        <p className="text-3xl font-bold text-primary" data-testid="text-team-rank-number">#{teamRank.rank}</p>
-                      ) : null}
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })
           ) : (
             <Link href="/teams">
               <Card className="cursor-pointer hover-elevate border-dashed" data-testid="widget-join-team-cta">
@@ -656,6 +657,17 @@ export default function Profile() {
               </Card>
             </Link>
           )}
+
+          {/* Weekly calorie totals for the current month — shown below the
+              individual and team ranking cards. Y-axis hidden to keep the
+              card compact on mobile. */}
+          {isLoadingChart ? (
+            <Skeleton className="h-[360px] w-full rounded-xl" />
+          ) : weeklyChart.length > 0 ? (
+            <div data-testid="chart-weekly-calories">
+              <ProgressChart data={weeklyChart} title="This Month's Calories" showYAxis={false} />
+            </div>
+          ) : null}
         </div>
 
         {/* My Tracking — quick jump into manual logging or device sync. */}
