@@ -37,6 +37,7 @@ import { Icon3D } from "@/components/Icon3D";
 import BadgesDisplay from "@/components/BadgesDisplay";
 import SmartGoals from "@/components/SmartGoals";
 import AICoach from "@/components/AICoach";
+import ProgressChart from "@/components/ProgressChart";
 import { Activity as ActivityIcon, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -108,6 +109,12 @@ export default function Profile() {
   // ── Dashboard-style headline data (merged in from the old Home page) ────────
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
+
+  // Weekly calorie totals for the current month, used by the progress chart.
+  const { data: weeklyChart = [], isLoading: isLoadingChart } = useQuery<{ date: string; calories: number }[]>({
+    queryKey: ['/api/progress/chart'],
+    staleTime: 30 * 1000,
+  });
 
   const { data: dashboardStats, isLoading: isLoadingDashboard } = useQuery<DashboardStats>({
     queryKey: ['/api/dashboard/stats'],
@@ -532,6 +539,15 @@ export default function Profile() {
               </div>
             </Link>
           )}
+
+          {/* Weekly calorie totals for the current month. */}
+          {isLoadingChart ? (
+            <Skeleton className="h-[360px] w-full rounded-xl" />
+          ) : weeklyChart.length > 0 ? (
+            <div data-testid="chart-weekly-calories">
+              <ProgressChart data={weeklyChart} title="This Month's Calories" />
+            </div>
+          ) : null}
 
           {/* Location-scoped ranking — rotates through town/region/country/global */}
           <Link href="/leaderboard">
