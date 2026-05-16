@@ -84,7 +84,7 @@ export default function BottomNavigation() {
       // by the background auto-sync hook.
       if (nativeHealthConnected) {
         const available = await healthService.isAvailable();
-        const provider = available ? healthService.getProviderName() : null;
+        const provider = available ? await healthService.getProviderName() : null;
         if (provider) {
           const endDate = new Date();
           const startDate = new Date();
