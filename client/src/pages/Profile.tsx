@@ -710,7 +710,7 @@ export default function Profile() {
                 </CardContent>
               </Card>
             </Link>
-            <Link href="/devices">
+            <Link href="/health-data">
               <Card className="hover-elevate cursor-pointer" data-testid="link-profile-devices">
                 <CardContent className="p-3 flex items-center gap-3">
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
