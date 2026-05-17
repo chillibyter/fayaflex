@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check, Bell, Globe, MapPin, Users, Heart } from "lucide-react";
+import { Settings, AlertCircle, User, Camera, Upload, Loader2, X, Flame, Footprints, Dumbbell, ArrowLeft, Check, Bell, Globe, MapPin, Users, Heart, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme, type ThemeMode } from "@/lib/theme";
 import { useLocation as useWouterLocation } from "wouter";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import type { User as UserType, Team, Challenge } from "@shared/schema";
@@ -74,6 +75,7 @@ export default function Profile() {
   const avatarSpriteUrl = Capacitor.isNativePlatform() ? getApiUrl(AVATAR_SPRITE_URL) : AVATAR_SPRITE_URL;
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [themeMode, setThemeMode] = useTheme();
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -849,6 +851,35 @@ export default function Profile() {
                 <span className="font-medium">Notifications</span>
               </button>
             </Link>
+            <div className="border-t my-2" />
+            <div className="px-2 py-2">
+              <div className="text-sm font-medium mb-1">Appearance</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Choose how FayaFlex looks. "System" follows your phone's
+                day / night setting automatically.
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "light", label: "Light", Icon: Sun },
+                  { value: "dark", label: "Dark", Icon: Moon },
+                  { value: "system", label: "System", Icon: Monitor },
+                ] as { value: ThemeMode; label: string; Icon: typeof Sun }[]).map((opt) => {
+                  const selected = themeMode === opt.value;
+                  return (
+                    <Button
+                      key={opt.value}
+                      variant={selected ? "default" : "outline"}
+                      className="flex-col h-auto py-3 gap-1"
+                      data-testid={`button-theme-${opt.value}`}
+                      onClick={() => setThemeMode(opt.value)}
+                    >
+                      <opt.Icon className="h-4 w-4" />
+                      <span className="text-xs">{opt.label}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="border-t my-2" />
             <div className="px-2 py-2">
               <div className="text-sm font-medium mb-1">Route privacy</div>

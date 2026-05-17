@@ -2,8 +2,10 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { initializeAuth } from "./lib/queryClient";
+import { initTheme } from "./lib/theme";
 
 async function bootstrap() {
+  initTheme();
   try {
     await initializeAuth();
   } catch (error) {
