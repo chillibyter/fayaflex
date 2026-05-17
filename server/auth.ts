@@ -190,7 +190,10 @@ export function verifyAuthToken(token: string): { userId: string } | null {
 }
 
 export function setupAuth(app: Express) {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  // 30 days — matches the JWT expiry used by mobile clients. With `rolling: true`
+  // below, the cookie expiry is refreshed on every authenticated request so an
+  // active user is never silently logged out mid-session.
+  const sessionTtl = 30 * 24 * 60 * 60 * 1000;
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -219,6 +222,10 @@ export function setupAuth(app: Express) {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    // Roll the cookie expiry forward on every request so active users don't
+    // get bumped to the landing page after the original 7-day window simply
+    // because the cookie's maxAge was fixed at login time.
+    rolling: true,
     name: 'connect.sid',
     cookie: {
       httpOnly: true,
