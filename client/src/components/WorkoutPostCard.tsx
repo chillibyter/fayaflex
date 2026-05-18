@@ -634,11 +634,15 @@ export function WorkoutPostCard({
     <div
       className="wpc-card rounded-2xl overflow-hidden border bg-[var(--wpc-tint)] border-[var(--wpc-border)] shadow-sm"
       style={{
-        ["--wpc-tint" as any]: theme.tint,
-        ["--wpc-border" as any]: theme.border,
+        // NOTE: only set the *source* vars inline. Inline styles win over
+        // CSS rules at any specificity, so the *resolved* --wpc-tint /
+        // --wpc-border / --wpc-accent vars must be set by the .wpc-card /
+        // .dark .wpc-card rules below — otherwise dark mode can never swap.
+        ["--wpc-tint-light" as any]: theme.tint,
+        ["--wpc-border-light" as any]: theme.border,
+        ["--wpc-accent-light" as any]: theme.accent,
         ["--wpc-tint-dark" as any]: theme.darkTint,
         ["--wpc-border-dark" as any]: theme.darkBorder,
-        ["--wpc-accent" as any]: theme.accent,
         ["--wpc-accent-dark" as any]: theme.accentText,
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(8px)",
@@ -800,8 +804,16 @@ export function WorkoutPostCard({
         </div>
 
       <style>{`
-        /* In dark mode, swap the tint + border CSS vars so every inner element
-           that reads var(--wpc-border) / var(--wpc-tint) auto-adapts. */
+        /* Resolve the active tint/border/accent from the light source vars
+           by default. The inline style on the card sets *-light and *-dark
+           per category; the rules here pick between them. They must NOT be
+           set inline because inline styles override any CSS rule, which
+           would prevent the .dark swap below from ever taking effect. */
+        .wpc-card {
+          --wpc-tint: var(--wpc-tint-light);
+          --wpc-border: var(--wpc-border-light);
+          --wpc-accent: var(--wpc-accent-light);
+        }
         .dark .wpc-card {
           --wpc-tint: var(--wpc-tint-dark);
           --wpc-border: var(--wpc-border-dark);
