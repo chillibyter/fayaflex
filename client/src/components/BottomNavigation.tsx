@@ -1,6 +1,6 @@
 import { useLocation, Link } from "wouter";
 import { useState } from "react";
-import { Home, User, Trophy, Users, Plus, RefreshCw, Loader2 } from "lucide-react";
+import { Home, User, Trophy, Users, Plus, RefreshCw, Loader2, Heart, PencilLine } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { useQuery } from "@tanstack/react-query";
 import LogActivityDialog from "@/components/LogActivityDialog";
@@ -35,13 +35,14 @@ type DeviceConnection = {
 };
 
 export default function BottomNavigation() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
 
   const [logOpen, setLogOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [emptyPromptOpen, setEmptyPromptOpen] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
 
   // We only consider the FAB "sync mode" on native platforms where the
   // health-service is actually wired up. On the web build (and inside the
@@ -144,8 +145,15 @@ export default function BottomNavigation() {
   const handleFabClick = () => {
     if (syncing) return;
     if (syncMode) {
+      // User has at least one health source connected — keep the existing
+      // one-tap sync behavior.
       runDeviceSync();
+    } else if (isNative) {
+      // Native build but nothing connected yet — show the new chooser so
+      // the user can either connect a health source or log manually.
+      setChooserOpen(true);
     } else {
+      // Web build — no native health to connect to, go straight to manual.
       setLogOpen(true);
     }
   };
@@ -221,6 +229,63 @@ export default function BottomNavigation() {
       </nav>
 
       <LogActivityDialog open={logOpen} onOpenChange={setLogOpen} />
+
+      {/* First-time chooser shown when a native user taps Sync but hasn't
+          connected any health source yet. */}
+      <AlertDialog open={chooserOpen} onOpenChange={setChooserOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>How would you like to track?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Connect your phone's health app to sync workouts automatically,
+              or log this activity manually.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid gap-2 py-2">
+            <button
+              type="button"
+              onClick={() => {
+                setChooserOpen(false);
+                navigate("/health-data");
+              }}
+              data-testid="button-chooser-connect-health"
+              className="flex items-start gap-3 p-3 rounded-md border hover-elevate text-left"
+            >
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Heart className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold">Connect Health</p>
+                <p className="text-xs text-muted-foreground">
+                  Sync steps, calories &amp; workouts from your phone
+                </p>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setChooserOpen(false);
+                setLogOpen(true);
+              }}
+              data-testid="button-chooser-log-manual"
+              className="flex items-start gap-3 p-3 rounded-md border hover-elevate text-left"
+            >
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <PencilLine className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold">Log Workout Manually</p>
+                <p className="text-xs text-muted-foreground">
+                  Enter today's activity yourself
+                </p>
+              </div>
+            </button>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-chooser-cancel">Cancel</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={emptyPromptOpen} onOpenChange={setEmptyPromptOpen}>
         <AlertDialogContent>
