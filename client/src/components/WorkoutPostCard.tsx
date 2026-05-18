@@ -59,6 +59,7 @@ type WorkoutCategory =
 // palette so the component can render light/dark surfaces consistently.
 type WorkoutTheme = {
   accent: string;        // hex used for ring, bar gradient end, badge bg
+  accentText: string;    // brighter shade for text on dark same-hue tint
   accentRgb: string;     // "r,g,b" for rgba() interpolation (e.g. glows)
   category: WorkoutCategory;
   label: string;         // "Running", "Cycling", etc — human-friendly
@@ -159,7 +160,7 @@ function classifyWorkout(type: string): WorkoutCategory {
 
 const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "label">> = {
   running: {
-    accent: "#16a34a", accentRgb: "22,163,74",
+    accent: "#16a34a", accentText: "#4ade80", accentRgb: "22,163,74",
     tint: "#f0fdf4", border: "#dcfce7",
     darkTint: "#0a1f12", darkBorder: "#14532d",
     gradStart: "#22c55e", gradEnd: "#15803d",
@@ -167,7 +168,7 @@ const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "
     Icon: Footprints,
   },
   hiking: {
-    accent: "#0d9488", accentRgb: "13,148,136",
+    accent: "#0d9488", accentText: "#2dd4bf", accentRgb: "13,148,136",
     tint: "#f0fdfa", border: "#ccfbf1",
     darkTint: "#062925", darkBorder: "#115e59",
     gradStart: "#14b8a6", gradEnd: "#0f766e",
@@ -175,7 +176,7 @@ const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "
     Icon: Mountain,
   },
   cycling: {
-    accent: "#2563eb", accentRgb: "37,99,235",
+    accent: "#2563eb", accentText: "#60a5fa", accentRgb: "37,99,235",
     tint: "#eff6ff", border: "#bfdbfe",
     darkTint: "#0a1733", darkBorder: "#1e40af",
     gradStart: "#3b82f6", gradEnd: "#1d4ed8",
@@ -183,7 +184,7 @@ const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "
     Icon: Bike,
   },
   swimming: {
-    accent: "#0891b2", accentRgb: "8,145,178",
+    accent: "#0891b2", accentText: "#22d3ee", accentRgb: "8,145,178",
     tint: "#ecfeff", border: "#a5f3fc",
     darkTint: "#062b34", darkBorder: "#155e75",
     gradStart: "#06b6d4", gradEnd: "#0e7490",
@@ -191,7 +192,7 @@ const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "
     Icon: Waves,
   },
   strength: {
-    accent: "#dc2626", accentRgb: "220,38,38",
+    accent: "#dc2626", accentText: "#f87171", accentRgb: "220,38,38",
     tint: "#fef2f2", border: "#fecaca",
     darkTint: "#2a0d0d", darkBorder: "#991b1b",
     gradStart: "#ef4444", gradEnd: "#b91c1c",
@@ -199,7 +200,7 @@ const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "
     Icon: Dumbbell,
   },
   yoga: {
-    accent: "#9333ea", accentRgb: "147,51,234",
+    accent: "#9333ea", accentText: "#c084fc", accentRgb: "147,51,234",
     tint: "#faf5ff", border: "#e9d5ff",
     darkTint: "#1c0d2e", darkBorder: "#6b21a8",
     gradStart: "#a855f7", gradEnd: "#7c3aed",
@@ -207,7 +208,7 @@ const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "
     Icon: Wind,
   },
   hiit: {
-    accent: "#ea580c", accentRgb: "234,88,12",
+    accent: "#ea580c", accentText: "#fb923c", accentRgb: "234,88,12",
     tint: "#fff7ed", border: "#fed7aa",
     darkTint: "#2a1305", darkBorder: "#9a3412",
     gradStart: "#f97316", gradEnd: "#c2410c",
@@ -215,7 +216,7 @@ const CATEGORY_THEMES: Record<WorkoutCategory, Omit<WorkoutTheme, "category" | "
     Icon: Zap,
   },
   other: {
-    accent: "#475569", accentRgb: "71,85,105",
+    accent: "#475569", accentText: "#94a3b8", accentRgb: "71,85,105",
     tint: "#f8fafc", border: "#e2e8f0",
     darkTint: "#101826", darkBorder: "#334155",
     gradStart: "#64748b", gradEnd: "#334155",
@@ -637,6 +638,8 @@ export function WorkoutPostCard({
         ["--wpc-border" as any]: theme.border,
         ["--wpc-tint-dark" as any]: theme.darkTint,
         ["--wpc-border-dark" as any]: theme.darkBorder,
+        ["--wpc-accent" as any]: theme.accent,
+        ["--wpc-accent-dark" as any]: theme.accentText,
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(8px)",
         transition: "opacity 400ms ease, transform 400ms ease",
@@ -649,7 +652,7 @@ export function WorkoutPostCard({
         style={{ borderColor: "var(--wpc-border)" }}
       >
         <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          <CheckCircle2 className="h-3.5 w-3.5" style={{ color: theme.accent }} aria-hidden="true" />
+          <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "var(--wpc-accent)" }} aria-hidden="true" />
           Workout Completed
         </div>
         <div
@@ -671,7 +674,7 @@ export function WorkoutPostCard({
               value={ring.value}
               unit={ring.unit}
               fillPct={ring.pct}
-              accent={theme.accent}
+              accent="var(--wpc-accent)"
               border="var(--wpc-border)"
             />
             <div
@@ -686,7 +689,7 @@ export function WorkoutPostCard({
                   className="h-7 w-7 object-contain"
                 />
               ) : (
-                <TypeIcon className="h-5 w-5" style={{ color: theme.accent }} aria-hidden="true" />
+                <TypeIcon className="h-5 w-5" style={{ color: "var(--wpc-accent)" }} aria-hidden="true" />
               )}
             </div>
           </div>
@@ -739,7 +742,7 @@ export function WorkoutPostCard({
                     value={sv.value}
                     unit={sv.unit}
                     pct={barWidth(mag, r.kind)}
-                    accent={theme.accent}
+                    accent="var(--wpc-accent)"
                     border="var(--wpc-border)"
                     barFrom={theme.barFrom}
                     barTo={theme.barTo}
@@ -802,6 +805,7 @@ export function WorkoutPostCard({
         .dark .wpc-card {
           --wpc-tint: var(--wpc-tint-dark);
           --wpc-border: var(--wpc-border-dark);
+          --wpc-accent: var(--wpc-accent-dark);
         }
         @keyframes wpc-celebrate-pop {
           0% { transform: scale(1); }
