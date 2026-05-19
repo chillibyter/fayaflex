@@ -95,3 +95,9 @@ id = "cl0cfh-sUaAUz48fr9UGU"
 uri = "file://exports/FayaFlex-Engagement-Review.pptx"
 type = "slides"
 title = "FayaFlex · Engagement Review (12 slides)"
+
+[[outputs]]
+id = "q3SXW9wmi_mxuQct_TZWN"
+uri = "file://exports/proposals/FayaFlex_TrainStation_Stake_Proposal.pptx"
+type = "slides"
+title = "FayaFlex × Train Station Gym — R10 000 Stake Proposal"
