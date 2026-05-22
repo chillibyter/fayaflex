@@ -731,6 +731,8 @@ export function WorkoutPostCard({
                   polyline={routePolyline}
                   privacy={routePrivacy ?? "fuzzed"}
                   accent={theme.accent}
+                  distance={parsed.distance}
+                  title={`${titleText}`}
                 />
               </div>
             )}
