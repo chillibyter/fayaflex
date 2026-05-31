@@ -84,6 +84,12 @@ uri = "file://attached_assets/generated_images/fayaflex_poster_bg.png"
 type = "image"
 title = "fayaflex poster background"
 
+[[generated]]
+id = "fJPoT2bXDpNL9npsaVMem"
+uri = "file://attached_assets/generated_images/fayaflex_poster_sq_bg.png"
+type = "image"
+title = "fayaflex square poster background"
+
 [[outputs]]
 id = "nsHLISl2MMaNHCdTl_sgM"
 uri = "file://exports/FayaFlex_Usage_Report_30d.pptx"
@@ -113,3 +119,9 @@ id = "URHeuOjjt_3aYCCSNpqVl"
 uri = "file://attached_assets/generated_images/fayaflex_poster.png"
 type = "image"
 title = "FayaFlex Poster — Brush Your Teeth Category"
+
+[[outputs]]
+id = "AZ1IMVtMx9IeB30lEahHM"
+uri = "file://attached_assets/generated_images/fayaflex_poster_square.png"
+type = "image"
+title = "FayaFlex Poster — Square (feed-ready)"
