@@ -78,6 +78,12 @@ uri = "file://attached_assets/generated_images/generated_image.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "75k1vUmirrY0ce0f8LWhU"
+uri = "file://attached_assets/generated_images/fayaflex_poster_bg.png"
+type = "image"
+title = "fayaflex poster background"
+
 [[outputs]]
 id = "nsHLISl2MMaNHCdTl_sgM"
 uri = "file://exports/FayaFlex_Usage_Report_30d.pptx"
@@ -101,3 +107,9 @@ id = "q3SXW9wmi_mxuQct_TZWN"
 uri = "file://exports/proposals/FayaFlex_TrainStation_Stake_Proposal.pptx"
 type = "slides"
 title = "FayaFlex × Train Station Gym — R10 000 Stake Proposal"
+
+[[outputs]]
+id = "URHeuOjjt_3aYCCSNpqVl"
+uri = "file://attached_assets/generated_images/fayaflex_poster.png"
+type = "image"
+title = "FayaFlex Poster — Brush Your Teeth Category"
