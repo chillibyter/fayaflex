@@ -209,20 +209,23 @@ export const insertActivitySchema = createInsertSchema(activities)
     userId: true,
   })
   .extend({
-    // Server-side validation for attachment file paths
+    // Server-side validation for attachment images. Evidence images are now
+    // stored as base64 data URLs (persisted in the DB so they survive deploys
+    // and the 24h evidence cleanup). Legacy `/uploads/evidence/...` file paths
+    // are still accepted for backward compatibility with older clients/data.
     attachmentUrl: z.string().nullable().optional().refine(
       (val) => {
         if (!val) return true; // Optional field, accepts null and undefined
-        
-        // Check if it's a valid file path (starts with /uploads/evidence/)
-        if (!val.startsWith('/uploads/evidence/')) {
-          return false;
+
+        // Guard against oversized payloads posted directly to the API.
+        // Recompressed evidence is small (1600px webp); cap base64 at ~12MB.
+        if (val.startsWith('data:image/')) {
+          return val.length <= 12_000_000;
         }
-        
-        return true;
+        return val.startsWith('/uploads/evidence/');
       },
       {
-        message: "Invalid attachment: must be a valid evidence file path"
+        message: "Invalid attachment: must be an image data URL (max ~12MB) or evidence file path"
       }
     ),
   });

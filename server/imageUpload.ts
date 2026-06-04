@@ -49,33 +49,32 @@ export const upload = multer({
   },
 });
 
-// Compress and save image
-export async function compressAndSaveImage(buffer: Buffer, originalName: string): Promise<string> {
-  await ensureUploadDir();
-
-  const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(7);
-  const filename = `${timestamp}_${randomString}.webp`;
-  const filepath = path.join(UPLOAD_DIR, filename);
-
+// Compress evidence/attachment image and return as base64 data URL.
+// Stored directly in the DB (activities.attachment_url, and copied into
+// feed_posts.image_url for auto-posted workouts) so it survives redeploys
+// AND the 24-hour evidence cleanup. Previously this wrote a file under
+// /uploads/evidence/ and returned its path — but that filesystem is
+// ephemeral (wiped on every deploy) and cleanupOldEvidence() also deletes
+// those files after 24h, which left auto-posted workout images broken.
+export async function compressAndSaveImage(buffer: Buffer, _originalName: string): Promise<string> {
   // Compress image to WebP format with quality optimization
   // .rotate() auto-corrects image orientation based on EXIF data
   // .withMetadata({ orientation: undefined }) strips EXIF orientation to prevent double-rotation
-  await sharp(buffer)
+  const webpBuffer = await sharp(buffer)
     .rotate()
-    .resize(1920, 1920, {
+    .resize(1600, 1600, {
       fit: 'inside',
       withoutEnlargement: true,
     })
     .withMetadata({ orientation: undefined })
     .webp({
-      quality: 80,
+      quality: 78,
       effort: 6,
     })
-    .toFile(filepath);
+    .toBuffer();
 
-  // Return relative path for storage
-  return `/uploads/evidence/${filename}`;
+  // Return as base64 data URL — stored directly in the database so it never disappears
+  return `data:image/webp;base64,${webpBuffer.toString('base64')}`;
 }
 
 // Compress profile image and return as base64 data URL (stored in DB — survives redeploys)
