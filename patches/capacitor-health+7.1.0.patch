@@ -1,0 +1,10 @@
+diff --git a/node_modules/capacitor-health/android/src/main/java/com/fit_up/health/capacitor/HealthPlugin.kt b/node_modules/capacitor-health/android/src/main/java/com/fit_up/health/capacitor/HealthPlugin.kt
+--- a/node_modules/capacitor-health/android/src/main/java/com/fit_up/health/capacitor/HealthPlugin.kt
++++ b/node_modules/capacitor-health/android/src/main/java/com/fit_up/health/capacitor/HealthPlugin.kt
+@@ -354,5 +354,5 @@
+                 metrics = setOf(metricAndMapper.metric),
+                 timeRangeFilter = timeRange,
+                 timeRangeSlicer = period,
+-                dataOriginsFilter = dataOrigins
++                dataOriginFilter = dataOrigins
+             )
