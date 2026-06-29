@@ -1,0 +1,1009 @@
+Executing tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDebugAndroidTest, :capacitor-android:assembleDebug, :capacitor-android:assembleDebugUnitTest, :capacitor-android:assembleDebugAndroidTest, :capacitor-app:assembleDebug, :capacitor-app:assembleDebugUnitTest, :capacitor-app:assembleDebugAndroidTest, :capacitor-camera:assembleDebug, :capacitor-camera:assembleDebugUnitTest, :capacitor-camera:assembleDebugAndroidTest, :capacitor-cordova-android-plugins:assembleDebug, :capacitor-cordova-android-plugins:assembleDebugUnitTest, :capacitor-cordova-android-plugins:assembleDebugAndroidTest, :capacitor-health:assembleDebug, :capacitor-health:assembleDebugUnitTest, :capacitor-health:assembleDebugAndroidTest, :capacitor-splash-screen:assembleDebug, :capacitor-splash-screen:assembleDebugUnitTest, :capacitor-splash-screen:assembleDebugAndroidTest, :capacitor-status-bar:assembleDebug, :capacitor-status-bar:assembleDebugUnitTest, :capacitor-status-bar:assembleDebugAndroidTest, :capacitor-community-apple-sign-in:assembleDebug, :capacitor-community-apple-sign-in:assembleDebugUnitTest, :capacitor-community-apple-sign-in:assembleDebugAndroidTest, :capacitor-preferences:assembleDebug, :capacitor-preferences:assembleDebugUnitTest, :capacitor-preferences:assembleDebugAndroidTest, :southdevs-capacitor-google-auth:assembleDebug, :southdevs-capacitor-google-auth:assembleDebugUnitTest, :southdevs-capacitor-google-auth:assembleDebugAndroidTest, :capacitor-push-notifications:assembleDebug, :capacitor-push-notifications:assembleDebugUnitTest, :capacitor-push-notifications:assembleDebugAndroidTest] in project /Users/lanyardmyakayaka/FitScoreSync-2/android
+
+
+> Configure project :capacitor-cordova-android-plugins
+AGPBI: {"kind":"warning","text":"Using flatDir should be avoided because it doesn't support any meta-data formats.","sources":[{}]}
+
+> Task :capacitor-splash-screen:preBuild UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :capacitor-camera:preBuild UP-TO-DATE
+> Task :capacitor-preferences:preBuild UP-TO-DATE
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-push-notifications:preBuild UP-TO-DATE
+> Task :capacitor-health:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :capacitor-app:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+> Task :capacitor-push-notifications:preDebugBuild UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:preDebugBuild UP-TO-DATE
+> Task :capacitor-camera:preDebugBuild UP-TO-DATE
+> Task :capacitor-preferences:preDebugBuild UP-TO-DATE
+> Task :capacitor-splash-screen:preDebugBuild UP-TO-DATE
+> Task :capacitor-android:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :capacitor-health:preDebugBuild UP-TO-DATE
+> Task :capacitor-preferences:writeDebugAarMetadata
+> Task :capacitor-splash-screen:writeDebugAarMetadata
+> Task :southdevs-capacitor-google-auth:preBuild UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:preDebugBuild UP-TO-DATE
+> Task :capacitor-status-bar:preBuild UP-TO-DATE
+> Task :capacitor-status-bar:preDebugBuild UP-TO-DATE
+> Task :capacitor-app:writeDebugAarMetadata
+> Task :capacitor-push-notifications:writeDebugAarMetadata
+> Task :capacitor-community-apple-sign-in:writeDebugAarMetadata
+> Task :capacitor-health:writeDebugAarMetadata
+> Task :capacitor-app:processDebugNavigationResources
+> Task :app:javaPreCompileDebug
+> Task :capacitor-camera:processDebugNavigationResources
+> Task :capacitor-community-apple-sign-in:processDebugNavigationResources
+> Task :capacitor-cordova-android-plugins:processDebugNavigationResources
+> Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+> Task :capacitor-android:processDebugNavigationResources
+> Task :capacitor-camera:writeDebugAarMetadata
+> Task :capacitor-health:processDebugNavigationResources
+> Task :capacitor-status-bar:writeDebugAarMetadata
+> Task :capacitor-push-notifications:processDebugNavigationResources
+> Task :capacitor-android:writeDebugAarMetadata
+> Task :capacitor-android:generateDebugResValues
+> Task :capacitor-splash-screen:processDebugNavigationResources
+> Task :capacitor-app:generateDebugResValues
+> Task :app:generateDebugResValues
+> Task :southdevs-capacitor-google-auth:writeDebugAarMetadata
+> Task :capacitor-preferences:processDebugNavigationResources
+> Task :capacitor-status-bar:processDebugNavigationResources
+> Task :southdevs-capacitor-google-auth:processDebugNavigationResources
+> Task :capacitor-community-apple-sign-in:generateDebugResValues
+> Task :capacitor-camera:generateDebugResValues
+> Task :capacitor-android:generateDebugResources
+> Task :capacitor-app:generateDebugResources
+> Task :capacitor-cordova-android-plugins:generateDebugResValues
+> Task :capacitor-preferences:generateDebugResValues
+> Task :capacitor-push-notifications:generateDebugResValues
+> Task :capacitor-camera:generateDebugResources
+> Task :app:processDebugGoogleServices
+> Task :capacitor-health:generateDebugResValues
+> Task :capacitor-splash-screen:generateDebugResValues
+> Task :capacitor-community-apple-sign-in:generateDebugResources
+> Task :capacitor-push-notifications:generateDebugResources
+> Task :capacitor-cordova-android-plugins:generateDebugResources
+> Task :capacitor-splash-screen:generateDebugResources
+> Task :capacitor-preferences:generateDebugResources
+> Task :capacitor-health:generateDebugResources
+> Task :capacitor-status-bar:generateDebugResValues
+> Task :capacitor-app:packageDebugResources
+> Task :capacitor-camera:packageDebugResources
+> Task :capacitor-community-apple-sign-in:packageDebugResources
+> Task :capacitor-cordova-android-plugins:packageDebugResources
+> Task :capacitor-push-notifications:packageDebugResources
+> Task :capacitor-android:packageDebugResources
+> Task :capacitor-splash-screen:packageDebugResources
+> Task :southdevs-capacitor-google-auth:generateDebugResValues
+> Task :capacitor-status-bar:generateDebugResources
+> Task :capacitor-preferences:packageDebugResources
+> Task :capacitor-android:extractDeepLinksDebug
+> Task :capacitor-camera:extractDeepLinksDebug
+> Task :capacitor-app:extractDeepLinksDebug
+> Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+> Task :capacitor-community-apple-sign-in:extractDeepLinksDebug
+> Task :southdevs-capacitor-google-auth:generateDebugResources
+> Task :capacitor-preferences:extractDeepLinksDebug
+> Task :capacitor-health:packageDebugResources
+> Task :capacitor-health:extractDeepLinksDebug
+> Task :capacitor-status-bar:packageDebugResources
+> Task :capacitor-cordova-android-plugins:processDebugManifest
+> Task :capacitor-push-notifications:extractDeepLinksDebug
+> Task :capacitor-camera:processDebugManifest
+> Task :capacitor-preferences:processDebugManifest
+> Task :southdevs-capacitor-google-auth:packageDebugResources
+> Task :capacitor-app:processDebugManifest
+> Task :capacitor-community-apple-sign-in:processDebugManifest
+> Task :capacitor-android:processDebugManifest
+> Task :southdevs-capacitor-google-auth:extractDeepLinksDebug
+> Task :capacitor-splash-screen:extractDeepLinksDebug
+> Task :capacitor-health:processDebugManifest
+> Task :capacitor-status-bar:extractDeepLinksDebug
+> Task :capacitor-app:compileDebugLibraryResources
+> Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+> Task :capacitor-community-apple-sign-in:compileDebugLibraryResources
+> Task :capacitor-camera:compileDebugLibraryResources
+> Task :southdevs-capacitor-google-auth:processDebugManifest
+> Task :capacitor-push-notifications:processDebugManifest
+> Task :capacitor-splash-screen:processDebugManifest
+> Task :capacitor-status-bar:processDebugManifest
+> Task :capacitor-preferences:compileDebugLibraryResources
+> Task :capacitor-push-notifications:compileDebugLibraryResources
+> Task :capacitor-health:compileDebugLibraryResources
+> Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+> Task :capacitor-android:compileDebugLibraryResources
+> Task :capacitor-health:parseDebugLocalResources
+> Task :capacitor-preferences:parseDebugLocalResources
+> Task :capacitor-android:parseDebugLocalResources
+> Task :capacitor-app:parseDebugLocalResources
+> Task :capacitor-splash-screen:compileDebugLibraryResources
+> Task :capacitor-camera:parseDebugLocalResources
+> Task :capacitor-community-apple-sign-in:parseDebugLocalResources
+> Task :capacitor-cordova-android-plugins:generateDebugRFile
+> Task :capacitor-preferences:generateDebugRFile
+> Task :capacitor-health:generateDebugRFile
+> Task :capacitor-camera:generateDebugRFile
+> Task :capacitor-community-apple-sign-in:generateDebugRFile
+> Task :capacitor-app:generateDebugRFile
+> Task :capacitor-status-bar:compileDebugLibraryResources
+> Task :capacitor-android:generateDebugRFile
+> Task :capacitor-camera:javaPreCompileDebug
+> Task :southdevs-capacitor-google-auth:parseDebugLocalResources
+> Task :capacitor-app:javaPreCompileDebug
+> Task :capacitor-health:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :capacitor-push-notifications:parseDebugLocalResources
+> Task :capacitor-community-apple-sign-in:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+> Task :capacitor-health:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+> Task :capacitor-status-bar:parseDebugLocalResources
+> Task :southdevs-capacitor-google-auth:generateDebugRFile
+> Task :capacitor-push-notifications:generateDebugRFile
+> Task :capacitor-splash-screen:javaPreCompileDebug
+> Task :capacitor-push-notifications:javaPreCompileDebug
+> Task :capacitor-splash-screen:parseDebugLocalResources
+> Task :capacitor-android:javaPreCompileDebug
+> Task :capacitor-status-bar:javaPreCompileDebug
+> Task :southdevs-capacitor-google-auth:compileDebugLibraryResources
+> Task :capacitor-app:mergeDebugShaders
+> Task :capacitor-android:mergeDebugShaders
+> Task :capacitor-app:compileDebugShaders NO-SOURCE
+> Task :capacitor-app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-preferences:javaPreCompileDebug
+> Task :capacitor-camera:mergeDebugShaders
+> Task :capacitor-camera:compileDebugShaders NO-SOURCE
+> Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+> Task :capacitor-splash-screen:generateDebugRFile
+> Task :capacitor-community-apple-sign-in:mergeDebugShaders
+> Task :capacitor-community-apple-sign-in:compileDebugShaders NO-SOURCE
+> Task :southdevs-capacitor-google-auth:javaPreCompileDebug
+> Task :capacitor-community-apple-sign-in:generateDebugAssets UP-TO-DATE
+> Task :capacitor-app:mergeDebugAssets
+> Task :capacitor-status-bar:generateDebugRFile
+> Task :capacitor-cordova-android-plugins:mergeDebugShaders
+> Task :capacitor-camera:mergeDebugAssets
+> Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+> Task :capacitor-health:mergeDebugShaders
+> Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+> Task :capacitor-preferences:mergeDebugShaders
+> Task :capacitor-splash-screen:mergeDebugShaders
+> Task :capacitor-splash-screen:compileDebugShaders NO-SOURCE
+> Task :capacitor-splash-screen:generateDebugAssets UP-TO-DATE
+> Task :capacitor-health:compileDebugShaders NO-SOURCE
+> Task :capacitor-health:generateDebugAssets UP-TO-DATE
+> Task :capacitor-preferences:compileDebugShaders NO-SOURCE
+> Task :southdevs-capacitor-google-auth:mergeDebugShaders
+> Task :capacitor-preferences:generateDebugAssets UP-TO-DATE
+> Task :capacitor-status-bar:mergeDebugShaders
+> Task :capacitor-cordova-android-plugins:mergeDebugAssets
+> Task :capacitor-status-bar:compileDebugShaders NO-SOURCE
+> Task :southdevs-capacitor-google-auth:compileDebugShaders NO-SOURCE
+> Task :capacitor-splash-screen:mergeDebugAssets
+> Task :capacitor-status-bar:generateDebugAssets UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:generateDebugAssets UP-TO-DATE
+> Task :capacitor-health:mergeDebugAssets
+> Task :capacitor-push-notifications:mergeDebugShaders
+> Task :capacitor-community-apple-sign-in:mergeDebugAssets
+> Task :capacitor-push-notifications:compileDebugShaders NO-SOURCE
+> Task :capacitor-camera:processDebugJavaRes NO-SOURCE
+> Task :capacitor-app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-push-notifications:generateDebugAssets UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:processDebugJavaRes NO-SOURCE
+> Task :capacitor-status-bar:mergeDebugAssets
+> Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+> Task :southdevs-capacitor-google-auth:mergeDebugAssets
+> Task :capacitor-status-bar:processDebugJavaRes NO-SOURCE
+> Task :capacitor-splash-screen:processDebugJavaRes NO-SOURCE
+> Task :southdevs-capacitor-google-auth:processDebugJavaRes NO-SOURCE
+> Task :capacitor-push-notifications:mergeDebugAssets
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+> Task :capacitor-push-notifications:processDebugJavaRes NO-SOURCE
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug
+> Task :capacitor-app:mergeDebugJniLibFolders
+> Task :capacitor-health:mergeDebugJniLibFolders
+> Task :capacitor-camera:mergeDebugJniLibFolders
+> Task :capacitor-community-apple-sign-in:mergeDebugJniLibFolders
+> Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-community-apple-sign-in:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-camera:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders
+> Task :capacitor-community-apple-sign-in:copyDebugJniLibsProjectOnly
+> Task :capacitor-health:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-camera:copyDebugJniLibsProjectOnly
+> Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-splash-screen:mergeDebugJniLibFolders
+> Task :capacitor-splash-screen:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-push-notifications:mergeDebugJniLibFolders
+> Task :capacitor-status-bar:mergeDebugJniLibFolders
+> Task :capacitor-push-notifications:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-status-bar:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-preferences:mergeDebugAssets
+> Task :capacitor-preferences:processDebugJavaRes NO-SOURCE
+> Task :app:checkDebugAarMetadata
+> Task :capacitor-splash-screen:copyDebugJniLibsProjectOnly
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly
+> Task :capacitor-app:copyDebugJniLibsProjectOnly
+> Task :capacitor-status-bar:copyDebugJniLibsProjectOnly
+> Task :capacitor-preferences:mergeDebugJniLibFolders
+> Task :capacitor-health:copyDebugJniLibsProjectOnly
+> Task :southdevs-capacitor-google-auth:mergeDebugJniLibFolders
+> Task :capacitor-preferences:mergeDebugNativeLibs NO-SOURCE
+> Task :southdevs-capacitor-google-auth:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-push-notifications:copyDebugJniLibsProjectOnly
+> Task :southdevs-capacitor-google-auth:copyDebugJniLibsProjectOnly
+> Task :app:processDebugNavigationResources
+> Task :capacitor-preferences:copyDebugJniLibsProjectOnly
+> Task :capacitor-status-bar:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-status-bar:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-preferences:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-preferences:preDebugAndroidTestBuild UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:preDebugUnitTestBuild UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-push-notifications:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-push-notifications:preDebugAndroidTestBuild UP-TO-DATE
+> Task :app:compileDebugNavigationResources
+> Task :capacitor-community-apple-sign-in:checkDebugAarMetadata
+> Task :capacitor-health:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-preferences:checkDebugAarMetadata
+> Task :capacitor-splash-screen:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-health:checkDebugAarMetadata
+> Task :capacitor-splash-screen:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-health:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-status-bar:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-splash-screen:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-camera:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-status-bar:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :capacitor-status-bar:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-health:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-splash-screen:checkDebugAarMetadata
+> Task :capacitor-health:prepareDebugArtProfile UP-TO-DATE
+> Task :app:generateDebugResources
+> Task :capacitor-camera:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-camera:checkDebugAarMetadata
+> Task :capacitor-app:checkDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:checkDebugAarMetadata
+> Task :capacitor-camera:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-splash-screen:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-app:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-health:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-health:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-status-bar:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-camera:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-status-bar:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-status-bar:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-splash-screen:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-camera:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-app:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-app:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-camera:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-status-bar:mergeDebugJavaResource
+> Task :capacitor-app:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-splash-screen:mergeDebugJavaResource
+> Task :capacitor-camera:mergeDebugJavaResource
+> Task :capacitor-splash-screen:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-app:mergeDebugJavaResource
+> Task :capacitor-community-apple-sign-in:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-health:javaPreCompileDebugUnitTest
+> Task :capacitor-health:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-app:javaPreCompileDebugUnitTest
+> Task :capacitor-app:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+> Task :capacitor-app:javaPreCompileDebugAndroidTest
+> Task :capacitor-camera:javaPreCompileDebugUnitTest
+> Task :capacitor-camera:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-camera:javaPreCompileDebugAndroidTest
+> Task :capacitor-health:checkDebugAndroidTestAarMetadata
+> Task :capacitor-app:processDebugAndroidTestNavigationResources
+> Task :capacitor-app:checkDebugAndroidTestAarMetadata
+> Task :capacitor-app:compileDebugAndroidTestNavigationResources
+> Task :capacitor-camera:processDebugAndroidTestNavigationResources
+> Task :capacitor-camera:checkDebugAndroidTestAarMetadata
+> Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-app:generateDebugAndroidTestResValues
+> Task :capacitor-health:generateDebugUnitTestStubRFile
+> Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-camera:compileDebugAndroidTestNavigationResources
+> Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-app:generateDebugUnitTestStubRFile
+> Task :capacitor-health:processDebugAndroidTestNavigationResources
+> Task :capacitor-camera:generateDebugAndroidTestResValues
+> Task :capacitor-health:compileDebugAndroidTestNavigationResources
+> Task :capacitor-cordova-android-plugins:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+> Task :capacitor-splash-screen:generateDebugUnitTestStubRFile
+> Task :capacitor-health:generateDebugAndroidTestResValues
+> Task :capacitor-splash-screen:javaPreCompileDebugUnitTest
+> Task :capacitor-splash-screen:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-camera:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-app:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-status-bar:javaPreCompileDebugUnitTest
+> Task :capacitor-camera:generateDebugAndroidTestResources
+> Task :capacitor-health:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-health:generateDebugAndroidTestResources
+> Task :capacitor-app:generateDebugAndroidTestResources
+> Task :capacitor-cordova-android-plugins:syncDebugLibJars
+> Task :capacitor-splash-screen:javaPreCompileDebugAndroidTest
+> Task :capacitor-status-bar:generateDebugUnitTestStubRFile
+> Task :capacitor-cordova-android-plugins:generateDebugUnitTestStubRFile
+> Task :capacitor-status-bar:javaPreCompileDebugAndroidTest
+> Task :capacitor-cordova-android-plugins:bundleDebugAar
+> Task :capacitor-cordova-android-plugins:assembleDebug
+> Task :capacitor-splash-screen:processDebugAndroidTestNavigationResources
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebugUnitTest
+> Task :capacitor-splash-screen:compileDebugAndroidTestNavigationResources
+> Task :capacitor-splash-screen:checkDebugAndroidTestAarMetadata
+> Task :capacitor-community-apple-sign-in:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-cordova-android-plugins:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-splash-screen:generateDebugAndroidTestResValues
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebugAndroidTest
+> Task :capacitor-cordova-android-plugins:checkDebugAndroidTestAarMetadata
+> Task :capacitor-camera:generateDebugUnitTestStubRFile
+> Task :capacitor-splash-screen:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-community-apple-sign-in:mergeDebugJavaResource
+> Task :capacitor-preferences:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-status-bar:checkDebugAndroidTestAarMetadata
+> Task :capacitor-status-bar:processDebugAndroidTestNavigationResources
+> Task :capacitor-community-apple-sign-in:javaPreCompileDebugUnitTest
+> Task :capacitor-status-bar:compileDebugAndroidTestNavigationResources
+> Task :capacitor-status-bar:generateDebugAndroidTestResValues
+> Task :capacitor-splash-screen:generateDebugAndroidTestResources
+> Task :capacitor-status-bar:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-community-apple-sign-in:javaPreCompileDebugAndroidTest
+> Task :capacitor-status-bar:generateDebugAndroidTestResources
+> Task :capacitor-community-apple-sign-in:checkDebugAndroidTestAarMetadata
+> Task :capacitor-community-apple-sign-in:processDebugAndroidTestNavigationResources
+> Task :capacitor-community-apple-sign-in:compileDebugAndroidTestNavigationResources
+> Task :capacitor-community-apple-sign-in:generateDebugAndroidTestResValues
+> Task :capacitor-community-apple-sign-in:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-community-apple-sign-in:generateDebugAndroidTestResources
+> Task :capacitor-cordova-android-plugins:processDebugAndroidTestNavigationResources
+> Task :capacitor-community-apple-sign-in:generateDebugUnitTestStubRFile
+> Task :capacitor-cordova-android-plugins:compileDebugAndroidTestNavigationResources
+> Task :capacitor-cordova-android-plugins:generateDebugAndroidTestResValues
+> Task :capacitor-preferences:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-preferences:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-preferences:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-preferences:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-preferences:mergeDebugJavaResource
+> Task :capacitor-cordova-android-plugins:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-cordova-android-plugins:generateDebugAndroidTestResources
+> Task :capacitor-preferences:generateDebugUnitTestStubRFile
+> Task :capacitor-preferences:javaPreCompileDebugUnitTest
+> Task :capacitor-preferences:javaPreCompileDebugAndroidTest
+> Task :capacitor-preferences:checkDebugAndroidTestAarMetadata
+> Task :capacitor-preferences:processDebugAndroidTestNavigationResources
+> Task :capacitor-preferences:generateDebugAndroidTestResValues
+> Task :capacitor-preferences:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-preferences:generateDebugAndroidTestResources
+> Task :capacitor-preferences:processDebugAndroidTestManifest
+> Task :capacitor-preferences:mergeDebugAndroidTestShaders
+> Task :capacitor-preferences:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-preferences:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-preferences:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-preferences:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-preferences:checkDebugAndroidTestDuplicateClasses
+> Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestResources
+> Task :capacitor-app:mergeDebugAndroidTestResources
+> Task :capacitor-community-apple-sign-in:mergeDebugAndroidTestResources
+> Task :capacitor-splash-screen:mergeDebugAndroidTestResources
+> Task :capacitor-health:mergeDebugAndroidTestResources
+> Task :capacitor-cordova-android-plugins:processDebugAndroidTestManifest
+> Task :capacitor-status-bar:mergeDebugAndroidTestResources
+> Task :capacitor-status-bar:processDebugAndroidTestManifest
+> Task :capacitor-health:processDebugAndroidTestManifest
+> Task :capacitor-splash-screen:processDebugAndroidTestManifest
+> Task :capacitor-community-apple-sign-in:processDebugAndroidTestManifest
+> Task :capacitor-app:processDebugAndroidTestManifest
+> Task :capacitor-status-bar:processDebugAndroidTestResources
+> Task :capacitor-community-apple-sign-in:processDebugAndroidTestResources
+> Task :capacitor-app:processDebugAndroidTestResources
+> Task :capacitor-cordova-android-plugins:processDebugAndroidTestResources
+> Task :capacitor-cordova-android-plugins:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-app:mergeDebugAndroidTestShaders
+> Task :capacitor-app:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-app:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-app:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-splash-screen:processDebugAndroidTestResources
+> Task :capacitor-app:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestShaders
+> Task :capacitor-cordova-android-plugins:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-cordova-android-plugins:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-health:processDebugAndroidTestResources
+> Task :app:packageDebugResources
+> Task :capacitor-health:javaPreCompileDebugAndroidTest
+> Task :capacitor-health:mergeDebugAndroidTestShaders
+> Task :capacitor-health:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-health:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests
+> Task :capacitor-health:desugarDebugAndroidTestFileDependencies
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :capacitor-camera:mergeDebugAndroidTestResources
+> Task :capacitor-app:checkDebugAndroidTestDuplicateClasses
+> Task :capacitor-app:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestAssets
+> Task :capacitor-cordova-android-plugins:compressDebugAndroidTestAssets
+> Task :capacitor-status-bar:mergeDebugAndroidTestShaders
+> Task :capacitor-status-bar:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-status-bar:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-status-bar:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-camera:processDebugAndroidTestManifest
+> Task :capacitor-app:validateSigningDebugAndroidTest
+> Task :capacitor-splash-screen:mergeDebugAndroidTestShaders
+> Task :capacitor-app:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-splash-screen:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-splash-screen:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-status-bar:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-splash-screen:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-splash-screen:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-status-bar:checkDebugAndroidTestDuplicateClasses
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :capacitor-health:checkDebugAndroidTestDuplicateClasses
+> Task :app:processDebugManifestForPackage
+> Task :capacitor-camera:mergeDebugAndroidTestShaders
+> Task :capacitor-splash-screen:checkDebugAndroidTestDuplicateClasses
+> Task :capacitor-camera:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-camera:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-camera:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-camera:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:desugarDebugFileDependencies
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-cordova-android-plugins:dexBuilderDebugAndroidTest
+> Task :capacitor-camera:checkDebugAndroidTestDuplicateClasses
+> Task :app:mergeDebugJniLibFolders
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestGlobalSynthetics
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses
+> Task :app:javaPreCompileDebugUnitTest
+> Task :capacitor-cordova-android-plugins:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :app:preDebugAndroidTestBuild SKIPPED
+
+> Task :capacitor-android:compileDebugJavaWithJavac
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :app:mergeDebugResources
+> Task :app:javaPreCompileDebugAndroidTest
+> Task :capacitor-android:compileDebugShaders NO-SOURCE
+> Task :capacitor-android:generateDebugAssets UP-TO-DATE
+> Task :capacitor-camera:processDebugAndroidTestResources
+> Task :capacitor-android:bundleLibCompileToJarDebug
+> Task :app:processDebugAndroidTestNavigationResources
+> Task :capacitor-android:mergeDebugAssets
+> Task :app:checkDebugAndroidTestAarMetadata
+> Task :app:compileDebugAndroidTestNavigationResources
+
+> Task :capacitor-community-apple-sign-in:compileDebugJavaWithJavac
+Java compiler version 21 has deprecated support for compiling with source/target version 8.
+Try one of the following options:
+    1. [Recommended] Use Java toolchain with a lower language version
+    2. Set a higher source/target version
+    3. Use a lower version of the JDK running the build (if you're not using Java toolchain)
+For more details on how to configure these settings, see https://developer.android.com/build/jdks.
+To suppress this warning, set android.javaCompile.suppressSourceTargetDeprecationWarning=true in gradle.properties.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :app:processDebugResources
+> Task :capacitor-preferences:mergeExtDexDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:bundleLibCompileToJarDebug
+> Task :capacitor-app:compileDebugJavaWithJavac
+> Task :capacitor-preferences:compileDebugJavaWithJavac
+
+> Task :capacitor-push-notifications:compileDebugJavaWithJavac
+Note: /Users/lanyardmyakayaka/FitScoreSync-2/node_modules/@capacitor/push-notifications/android/src/main/java/com/capacitorjs/plugins/pushnotifications/PushNotificationsPlugin.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :capacitor-camera:compileDebugJavaWithJavac
+Note: /Users/lanyardmyakayaka/FitScoreSync-2/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/CameraBottomSheetDialogFragment.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :capacitor-preferences:bundleLibCompileToJarDebug
+> Task :capacitor-app:bundleLibCompileToJarDebug
+> Task :capacitor-camera:bundleLibCompileToJarDebug
+> Task :capacitor-app:mergeExtDexDebugAndroidTest
+> Task :capacitor-push-notifications:bundleLibCompileToJarDebug
+> Task :capacitor-community-apple-sign-in:bundleLibRuntimeToJarDebug
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :capacitor-app:bundleLibRuntimeToJarDebug
+> Task :capacitor-camera:bundleLibRuntimeToJarDebug
+> Task :capacitor-preferences:bundleLibRuntimeToJarDebug
+> Task :capacitor-status-bar:mergeExtDexDebugAndroidTest
+> Task :capacitor-push-notifications:bundleLibRuntimeToJarDebug
+> Task :capacitor-android:bundleLibRuntimeToJarDebug
+> Task :capacitor-android:processDebugJavaRes NO-SOURCE
+> Task :capacitor-community-apple-sign-in:bundleLibRuntimeToDirDebug
+> Task :capacitor-app:bundleLibRuntimeToDirDebug
+> Task :capacitor-camera:bundleLibRuntimeToDirDebug
+
+> Task :capacitor-status-bar:compileDebugJavaWithJavac
+Note: /Users/lanyardmyakayaka/FitScoreSync-2/node_modules/@capacitor/status-bar/android/src/main/java/com/capacitorjs/plugins/statusbar/StatusBar.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :capacitor-status-bar:bundleLibCompileToJarDebug
+> Task :capacitor-status-bar:bundleLibRuntimeToJarDebug
+> Task :capacitor-preferences:bundleLibRuntimeToDirDebug
+
+> Task :southdevs-capacitor-google-auth:compileDebugJavaWithJavac
+Note: /Users/lanyardmyakayaka/FitScoreSync-2/node_modules/@southdevs/capacitor-google-auth/android/src/main/java/com/codetrixstudio/capacitor/GoogleAuth/GoogleAuth.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :southdevs-capacitor-google-auth:bundleLibCompileToJarDebug
+> Task :southdevs-capacitor-google-auth:bundleLibRuntimeToJarDebug
+> Task :capacitor-push-notifications:bundleLibRuntimeToDirDebug
+> Task :capacitor-splash-screen:compileDebugJavaWithJavac
+> Task :southdevs-capacitor-google-auth:bundleLibRuntimeToDirDebug
+> Task :capacitor-status-bar:bundleLibRuntimeToDirDebug
+> Task :capacitor-splash-screen:bundleLibCompileToJarDebug
+> Task :capacitor-splash-screen:bundleLibRuntimeToJarDebug
+> Task :capacitor-splash-screen:bundleLibRuntimeToDirDebug
+> Task :capacitor-android:mergeDebugJniLibFolders
+> Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-android:copyDebugJniLibsProjectOnly
+> Task :capacitor-android:bundleLibRuntimeToDirDebug
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:generateDebugAndroidTestResValues
+> Task :capacitor-android:checkDebugAarMetadata
+> Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+> Task :app:mapDebugAndroidTestSourceSetPaths
+> Task :app:generateDebugAndroidTestResources
+> Task :capacitor-android:extractDebugAnnotations
+> Task :capacitor-android:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :capacitor-android:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-android:mergeDebugConsumerProguardFiles
+> Task :capacitor-android:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-android:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-android:mergeDebugJavaResource
+> Task :app:mergeDebugAndroidTestResources
+> Task :app:processDebugAndroidTestManifest
+> Task :capacitor-android:syncDebugLibJars
+> Task :app:mergeDebugAndroidTestShaders
+> Task :app:compileDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeDebugAndroidTestAssets
+> Task :app:compressDebugAndroidTestAssets
+> Task :app:desugarDebugAndroidTestFileDependencies
+> Task :app:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :app:checkDebugAndroidTestDuplicateClasses
+> Task :app:processDebugAndroidTestResources
+> Task :app:mergeDebugAndroidTestJniLibFolders
+> Task :app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebugAndroidTest
+> Task :app:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-android:bundleDebugAar
+> Task :capacitor-android:assembleDebug
+> Task :capacitor-android:preDebugUnitTestBuild UP-TO-DATE
+> Task :capacitor-android:generateDebugUnitTestStubRFile
+> Task :capacitor-android:javaPreCompileDebugUnitTest
+> Task :capacitor-android:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-android:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-android:preDebugAndroidTestBuild UP-TO-DATE
+> Task :capacitor-android:javaPreCompileDebugAndroidTest
+> Task :capacitor-android:checkDebugAndroidTestAarMetadata
+> Task :capacitor-android:processDebugAndroidTestNavigationResources
+> Task :capacitor-android:compileDebugAndroidTestNavigationResources
+> Task :capacitor-android:generateDebugAndroidTestResValues
+> Task :capacitor-android:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-android:generateDebugAndroidTestResources
+> Task :app:mergeExtDexDebugAndroidTest
+> Task :capacitor-app:extractDebugAnnotations
+> Task :capacitor-app:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-app:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :capacitor-app:syncDebugLibJars
+> Task :capacitor-app:bundleDebugAar
+> Task :capacitor-app:assembleDebug
+> Task :capacitor-app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-app:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-app:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-app:mergeDebugAndroidTestAssets
+> Task :capacitor-app:compressDebugAndroidTestAssets
+> Task :capacitor-android:mergeDebugAndroidTestResources
+> Task :capacitor-android:processDebugAndroidTestManifest
+> Task :capacitor-android:mergeDebugAndroidTestShaders
+> Task :capacitor-android:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-android:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-health:mergeExtDexDebugAndroidTest
+> Task :capacitor-camera:extractDebugAnnotations
+> Task :capacitor-camera:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-camera:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :capacitor-camera:syncDebugLibJars
+> Task :capacitor-android:mergeDebugAndroidTestAssets
+> Task :capacitor-camera:bundleDebugAar
+> Task :capacitor-android:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-android:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-android:compressDebugAndroidTestAssets
+> Task :capacitor-camera:assembleDebug
+> Task :capacitor-camera:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-camera:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-camera:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-camera:mergeDebugAndroidTestAssets
+> Task :capacitor-android:checkDebugAndroidTestDuplicateClasses
+> Task :capacitor-app:dexBuilderDebugAndroidTest
+> Task :capacitor-android:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-android:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-android:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-android:validateSigningDebugAndroidTest
+> Task :capacitor-android:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-app:mergeDebugAndroidTestGlobalSynthetics
+> Task :capacitor-camera:mergeExtDexDebugAndroidTest
+> Task :capacitor-android:processDebugAndroidTestResources
+> Task :capacitor-android:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-app:mergeProjectDexDebugAndroidTest
+> Task :capacitor-app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-camera:compressDebugAndroidTestAssets
+> Task :capacitor-android:dexBuilderDebugAndroidTest
+> Task :capacitor-android:mergeDebugAndroidTestJavaResource
+> Task :capacitor-android:mergeDebugAndroidTestGlobalSynthetics
+> Task :capacitor-android:mergeProjectDexDebugAndroidTest
+> Task :capacitor-app:mergeDebugAndroidTestJavaResource
+> Task :capacitor-health:mergeDebugAndroidTestAssets
+> Task :capacitor-cordova-android-plugins:checkDebugAndroidTestDuplicateClasses FAILED
+> Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-cordova-android-plugins:validateSigningDebugAndroidTest
+> Task :capacitor-cordova-android-plugins:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-health:compressDebugAndroidTestAssets
+> Task :capacitor-status-bar:extractDebugAnnotations
+> Task :capacitor-status-bar:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-status-bar:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :capacitor-splash-screen:extractDebugAnnotations
+> Task :capacitor-splash-screen:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-splash-screen:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :capacitor-status-bar:syncDebugLibJars
+> Task :capacitor-status-bar:bundleDebugAar
+> Task :capacitor-status-bar:assembleDebug
+> Task :capacitor-status-bar:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-status-bar:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-splash-screen:syncDebugLibJars
+> Task :capacitor-status-bar:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-splash-screen:bundleDebugAar
+> Task :capacitor-splash-screen:assembleDebug
+> Task :capacitor-splash-screen:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-splash-screen:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-splash-screen:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-status-bar:mergeDebugAndroidTestAssets
+> Task :capacitor-splash-screen:mergeDebugAndroidTestAssets
+> Task :capacitor-status-bar:compressDebugAndroidTestAssets
+> Task :capacitor-splash-screen:compressDebugAndroidTestAssets
+> Task :capacitor-app:mergeLibDexDebugAndroidTest
+> Task :capacitor-splash-screen:dexBuilderDebugAndroidTest
+> Task :capacitor-android:mergeLibDexDebugAndroidTest
+> Task :capacitor-health:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-health:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-health:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-health:validateSigningDebugAndroidTest
+> Task :capacitor-health:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-status-bar:dexBuilderDebugAndroidTest
+> Task :capacitor-splash-screen:mergeDebugAndroidTestGlobalSynthetics
+> Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestJavaResource
+
+> Task :capacitor-health:compileDebugKotlin FAILED
+e: file:///Users/lanyardmyakayaka/FitScoreSync-2/node_modules/capacitor-health/android/src/main/java/com/fit_up/health/capacitor/HealthPlugin.kt:357:17 No parameter with name 'dataOriginsFilter' found.
+
+> Task :capacitor-status-bar:mergeDebugAndroidTestGlobalSynthetics
+> Task :capacitor-splash-screen:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-splash-screen:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-splash-screen:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-splash-screen:validateSigningDebugAndroidTest
+> Task :capacitor-splash-screen:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-splash-screen:mergeLibDexDebugAndroidTest
+> Task :capacitor-splash-screen:mergeProjectDexDebugAndroidTest
+> Task :capacitor-status-bar:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-status-bar:mergeLibDexDebugAndroidTest
+> Task :capacitor-status-bar:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-status-bar:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-status-bar:validateSigningDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:extractDebugAnnotations
+> Task :capacitor-community-apple-sign-in:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :capacitor-status-bar:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-community-apple-sign-in:syncDebugLibJars
+> Task :capacitor-community-apple-sign-in:bundleDebugAar
+> Task :capacitor-community-apple-sign-in:assembleDebug
+> Task :capacitor-splash-screen:mergeDebugAndroidTestJavaResource
+> Task :capacitor-preferences:extractDebugAnnotations
+> Task :capacitor-preferences:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-preferences:mergeDebugConsumerProguardFiles UP-TO-DATE
+
+> Task :capacitor-community-apple-sign-in:compileDebugUnitTestJavaWithJavac
+Java compiler version 21 has deprecated support for compiling with source/target version 8.
+Try one of the following options:
+    1. [Recommended] Use Java toolchain with a lower language version
+    2. Set a higher source/target version
+    3. Use a lower version of the JDK running the build (if you're not using Java toolchain)
+For more details on how to configure these settings, see https://developer.android.com/build/jdks.
+To suppress this warning, set android.javaCompile.suppressSourceTargetDeprecationWarning=true in gradle.properties.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :capacitor-community-apple-sign-in:assembleDebugUnitTest
+> Task :capacitor-preferences:syncDebugLibJars
+> Task :capacitor-status-bar:mergeProjectDexDebugAndroidTest
+> Task :capacitor-preferences:bundleDebugAar
+> Task :capacitor-preferences:assembleDebug
+> Task :capacitor-preferences:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-preferences:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-preferences:compileDebugAndroidTestNavigationResources
+> Task :southdevs-capacitor-google-auth:checkDebugAarMetadata
+> Task :southdevs-capacitor-google-auth:stripDebugDebugSymbols NO-SOURCE
+> Task :southdevs-capacitor-google-auth:copyDebugJniLibsProjectAndLocalJars
+> Task :southdevs-capacitor-google-auth:extractDebugAnnotations
+> Task :southdevs-capacitor-google-auth:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:prepareDebugArtProfile UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:prepareLintJarForPublish UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:mergeDebugJavaResource
+> Task :southdevs-capacitor-google-auth:syncDebugLibJars
+> Task :southdevs-capacitor-google-auth:bundleDebugAar
+> Task :southdevs-capacitor-google-auth:assembleDebug
+> Task :capacitor-camera:dexBuilderDebugAndroidTest
+> Task :capacitor-camera:mergeDebugAndroidTestGlobalSynthetics
+> Task :southdevs-capacitor-google-auth:generateDebugUnitTestStubRFile
+
+> Task :capacitor-community-apple-sign-in:compileDebugAndroidTestJavaWithJavac
+Java compiler version 21 has deprecated support for compiling with source/target version 8.
+Try one of the following options:
+    1. [Recommended] Use Java toolchain with a lower language version
+    2. Set a higher source/target version
+    3. Use a lower version of the JDK running the build (if you're not using Java toolchain)
+For more details on how to configure these settings, see https://developer.android.com/build/jdks.
+To suppress this warning, set android.javaCompile.suppressSourceTargetDeprecationWarning=true in gradle.properties.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :capacitor-camera:mergeLibDexDebugAndroidTest
+> Task :capacitor-camera:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-camera:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-camera:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-camera:validateSigningDebugAndroidTest
+> Task :capacitor-camera:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-community-apple-sign-in:mergeDebugAndroidTestShaders
+> Task :capacitor-community-apple-sign-in:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-community-apple-sign-in:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:mergeDebugAndroidTestAssets
+> Task :capacitor-community-apple-sign-in:compressDebugAndroidTestAssets
+> Task :capacitor-community-apple-sign-in:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-app:packageDebugAndroidTest
+> Task :capacitor-app:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-app:assembleDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:checkDebugAndroidTestDuplicateClasses
+> Task :capacitor-community-apple-sign-in:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-status-bar:mergeDebugAndroidTestJavaResource
+> Task :capacitor-camera:mergeProjectDexDebugAndroidTest
+> Task :capacitor-preferences:mergeDebugAndroidTestResources
+> Task :capacitor-camera:mergeDebugAndroidTestJavaResource
+> Task :capacitor-community-apple-sign-in:mergeDebugAndroidTestJavaResource
+> Task :capacitor-preferences:mergeDebugAndroidTestAssets
+> Task :capacitor-preferences:compressDebugAndroidTestAssets
+> Task :app:mergeExtDexDebug
+> Task :capacitor-community-apple-sign-in:dexBuilderDebugAndroidTest
+> Task :capacitor-status-bar:packageDebugAndroidTest
+> Task :capacitor-status-bar:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-status-bar:assembleDebugAndroidTest
+> Task :capacitor-preferences:processDebugAndroidTestResources
+> Task :capacitor-preferences:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-community-apple-sign-in:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-community-apple-sign-in:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-community-apple-sign-in:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-community-apple-sign-in:validateSigningDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:writeDebugAndroidTestSigningConfigVersions
+> Task :southdevs-capacitor-google-auth:javaPreCompileDebugUnitTest
+> Task :southdevs-capacitor-google-auth:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :southdevs-capacitor-google-auth:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-community-apple-sign-in:mergeProjectDexDebugAndroidTest
+> Task :capacitor-preferences:mergeLibDexDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:javaPreCompileDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:processDebugAndroidTestNavigationResources
+> Task :southdevs-capacitor-google-auth:checkDebugAndroidTestAarMetadata
+> Task :capacitor-push-notifications:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-push-notifications:copyDebugJniLibsProjectAndLocalJars
+> Task :southdevs-capacitor-google-auth:compileDebugAndroidTestNavigationResources
+> Task :capacitor-push-notifications:checkDebugAarMetadata
+> Task :southdevs-capacitor-google-auth:generateDebugAndroidTestResValues
+> Task :southdevs-capacitor-google-auth:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-push-notifications:extractDebugAnnotations
+> Task :capacitor-push-notifications:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:generateDebugAndroidTestResources
+> Task :capacitor-push-notifications:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :capacitor-push-notifications:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :capacitor-push-notifications:prepareDebugArtProfile UP-TO-DATE
+> Task :capacitor-push-notifications:prepareLintJarForPublish UP-TO-DATE
+> Task :capacitor-camera:packageDebugAndroidTest
+> Task :capacitor-push-notifications:mergeDebugJavaResource
+> Task :capacitor-camera:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-camera:assembleDebugAndroidTest
+> Task :capacitor-push-notifications:syncDebugLibJars
+> Task :capacitor-push-notifications:bundleDebugAar
+> Task :capacitor-push-notifications:assembleDebug
+> Task :capacitor-push-notifications:generateDebugUnitTestStubRFile
+> Task :capacitor-push-notifications:javaPreCompileDebugAndroidTest
+> Task :capacitor-push-notifications:javaPreCompileDebugUnitTest
+> Task :capacitor-push-notifications:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :capacitor-push-notifications:assembleDebugUnitTest UP-TO-DATE
+> Task :capacitor-push-notifications:checkDebugAndroidTestAarMetadata
+> Task :capacitor-push-notifications:processDebugAndroidTestNavigationResources
+> Task :capacitor-push-notifications:generateDebugAndroidTestResValues
+> Task :capacitor-push-notifications:compileDebugAndroidTestNavigationResources
+> Task :capacitor-push-notifications:mapDebugAndroidTestSourceSetPaths
+> Task :capacitor-push-notifications:generateDebugAndroidTestResources
+> Task :capacitor-preferences:mergeDebugAndroidTestJavaResource
+> Task :capacitor-preferences:dexBuilderDebugAndroidTest
+> Task :capacitor-preferences:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-preferences:mergeDebugAndroidTestGlobalSynthetics
+> Task :capacitor-preferences:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-preferences:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-preferences:validateSigningDebugAndroidTest
+> Task :capacitor-preferences:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-preferences:mergeProjectDexDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:processDebugAndroidTestManifest
+> Task :capacitor-push-notifications:processDebugAndroidTestManifest
+> Task :capacitor-push-notifications:mergeDebugAndroidTestShaders
+> Task :capacitor-push-notifications:compileDebugAndroidTestShaders NO-SOURCE
+> Task :capacitor-push-notifications:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :southdevs-capacitor-google-auth:mergeDebugAndroidTestShaders
+> Task :southdevs-capacitor-google-auth:compileDebugAndroidTestShaders NO-SOURCE
+> Task :southdevs-capacitor-google-auth:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :capacitor-push-notifications:mergeDebugAndroidTestAssets
+> Task :southdevs-capacitor-google-auth:mergeDebugAndroidTestAssets
+> Task :southdevs-capacitor-google-auth:compressDebugAndroidTestAssets
+> Task :southdevs-capacitor-google-auth:desugarDebugAndroidTestFileDependencies
+> Task :southdevs-capacitor-google-auth:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-push-notifications:desugarDebugAndroidTestFileDependencies
+> Task :capacitor-push-notifications:processDebugAndroidTestJavaRes NO-SOURCE
+> Task :capacitor-push-notifications:compressDebugAndroidTestAssets
+> Task :southdevs-capacitor-google-auth:mergeDebugAndroidTestResources
+> Task :southdevs-capacitor-google-auth:checkDebugAndroidTestDuplicateClasses
+> Task :capacitor-push-notifications:mergeDebugAndroidTestResources
+> Task :capacitor-preferences:packageDebugAndroidTest
+> Task :capacitor-push-notifications:checkDebugAndroidTestDuplicateClasses
+> Task :capacitor-preferences:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-preferences:assembleDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:mergeLibDexDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:mergeDebugAndroidTestJniLibFolders
+> Task :southdevs-capacitor-google-auth:mergeDebugAndroidTestJavaResource
+> Task :southdevs-capacitor-google-auth:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :southdevs-capacitor-google-auth:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :southdevs-capacitor-google-auth:validateSigningDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:writeDebugAndroidTestSigningConfigVersions
+> Task :southdevs-capacitor-google-auth:mergeLibDexDebugAndroidTest
+> Task :capacitor-push-notifications:mergeDebugAndroidTestJniLibFolders
+> Task :capacitor-push-notifications:mergeLibDexDebugAndroidTest
+> Task :capacitor-push-notifications:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :capacitor-push-notifications:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :capacitor-push-notifications:validateSigningDebugAndroidTest
+> Task :capacitor-push-notifications:writeDebugAndroidTestSigningConfigVersions
+> Task :capacitor-push-notifications:mergeDebugAndroidTestJavaResource
+> Task :southdevs-capacitor-google-auth:processDebugAndroidTestResources
+> Task :southdevs-capacitor-google-auth:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :capacitor-android:mergeExtDexDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:dexBuilderDebugAndroidTest
+> Task :capacitor-push-notifications:processDebugAndroidTestResources
+> Task :capacitor-push-notifications:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+> Task :southdevs-capacitor-google-auth:mergeDebugAndroidTestGlobalSynthetics
+> Task :southdevs-capacitor-google-auth:mergeProjectDexDebugAndroidTest
+> Task :capacitor-push-notifications:dexBuilderDebugAndroidTest
+> Task :capacitor-push-notifications:mergeDebugAndroidTestGlobalSynthetics
+> Task :capacitor-android:packageDebugAndroidTest
+> Task :capacitor-android:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-android:assembleDebugAndroidTest
+> Task :capacitor-push-notifications:mergeProjectDexDebugAndroidTest
+> Task :capacitor-splash-screen:mergeExtDexDebugAndroidTest
+> Task :capacitor-splash-screen:packageDebugAndroidTest
+> Task :capacitor-splash-screen:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-splash-screen:assembleDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:mergeExtDexDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:packageDebugAndroidTest
+> Task :capacitor-community-apple-sign-in:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-community-apple-sign-in:assembleDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:mergeExtDexDebugAndroidTest
+> Task :capacitor-push-notifications:mergeExtDexDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:packageDebugAndroidTest
+> Task :southdevs-capacitor-google-auth:createDebugAndroidTestApkListingFileRedirect
+> Task :southdevs-capacitor-google-auth:assembleDebugAndroidTest
+> Task :capacitor-push-notifications:packageDebugAndroidTest
+> Task :capacitor-push-notifications:createDebugAndroidTestApkListingFileRedirect
+> Task :capacitor-push-notifications:assembleDebugAndroidTest
+
+[Incubating] Problems report is available at: file:///Users/lanyardmyakayaka/FitScoreSync-2/android/build/reports/problems/problems-report.html
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':capacitor-cordova-android-plugins:checkDebugAndroidTestDuplicateClasses'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.CheckDuplicatesRunnable
+   > Duplicate class kotlin.collections.jdk8.CollectionsJDK8Kt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.internal.jdk7.JDK7PlatformImplementations found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.internal.jdk7.JDK7PlatformImplementations$ReflectSdkVersion found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.internal.jdk8.JDK8PlatformImplementations found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.internal.jdk8.JDK8PlatformImplementations$ReflectSdkVersion found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.io.path.ExperimentalPathApi found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.io.path.PathRelativizer found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.io.path.PathsKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.io.path.PathsKt__PathReadWriteKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.io.path.PathsKt__PathUtilsKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.jdk7.AutoCloseableKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+     Duplicate class kotlin.jvm.jdk8.JvmRepeatableKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.random.jdk8.PlatformThreadLocalRandom found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.streams.jdk8.StreamsKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$1 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$2 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$3 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$4 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.text.jdk8.RegexExtensionsJDK8Kt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     Duplicate class kotlin.time.jdk8.DurationConversionsJDK8Kt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+     
+     Learn how to fix dependency resolution errors at https://d.android.com/r/tools/classpath-sync-errors
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':capacitor-health:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 10s
+664 actionable tasks: 612 executed, 52 up-to-date
